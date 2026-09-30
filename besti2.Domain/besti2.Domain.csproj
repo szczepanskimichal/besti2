@@ -4,7 +4,6 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>best2.Domain</RootNamespace>
     </PropertyGroup>
 
 </Project>
