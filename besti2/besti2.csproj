@@ -7,7 +7,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\besti2.Application\besti2.Application.csproj" />
+      <ProjectReference Include="..\besti2.Infrastructure\besti2.Infrastructure.csproj" />
     </ItemGroup>
 
 </Project>
