@@ -1,4 +1,4 @@
-namespace best2.Domain.Entities;
+namespace besti2.Domain.Entities;
 
 public class Salon
 {

@@ -11,4 +11,9 @@
       <ProjectReference Include="..\besti2.Application\besti2.Application.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.12" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+    </ItemGroup>
+
 </Project>
