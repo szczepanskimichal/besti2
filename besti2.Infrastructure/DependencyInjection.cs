@@ -1,4 +1,6 @@
+using besti2.Application.Businesses;
 using besti2.Infrastructure.Persistence;
+using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,6 +14,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        services.AddScoped<IBusinessService, BusinessService>();
         return services;
     }
 
