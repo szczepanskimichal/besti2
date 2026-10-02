@@ -1,3 +1,5 @@
+using besti2.Domain.Enums;
+
 namespace besti2.Domain.Entities;
 
 public class Service
@@ -6,8 +8,9 @@ public class Service
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public int DurationMinutes { get; set; }
-    public decimal PriceNok { get; set; }
+    public decimal? PriceNok { get; set; }
+    public PriceType PriceType { get; set; }
     
-    public Guid SalonId { get; set; }
-    public Salon Salon { get; set; } = null!;
+    public Guid BusinessId { get; set; }
+    public Business Business { get; set; } = null!;
 }

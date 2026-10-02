@@ -6,6 +6,6 @@ public class Employee
     public string Name { get; set; } = null!;
     public string LastName { get; set; } = null!;
     
-    public Guid SalonId { get; set; }
-    public Salon Salon { get; set; } = null!;
+    public Guid BusinessId { get; set; }
+    public Business Business { get; set; } = null!;
 }

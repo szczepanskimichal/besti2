@@ -1,3 +1,5 @@
+using besti2.Domain.Enums;
+
 namespace besti2.Domain.Entities;
 
 public class Booking
@@ -7,6 +9,8 @@ public class Booking
     public DateTime EndUtc { get; set; }
     public string CustomerName { get; set; } = null!;
     public string CustomerPhone { get; set; } = null!;
+    public string CustomerEmail { get; set; } = null!;
+    public BookingStatus Status { get; set; }
 
     public Guid EmployeeId { get; set; }
     public Employee Employee { get; set; } = null!;
