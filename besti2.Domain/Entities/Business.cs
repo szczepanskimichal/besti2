@@ -15,6 +15,7 @@ public class Business
     public string Address { get; set; } = null!;
     public string PostalCode { get; set; } = null!;
     public string City { get; set; } = null!;
+    public string? Description { get; set; }
     
     public List<Employee> Employees { get; set; } = new ();
     public List<Service> Services { get; set; } = new ();
