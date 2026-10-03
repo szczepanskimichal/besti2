@@ -1,18 +1,18 @@
+import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import { getBusinesses } from '@/lib/api';
 import { getCategoryLabel } from '@/lib/categories';
+import styles from "./page.module.css";
 
 export default async function Home() {
     const businesses = await getBusinesses();
     
     return (
-        <main>
-            <h1>Finn en bedrift</h1>
-            <ul>
+        <main className={styles.main}>
+            <h1 className={styles.title}>Finn en bedrift</h1>
+            <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>
-                        <h2>{business.name}</h2>
-                        <p>{getCategoryLabel(business.category)} · {business.city}</p>
-                        {business.description && <p>{business.description}</p>}
+                        <BusinessCard business={business} />
                     </li>
                 ))}
             </ul>
