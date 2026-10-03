@@ -3,6 +3,6 @@ export type BusinessListItem = {
     id: string;
     name: string;
     category: string;
-    address: string | null;
+    description: string | null;
     city: string;
 };
