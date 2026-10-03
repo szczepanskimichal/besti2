@@ -480,3 +480,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# AI agent instruction files
+AGENTS.md
+CLAUDE.md
+.claude/
