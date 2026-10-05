@@ -1,4 +1,5 @@
 using besti2.Application.Bookings;
+using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -39,5 +40,76 @@ public class BookingService(AppDbContext dbContext) : IBookingService
             service.DurationMinutes,
             busy.Select(b => (b.StartUtc, b.EndUtc)).ToList(),
             DateTime.UtcNow);
+    }
+
+        public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
+    {
+        var error = Validate(request);
+        if (error is not null)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: error);
+        }
+
+        var service = await dbContext.Services
+            .AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == request.ServiceId, cancellationToken);
+        if (service is null)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.NotFound);
+        }
+
+        var date = DateOnly.FromDateTime(request.StartUtc);
+        var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, cancellationToken);
+        if (freeSlots is null)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.NotFound);
+        }
+
+        if (!freeSlots.Contains(request.StartUtc))
+        {
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+        }
+
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            ServiceId = request.ServiceId,
+            EmployeeId = request.EmployeeId,
+            StartUtc = request.StartUtc,
+            EndUtc = request.StartUtc.AddMinutes(service.DurationMinutes),
+            CustomerName = request.CustomerName.Trim(),
+            CustomerPhone = request.CustomerPhone.Trim(),
+            CustomerEmail = request.CustomerEmail.Trim().ToLowerInvariant(),
+            MarketingConsent = request.MarketingConsent,
+            MarketingConsentUtc = request.MarketingConsent ? DateTime.UtcNow : null,
+            Status = BookingStatus.Venter
+        };
+
+        dbContext.Bookings.Add(booking);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return new CreateBookingResult(
+            CreateBookingOutcome.Created,
+            new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
+    }
+
+    private static string? Validate(CreateBookingRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CustomerName) || request.CustomerName.Length > 100)
+        {
+            return "Navn er påkrevd (maks 100 tegn).";
+        }
+
+        if (string.IsNullOrWhiteSpace(request.CustomerPhone) || request.CustomerPhone.Length > 20)
+        {
+            return "Telefonnummer er påkrevd (maks 20 tegn).";
+        }
+
+        if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 || !request.CustomerEmail.Contains('@'))
+        {
+            return "Oppgi en gyldig e-postadresse.";
+        }
+
+        return null;
     }
 }

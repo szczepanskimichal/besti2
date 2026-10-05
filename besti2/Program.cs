@@ -34,5 +34,17 @@ app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly
     var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
     return slots is null ? Results.NotFound() : Results.Ok(slots);
 });
+// Create a new booking
+app.MapPost("/api/bookings", async (CreateBookingRequest request, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var result = await bookingService.CreateAsync(request, cancellationToken);
 
+    return result.Outcome switch
+    {
+        CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
+        CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
+        CreateBookingOutcome.SlotTaken => Results.Conflict(new { message = "Tiden er dessverre ikke lenger ledig." }),
+        _ => Results.NotFound()
+    };
+});
 app.Run();
