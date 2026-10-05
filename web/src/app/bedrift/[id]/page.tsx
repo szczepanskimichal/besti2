@@ -44,6 +44,13 @@ export default async function BusinessPage({ params }: Props) {
                             <div className={styles.serviceMeta}>
                                 <span className={styles.price}>{formatPrice(service.priceNok, service.priceType)}</span>
                                 <span className={styles.muted}>{service.durationMinutes} min</span>
+                                <span className={styles.muted}>{service.durationMinutes} min</span>
+                                <NextLink
+                                    href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}`}
+                                    className={styles.bookButton}
+                                >
+                                    Bestill
+                                </NextLink>
                             </div>
                         </li>
                     ))}

@@ -96,6 +96,22 @@
     font-weight: 600;
 }
 
+.bookButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.bookButton:hover {
+    opacity: 0.9;
+}
 @media (min-width: 640px) {
     .service {
         flex-direction: row;

@@ -34,3 +34,13 @@ export type BusinessDetails = {
     services: Service[];
     employees: Employee[];
 };
+
+export type CreateBookingInput = {
+    serviceId: string;
+    employeeId: string;
+    startUtc: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail: string;
+    marketingConsent: boolean;
+};

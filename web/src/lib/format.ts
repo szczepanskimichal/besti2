@@ -22,3 +22,28 @@ export function formatPrice(priceNok: number | null, priceType: string): string 
             return amount;
     }
 }
+
+const osloTime = new Intl.DateTimeFormat("nb-NO", {
+    timeZone: "Europe/Oslo",
+    hour: "2-digit",
+    minute: "2-digit",
+});
+
+export function formatTime(utc: string): string {
+    return osloTime.format(new Date(utc));
+}
+
+export function todayInOslo(): string {
+    return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" }).format(new Date());
+}
+
+const osloDate = new Intl.DateTimeFormat("nb-NO", {
+    timeZone: "Europe/Oslo",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+});
+
+export function formatDate(utc: string): string {
+    return osloDate.format(new Date(utc));
+}
