@@ -5,6 +5,7 @@
   --color-muted: #6b7280;
   --color-primary: #2563eb;
   --radius: 8px;
+  --color-border: #eef0f3;
 }
 
 *, *::before, *::after {

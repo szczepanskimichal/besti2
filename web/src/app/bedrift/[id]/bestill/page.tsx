@@ -1,17 +1,18 @@
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getAvailability, getBusiness } from "@/lib/api";
-import { formatPrice, formatTime, todayInOslo } from "@/lib/format";
+import { formatDate, formatPrice, formatTime, todayInOslo } from "@/lib/format";
+import { createBookingAction } from "./actions";
 import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; feil?: string }>;
 };
 
 export default async function BookingPage({ params, searchParams }: Props) {
     const { id } = await params;
-    const { tjeneste, ansatt, dato } = await searchParams;
+    const { tjeneste, ansatt, dato, tid, feil } = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -65,13 +66,54 @@ export default async function BookingPage({ params, searchParams }: Props) {
                         <li key={slot}>
                             <NextLink
                                 href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(slot)}`}
-                                className={styles.slot}
+                                className={slot === tid ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
                             >
                                 {formatTime(slot)}
                             </NextLink>
                         </li>
                     ))}
                 </ul>
+            )}
+
+            {tid && (
+                <section>
+                    <h2 className={styles.sectionTitle}>Dine opplysninger</h2>
+                    <p className={styles.muted}>
+                        Valgt tid: <strong>{formatDate(tid)} kl. {formatTime(tid)}</strong>
+                    </p>
+
+                    {feil && <p className={styles.error} role="alert">{feil}</p>}
+
+                    <form action={createBookingAction} className={styles.form}>
+                        <input type="hidden" name="businessId" value={business.id} />
+                        <input type="hidden" name="serviceId" value={service.id} />
+                        <input type="hidden" name="employeeId" value={employeeId} />
+                        <input type="hidden" name="startUtc" value={tid} />
+                        <input type="hidden" name="date" value={date} />
+
+                        <label className={styles.field}>
+                            Navn
+                            <input name="customerName" required maxLength={100} autoComplete="name" />
+                        </label>
+
+                        <label className={styles.field}>
+                            Telefon
+                            <input name="customerPhone" type="tel" required maxLength={20} autoComplete="tel" />
+                        </label>
+
+                        <label className={styles.field}>
+                            E-post
+                            <input name="customerEmail" type="email" required maxLength={250} autoComplete="email" />
+                        </label>
+
+                        <label className={styles.checkbox}>
+                            <input type="checkbox" name="marketingConsent" />
+                            Ja, jeg vil motta nyhetsbrev og tilbud på e-post
+                        </label>
+
+                        <button type="submit" className={styles.primaryButton}>Bekreft bestilling</button>
+                    </form>
+                </section>
             )}
         </main>
     );
