@@ -1,3 +1,4 @@
+using besti2.Application.Bookings;
 using besti2.Infrastructure;
 using besti2.Application.Businesses;
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +27,12 @@ app.MapGet("/api/businesses/{id:guid}", async (Guid id, IBusinessService busines
 {
     var business = await businessService.GetByIdAsync(id, cancellationToken);
     return business is null ? Results.NotFound() : Results.Ok(business);
+});
+// Get availability for a service and employee on a specific date
+app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly date, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
+    return slots is null ? Results.NotFound() : Results.Ok(slots);
 });
 
 app.Run();

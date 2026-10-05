@@ -1,3 +1,4 @@
+using besti2.Application.Bookings;
 using besti2.Application.Businesses;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
+        services.AddScoped<IBookingService, BookingService>();
         return services;
     }
 
