@@ -10,6 +10,8 @@ public class Booking
     public string CustomerName { get; set; } = null!;
     public string CustomerPhone { get; set; } = null!;
     public string CustomerEmail { get; set; } = null!;
+    public bool MarketingConsent { get; set; }
+    public DateTime? MarketingConsentUtc { get; set; }
     public BookingStatus Status { get; set; }
 
     public Guid EmployeeId { get; set; }

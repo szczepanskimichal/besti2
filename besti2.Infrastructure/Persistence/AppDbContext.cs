@@ -108,7 +108,8 @@ public class AppDbContext : DbContext
                 .OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(30);
             e.Property(x=>x.CustomerEmail).IsRequired().HasMaxLength(250);
-
+            e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
+            e.Property(x => x.CustomerPhone).IsRequired().HasMaxLength(20);
         });
     }
 
