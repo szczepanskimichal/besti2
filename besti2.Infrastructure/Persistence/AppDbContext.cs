@@ -1,11 +1,13 @@
 using System.Reflection.Emit;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
+using besti2.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
 
@@ -18,6 +20,7 @@ public class AppDbContext : DbContext
     {
         modelBuilder.Entity<Business>(e =>
         {
+            base.OnModelCreating(modelBuilder);
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
             e.Property(x => x.OrgNumber).IsRequired().HasMaxLength(9);
             e.HasIndex(x => x.OrgNumber).IsUnique();
