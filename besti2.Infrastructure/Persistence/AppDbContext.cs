@@ -73,6 +73,28 @@ public class AppDbContext : DbContext
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
             e.Property((x => x.PriceNok)).HasPrecision(10, 2);
             e.Property(x => x.PriceType).HasConversion<string>().HasMaxLength(30);
+                        e.HasData(
+                new Service { Id = new Guid("a1111111-0000-0000-0000-000000000001"), Name = "Dameklipp", Description = "Klipp, vask og styling", DurationMinutes = 60, PriceType = PriceType.FastPris, PriceNok = 790m, BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
+                new Service { Id = new Guid("a1111111-0000-0000-0000-000000000002"), Name = "Herreklipp", DurationMinutes = 30, PriceType = PriceType.FastPris, PriceNok = 450m, BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
+                new Service { Id = new Guid("a1111111-0000-0000-0000-000000000003"), Name = "Farging", Description = "Inkludert vask og føn", DurationMinutes = 120, PriceType = PriceType.FastPris, PriceNok = 1490m, BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
+
+                new Service { Id = new Guid("a2222222-0000-0000-0000-000000000001"), Name = "Befaring", Description = "Gratis befaring og tilbud", DurationMinutes = 60, PriceType = PriceType.EtterAvtale, PriceNok = null, BusinessId = new Guid("22222222-2222-2222-2222-222222222222") },
+                new Service { Id = new Guid("a2222222-0000-0000-0000-000000000002"), Name = "Fliselegging", Description = "Bad og kjøkken", DurationMinutes = 60, PriceType = PriceType.PerKvadratmeter, PriceNok = 950m, BusinessId = new Guid("22222222-2222-2222-2222-222222222222") },
+                new Service { Id = new Guid("a2222222-0000-0000-0000-000000000003"), Name = "Snekkerarbeid", DurationMinutes = 60, PriceType = PriceType.PerTime, PriceNok = 850m, BusinessId = new Guid("22222222-2222-2222-2222-222222222222") },
+
+                new Service { Id = new Guid("a3333333-0000-0000-0000-000000000001"), Name = "Samtaleterapi", Description = "Individuell samtale, 50 minutter", DurationMinutes = 50, PriceType = PriceType.FastPris, PriceNok = 1200m, BusinessId = new Guid("33333333-3333-3333-3333-333333333333") },
+                new Service { Id = new Guid("a3333333-0000-0000-0000-000000000002"), Name = "Første konsultasjon", DurationMinutes = 60, PriceType = PriceType.FastPris, PriceNok = 950m, BusinessId = new Guid("33333333-3333-3333-3333-333333333333") });
+        });
+        
+        modelBuilder.Entity<Employee>(e =>
+        {
+            e.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            e.Property(x => x.LastName).IsRequired().HasMaxLength(100);
+            e.HasData(
+                new Employee { Id = new Guid("b1111111-0000-0000-0000-000000000001"), Name = "Ingrid", LastName = "Hansen", BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
+                new Employee { Id = new Guid("b1111111-0000-0000-0000-000000000002"), Name = "Sofie", LastName = "Berg", BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
+                new Employee { Id = new Guid("b2222222-0000-0000-0000-000000000001"), Name = "Lars", LastName = "Johansen", BusinessId = new Guid("22222222-2222-2222-2222-222222222222") },
+                new Employee { Id = new Guid("b3333333-0000-0000-0000-000000000001"), Name = "Kari", LastName = "Nordmann", BusinessId = new Guid("33333333-3333-3333-3333-333333333333") });
         });
         
         modelBuilder.Entity<Booking>(e =>
