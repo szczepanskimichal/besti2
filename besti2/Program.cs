@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using besti2.Application.Bookings;
 using besti2.Infrastructure;
 using besti2.Application.Businesses;
@@ -56,6 +58,19 @@ app.MapPost("/api/bookings", async (CreateBookingRequest request, IBookingServic
         _ => Results.NotFound()
     };
 });
+// Business panel: bookings for the logged-in owner's business
+app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    return Results.Ok(await bookingService.GetForBusinessAsync(businessId, cancellationToken));
+}).RequireAuthorization();
+
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
 app.Run();

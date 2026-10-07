@@ -4,5 +4,8 @@ public interface IBookingService
 {
     Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default);
-    Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, CancellationToken cancellationToken = default);
+    Task<CreateBookingResult> CreateAsync(
+        CreateBookingRequest request, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
+        Guid businessId, CancellationToken cancellationToken = default);
 }

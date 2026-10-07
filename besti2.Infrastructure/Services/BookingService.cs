@@ -93,6 +93,26 @@ public class BookingService(AppDbContext dbContext) : IBookingService
             new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
     }
 
+    public async Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
+        Guid businessId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.Service.BusinessId == businessId)
+            .OrderBy(b => b.StartUtc)
+            .Select(b => new PanelBookingDto(
+                b.Id,
+                b.StartUtc,
+                b.EndUtc,
+                b.Status.ToString(),
+                b.Service.Name,
+                b.Employee.Name + " " + b.Employee.LastName,
+                b.CustomerName,
+                b.CustomerPhone,
+                b.CustomerEmail))
+            .ToListAsync(cancellationToken);
+    } 
+        
     private static string? Validate(CreateBookingRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.CustomerName) || request.CustomerName.Length > 100)

@@ -3,17 +3,22 @@
 ### Register test user
 POST {{besti2_HostAddress}}/api/auth/register
 Content-Type: application/json
-
-{ "email": "test@example.com", "password": "Test123!" }
+{
+  "email": "eier@klippogstil.example", "password": "Test123!"
+}
 
 ### Login
 POST {{besti2_HostAddress}}/api/auth/login
 Content-Type: application/json
 
-{ "email": "test@example.com", "password": "Test123!" }
+{ "email": "eier@klippogstil.example", "password": "Test123!" }
 
 > {% client.global.set("token", response.body.accessToken); %}
 
 ### Who am I (paste accessToken)
 GET {{besti2_HostAddress}}/api/auth/manage/info
+Authorization: Bearer {{token}}
+
+### Panel bookings
+GET {{besti2_HostAddress}}/api/panel/bookings
 Authorization: Bearer {{token}}
