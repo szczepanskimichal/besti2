@@ -22,3 +22,11 @@ Authorization: Bearer {{token}}
 ### Panel bookings
 GET {{besti2_HostAddress}}/api/panel/bookings
 Authorization: Bearer {{token}}
+
+### Confirm booking
+POST {{besti2_HostAddress}}/api/panel/bookings/WKLEJ_ID/bekreft
+Authorization: Bearer {{token}}
+
+### Cancel booking
+POST {{besti2_HostAddress}}/api/panel/bookings/WKLEJ_ID/avlys
+Authorization: Bearer {{token}}

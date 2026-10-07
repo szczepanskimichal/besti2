@@ -112,7 +112,36 @@ public class BookingService(AppDbContext dbContext) : IBookingService
                 b.CustomerEmail))
             .ToListAsync(cancellationToken);
     } 
-        
+    // Update the status of a booking
+    public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
+        Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default)
+    {
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.Service.BusinessId == businessId, cancellationToken);
+
+        if (booking is null)
+        {
+            return UpdateBookingStatusOutcome.NotFound;
+        }
+
+        var allowed = (booking.Status, newStatus) switch
+        {
+            (BookingStatus.Venter, BookingStatus.Bekreftet) => true,
+            (BookingStatus.Venter, BookingStatus.Avlyst) => true,
+            (BookingStatus.Bekreftet, BookingStatus.Avlyst) => true,
+            _ => false
+        };
+
+        if (!allowed)
+        {
+            return UpdateBookingStatusOutcome.InvalidTransition;
+        }
+
+        booking.Status = newStatus;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return UpdateBookingStatusOutcome.Updated;
+    }
+    // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.CustomerName) || request.CustomerName.Length > 100)

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using besti2.Application.Bookings;
 using besti2.Infrastructure;
 using besti2.Application.Businesses;
+using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 
@@ -73,4 +74,39 @@ app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
+
+// Shared logic for panel status changes (confirm / cancel)
+async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken)
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var outcome = await bookingService.UpdateStatusAsync(id, businessId, newStatus, cancellationToken);
+
+    return outcome switch
+    {
+        UpdateBookingStatusOutcome.Updated => Results.NoContent(),
+        UpdateBookingStatusOutcome.InvalidTransition =>
+            Results.Conflict(new { message = "Bestillingen kan ikke endres til denne statusen." }),
+        _ => Results.NotFound()
+    };
+}
+
+
+// Confirm a booking
+app.MapPost("/api/panel/bookings/{id:guid}/bekreft", (Guid id, ClaimsPrincipal principal,
+            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+        ChangeBookingStatusAsync(id, BookingStatus.Bekreftet, principal, userManager, bookingService, cancellationToken))
+    .RequireAuthorization();
+
+// Cancel a booking
+app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, ClaimsPrincipal principal,
+            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+        ChangeBookingStatusAsync(id, BookingStatus.Avlyst, principal, userManager, bookingService, cancellationToken))
+    .RequireAuthorization();
+
 app.Run();
