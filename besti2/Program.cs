@@ -20,6 +20,7 @@ var app = builder.Build();
  if (app.Environment.IsDevelopment())
  {
      app.MapOpenApi();
+     await DevUserSeeder.SeedAsync(app.Services);
  }
 
 app.UseHttpsRedirection();
