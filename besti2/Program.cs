@@ -1,14 +1,21 @@
 using besti2.Application.Bookings;
 using besti2.Infrastructure;
 using besti2.Application.Businesses;
+using besti2.Infrastructure.Identity;
+using besti2.Infrastructure.Persistence;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+// Add authentication and authorization
+builder.Services.AddAuthorization();
+builder.Services.AddIdentityApiEndpoints<AppUser>()
+    .AddEntityFrameworkStores<AppDbContext>();
 var app = builder.Build();
-
+//--------------------------------------
 // Configure the HTTP request pipeline.
  if (app.Environment.IsDevelopment())
  {
@@ -16,7 +23,8 @@ var app = builder.Build();
  }
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
+app.UseAuthorization();
 // Get all businesses
 app.MapGet("/api/businesses", async (IBusinessService businessService, CancellationToken cancellationToken) =>
 {
@@ -47,4 +55,6 @@ app.MapPost("/api/bookings", async (CreateBookingRequest request, IBookingServic
         _ => Results.NotFound()
     };
 });
+// Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
+app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
 app.Run();
