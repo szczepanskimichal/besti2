@@ -1,0 +1,160 @@
+.main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+.topBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.title {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin: 0;
+}
+
+.muted {
+    color: var(--color-muted);
+}
+
+.error {
+    background: #fdecea;
+    color: #a1271b;
+    border: 1px solid #f5c2bd;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+}
+
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.card {
+    padding: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.cardHeader {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.when {
+    margin: 0;
+    font-weight: 600;
+}
+
+.status {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #fff4d6;
+    color: #7a5200;
+}
+
+.Bekreftet {
+    background: #dcf5e4;
+    color: #1d6b3a;
+}
+
+.Avlyst {
+    background: #eef0f3;
+    color: #4b5563;
+}
+
+.service {
+    margin: 8px 0 4px;
+}
+
+.customer {
+    margin: 0;
+    color: var(--color-muted);
+    overflow-wrap: anywhere;
+}
+
+.customer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-primary);
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+    font: inherit;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.primaryButton {
+    border: none;
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.secondaryButton {
+    border: 1px solid #8a929c;
+    background: var(--color-surface);
+    color: var(--color-text);
+}
+
+.dangerButton {
+    border: 1px solid #c0392b;
+    background: var(--color-surface);
+    color: #a1271b;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover,
+.dangerButton:hover {
+    filter: brightness(0.95);
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+@media (min-width: 768px) {
+    .main {
+        padding-top: 40px;
+    }
+
+    .card {
+        padding: 20px 24px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .main {
+        max-width: 960px;
+    }
+}

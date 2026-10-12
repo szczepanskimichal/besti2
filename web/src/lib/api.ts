@@ -1,4 +1,4 @@
-import type { BusinessListItem, BusinessDetails, CreateBookingInput } from "@/lib/types";
+import type { BusinessListItem, BusinessDetails, CreateBookingInput, PanelBooking } from "@/lib/types";
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
 
@@ -70,4 +70,32 @@ export async function login(email: string, password: string): Promise<{ accessTo
     }
 
     return res.json();
+}
+
+// 
+export async function getPanelBookings(token: string): Promise<PanelBooking[] | null> {
+    const res = await fetch(`${API_URL}/api/panel/bookings`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+
+    if (res.status === 401 || res.status === 403) {
+        return null;
+    }
+
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente bestillinger (${res.status})`);
+    }
+
+    return res.json();
+}
+
+export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys"): Promise<boolean> {
+    const res = await fetch(`${API_URL}/api/panel/bookings/${bookingId}/${action}`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+
+    return res.ok;
 }

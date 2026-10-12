@@ -44,3 +44,15 @@ export type CreateBookingInput = {
     customerEmail: string;
     marketingConsent: boolean;
 };
+
+export type PanelBooking = {
+    id: string;
+    startUtc: string;
+    endUtc: string;
+    status: string;
+    serviceName: string;
+    employeeName: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail: string;
+};
