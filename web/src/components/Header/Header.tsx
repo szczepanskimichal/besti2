@@ -6,7 +6,7 @@ export default function Header() {
             <div className={styles.inner}>
                 <NextLink href="/" className={styles.logo}>BESTI</NextLink>
                 <nav className={styles.nav}>
-                    <NextLink href="/about" className={styles.navLink}>Om oss</NextLink>
+                    <NextLink href="/panel" className={styles.navLink}>For bedrifter</NextLink>
                 </nav>
             </div>    
         </header>
