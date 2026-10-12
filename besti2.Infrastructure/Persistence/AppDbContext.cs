@@ -15,9 +15,13 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Service> Services { get; set; } = null!;
     public DbSet<Booking> Bookings { get; set; } = null!;
     
+    public DbSet<OpeningHours> OpeningHours { get; set; } = null!;
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        
         base.OnModelCreating(modelBuilder);
+        
         modelBuilder.Entity<Business>(e =>
         {
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
@@ -69,7 +73,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PostalCode = "7011",
                     City = "Trondheim"
                 });
+
         });
+        
         modelBuilder.Entity<Service>(e =>
         {
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
@@ -116,7 +122,40 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             e.Property(x => x.EndUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            
+        });
+        modelBuilder.Entity<OpeningHours>(e =>
+        {
+            e.HasIndex(x => new { x.BusinessId, x.DayOfWeek }).IsUnique();
+            e.HasData(
+                Hours(1, KlippOgStilId, DayOfWeek.Monday, 9, 17),
+                Hours(2, KlippOgStilId, DayOfWeek.Tuesday, 9, 17),
+                Hours(3, KlippOgStilId, DayOfWeek.Wednesday, 9, 17),
+                Hours(4, KlippOgStilId, DayOfWeek.Thursday, 9, 19),
+                Hours(5, KlippOgStilId, DayOfWeek.Friday, 9, 17),
+                Hours(6, KlippOgStilId, DayOfWeek.Saturday, 10, 15),
+                Hours(7, FjordByggId, DayOfWeek.Monday, 7, 15),
+                Hours(8, FjordByggId, DayOfWeek.Tuesday, 7, 15),
+                Hours(9, FjordByggId, DayOfWeek.Wednesday, 7, 15),
+                Hours(10, FjordByggId, DayOfWeek.Thursday, 7, 15),
+                Hours(11, FjordByggId, DayOfWeek.Friday, 7, 15),
+                Hours(12, NordlysId, DayOfWeek.Monday, 8, 16),
+                Hours(13, NordlysId, DayOfWeek.Tuesday, 8, 16),
+                Hours(14, NordlysId, DayOfWeek.Wednesday, 8, 16),
+                Hours(15, NordlysId, DayOfWeek.Thursday, 8, 16));
         });
     }
+        // Seed helpers for OpeningHours
+            private static readonly Guid KlippOgStilId = new("11111111-1111-1111-1111-111111111111");
+            private static readonly Guid FjordByggId = new("22222222-2222-2222-2222-222222222222");
+            private static readonly Guid NordlysId = new("33333333-3333-3333-3333-333333333333");
 
+            private static OpeningHours Hours(int number, Guid businessId, DayOfWeek day, int opensHour, int closesHour) => new()
+            {
+                Id = new Guid($"c0000000-0000-0000-0000-{number:D12}"),
+                BusinessId = businessId,
+                DayOfWeek = day,
+                OpensAt = new TimeOnly(opensHour, 0),
+                ClosesAt = new TimeOnly(closesHour, 0)
+            };
 }

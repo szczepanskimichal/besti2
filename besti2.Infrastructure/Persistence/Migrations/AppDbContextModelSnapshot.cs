@@ -362,6 +362,154 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.OpeningHours", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly>("ClosesAt")
+                        .HasColumnType("time");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<TimeOnly>("OpensAt")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "DayOfWeek")
+                        .IsUnique();
+
+                    b.ToTable("OpeningHours");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000001"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(17, 0, 0),
+                            DayOfWeek = 1,
+                            OpensAt = new TimeOnly(9, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000002"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(17, 0, 0),
+                            DayOfWeek = 2,
+                            OpensAt = new TimeOnly(9, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000003"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(17, 0, 0),
+                            DayOfWeek = 3,
+                            OpensAt = new TimeOnly(9, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000004"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(19, 0, 0),
+                            DayOfWeek = 4,
+                            OpensAt = new TimeOnly(9, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000005"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(17, 0, 0),
+                            DayOfWeek = 5,
+                            OpensAt = new TimeOnly(9, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000006"),
+                            BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 6,
+                            OpensAt = new TimeOnly(10, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000007"),
+                            BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 1,
+                            OpensAt = new TimeOnly(7, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000008"),
+                            BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 2,
+                            OpensAt = new TimeOnly(7, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000009"),
+                            BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 3,
+                            OpensAt = new TimeOnly(7, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000010"),
+                            BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 4,
+                            OpensAt = new TimeOnly(7, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000011"),
+                            BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            ClosesAt = new TimeOnly(15, 0, 0),
+                            DayOfWeek = 5,
+                            OpensAt = new TimeOnly(7, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000012"),
+                            BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            ClosesAt = new TimeOnly(16, 0, 0),
+                            DayOfWeek = 1,
+                            OpensAt = new TimeOnly(8, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000013"),
+                            BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            ClosesAt = new TimeOnly(16, 0, 0),
+                            DayOfWeek = 2,
+                            OpensAt = new TimeOnly(8, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000014"),
+                            BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            ClosesAt = new TimeOnly(16, 0, 0),
+                            DayOfWeek = 3,
+                            OpensAt = new TimeOnly(8, 0, 0)
+                        },
+                        new
+                        {
+                            Id = new Guid("c0000000-0000-0000-0000-000000000015"),
+                            BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            ClosesAt = new TimeOnly(16, 0, 0),
+                            DayOfWeek = 4,
+                            OpensAt = new TimeOnly(8, 0, 0)
+                        });
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Service", b =>
                 {
                     b.Property<Guid>("Id")
@@ -625,6 +773,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.OpeningHours", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany("OpeningHours")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Service", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
@@ -639,6 +798,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("besti2.Domain.Entities.Business", b =>
                 {
                     b.Navigation("Employees");
+
+                    b.Navigation("OpeningHours");
 
                     b.Navigation("Services");
                 });
