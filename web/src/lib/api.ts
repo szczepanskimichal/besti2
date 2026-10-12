@@ -1,4 +1,4 @@
-import type { BusinessListItem, BusinessDetails } from "@/lib/types";
+import type { BusinessListItem, BusinessDetails, CreateBookingInput } from "@/lib/types";
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
 
@@ -55,4 +55,19 @@ export async function createBooking(input: CreateBookingInput): Promise<{ ok: tr
 
     const body = await res.json().catch(() => null);
     return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}
+
+export async function login(email: string, password: string): Promise<{ accessToken: string; expiresIn: number } | null> {
+    const res = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+        cache: "no-store",
+    });
+
+    if (!res.ok) {
+        return null;
+    }
+
+    return res.json();
 }
