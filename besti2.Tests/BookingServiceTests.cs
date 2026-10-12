@@ -14,6 +14,8 @@ public class BookingServiceTests
     
     private static readonly Guid KlippOgStil = new("11111111-1111-1111-1111-111111111111");
     private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
+    private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
+    private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
     
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
@@ -100,5 +102,32 @@ public class BookingServiceTests
 
         Assert.Equal(UpdateBookingStatusOutcome.Updated, cancel);
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, confirm);
+    }
+    
+    [Fact]
+    public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db);
+        var sunday = new DateOnly(2030, 1, 6);
+
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
+
+        Assert.NotNull(slots);
+        Assert.Empty(slots);
+    }
+
+    [Fact]
+    public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db);
+        var saturday = new DateOnly(2030, 1, 5); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
+
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
+
+        Assert.NotNull(slots);
+        Assert.Equal(new DateTime(2030, 1, 5, 9, 0, 0, DateTimeKind.Utc), slots[0]);    // 10:00 in Oslo
+        Assert.Equal(new DateTime(2030, 1, 5, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
     }
 }

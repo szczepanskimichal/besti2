@@ -2,29 +2,26 @@ namespace besti2.Application.Bookings;
 
 public static class SlotCalculator
 {
-    public static readonly TimeOnly OpensAt = new(9, 0);
-    public static readonly TimeOnly ClosesAt = new(17, 0);
+    //public static readonly TimeOnly OpensAt = new(9, 0);
+    //public static readonly TimeOnly ClosesAt = new(17, 0);
     public const int SlotMinutes = 30;
 
     private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
 
     public static IReadOnlyList<DateTime> GetFreeSlots(
         DateOnly date,
+        TimeOnly opensAt,
+        TimeOnly closesAt,
         int durationMinutes,
         IReadOnlyList<(DateTime StartUtc, DateTime EndUtc)> busy,
         DateTime nowUtc)
     {
         var slots = new List<DateTime>();
-
-        if (date.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
-        {
-            return slots;
-        }
-
+        
         var duration = TimeSpan.FromMinutes(durationMinutes);
-        var closesUtc = ToUtc(date, ClosesAt);
+        var closesUtc = ToUtc(date, closesAt);
 
-        for (var startUtc = ToUtc(date, OpensAt); startUtc + duration <= closesUtc; startUtc = startUtc.AddMinutes(SlotMinutes))
+        for (var startUtc = ToUtc(date, opensAt); startUtc + duration <= closesUtc; startUtc = startUtc.AddMinutes(SlotMinutes))
         {
             if (startUtc > nowUtc && IsFree(startUtc, startUtc + duration, busy))
             {

@@ -34,9 +34,19 @@ public class BookingService(AppDbContext dbContext) : IBookingService
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);
+        var hours = await dbContext.OpeningHours
+            .AsNoTracking()
+            .FirstOrDefaultAsync(h => h.BusinessId == service.BusinessId && h.DayOfWeek == date.DayOfWeek, cancellationToken);
+
+        if (hours is null)
+        {
+            return [];
+        }
 
         return SlotCalculator.GetFreeSlots(
             date,
+            hours.OpensAt,
+            hours.ClosesAt,
             service.DurationMinutes,
             busy.Select(b => (b.StartUtc, b.EndUtc)).ToList(),
             DateTime.UtcNow);
@@ -94,8 +104,10 @@ public class BookingService(AppDbContext dbContext) : IBookingService
     }
 
     public async Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
+        
         Guid businessId, CancellationToken cancellationToken = default)
     {
+        
         return await dbContext.Bookings
             .AsNoTracking()
             .Where(b => b.Service.BusinessId == businessId)
@@ -111,6 +123,7 @@ public class BookingService(AppDbContext dbContext) : IBookingService
                 b.CustomerPhone,
                 b.CustomerEmail))
             .ToListAsync(cancellationToken);
+        
     } 
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
