@@ -30,9 +30,14 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 // Get all businesses
-app.MapGet("/api/businesses", async (IBusinessService businessService, CancellationToken cancellationToken) =>
+app.MapGet("/api/businesses", async (string? category, string? city, IBusinessService businessService, CancellationToken cancellationToken) =>
 {
-   return Results.Ok(await businessService.GetAllAsync(cancellationToken));
+    return Results.Ok(await businessService.GetAllAsync(category, city, cancellationToken));
+});
+// Get distinct cities for the filter
+app.MapGet("/api/cities", async (IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    return Results.Ok(await businessService.GetCitiesAsync(cancellationToken));
 });
 // Get business by id
 app.MapGet("/api/businesses/{id:guid}", async (Guid id, IBusinessService businessService, CancellationToken cancellationToken) =>

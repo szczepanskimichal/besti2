@@ -68,6 +68,24 @@ public class BusinessServiceTests
         // Assert
         Assert.Null(result);
     }
-    
+    // check if GetAllAsync filters by category (case-insensitive)
+    [Fact]
+    public async Task GetAllAsync_FiltersByCategory()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+
+        // Act
+        var result = await service.GetAllAsync(category: "frisor");
+
+        // Assert
+        var business = Assert.Single(result);
+        Assert.Equal("Klipp & Stil Frisør", business.Name);
+    }
     
 }
