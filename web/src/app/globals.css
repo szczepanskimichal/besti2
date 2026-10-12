@@ -18,3 +18,8 @@ body {
   background: var(--color-bg);
   color: var(--color-text);
 }
+
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
