@@ -9,6 +9,9 @@ const categoryLabels: Record<string, string> = {
     Annet: "Annet",
 };
 
+export const categoryOptions = Object.entries(categoryLabels).map(
+    ([value, label]) => ({ value, label }),
+);
 export function getCategoryLabel(category: string): string {
     return categoryLabels[category] ?? category;
 }

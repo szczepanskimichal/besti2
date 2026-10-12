@@ -16,9 +16,59 @@
 
 .grid {
     list-style: none;
-    padding: 10;
-    margin: 0;
+    padding: 10 px;
+    margin: 0 px;
     display: grid;
     gap: 20px;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.filters {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0 0 24px;
+    padding: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.field select {
+    font: inherit;
+    font-weight: 400;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #8a929c;
+    border-radius: var(--radius);
+    background: #fff;
+}
+
+.searchButton {
+    font: inherit;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    cursor: pointer;
+}
+
+@media (min-width: 640px) {
+    .filters {
+        flex-direction: row;
+        align-items: flex-end;
+    }
+
+    .field {
+        flex: 1;
+    }
 }

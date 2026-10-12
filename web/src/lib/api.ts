@@ -2,8 +2,12 @@ import type { BusinessListItem, BusinessDetails, CreateBookingInput, PanelBookin
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
 
-export async function getBusinesses(): Promise<BusinessListItem[]> {
-    const res = await fetch(`${API_URL}/api/businesses`, { cache: "no-store" });
+export async function getBusinesses(category?: string, city?: string): Promise<BusinessListItem[]> {
+    const params = new URLSearchParams();
+    if (category) params.set("category", category);
+    if (city) params.set("city", city);
+
+    const res = await fetch(`${API_URL}/api/businesses?${params}`, { cache: "no-store" });
 
     if (!res.ok) {
         throw new Error(`Kunne ikke hente bedrifter (${res.status})`);
@@ -21,6 +25,15 @@ export async function getBusiness(id: string): Promise<BusinessDetails | null> {
 
     if (!res.ok) {
         throw new Error(`Kunne ikke hente bedriften (${res.status})`);
+    }
+
+    return res.json();
+}
+export async function getCities(): Promise<string[]> {
+    const res = await fetch(`${API_URL}/api/cities`, { cache: "no-store" });
+
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente byer (${res.status})`);
     }
 
     return res.json();
