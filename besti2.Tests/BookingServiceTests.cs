@@ -1,7 +1,9 @@
+using besti2.Domain.Enums;
 using besti2.Application.Bookings;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+
 
 namespace besti2.Tests;
 
@@ -9,7 +11,10 @@ public class BookingServiceTests
 {
     // Poniedziałek 7.01.2030, 09:00 UTC = 10:00 w Oslo (czas zimowy)
     private static readonly DateTime FutureMondayAt10 = new(2030, 1, 7, 9, 0, 0, DateTimeKind.Utc);
-
+    
+    private static readonly Guid KlippOgStil = new("11111111-1111-1111-1111-111111111111");
+    private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
+    
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -53,5 +58,47 @@ public class BookingServiceTests
 
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
         Assert.Equal(0, await db.Bookings.CountAsync());
+    }
+    
+    [Fact]
+    public async Task GetForBusinessAsync_ReturnsOnlyOwnBusinessBookings()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db);
+        await service.CreateAsync(HerreklippHosIngrid());
+
+        var own = await service.GetForBusinessAsync(KlippOgStil);
+        var other = await service.GetForBusinessAsync(FjordBygg);
+
+        Assert.Single(own);
+        Assert.Equal("Ingrid Hansen", own[0].EmployeeName);
+        Assert.Empty(other);
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_OtherBusiness_ReturnsNotFound()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db);
+        var created = await service.CreateAsync(HerreklippHosIngrid());
+
+        var outcome = await service.UpdateStatusAsync(created.Booking!.Id, FjordBygg, BookingStatus.Bekreftet);
+
+        Assert.Equal(UpdateBookingStatusOutcome.NotFound, outcome);
+        Assert.Equal(BookingStatus.Venter, (await db.Bookings.SingleAsync()).Status);
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_CancelledBooking_CannotBeConfirmed()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db);
+        var created = await service.CreateAsync(HerreklippHosIngrid());
+
+        var cancel = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
+        var confirm = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Bekreftet);
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, cancel);
+        Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, confirm);
     }
 }
