@@ -64,6 +64,16 @@ app.MapPost("/api/bookings", async (CreateBookingRequest request, IBookingServic
         _ => Results.NotFound()
     };
 });
+
+// Register a new business with its owner account
+app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request, IBusinessRegistrationService registrationService, CancellationToken cancellationToken) =>
+{
+    var result = await registrationService.RegisterAsync(request, cancellationToken);
+    return result.Success
+        ? Results.Created()
+        : Results.BadRequest(new { message = result.Error });
+});
+
 // Business panel: bookings for the logged-in owner's business
 app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IBookingService bookingService, CancellationToken cancellationToken) =>
