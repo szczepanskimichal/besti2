@@ -10,6 +10,7 @@ public class Service
     public int DurationMinutes { get; set; }
     public decimal? PriceNok { get; set; }
     public PriceType PriceType { get; set; }
+    public bool IsDeleted { get; set; }
     
     public Guid BusinessId { get; set; }
     public Business Business { get; set; } = null!;

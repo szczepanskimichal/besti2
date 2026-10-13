@@ -525,6 +525,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<int>("DurationMinutes")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -552,6 +555,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Description = "Klipp, vask og styling",
                             DurationMinutes = 60,
+                            IsDeleted = false,
                             Name = "Dameklipp",
                             PriceNok = 790m,
                             PriceType = "FastPris"
@@ -561,6 +565,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Id = new Guid("a1111111-0000-0000-0000-000000000002"),
                             BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
                             DurationMinutes = 30,
+                            IsDeleted = false,
                             Name = "Herreklipp",
                             PriceNok = 450m,
                             PriceType = "FastPris"
@@ -571,6 +576,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
                             Description = "Inkludert vask og føn",
                             DurationMinutes = 120,
+                            IsDeleted = false,
                             Name = "Farging",
                             PriceNok = 1490m,
                             PriceType = "FastPris"
@@ -581,6 +587,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
                             Description = "Gratis befaring og tilbud",
                             DurationMinutes = 60,
+                            IsDeleted = false,
                             Name = "Befaring",
                             PriceType = "EtterAvtale"
                         },
@@ -590,6 +597,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
                             Description = "Bad og kjøkken",
                             DurationMinutes = 60,
+                            IsDeleted = false,
                             Name = "Fliselegging",
                             PriceNok = 950m,
                             PriceType = "PerKvadratmeter"
@@ -599,6 +607,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Id = new Guid("a2222222-0000-0000-0000-000000000003"),
                             BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
                             DurationMinutes = 60,
+                            IsDeleted = false,
                             Name = "Snekkerarbeid",
                             PriceNok = 850m,
                             PriceType = "PerTime"
@@ -609,6 +618,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
                             Description = "Individuell samtale, 50 minutter",
                             DurationMinutes = 50,
+                            IsDeleted = false,
                             Name = "Samtaleterapi",
                             PriceNok = 1200m,
                             PriceType = "FastPris"
@@ -618,6 +628,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Id = new Guid("a3333333-0000-0000-0000-000000000002"),
                             BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
                             DurationMinutes = 60,
+                            IsDeleted = false,
                             Name = "Første konsultasjon",
                             PriceNok = 950m,
                             PriceType = "FastPris"
