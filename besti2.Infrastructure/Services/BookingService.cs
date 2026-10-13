@@ -20,7 +20,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     {
         var service = await dbContext.Services
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == serviceId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted, cancellationToken);
         var employee = await dbContext.Employees
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == employeeId, cancellationToken);
@@ -69,7 +69,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         var service = await dbContext.Services
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == request.ServiceId, cancellationToken);
+            .FirstOrDefaultAsync(s => s.Id == request.ServiceId && !s.IsDeleted, cancellationToken);
         if (service is null)
         {
             return new CreateBookingResult(CreateBookingOutcome.NotFound);

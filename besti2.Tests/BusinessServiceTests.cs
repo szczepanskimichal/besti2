@@ -131,4 +131,72 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Velg en gyldig pristype.", error);
     }
+        // check if UpdateServiceAsync changes the service - happy path
+    [Fact]
+    public async Task UpdateServiceAsync_ChangesService()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
+        var request = new CreateServiceRequest("Dameklipp lang", null, 90, 990, "FastPris");
+
+        // Act
+        var error = await service.UpdateServiceAsync(klippId, dameklippId, request);
+
+        // Assert
+        Assert.Null(error);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.Contains(business!.Services, s => s.Name == "Dameklipp lang" && s.DurationMinutes == 90);
+    }
+    // check if an owner cannot edit another business's service - security
+    [Fact]
+    public async Task UpdateServiceAsync_ReturnsError_ForOtherBusinessService()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var fjordByggId = new Guid("22222222-2222-2222-2222-222222222222");
+        var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
+        var request = new CreateServiceRequest("Hacket", null, 30, 1, "FastPris");
+
+        // Act
+        var error = await service.UpdateServiceAsync(fjordByggId, dameklippId, request);
+
+        // Assert
+        Assert.Equal("Fant ikke tjenesten.", error);
+    }
+    // check if DeleteServiceAsync hides the service and cannot delete it twice
+    [Fact]
+    public async Task DeleteServiceAsync_HidesService()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
+
+        // Act
+        var deleted = await service.DeleteServiceAsync(klippId, dameklippId);
+        var deletedAgain = await service.DeleteServiceAsync(klippId, dameklippId);
+
+        // Assert
+        Assert.True(deleted);
+        Assert.False(deletedAgain);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.DoesNotContain(business!.Services, s => s.Id == dameklippId);
+    }
 }

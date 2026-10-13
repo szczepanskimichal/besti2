@@ -68,6 +68,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                 b.PostalCode,
                 b.City,
                 b.Services
+                    .Where(s => !s.IsDeleted)
                     .OrderBy(s => s.Name)
                     .Select(s => new ServiceDto(
                         s.Id, s.Name, s.Description, s.DurationMinutes, s.PriceNok, s.PriceType.ToString()))
@@ -82,6 +83,74 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
     
     public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default)
+    {
+        var error = ValidateService(request);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        var priceType = Enum.Parse<PriceType>(request.PriceType);
+
+        dbContext.Services.Add(new Service
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Name = request.Name.Trim(),
+            Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+            DurationMinutes = request.DurationMinutes,
+            PriceType = priceType,
+            PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok
+        });
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+    
+    public async Task<string?> UpdateServiceAsync(Guid businessId, Guid serviceId, CreateServiceRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var error = ValidateService(request);
+        if (error is not null)
+        {
+            return error;
+        }
+
+        var service = await dbContext.Services.FirstOrDefaultAsync(
+            s => s.Id == serviceId && s.BusinessId == businessId && !s.IsDeleted, cancellationToken);
+        if (service is null)
+        {
+            return "Fant ikke tjenesten.";
+        }
+
+        var priceType = Enum.Parse<PriceType>(request.PriceType);
+        service.Name = request.Name.Trim();
+        service.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+        service.DurationMinutes = request.DurationMinutes;
+        service.PriceType = priceType;
+        service.PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok;
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+
+    public async Task<bool> DeleteServiceAsync(Guid businessId, Guid serviceId,
+        CancellationToken cancellationToken = default)
+    {
+        var service = await dbContext.Services.FirstOrDefaultAsync(
+            s => s.Id == serviceId && s.BusinessId == businessId && !s.IsDeleted, cancellationToken);
+        if (service is null)
+        {
+            return false;
+        }
+
+        service.IsDeleted = true;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+    
+    // Shared validation for adding and editing a service; returns null when valid
+    private static string? ValidateService(CreateServiceRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 200)
         {
@@ -103,18 +172,6 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
             return "Prisen kan ikke være negativ.";
         }
 
-        dbContext.Services.Add(new Service
-        {
-            Id = Guid.NewGuid(),
-            BusinessId = businessId,
-            Name = request.Name.Trim(),
-            Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
-            DurationMinutes = request.DurationMinutes,
-            PriceType = priceType,
-            PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok
-        });
-
-        await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
 }

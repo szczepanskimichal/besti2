@@ -113,6 +113,34 @@ app.MapPost("/api/panel/services", async (CreateServiceRequest request, ClaimsPr
     return error is null ? Results.Created() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
 
+// Business panel: edit one of the owner's services
+app.MapPut("/api/panel/services/{id:guid}", async (Guid id, CreateServiceRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var error = await businessService.UpdateServiceAsync(businessId, id, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
+// Business panel: soft delete one of the owner's services
+app.MapDelete("/api/panel/services/{id:guid}", async (Guid id, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var deleted = await businessService.DeleteServiceAsync(businessId, id, cancellationToken);
+    return deleted ? Results.NoContent() : Results.NotFound();
+}).RequireAuthorization();
+
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 var auth = app.MapGroup("/api/auth");
 // Block Identity's open /register; owners sign up via business registration instead
@@ -141,6 +169,7 @@ async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, C
             Results.Conflict(new { message = "Bestillingen kan ikke endres til denne statusen." }),
         _ => Results.NotFound()
     };
+    
 }
 
 
@@ -155,5 +184,7 @@ app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, ClaimsPrincipal pri
             UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
         ChangeBookingStatusAsync(id, BookingStatus.Avlyst, principal, userManager, bookingService, cancellationToken))
     .RequireAuthorization();
+
+
 
 app.Run();

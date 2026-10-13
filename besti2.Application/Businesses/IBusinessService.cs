@@ -10,4 +10,11 @@ public interface IBusinessService
     // Returns null when saved, otherwise an error message for the owner
     Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default);
+    // Returns null when saved, otherwise an error message for the owner
+    Task<string?> UpdateServiceAsync(Guid businessId, Guid serviceId, CreateServiceRequest request,
+        CancellationToken cancellationToken = default);
+
+    // Soft delete: returns false when the service was not found
+    Task<bool> DeleteServiceAsync(Guid businessId, Guid serviceId,
+        CancellationToken cancellationToken = default);
 }
