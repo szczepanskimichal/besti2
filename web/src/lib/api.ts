@@ -124,6 +124,33 @@ export async function changeBookingStatus(token: string, bookingId: string, acti
         headers: { Authorization: `Bearer ${token}` },
         cache: "no-store",
     });
-
     return res.ok;
+}
+
+export async function getPanelBusiness(token: string): Promise<BusinessDetails | null> {
+    const res = await fetch(`${API_URL}/api/panel/business`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+    if (res.status === 401 || res.status === 403) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente bedriften (${res.status})`);
+    }
+    return res.json();
+}
+
+export async function addService(token: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/services`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
 }
