@@ -16,14 +16,6 @@
     margin: 0 0 4px;
 }
 
-.navLink {
-
-    margin-left: auto;
-
-    color: var(--color-primary);
-
-    font-weight: 600;
-}
 .subtitle {
     font-size: 1.25rem;
     margin: 32px 0 12px;

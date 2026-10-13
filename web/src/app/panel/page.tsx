@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { redirect } from "next/navigation";
 import { getPanelBookings } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -33,11 +34,16 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
         <main className={styles.main}>
             <div className={styles.topBar}>
                 <h1 className={styles.title}>Bestillinger</h1>
-                <form action={logoutAction}>
-                    <button type="submit" className={styles.secondaryButton}>
-                        Logg ut
-                    </button>
-                </form>
+                <div className={styles.topActions}>
+                    <Link href="/panel/tjenester" className={styles.secondaryButton}>
+                        Tjenester
+                    </Link>
+                    <form action={logoutAction}>
+                        <button type="submit" className={styles.secondaryButton}>
+                            Logg ut
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {feil && (

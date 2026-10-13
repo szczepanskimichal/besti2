@@ -142,6 +142,21 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
+.topActions {
+
+    display: flex;
+
+    gap: 8px;
+}
+.secondaryButton {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    text-decoration: none;
+}
+
 
 @media (min-width: 768px) {
     .main {

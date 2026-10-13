@@ -35,7 +35,6 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
         <main className={styles.main}>
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
             <h1 className={styles.title}>Tjenester</h1>
-            <Link href="/panel/tjenester" className={styles.navLink}>Tjenester</Link>
             <p className={styles.muted}>{business.name}</p>
 
             {params.feil && (
