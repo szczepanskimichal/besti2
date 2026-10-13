@@ -71,7 +71,28 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             await dbContext.SaveChangesAsync(cancellationToken);
             return new RegisterBusinessResult(false, "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.");
         }
+        // 4. Defaults so the business is bookable right away: owner as employee, Mon-Fri 09-17
+        dbContext.Employees.Add(new Employee
+        {
+            Id = Guid.NewGuid(),
+            Name = business.Name,
+            LastName = "",
+            BusinessId = business.Id
+        });
 
+        foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })
+        {
+            dbContext.OpeningHours.Add(new OpeningHours
+            {
+                Id = Guid.NewGuid(),
+                DayOfWeek = day,
+                OpensAt = new TimeOnly(9, 0),
+                ClosesAt = new TimeOnly(17, 0),
+                BusinessId = business.Id
+            });
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
         return new RegisterBusinessResult(true);
     }
 }

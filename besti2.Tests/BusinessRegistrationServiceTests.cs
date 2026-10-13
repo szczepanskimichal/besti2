@@ -41,6 +41,8 @@ public class BusinessRegistrationServiceTests
         var owner = await users.FindByEmailAsync("eier@testfrisor.example");
         Assert.NotNull(owner);
         Assert.Equal(business.Id, owner.BusinessId);
+        Assert.Single(db.Employees.Where(e => e.BusinessId == business.Id));
+        Assert.Equal(5, db.OpeningHours.Count(h => h.BusinessId == business.Id));
     }
 
     [Fact]

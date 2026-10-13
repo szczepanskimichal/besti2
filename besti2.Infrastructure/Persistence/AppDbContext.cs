@@ -96,8 +96,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
         
         modelBuilder.Entity<Employee>(e =>
         {
-            e.Property(x => x.Name).IsRequired().HasMaxLength(100);
-            e.Property(x => x.LastName).IsRequired().HasMaxLength(100);
+            e.Property(x => x.Name).IsRequired().HasMaxLength(200);
+            e.Property(x => x.LastName).IsRequired().HasMaxLength(200);
             e.HasData(
                 new Employee { Id = new Guid("b1111111-0000-0000-0000-000000000001"), Name = "Ingrid", LastName = "Hansen", BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
                 new Employee { Id = new Guid("b1111111-0000-0000-0000-000000000002"), Name = "Sofie", LastName = "Berg", BusinessId = new Guid("11111111-1111-1111-1111-111111111111") },
