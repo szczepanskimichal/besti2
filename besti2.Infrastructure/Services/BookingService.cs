@@ -160,6 +160,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         booking.Status = newStatus;
         await dbContext.SaveChangesAsync(cancellationToken);
+        await SendStatusEmailAsync(booking, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
     // Validate the booking request
@@ -211,6 +212,39 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send confirmation email for booking {BookingId}", booking.Id);
+        }
+    }
+    
+    // Notify the customer when the business confirms or cancels; a failed email must not fail the update
+    private async Task SendStatusEmailAsync(Booking booking, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+
+            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
+            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+
+            var (subject, message) = booking.Status == BookingStatus.Bekreftet
+                ? ($"Bestillingen er bekreftet: {business.Name}", "Bestillingen din er bekreftet. Velkommen!")
+                : ($"Bestillingen er avlyst: {business.Name}", "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på besti2.");
+
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                $"{message}\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n" +
+                $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
+                "Hilsen besti2";
+
+            await emailService.SendAsync(booking.CustomerEmail, subject, body, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
         }
     }
 }

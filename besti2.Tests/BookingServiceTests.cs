@@ -78,6 +78,33 @@ public class BookingServiceTests
     }
     
     [Fact]
+    public async Task UpdateStatusAsync_Confirm_SendsStatusEmail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var created = await service.CreateAsync(HerreklippHosIngrid());
+
+        await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Bekreftet);
+
+        Assert.Equal(2, email.Sent.Count);
+        Assert.Contains("bekreftet", email.Sent[^1].Subject);
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_InvalidTransition_DoesNotSendEmail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var created = await service.CreateAsync(HerreklippHosIngrid());
+        await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
+
+        await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Bekreftet);
+
+        Assert.Equal(2, email.Sent.Count);
+    }
+    [Fact]
     public async Task GetForBusinessAsync_ReturnsOnlyOwnBusinessBookings()
     {
         await using var db = await CreateSeededDbAsync();
