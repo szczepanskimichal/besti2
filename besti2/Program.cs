@@ -78,7 +78,13 @@ app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<
 }).RequireAuthorization();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
-app.MapGroup("/api/auth").MapIdentityApi<AppUser>();
+var auth = app.MapGroup("/api/auth");
+// Block Identity's open /register; owners sign up via business registration instead
+auth.AddEndpointFilter(async (context, next) =>
+    context.HttpContext.Request.Path.Value!.EndsWith("/register", StringComparison.OrdinalIgnoreCase)
+        ? Results.NotFound()
+        : await next(context));
+auth.MapIdentityApi<AppUser>();
 
 // Shared logic for panel status changes (confirm / cancel)
 async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, ClaimsPrincipal principal,
