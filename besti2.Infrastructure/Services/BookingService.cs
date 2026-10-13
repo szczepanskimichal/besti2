@@ -1,12 +1,14 @@
 using besti2.Application.Bookings;
+using besti2.Application.Email;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace besti2.Infrastructure.Services;
 
-public class BookingService(AppDbContext dbContext) : IBookingService
+public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger) : IBookingService
 {
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default)

@@ -11,5 +11,12 @@ services:
     volumes:
       - sqldata:/var/opt/mssql
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: besti2-mail
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
 volumes:
   sqldata:

@@ -1,4 +1,5 @@
-﻿using besti2.Infrastructure.Persistence;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 

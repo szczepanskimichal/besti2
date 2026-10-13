@@ -1,5 +1,6 @@
 using besti2.Application.Bookings;
 using besti2.Application.Businesses;
+using besti2.Application.Email;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
         services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IEmailService, SmtpEmailService>();
         return services;
     }
 

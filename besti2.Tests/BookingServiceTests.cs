@@ -3,6 +3,7 @@ using besti2.Application.Bookings;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 
 namespace besti2.Tests;
@@ -40,8 +41,7 @@ public class BookingServiceTests
     public async Task CreateAsync_SameSlotTwice_SecondIsSlotTaken()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
-
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         var first = await service.CreateAsync(HerreklippHosIngrid());
         var second = await service.CreateAsync(HerreklippHosIngrid());
 
@@ -54,8 +54,7 @@ public class BookingServiceTests
     public async Task CreateAsync_InvalidEmail_ReturnsInvalid()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
-
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         var result = await service.CreateAsync(HerreklippHosIngrid(email: "abc"));
 
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
@@ -66,7 +65,7 @@ public class BookingServiceTests
     public async Task GetForBusinessAsync_ReturnsOnlyOwnBusinessBookings()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);     
         await service.CreateAsync(HerreklippHosIngrid());
 
         var own = await service.GetForBusinessAsync(KlippOgStil);
@@ -81,7 +80,7 @@ public class BookingServiceTests
     public async Task UpdateStatusAsync_OtherBusiness_ReturnsNotFound()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);    
         var created = await service.CreateAsync(HerreklippHosIngrid());
 
         var outcome = await service.UpdateStatusAsync(created.Booking!.Id, FjordBygg, BookingStatus.Bekreftet);
@@ -94,7 +93,7 @@ public class BookingServiceTests
     public async Task UpdateStatusAsync_CancelledBooking_CannotBeConfirmed()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);     
         var created = await service.CreateAsync(HerreklippHosIngrid());
 
         var cancel = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
@@ -107,9 +106,11 @@ public class BookingServiceTests
     [Fact]
     public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
     {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
-        var sunday = new DateOnly(2030, 1, 6);
+        await using var db = await CreateSeededDbAsync(); 
+        var service = new BookingService(db, new FakeEmailService(),
+        NullLogger<BookingService>.Instance);
+        var sunday = new DateOnly(2030, 1, 6); 
+
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
 
@@ -121,8 +122,7 @@ public class BookingServiceTests
     public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db);
-        var saturday = new DateOnly(2030, 1, 5); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);        var saturday = new DateOnly(2030, 1, 5); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
 
