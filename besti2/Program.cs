@@ -83,8 +83,34 @@ app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<
     {
         return Results.Forbid();
     }
-
     return Results.Ok(await bookingService.GetForBusinessAsync(businessId, cancellationToken));
+}).RequireAuthorization();
+
+// Business panel: the owner's own business with services and employees
+app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    var business = await businessService.GetByIdAsync(businessId, cancellationToken);
+    return business is null ? Results.NotFound() : Results.Ok(business);
+}).RequireAuthorization();
+
+// Business panel: add a service to the owner's business
+app.MapPost("/api/panel/services", async (CreateServiceRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var error = await businessService.AddServiceAsync(businessId, request, cancellationToken);
+    return error is null ? Results.Created() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...

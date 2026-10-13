@@ -1,5 +1,6 @@
 using besti2.Application.Businesses;
 using besti2.Domain.Enums;
+using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -77,5 +78,43 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
+    }
+    
+    public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 200)
+        {
+            return "Fyll ut navn på tjenesten (maks 200 tegn).";
+        }
+
+        if (request.DurationMinutes < 5 || request.DurationMinutes > 480)
+        {
+            return "Varighet må være mellom 5 og 480 minutter.";
+        }
+
+        if (!Enum.TryParse<PriceType>(request.PriceType, out var priceType) || !Enum.IsDefined(priceType))
+        {
+            return "Velg en gyldig pristype.";
+        }
+
+        if (request.PriceNok is < 0)
+        {
+            return "Prisen kan ikke være negativ.";
+        }
+
+        dbContext.Services.Add(new Service
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Name = request.Name.Trim(),
+            Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+            DurationMinutes = request.DurationMinutes,
+            PriceType = priceType,
+            PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok
+        });
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
     }
 }

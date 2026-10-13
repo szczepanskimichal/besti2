@@ -7,4 +7,7 @@ public interface IBusinessService
         CancellationToken cancellationToken = default);
     Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<string>> GetCitiesAsync(CancellationToken cancellationToken = default);
+    // Returns null when saved, otherwise an error message for the owner
+    Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
+        CancellationToken cancellationToken = default);
 }
