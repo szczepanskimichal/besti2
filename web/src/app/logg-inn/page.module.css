@@ -73,6 +73,22 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
+.success {
+    background: #e3f5e8;
+    color: #1a7f37;
+    border: 1px solid #b4e2c1;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 0 0 16px;
+}
+.signup {
+    margin: 24px 0 0;
+    text-align: center;
+}
+.signup a {
+    color: var(--color-primary);
+    font-weight: 600;
+}
 
 @media (min-width: 768px) {
     .main {

@@ -8,5 +8,6 @@ public enum BusinessCategory
     Bygg,
     Rorlegger,
     Elektriker,
-    Helse
+    Helse,
+    Annet
 }

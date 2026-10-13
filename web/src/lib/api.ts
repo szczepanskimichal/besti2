@@ -69,6 +69,21 @@ export async function createBooking(input: CreateBookingInput): Promise<{ ok: tr
     const body = await res.json().catch(() => null);
     return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
 }
+export async function registerBusiness(input: Record<string, string>): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/businesses/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+
+    if (res.ok) {
+        return { ok: true };
+    }
+
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}
 
 export async function login(email: string, password: string): Promise<{ accessToken: string; expiresIn: number } | null> {
     const res = await fetch(`${API_URL}/api/auth/login`, {
