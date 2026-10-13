@@ -61,6 +61,22 @@ public class BookingServiceTests
         Assert.Equal(0, await db.Bookings.CountAsync());
     }
     
+    
+    [Fact]
+    public async Task CreateAsync_SendsConfirmationEmailWithOsloTime()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+
+        await service.CreateAsync(HerreklippHosIngrid());
+
+        var sent = Assert.Single(email.Sent);
+        Assert.Equal("kari@test.example", sent.To);
+        Assert.Contains("Herreklipp", sent.Body);
+        Assert.Contains("mandag 7. januar kl. 10:00", sent.Body);
+    }
+    
     [Fact]
     public async Task GetForBusinessAsync_ReturnsOnlyOwnBusinessBookings()
     {
@@ -130,4 +146,5 @@ public class BookingServiceTests
         Assert.Equal(new DateTime(2030, 1, 5, 9, 0, 0, DateTimeKind.Utc), slots[0]);    // 10:00 in Oslo
         Assert.Equal(new DateTime(2030, 1, 5, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
     }
+    
 }

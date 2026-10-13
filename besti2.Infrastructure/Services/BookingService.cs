@@ -1,3 +1,4 @@
+using System.Globalization;
 using besti2.Application.Bookings;
 using besti2.Application.Email;
 using besti2.Domain.Entities;
@@ -10,6 +11,10 @@ namespace besti2.Infrastructure.Services;
 
 public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger) : IBookingService
 {
+    // date in norwegian!!!
+    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+    private static readonly CultureInfo Norwegian = new("nb-NO");
+    //
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default)
     {
@@ -99,6 +104,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         dbContext.Bookings.Add(booking);
         await dbContext.SaveChangesAsync(cancellationToken);
+        await SendConfirmationEmailAsync(booking, service, cancellationToken);
 
         return new CreateBookingResult(
             CreateBookingOutcome.Created,
@@ -175,5 +181,36 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
 
         return null;
+    }
+    
+    // Send confirmation email to the customer; a failed email must not fail the booking
+    private async Task SendConfirmationEmailAsync(Booking booking, Service service, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var employee = await dbContext.Employees.AsNoTracking()
+                .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+
+            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
+            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                $"Vi har mottatt bestillingen din hos {business.Name}.\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Hos: {employee.Name} {employee.LastName}\n" +
+                $"Tid: {when}\n" +
+                $"Adresse: {business.Address}, {business.PostalCode} {business.City}\n\n" +
+                "Bedriften bekrefter bestillingen så snart som mulig.\n\n" +
+                "Hilsen besti2";
+
+            await emailService.SendAsync(booking.CustomerEmail, $"Bestilling mottatt: {business.Name}", body, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send confirmation email for booking {BookingId}", booking.Id);
+        }
     }
 }
