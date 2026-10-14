@@ -15,15 +15,6 @@
     font-size: clamp(1.5rem, 5vw, 2rem);
     margin: 0 0 4px;
 }
-
-.navLink {
-
-    margin-left: auto;
-
-    color: var(--color-primary);
-
-    font-weight: 600;
-}
 .subtitle {
     font-size: 1.25rem;
     margin: 32px 0 12px;
@@ -128,6 +119,46 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
+.cardActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 12px;
+}
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    font: inherit;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 1px solid #8a929c;
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+}
+.deleteBox summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: #a1271b;
+    font-weight: 600;
+    cursor: pointer;
+}
+.dangerButton {
+    font: inherit;
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 1px solid #c0392b;
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: #a1271b;
+    cursor: pointer;
+}
+
 
 @media (min-width: 768px) {
     .form {

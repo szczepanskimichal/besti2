@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
-import { addServiceAction } from "./actions";
+import { addServiceAction, deleteServiceAction } from "./actions";
 import styles from "./page.module.css";
 
 const priceTypeOptions = [
@@ -15,7 +15,8 @@ const priceTypeOptions = [
 ];
 
 type ServicesPageProps = {
-    searchParams: Promise<{ feil?: string; "lagt-til"?: string }>;
+    searchParams: Promise<{ feil?: string; "lagt-til"?: string;endret?: string; 
+        slettet?: string }>;
 };
 
 export default async function ServicesPage({ searchParams }: ServicesPageProps) {
@@ -23,32 +24,41 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
     if (!token) {
         redirect("/logg-inn");
     }
-
     const business = await getPanelBusiness(token);
     if (!business) {
         redirect("/logg-inn");
     }
-
     const params = await searchParams;
-
     return (
         <main className={styles.main}>
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
             <h1 className={styles.title}>Tjenester</h1>
             <p className={styles.muted}>{business.name}</p>
-
+            
             {params.feil && (
                 <p className={styles.error} role="alert">
                     {params.feil}
                 </p>
             )}
-
+            
             {params["lagt-til"] && (
                 <p className={styles.success} role="status">
                     Tjenesten er lagt til.
                 </p>
             )}
 
+            {params.endret && (
+                <p className={styles.success} role="status">
+                    Tjenesten er endret.
+                </p>
+            )}
+
+            {params.slettet && (
+                <p className={styles.success} role="status">
+                    Tjenesten er slettet.
+                </p>
+            )}
+            
             {business.services.length === 0 ? (
                 <p className={styles.muted}>Ingen tjenester ennå. Legg til den første under.</p>
             ) : (
@@ -56,8 +66,27 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                     {business.services.map((service) => (
                         <li key={service.id} className={styles.card}>
                             <p className={styles.serviceName}>{service.name}</p>
+                            {service.description && (
+                                <p className={styles.muted}>{service.description}</p>
+                            )}
                             <p className={styles.muted}>
-                                {formatPrice(service.priceNok, service.priceType)} · timen varer {service.durationMinutes} min                            </p>
+                                {formatPrice(service.priceNok, service.priceType)} · timen varer {service.durationMinutes} min
+                            </p>
+                            <div className={styles.cardActions}>
+                                <Link href={`/panel/tjenester/${service.id}`} className={styles.secondaryButton}>
+                                    Rediger
+                                </Link>
+                                <details className={styles.deleteBox}>
+                                    <summary>Slett</summary>
+                                    <p>Er du sikker? Kunder kan ikke lenger bestille denne tjenesten.</p>
+                                    <form action={deleteServiceAction}>
+                                        <input type="hidden" name="serviceId" value={service.id} />
+                                        <button type="submit" className={styles.dangerButton}>
+                                            Ja, slett
+                                        </button>
+                                    </form>
+                                </details>
+                            </div>
                         </li>
                     ))}
                 </ul>

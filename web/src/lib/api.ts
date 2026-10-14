@@ -154,3 +154,27 @@ export async function addService(token: string, input: object): Promise<{ ok: tr
     const body = await res.json().catch(() => null);
     return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
 }
+
+
+export async function updateService(token: string, serviceId: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/services/${serviceId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}
+
+export async function deleteService(token: string, serviceId: string): Promise<boolean> {
+    const res = await fetch(`${API_URL}/api/panel/services/${serviceId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+    return res.ok;
+}
