@@ -1,5 +1,6 @@
 using besti2.Domain.Enums;
 using besti2.Application.Bookings;
+using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -173,5 +174,30 @@ public class BookingServiceTests
         Assert.Equal(new DateTime(2030, 1, 5, 9, 0, 0, DateTimeKind.Utc), slots[0]);    // 10:00 in Oslo
         Assert.Equal(new DateTime(2030, 1, 5, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
     }
-    
+    // check if GetForBusinessAsync hides bookings that have already ended
+    [Fact]
+    public async Task GetForBusinessAsync_HidesPastBookings()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        db.Bookings.Add(new Booking
+        {
+            Id = Guid.NewGuid(),
+            StartUtc = DateTime.UtcNow.AddDays(-1),
+            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
+            CustomerName = "Gammel Kunde",
+            CustomerPhone = "+4790000001",
+            CustomerEmail = "gammel@test.example",
+            Status = BookingStatus.Bekreftet,
+            ServiceId = HerreklippId,
+            EmployeeId = IngridId
+        });
+        await db.SaveChangesAsync();
+        await service.CreateAsync(HerreklippHosIngrid());
+
+        var result = await service.GetForBusinessAsync(KlippOgStil);
+
+        var booking = Assert.Single(result);
+        Assert.Equal("Kari Nordmann", booking.CustomerName);
+    }
 }

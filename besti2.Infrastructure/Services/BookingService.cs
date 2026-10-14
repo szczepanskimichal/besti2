@@ -118,7 +118,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         
         return await dbContext.Bookings
             .AsNoTracking()
-            .Where(b => b.Service.BusinessId == businessId)
+            .Where(b => b.Service.BusinessId == businessId && b.EndUtc >= DateTime.UtcNow) // only future bookings!!!
             .OrderBy(b => b.StartUtc)
             .Select(b => new PanelBookingDto(
                 b.Id,
