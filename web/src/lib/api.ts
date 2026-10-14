@@ -178,3 +178,18 @@ export async function deleteService(token: string, serviceId: string): Promise<b
     });
     return res.ok;
 }
+
+
+export async function updateProfile(token: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/business`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}

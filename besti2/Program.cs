@@ -141,6 +141,21 @@ app.MapDelete("/api/panel/services/{id:guid}", async (Guid id, ClaimsPrincipal p
     return deleted ? Results.NoContent() : Results.NotFound();
 }).RequireAuthorization();
 
+
+// Business panel: owner edits description and contact info
+app.MapPut("/api/panel/business", async (UpdateProfileRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var error = await businessService.UpdateProfileAsync(businessId, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 var auth = app.MapGroup("/api/auth");
 // Block Identity's open /register; owners sign up via business registration instead
