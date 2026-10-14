@@ -56,4 +56,15 @@ public class BusinessRegistrationServiceTests
         Assert.False(second.Success);
         Assert.Equal("Denne bedriften er allerede registrert.", second.Error);
     }
+    
+    [Fact]
+    public async Task RegisterAsync_EmptyBusinessName_Fails()
+    {
+        var (service, _, _) = CreateService();
+
+        var result = await service.RegisterAsync(TestFrisor() with { BusinessName = "" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Fyll ut alle feltene.", result.Error);
+    }
 }
