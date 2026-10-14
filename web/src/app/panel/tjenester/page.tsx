@@ -3,16 +3,10 @@ import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
+import { priceTypeOptions } from "@/lib/priceTypes";
 import { addServiceAction, deleteServiceAction } from "./actions";
 import styles from "./page.module.css";
 
-const priceTypeOptions = [
-    { value: "FastPris", label: "Fast pris" },
-    { value: "PerTime", label: "Per time" },
-    { value: "PerKvadratmeter", label: "Per kvadratmeter" },
-    { value: "PerLøpendeMeter", label: "Per løpende meter" },
-    { value: "EtterAvtale", label: "Pris etter avtale" },
-];
 
 type ServicesPageProps = {
     searchParams: Promise<{ feil?: string; "lagt-til"?: string;endret?: string; 
