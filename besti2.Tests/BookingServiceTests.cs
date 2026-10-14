@@ -1,5 +1,6 @@
 using besti2.Domain.Enums;
 using besti2.Application.Bookings;
+using besti2.Application.Businesses;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
@@ -199,5 +200,48 @@ public class BookingServiceTests
 
         var booking = Assert.Single(result);
         Assert.Equal("Kari Nordmann", booking.CustomerName);
+    }
+    // check if UpdateProfileAsync saves description and contact info - happy path
+    [Fact]
+    public async Task UpdateProfileAsync_ChangesProfile()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateProfileRequest("Ny beskrivelse", "+4799999999", "Nygata 5", "5003", "Bergen");
+
+        // Act
+        var error = await service.UpdateProfileAsync(klippId, request);
+
+        // Assert
+        Assert.Null(error);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.Equal("Ny beskrivelse", business!.Description);
+        Assert.Equal("Bergen", business.City);
+    }
+    // check if UpdateProfileAsync rejects an invalid postal code
+    [Fact]
+    public async Task UpdateProfileAsync_ReturnsError_WhenPostalCodeIsInvalid()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "12345", "Bergen");
+
+        // Act
+        var error = await service.UpdateProfileAsync(klippId, request);
+
+        // Assert
+        Assert.Equal("Postnummer må være 4 siffer.", error);
     }
 }

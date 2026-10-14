@@ -149,6 +149,42 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         return true;
     }
     
+    
+    public async Task<string?> UpdateProfileAsync(Guid businessId, UpdateProfileRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Phone) 
+            || string.IsNullOrWhiteSpace(request.Address)
+            || string.IsNullOrWhiteSpace(request.City)
+            || request.Phone.Length > 20 || request.City.Length > 200)
+        {
+            return "Fyll ut telefon, adresse og by.";
+        }
+        if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
+        {
+            return "Postnummer må være 4 siffer.";
+        }
+        if (request.Description is { Length: > 1000 })
+        {
+            return "Beskrivelsen kan ha maks 1000 tegn.";
+        }
+
+        var business = await dbContext.Businesses.FirstOrDefaultAsync(b => b.Id == businessId, cancellationToken);
+        if (business is null)
+        {
+            return "Fant ikke bedriften.";
+        }
+
+        business.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
+        business.PhoneNumber = request.Phone.Trim();
+        business.Address = request.Address.Trim();
+        business.PostalCode = request.PostalCode;
+        business.City = request.City.Trim();
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+    
     // Shared validation for adding and editing a service; returns null when valid
     private static string? ValidateService(CreateServiceRequest request)
     {

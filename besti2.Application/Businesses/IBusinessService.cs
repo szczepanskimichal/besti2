@@ -17,4 +17,8 @@ public interface IBusinessService
     // Soft delete: returns false when the service was not found
     Task<bool> DeleteServiceAsync(Guid businessId, Guid serviceId,
         CancellationToken cancellationToken = default);
+    
+    // Owner edits description and contact info; returns null when saved, otherwise an error message
+    Task<string?> UpdateProfileAsync(Guid businessId, UpdateProfileRequest request,
+        CancellationToken cancellationToken = default);
 }
