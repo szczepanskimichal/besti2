@@ -21,6 +21,13 @@ export type Employee = {
     lastName: string;
 };
 
+
+export type OpeningHours = {
+    dayOfWeek: number;
+    opensAt: string;
+    closesAt: string;
+};
+
 export type BusinessDetails = {
     id: string;
     name: string;

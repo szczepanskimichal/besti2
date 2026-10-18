@@ -193,3 +193,17 @@ export async function updateProfile(token: string, input: object): Promise<{ ok:
     const body = await res.json().catch(() => null);
     return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
 }
+
+export async function updateOpeningHours(token: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/opening-hours`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}
