@@ -30,6 +30,13 @@ export default async function BusinessPage({ params }: Props) {
                 {business.description && <p className={styles.muted}>{business.description}</p>}
                 <address className={styles.contact}>
                     <span>{business.address}, {business.postalCode} {business.city}</span>
+                    <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${business.address}, ${business.postalCode} ${business.city}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        Vis vei 🧭
+                    </a>
                     <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
                     <a href={`mailto:${business.email}`}>{business.email}</a>
                 </address>
