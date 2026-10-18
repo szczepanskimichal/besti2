@@ -56,12 +56,12 @@ export default async function OpeningHoursPage({ searchParams }: OpeningHoursPag
                                 Åpen
                             </label>
 
-                            <label className={dayStyles.field}>
+                            <label className={styles.field}>
                                 Fra
                                 <input type="time" name={`opensAt-${w.day}`} defaultValue={hours?.opensAt.slice(0, 5) ?? "09:00"} />
                             </label>
 
-                            <label className={dayStyles.field}>
+                            <label className={styles.field}>
                                 Til
                                 <input type="time" name={`closesAt-${w.day}`} defaultValue={hours?.closesAt.slice(0, 5) ?? "17:00"} />
                             </label>
