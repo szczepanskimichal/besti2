@@ -6,7 +6,7 @@ using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
-public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding) : IBusinessService{
+public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding) : IBusinessService {
 public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
     string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
 {
