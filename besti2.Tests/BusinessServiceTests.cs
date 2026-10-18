@@ -249,4 +249,44 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Stengetid må være etter åpningstid.", error);
     }
+    
+    // check if GetAllAsync finds a city by part of its name, ignoring case
+    [Fact]
+    public async Task GetAllAsync_FiltersByPartOfCity()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+
+        // Act
+        var result = await service.GetAllAsync(city: "berg");
+
+        // Assert
+        var business = Assert.Single(result);
+        Assert.Equal("Bergen", business.City);
+    }
+
+    // check if GetAllAsync text search matches a service name
+    [Fact]
+    public async Task GetAllAsync_SearchMatchesServiceName()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+
+        // Act
+        var result = await service.GetAllAsync(q: "HERREKLIPP");
+
+        // Assert
+        var business = Assert.Single(result);
+        Assert.Equal("Klipp & Stil Frisør", business.Name);
+    }
 }

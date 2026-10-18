@@ -8,7 +8,7 @@ namespace besti2.Infrastructure.Services;
 public class BusinessService(AppDbContext dbContext) : IBusinessService
 {
 public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
-    string? category = null, string? city = null, CancellationToken cancellationToken = default)
+    string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
 {
     var query = dbContext.Businesses.AsNoTracking();
 
@@ -25,10 +25,17 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
 
     if (!string.IsNullOrWhiteSpace(city))
     {
-        var trimmedCity = city.Trim();
-        query = query.Where(b => b.City == trimmedCity);
+        var trimmedCity = city.Trim().ToLower();
+        query = query.Where(b => b.City.ToLower().Contains(trimmedCity));
     }
 
+    if (!string.IsNullOrWhiteSpace(q))
+    {
+        var text = q.Trim().ToLower();
+        query = query.Where(b => b.Name.ToLower().Contains(text)
+                                 || b.Services.Any(s => !s.IsDeleted && s.Name.ToLower().Contains(text)));
+    }
+    
     return await query
         .OrderBy(b => b.Name)
             .Select(b => new BusinessListItemDto(
@@ -51,8 +58,8 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-    
-    public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+
+      public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await dbContext.Businesses
             .AsNoTracking()
