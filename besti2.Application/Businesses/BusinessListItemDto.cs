@@ -5,5 +5,6 @@ public record BusinessListItemDto(
     string Name,
     string Category,
     string? Description,
-    string City
+    string City,
+    string? LogoUrl
 );

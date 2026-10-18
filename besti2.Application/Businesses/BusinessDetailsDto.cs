@@ -14,5 +14,6 @@ public record BusinessDetailsDto(
     IReadOnlyList<EmployeeDto> Employees,
     IReadOnlyList<OpeningHoursDto> OpeningHours,
     double? Latitude,
-    double? Longitude
+    double? Longitude,
+    string? LogoUrl
     );
