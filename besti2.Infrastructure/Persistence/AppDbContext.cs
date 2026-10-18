@@ -45,7 +45,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PhoneNumber = "+4722000001",
                     Address = "Karl Johans gate 10",
                     PostalCode = "0154",
-                    City = "Oslo"
+                    City = "Oslo",
+                    Latitude = 59.91181,
+                    Longitude = 10.74646
                 },
                 new Business
                 {
@@ -58,7 +60,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PhoneNumber = "+4755000002",
                     Address = "Bryggen 5",
                     PostalCode = "5003",
-                    City = "Bergen"
+                    City = "Bergen",
+                    Latitude = 60.39612,
+                    Longitude = 5.32553
                 },
                 new Business
                 {
@@ -71,7 +75,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PhoneNumber = "+4773000003",
                     Address = "Munkegata 20",
                     PostalCode = "7011",
-                    City = "Trondheim"
+                    City = "Trondheim",
+                    Latitude = 63.42952,
+                    Longitude = 10.39516
                 });
 
         });

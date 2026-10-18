@@ -87,7 +87,9 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                 b.OpeningHours
                     .OrderBy(h => h.DayOfWeek)
                     .Select(h => new OpeningHoursDto(h.DayOfWeek, h.OpensAt, h.ClosesAt))
-                    .ToList()
+                    .ToList(),
+                b.Latitude,
+                b.Longitude
             ))
             .FirstOrDefaultAsync(cancellationToken);
     }

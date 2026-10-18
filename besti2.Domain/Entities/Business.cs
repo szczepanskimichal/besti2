@@ -17,6 +17,10 @@ public class Business
     public string City { get; set; } = null!;
     public string? Description { get; set; }
 
+    // Map position (WGS84), filled from the address; null when not found
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();
     public List<OpeningHours> OpeningHours { get; set; } = new();

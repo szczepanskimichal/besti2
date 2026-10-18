@@ -12,5 +12,7 @@ public record BusinessDetailsDto(
     string City,
     IReadOnlyList<ServiceDto> Services,
     IReadOnlyList<EmployeeDto> Employees,
-    IReadOnlyList<OpeningHoursDto> OpeningHours
+    IReadOnlyList<OpeningHoursDto> OpeningHours,
+    double? Latitude,
+    double? Longitude
     );
