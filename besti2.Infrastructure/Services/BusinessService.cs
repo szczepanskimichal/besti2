@@ -189,6 +189,44 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         return null;
     }
     
+    
+    public async Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        if (request.Days.Any(d => !Enum.IsDefined(d.DayOfWeek))
+            || request.Days.Select(d => d.DayOfWeek).Distinct().Count() != request.Days.Count)
+        {
+            return "Ugyldige dager.";
+        }
+        if (request.Days.Any(d => d.ClosesAt <= d.OpensAt))
+        {
+            return "Stengetid må være etter åpningstid.";
+        }
+
+        var existing = await dbContext.OpeningHours
+            .Where(h => h.BusinessId == businessId)
+            .ToListAsync(cancellationToken);
+
+        // Days not in the request become closed
+        dbContext.OpeningHours.RemoveRange(
+            existing.Where(h => request.Days.All(d => d.DayOfWeek != h.DayOfWeek)));
+
+        foreach (var day in request.Days)
+        {
+            var row = existing.FirstOrDefault(h => h.DayOfWeek == day.DayOfWeek);
+            if (row is null)
+            {
+                row = new OpeningHours { Id = Guid.NewGuid(), BusinessId = businessId, DayOfWeek = day.DayOfWeek };
+                dbContext.OpeningHours.Add(row);
+            }
+            row.OpensAt = day.OpensAt;
+            row.ClosesAt = day.ClosesAt;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+    
     // Shared validation for adding and editing a service; returns null when valid
     private static string? ValidateService(CreateServiceRequest request)
     {

@@ -199,4 +199,54 @@ public class BusinessServiceTests
         var business = await service.GetByIdAsync(klippId);
         Assert.DoesNotContain(business!.Services, s => s.Id == dameklippId);
     }
+    
+        // check if UpdateOpeningHoursAsync changes hours and closes days missing from the list
+    [Fact]
+    public async Task UpdateOpeningHoursAsync_ReplacesWeek()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateOpeningHoursRequest([
+            new OpeningHoursDto(DayOfWeek.Monday, new TimeOnly(10, 0), new TimeOnly(14, 0)),
+            new OpeningHoursDto(DayOfWeek.Saturday, new TimeOnly(10, 0), new TimeOnly(15, 0))
+        ]);
+
+        // Act
+        var error = await service.UpdateOpeningHoursAsync(klippId, request);
+
+        // Assert
+        Assert.Null(error);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.Equal(2, business!.OpeningHours.Count);
+        Assert.Equal(new TimeOnly(14, 0), business.OpeningHours.Single(h => h.DayOfWeek == DayOfWeek.Monday).ClosesAt);
+    }
+
+    // check if UpdateOpeningHoursAsync rejects closing time before opening time
+    [Fact]
+    public async Task UpdateOpeningHoursAsync_ReturnsError_WhenClosesBeforeOpens()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateOpeningHoursRequest([
+            new OpeningHoursDto(DayOfWeek.Monday, new TimeOnly(17, 0), new TimeOnly(9, 0))
+        ]);
+
+        // Act
+        var error = await service.UpdateOpeningHoursAsync(klippId, request);
+
+        // Assert
+        Assert.Equal("Stengetid må være etter åpningstid.", error);
+    }
 }
