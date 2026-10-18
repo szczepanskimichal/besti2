@@ -5,6 +5,7 @@ export type BusinessListItem = {
     category: string;
     description: string | null;
     city: string;
+    logoUrl: string | null;
 };
 
 export type Service = {
@@ -44,6 +45,7 @@ export type BusinessDetails = {
     openingHours: OpeningHours[];
     latitude: number | null;
     longitude: number | null;
+    logoUrl: string | null;
 };
 
 export type CreateBookingInput = {
