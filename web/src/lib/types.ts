@@ -42,6 +42,8 @@ export type BusinessDetails = {
     services: Service[];
     employees: Employee[];
     openingHours: OpeningHours[];
+    latitude: number | null;
+    longitude: number | null;
 };
 
 export type CreateBookingInput = {

@@ -19,6 +19,16 @@ export default async function BusinessPage({ params }: Props) {
     if (!business) {
         notFound();
     }
+    
+    // OpenStreetMap embed: small box around the business with a marker
+    const d = 0.005;
+    const mapUrl =
+        business.latitude !== null && business.longitude !== null
+            ? `https://www.openstreetmap.org/export/embed.html?bbox=${business.longitude - d},
+            ${business.latitude - d},
+            ${business.longitude + d},
+            ${business.latitude + d}&layer=mapnik&marker=${business.latitude},${business.longitude}`
+            : null;
 
     return (
         <main className={styles.main}>
@@ -91,6 +101,17 @@ export default async function BusinessPage({ params }: Props) {
                     })}
                 </dl>
             </section>
+            {mapUrl && (
+                <section>
+                    <h2 className={styles.sectionTitle}>Kart</h2>
+                    <iframe
+                        title={`Kart som viser ${business.name}`}
+                        src={mapUrl}
+                        className={styles.map}
+                        loading="lazy"
+                    />
+                </section>
+            )}
         </main>
     );
 }
