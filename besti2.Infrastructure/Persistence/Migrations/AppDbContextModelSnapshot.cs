@@ -318,6 +318,42 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.BusinessImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "Kind");
+
+                    b.ToTable("BusinessImages");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -785,6 +821,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.BusinessImage", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany("Images")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
@@ -821,6 +868,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("besti2.Domain.Entities.Business", b =>
                 {
                     b.Navigation("Employees");
+
+                    b.Navigation("Images");
 
                     b.Navigation("OpeningHours");
 
