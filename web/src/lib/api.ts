@@ -2,10 +2,11 @@ import type { BusinessListItem, BusinessDetails, CreateBookingInput, PanelBookin
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
 
-export async function getBusinesses(category?: string, city?: string): Promise<BusinessListItem[]> {
-    const params = new URLSearchParams();
+export async function getBusinesses(category?: string, city?: string, q?: string): Promise<BusinessListItem[]> {    const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (city) params.set("city", city);
+    if (q) params.set("q", q);
+
 
     const res = await fetch(`${API_URL}/api/businesses?${params}`, { cache: "no-store" });
 

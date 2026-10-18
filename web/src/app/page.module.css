@@ -36,6 +36,7 @@
     font-weight: 600;
 }
 
+.field input,
 .field select {
     font: inherit;
     font-weight: 400;
