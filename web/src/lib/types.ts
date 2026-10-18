@@ -6,6 +6,7 @@ export type BusinessListItem = {
     description: string | null;
     city: string;
 };
+
 export type Service = {
     id: string;
     name: string;
@@ -40,6 +41,7 @@ export type BusinessDetails = {
     city: string;
     services: Service[];
     employees: Employee[];
+    openingHours: OpeningHours[];
 };
 
 export type CreateBookingInput = {
