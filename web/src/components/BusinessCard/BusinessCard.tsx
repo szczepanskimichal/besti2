@@ -13,7 +13,7 @@ export default function BusinessCard({ business }: Props ) {
         <article className={styles.card}>
             <span className={styles.category}>{getCategoryLabel(business.category)}</span> 
             <h2 className={styles.name}>{business.name}</h2>
-            <p className={styles.city}>{business.city}</p>
+            <p className={styles.city}><span aria-hidden="true">📍</span> {business.city}</p>
             {business.description && <p className={styles.description}>{business.description}</p>}
         </article>
     </NextLink>
