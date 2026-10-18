@@ -28,6 +28,7 @@ public static class DependencyInjection
             client.Timeout = TimeSpan.FromSeconds(5);
         });
         services.AddSingleton<IImageStorage, LocalImageStorage>();
+        services.AddScoped<IBusinessImageService, BusinessImageService>();
         return services;
     }
 

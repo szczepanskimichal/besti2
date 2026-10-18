@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using besti2.Application.Bookings;
 using besti2.Infrastructure;
 using besti2.Application.Businesses;
+using besti2.Application.Images;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
@@ -177,6 +178,21 @@ app.MapPut("/api/panel/opening-hours", async (UpdateOpeningHoursRequest request,
     var error = await businessService.UpdateOpeningHoursAsync(businessId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+
+// Business panel: owner uploads a logo (PNG, JPG or WebP, max 500 KB)
+app.MapPost("/api/panel/logo", async (IFormFile file, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessImageService imageService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    await using var stream = file.OpenReadStream();
+    var error = await imageService.SetLogoAsync(businessId, stream, file.Length, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization().DisableAntiforgery();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 var auth = app.MapGroup("/api/auth");
