@@ -15,6 +15,7 @@ export default function BusinessCard({ business }: Props ) {
             <h2 className={styles.name}>{business.name}</h2>
             <p className={styles.city}><span aria-hidden="true">📍</span> {business.city}</p>
             {business.description && <p className={styles.description}>{business.description}</p>}
+            <span className={styles.more}>Se tjenester →</span>
         </article>
     </NextLink>
     );
