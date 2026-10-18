@@ -211,7 +211,7 @@ public class BookingServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new UpdateProfileRequest("Ny beskrivelse", "+4799999999", "Nygata 5", "5003", "Bergen");
 
@@ -234,7 +234,7 @@ public class BookingServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "12345", "Bergen");
 

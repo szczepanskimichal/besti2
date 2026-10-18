@@ -1,12 +1,12 @@
 using besti2.Application.Businesses;
+using besti2.Application.Geocoding;
 using besti2.Domain.Enums;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
-public class BusinessService(AppDbContext dbContext) : IBusinessService
-{
+public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding) : IBusinessService{
 public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
     string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
 {
@@ -187,12 +187,20 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         {
             return "Fant ikke bedriften.";
         }
-
+        
+        var addressChanged = business.Address != request.Address.Trim() || business.PostalCode != request.PostalCode;
         business.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         business.PhoneNumber = request.Phone.Trim();
         business.Address = request.Address.Trim();
         business.PostalCode = request.PostalCode;
         business.City = request.City.Trim();
+        // New address: look up the map position again (null = no map)
+        if (addressChanged)
+        {
+            var point = await geocoding.GeocodeAsync(business.Address, business.PostalCode, cancellationToken);
+            business.Latitude = point?.Latitude;
+            business.Longitude = point?.Longitude;
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;

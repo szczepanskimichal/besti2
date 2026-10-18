@@ -16,7 +16,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
 
         // Act
         var result = await service.GetAllAsync();
@@ -37,7 +37,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
 
         // Act
@@ -61,7 +61,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
 
         // Act
         var result = await service.GetByIdAsync(Guid.NewGuid());
@@ -79,7 +79,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
 
         // Act
         var result = await service.GetAllAsync(category: "frisor");
@@ -99,7 +99,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new CreateServiceRequest("Skjeggtrim", null, 20, 199, "FastPris");
 
@@ -121,7 +121,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new CreateServiceRequest("Skjeggtrim", null, 20, 199, "Gratis");
 
@@ -141,7 +141,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
         var request = new CreateServiceRequest("Dameklipp lang", null, 90, 990, "FastPris");
@@ -164,7 +164,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var fjordByggId = new Guid("22222222-2222-2222-2222-222222222222");
         var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
         var request = new CreateServiceRequest("Hacket", null, 30, 1, "FastPris");
@@ -185,7 +185,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
 
@@ -210,7 +210,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new UpdateOpeningHoursRequest([
             new OpeningHoursDto(DayOfWeek.Monday, new TimeOnly(10, 0), new TimeOnly(14, 0)),
@@ -237,7 +237,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
         var klippId = new Guid("11111111-1111-1111-1111-111111111111");
         var request = new UpdateOpeningHoursRequest([
             new OpeningHoursDto(DayOfWeek.Monday, new TimeOnly(17, 0), new TimeOnly(9, 0))
@@ -260,7 +260,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
 
         // Act
         var result = await service.GetAllAsync(city: "berg");
@@ -280,7 +280,7 @@ public class BusinessServiceTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db);
+        var service = new BusinessService(db, new FakeGeocodingService());
 
         // Act
         var result = await service.GetAllAsync(q: "HERREKLIPP");
@@ -288,5 +288,29 @@ public class BusinessServiceTests
         // Assert
         var business = Assert.Single(result);
         Assert.Equal("Klipp & Stil Frisør", business.Name);
+    }
+    
+    // check if a new address gets new map coordinates
+    [Fact]
+    public async Task UpdateProfileAsync_UpdatesLocation_WhenAddressChanges()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var geocoding = new FakeGeocodingService { Result = (60.39, 5.32) };
+        var service = new BusinessService(db, geocoding);
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "5003", "Bergen");
+
+        // Act
+        await service.UpdateProfileAsync(klippId, request);
+
+        // Assert
+        var business = await service.GetByIdAsync(klippId);
+        Assert.Equal(60.39, business!.Latitude);
+        Assert.Equal(5.32, business.Longitude);
     }
 }
