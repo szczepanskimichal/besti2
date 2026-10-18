@@ -155,6 +155,19 @@ app.MapPut("/api/panel/business", async (UpdateProfileRequest request, ClaimsPri
     var error = await businessService.UpdateProfileAsync(businessId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+// Business panel: owner updates opening hours
+app.MapPut("/api/panel/opening-hours", async (UpdateOpeningHoursRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var error = await businessService.UpdateOpeningHoursAsync(businessId, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 var auth = app.MapGroup("/api/auth");

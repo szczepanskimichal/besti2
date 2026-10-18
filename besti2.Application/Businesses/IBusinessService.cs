@@ -21,4 +21,8 @@ public interface IBusinessService
     // Owner edits description and contact info; returns null when saved, otherwise an error message
     Task<string?> UpdateProfileAsync(Guid businessId, UpdateProfileRequest request,
         CancellationToken cancellationToken = default);
+    
+    // Replaces the weekly opening hours; days missing from the list are closed
+    Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,
+        CancellationToken cancellationToken = default);
 }

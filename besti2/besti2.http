@@ -30,3 +30,15 @@ Authorization: Bearer {{token}}
 ### Cancel booking
 POST {{besti2_HostAddress}}/api/panel/bookings/WKLEJ_ID/avlys
 Authorization: Bearer {{token}}
+
+### Panel: opening hours (Mon-Fri 09-17, Sat 10-14, Sun closed)
+PUT {{besti2_HostAddress}}/api/panel/opening-hours
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "days": [
+    { "dayOfWeek": 1, "opensAt": "09:00", "closesAt": "17:00" },
+    { "dayOfWeek": 6, "opensAt": "10:00", "closesAt": "14:00" }
+  ]
+}
