@@ -22,12 +22,11 @@ export default async function BusinessPage({ params }: Props) {
     
     // OpenStreetMap embed: small box around the business with a marker
     const d = 0.005;
+    const lat = business.latitude;
+    const lon = business.longitude;
     const mapUrl =
-        business.latitude !== null && business.longitude !== null
-            ? `https://www.openstreetmap.org/export/embed.html?bbox=${business.longitude - d},
-            ${business.latitude - d},
-            ${business.longitude + d},
-            ${business.latitude + d}&layer=mapnik&marker=${business.latitude},${business.longitude}`
+        lat !== null && lon !== null
+            ? `https://www.openstreetmap.org/export/embed.html?bbox=${[lon - d, lat - d, lon + d, lat + d].join(",")}&layer=mapnik&marker=${lat},${lon}`
             : null;
 
     return (
