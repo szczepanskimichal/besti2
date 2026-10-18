@@ -20,6 +20,12 @@
     margin: 8px 0 32px;
 }
 
+.top {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
 .category {
     display: inline-block;
     font-size: 0.8rem;

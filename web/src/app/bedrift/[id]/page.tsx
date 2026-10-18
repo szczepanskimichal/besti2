@@ -5,6 +5,7 @@ import { getBusiness } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
 import { weekdays } from "@/lib/weekdays";
+import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 
 import styles from "./page.module.css";
 
@@ -34,7 +35,10 @@ export default async function BusinessPage({ params }: Props) {
             <NextLink href="/" className={styles.back}>← Tilbake til alle bedrifter</NextLink>
 
             <header className={styles.header}>
-                <span className={styles.category}>{getCategoryLabel(business.category)}</span>
+                <div className={styles.top}>
+                    <BusinessLogo name={business.name} category={business.category} size="large" />
+                    <span className={styles.category}>{getCategoryLabel(business.category)}</span>
+                </div>
                 <h1 className={styles.title}>{business.name}</h1>
                 {business.description && <p className={styles.muted}>{business.description}</p>}
                 <address className={styles.contact}>
