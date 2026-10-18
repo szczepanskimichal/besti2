@@ -100,6 +100,21 @@
     outline-offset: 2px;
 }
 
+.field textarea {
+    font: inherit;
+    font-weight: 400;
+    min-height: 120px;
+    padding: 10px 12px;
+    border: 1px solid #8a929c;
+    border-radius: 8px;
+    resize: vertical;
+}
+
+.field textarea:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
 .primaryButton {
     font: inherit;
     font-weight: 600;
