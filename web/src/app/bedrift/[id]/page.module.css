@@ -25,7 +25,7 @@
     font-size: 0.8rem;
     font-weight: 600;
     color: var(--color-primary);
-    background: #e8f0fa;
+    background: var(--color-primary-soft);
     padding: 2px 10px;
     border-radius: 999px;
 }
@@ -70,7 +70,7 @@
 .service,
 .employee {
     background: var(--color-surface);
-    border: 1px solid #eef0f3;
+    border: 1px solid var(--color-border);
     border-radius: 12px;
     padding: 16px;
 }

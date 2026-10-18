@@ -5,10 +5,10 @@
   --color-muted: #6b7280;
   --color-primary: #2563eb;
   --radius: 8px;
-  --color-border: var(--color-border);
-  --color-input-border: var(--color-input-border);
-  --color-primary-soft: var(--color-primary-soft);
-  --color-primary-dark: var(--color-primary-dark);
+  --color-border: #eef0f3;
+  --color-input-border: #8a929c;
+  --color-primary-soft: #e8f0fa;
+  --color-primary-dark: #1e40af;
 }
 
 *, *::before, *::after {
