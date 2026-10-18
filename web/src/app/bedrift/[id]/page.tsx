@@ -1,8 +1,11 @@
+import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusiness } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
+import { weekdays } from "@/lib/weekdays";
+
 import styles from "./page.module.css";
 
 type Props = {
@@ -65,6 +68,21 @@ export default async function BusinessPage({ params }: Props) {
                         </li>
                     ))}
                 </ul>
+            </section>
+
+            <section>
+                <h2 className={styles.sectionTitle}>Åpningstider</h2>
+                <dl className={styles.hours}>
+                    {weekdays.map((w) => {
+                        const hours = business.openingHours.find((h) => h.dayOfWeek === w.day);
+                        return (
+                            <Fragment key={w.day}>
+                                <dt>{w.label}</dt>
+                                <dd>{hours ? `${hours.opensAt.slice(0, 5)}–${hours.closesAt.slice(0, 5)}` : "Stengt"}</dd>
+                            </Fragment>
+                        );
+                    })}
+                </dl>
             </section>
         </main>
     );
