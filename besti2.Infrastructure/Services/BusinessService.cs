@@ -76,6 +76,10 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                 b.Employees
                     .OrderBy(e => e.Name)
                     .Select(e => new EmployeeDto(e.Id, e.Name, e.LastName))
+                    .ToList(),
+                b.OpeningHours
+                    .OrderBy(h => h.DayOfWeek)
+                    .Select(h => new OpeningHoursDto(h.DayOfWeek, h.OpensAt, h.ClosesAt))
                     .ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);

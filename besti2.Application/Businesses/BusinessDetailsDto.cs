@@ -11,5 +11,6 @@ public record BusinessDetailsDto(
     string PostalCode,
     string City,
     IReadOnlyList<ServiceDto> Services,
-    IReadOnlyList<EmployeeDto> Employees
+    IReadOnlyList<EmployeeDto> Employees,
+    IReadOnlyList<OpeningHoursDto> OpeningHours
     );
