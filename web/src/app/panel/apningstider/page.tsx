@@ -1,6 +1,3 @@
-// NOWY plik: web/src/app/panel/apningstider/page.tsx
-// (w tym samym folderze co actions.ts)
-
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
@@ -8,6 +5,7 @@ import { getToken } from "@/lib/auth";
 import { weekdays } from "@/lib/weekdays";
 import { updateOpeningHoursAction } from "./actions";
 import styles from "../tjenester/page.module.css";
+import dayStyles from "./page.module.css";
 
 type OpeningHoursPageProps = {
     searchParams: Promise<{ feil?: string; lagret?: string }>;
@@ -50,20 +48,20 @@ export default async function OpeningHoursPage({ searchParams }: OpeningHoursPag
                     const hours = business.openingHours.find((h) => h.dayOfWeek === w.day);
 
                     return (
-                        <fieldset key={w.day} className={styles.dayRow}>
+                        <fieldset key={w.day} className={dayStyles.dayRow}>
                             <legend>{w.label}</legend>
 
-                            <label className={styles.checkbox}>
+                            <label className={dayStyles.checkbox}>
                                 <input type="checkbox" name={`open-${w.day}`} defaultChecked={hours !== undefined} />
                                 Åpen
                             </label>
 
-                            <label className={styles.field}>
+                            <label className={dayStyles.field}>
                                 Fra
                                 <input type="time" name={`opensAt-${w.day}`} defaultValue={hours?.opensAt.slice(0, 5) ?? "09:00"} />
                             </label>
 
-                            <label className={styles.field}>
+                            <label className={dayStyles.field}>
                                 Til
                                 <input type="time" name={`closesAt-${w.day}`} defaultValue={hours?.closesAt.slice(0, 5) ?? "17:00"} />
                             </label>
