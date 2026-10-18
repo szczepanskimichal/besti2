@@ -6,6 +6,7 @@ using besti2.Application.Businesses;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,14 @@ var app = builder.Build();
  }
 
 app.UseHttpsRedirection();
+// Uploaded images (development storage), e.g. /uploads/abc.webp
+var uploadsFolder = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsFolder);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadsFolder),
+    RequestPath = "/uploads"
+});
 app.UseAuthentication();
 app.UseAuthorization();
 // Get all businesses (optional filters: category, city, text q)
