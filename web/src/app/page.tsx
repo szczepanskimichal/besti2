@@ -12,12 +12,12 @@ export default async function Home({ searchParams }: HomeProps) {
     const businesses = await getBusinesses(category, city);
     const cities = await getCities();
     return (
-        <section className={styles.main}>
+        <main className={styles.main}>
             <section className={styles.hero}>
                 <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
                 <p className={styles.heroLead}>
                     Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
-                </p>           
+                </p>
                 <form method="get" className={styles.filters}>
                 <label className={styles.field}>
                     Kategori
@@ -54,6 +54,6 @@ export default async function Home({ searchParams }: HomeProps) {
                     </li>
                 ))}
             </ul>
-        </section>
+        </main>
     )
 }
