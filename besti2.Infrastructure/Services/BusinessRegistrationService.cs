@@ -1,4 +1,5 @@
 using besti2.Application.Businesses;
+using besti2.Application.Geocoding;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
@@ -8,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
-public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager) : IBusinessRegistrationService
-{
+public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
+    IGeocodingService geocoding) : IBusinessRegistrationService{
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
         // 1. Check the input
@@ -46,6 +47,9 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             return new RegisterBusinessResult(false, "E-postadressen er allerede i bruk.");
         }
+        
+        // Map position from the address; the business is saved without it when not found
+        var location = await geocoding.GeocodeAsync(request.Address.Trim(), request.PostalCode.Trim(), cancellationToken);
 
         // 2. Save the business
         var business = new Business
@@ -58,7 +62,10 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             PhoneNumber = request.Phone.Trim(),
             Address = request.Address.Trim(),
             PostalCode = request.PostalCode.Trim(),
-            City = request.City.Trim()
+            City = request.City.Trim(),
+            Latitude = location?.Latitude,
+            Longitude = location?.Longitude
+            
         };
         dbContext.Businesses.Add(business);
         await dbContext.SaveChangesAsync(cancellationToken);

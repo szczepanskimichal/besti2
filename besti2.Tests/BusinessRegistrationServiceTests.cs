@@ -22,8 +22,7 @@ public class BusinessRegistrationServiceTests
 
         var db = provider.GetRequiredService<AppDbContext>();
         var users = provider.GetRequiredService<UserManager<AppUser>>();
-        return (new BusinessRegistrationService(db, users), db, users);
-    }
+        return (new BusinessRegistrationService(db, users, new FakeGeocodingService()), db, users);    }
 
     private static RegisterBusinessRequest TestFrisor() => new(
         "Test Frisør", "912345678", "Frisor", "eier@testfrisor.example",
@@ -41,6 +40,8 @@ public class BusinessRegistrationServiceTests
         var owner = await users.FindByEmailAsync("eier@testfrisor.example");
         Assert.NotNull(owner);
         Assert.Equal(business.Id, owner.BusinessId);
+        Assert.Equal(59.91, business.Latitude);
+        Assert.Equal(10.75, business.Longitude);
         Assert.Single(db.Employees.Where(e => e.BusinessId == business.Id));
         Assert.Equal(5, db.OpeningHours.Count(h => h.BusinessId == business.Id));
     }
