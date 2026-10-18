@@ -12,9 +12,13 @@ export default async function Home({ searchParams }: HomeProps) {
     const businesses = await getBusinesses(category, city);
     const cities = await getCities();
     return (
-        <main className={styles.main}>
-            <h1 className={styles.title}>Finn en bedrift</h1>
-            <form method="get" className={styles.filters}>
+        <section className={styles.main}>
+            <section className={styles.hero}>
+                <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
+                <p className={styles.heroLead}>
+                    Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
+                </p>           
+                <form method="get" className={styles.filters}>
                 <label className={styles.field}>
                     Kategori
                     <select name="category" defaultValue={category ?? ""}>
@@ -37,6 +41,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
                 <button type="submit" className={styles.searchButton}>Søk</button>
             </form>
+        </section>
 
             {businesses.length === 0 && (
                 <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>
@@ -49,6 +54,6 @@ export default async function Home({ searchParams }: HomeProps) {
                     </li>
                 ))}
             </ul>
-        </main>
+        </section>
     )
 }
