@@ -12,7 +12,7 @@ namespace besti2.Tests;
 
 public class BookingServiceTests
 {
-    // Poniedziałek 7.01.2030, 09:00 UTC = 10:00 w Oslo (czas zimowy)
+    // Monday 7 Jan 2030, 09:00 UTC = 10:00 in Oslo (winter time)
     private static readonly DateTime FutureMondayAt10 = new(2030, 1, 7, 9, 0, 0, DateTimeKind.Utc);
 
     private static readonly Guid KlippOgStil = new("11111111-1111-1111-1111-111111111111");

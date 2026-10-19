@@ -130,6 +130,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerEmail))
             .ToListAsync(cancellationToken);
     } 
+    
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
         Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default)
