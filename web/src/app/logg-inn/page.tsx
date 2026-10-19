@@ -3,11 +3,11 @@ import { loginAction } from "./actions";
 import styles from "./page.module.css";
 
 type LoginPageProps = {
-    searchParams: Promise<{ feil?: string, registrert?: string }>;
+    searchParams: Promise<{ feil?: string, registrert?: string, nyttPassord?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-    const { feil, registrert } = await searchParams;
+    const { feil, registrert, nyttPassord } = await searchParams;
 
     return (
         <main className={styles.main}>
@@ -21,6 +21,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {registrert && (
                 <p className={styles.success} role="status">
                     Bedriften er registrert. Logg inn med e-post og passord.
+                </p>
+            )}
+            {nyttPassord && (
+                <p className={styles.success} role="status">
+                    Passordet er endret. Logg inn med det nye passordet.
                 </p>
             )}
             <form action={loginAction} className={styles.form}>
@@ -38,6 +43,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </form>
             <p className={styles.signup}>
                 Ny her? <Link href="/registrer-bedrift">Registrer bedriften din</Link>
+            </p>
+            <p className={styles.signup}>
+                <Link href="/glemt-passord">Glemt passord?</Link>
             </p>
         </main>
     );

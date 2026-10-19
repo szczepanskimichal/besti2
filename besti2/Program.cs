@@ -5,6 +5,7 @@ using besti2.Infrastructure;
 using besti2.Application.Businesses;
 using besti2.Application.Images;
 using besti2.Domain.Enums;
+using besti2.Identity;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Jobs;
@@ -21,6 +22,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddHostedService<BookingAnonymizationJob>();
+// Password reset mails from Identity go through our email service
+builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
 
 var app = builder.Build();
 //--------------------------------------
