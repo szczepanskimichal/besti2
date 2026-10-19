@@ -7,6 +7,7 @@ using besti2.Application.Images;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
+using besti2.Jobs;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,8 @@ builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>()
     .AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddHostedService<BookingAnonymizationJob>();
+
 var app = builder.Build();
 //--------------------------------------
 // Configure the HTTP request pipeline.

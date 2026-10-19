@@ -29,6 +29,7 @@ public static class DependencyInjection
         });
         services.AddSingleton<IImageStorage, LocalImageStorage>();
         services.AddScoped<IBusinessImageService, BusinessImageService>();
+        services.AddScoped<IBookingAnonymizer, BookingAnonymizer>();
         return services;
     }
 
