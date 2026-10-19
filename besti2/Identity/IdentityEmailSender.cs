@@ -20,7 +20,7 @@ public class IdentityEmailSender(IEmailService emailService, IConfiguration conf
         return emailService.SendAsync(email, "Nytt passord hos BESTI", body);
     }
 
-// Not used yet (email confirmation comes with customer accounts)
+    // Not used yet (email confirmation comes with customer accounts)
     public Task SendConfirmationLinkAsync(AppUser user, string email, string confirmationLink) => Task.CompletedTask;
     public Task SendPasswordResetLinkAsync(AppUser user, string email, string resetLink) => Task.CompletedTask;
 }
