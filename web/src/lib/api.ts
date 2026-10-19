@@ -208,3 +208,19 @@ export async function updateOpeningHours(token: string, input: object): Promise<
     const body = await res.json().catch(() => null);
     return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
 }
+
+export async function uploadLogo(token: string, file: File): Promise<{ ok: true } | { ok: false; message: string }> {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch(`${API_URL}/api/panel/logo`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const json = await res.json().catch(() => null);
+    return { ok: false, message: json?.message ?? "Noe gikk galt. Prøv igjen." };
+}

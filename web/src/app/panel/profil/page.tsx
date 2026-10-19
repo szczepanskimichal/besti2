@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
+import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import { getToken } from "@/lib/auth";
-import { updateProfileAction } from "./actions";
+import { updateProfileAction, uploadLogoAction } from "./actions";
 import styles from "../tjenester/page.module.css";
 
 type ProfilePageProps = {
-    searchParams: Promise<{ feil?: string; lagret?: string }>;
+    searchParams: Promise<{ feil?: string; lagret?: string, logo?: string }>;
 };
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     const token = await getToken();
@@ -17,7 +18,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     if (!business) {
         redirect("/logg-inn");
     }
-    const { feil, lagret } = await searchParams
+    const { feil, lagret, logo } = await searchParams
     
     return (
         <main className={styles.main}>
@@ -34,6 +35,21 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     Profilen er lagret.
                 </p>
             )}
+            {logo && (
+                <p className={styles.success} role="status">
+                    Logoen er lagret.
+                </p>
+            )}
+            <form action={uploadLogoAction} className={styles.form}>
+                <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
+                <label className={styles.field}>
+                    Logo (PNG, JPG eller WebP, maks 500 KB)
+                    <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required />
+                </label>
+                <button type="submit" className={styles.primaryButton}>
+                    Last opp logo
+                </button>
+            </form>
             <form action={updateProfileAction} className={styles.form}>
                 <label className={styles.field}>
                     Om oss (valgfritt)

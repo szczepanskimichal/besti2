@@ -2,6 +2,7 @@ using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using SkiaSharp;
 
 namespace besti2.Tests;
 
@@ -9,8 +10,17 @@ public class BusinessImageServiceTests
 {
     private static readonly Guid KlippId = new("11111111-1111-1111-1111-111111111111");
 
-    // Smallest "PNG": the 8-byte signature plus some bytes
-    private static readonly byte[] Png = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3];
+     
+// A real PNG in memory, so the service can decode and resize it
+    
+    private static byte[] RealPng(int width, int height)
+    {
+        using var bitmap = new SKBitmap(width, height);
+        bitmap.Erase(SKColors.CornflowerBlue);
+        using var image = SKImage.FromBitmap(bitmap);
+        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+        return data.ToArray();
+    }
 
     private static async Task<(BusinessImageService Service, AppDbContext Db, FakeImageStorage Storage)> CreateAsync()
     {
@@ -28,11 +38,13 @@ public class BusinessImageServiceTests
     {
         var (service, db, storage) = await CreateAsync();
 
-        var error = await service.SetLogoAsync(KlippId, new MemoryStream(Png), Png.Length);
-
+        var png = RealPng(100, 100);
+        
+        var error = await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
+        
         Assert.Null(error);
         var logo = Assert.Single(db.BusinessImages.Where(i => i.BusinessId == KlippId && i.Kind == ImageKind.Logo));
-        Assert.EndsWith(".png", logo.FileName);
+        Assert.EndsWith(".webp", logo.FileName);
         Assert.True(storage.Files.ContainsKey(logo.FileName));
     }
 
@@ -55,11 +67,26 @@ public class BusinessImageServiceTests
     {
         var (service, db, storage) = await CreateAsync();
 
-        await service.SetLogoAsync(KlippId, new MemoryStream(Png), Png.Length);
-        await service.SetLogoAsync(KlippId, new MemoryStream(Png), Png.Length);
+        var png = RealPng(100, 100);
+        
+        await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
+        await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
 
         var logo = Assert.Single(db.BusinessImages.Where(i => i.BusinessId == KlippId));
         Assert.Single(storage.Files);
         Assert.True(storage.Files.ContainsKey(logo.FileName));
+    }
+    
+    [Fact]
+    
+    public async Task SetLogoAsync_ResizesLargeImage()
+    {
+        var (service, db, storage) = await CreateAsync();
+        var png = RealPng(2000, 1000);
+        await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
+        var saved = storage.Files[db.BusinessImages.Single().FileName];
+        using var bitmap = SKBitmap.Decode(saved);
+        Assert.Equal(512, bitmap.Width);
+        Assert.Equal(256, bitmap.Height);
     }
 }

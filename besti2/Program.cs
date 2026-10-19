@@ -22,11 +22,11 @@ builder.Services.AddIdentityApiEndpoints<AppUser>()
 var app = builder.Build();
 //--------------------------------------
 // Configure the HTTP request pipeline.
- if (app.Environment.IsDevelopment())
- {
-     app.MapOpenApi();
-     await DevUserSeeder.SeedAsync(app.Services);
- }
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    await DevUserSeeder.SeedAsync(app.Services);
+}
 
 app.UseHttpsRedirection();
 // Uploaded images (development storage), e.g. /uploads/abc.webp
@@ -40,43 +40,51 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseAuthentication();
 app.UseAuthorization();
 // Get all businesses (optional filters: category, city, text q)
-app.MapGet("/api/businesses", async (string? category, string? city, string? q, IBusinessService businessService, CancellationToken cancellationToken) =>
-{
-    return Results.Ok(await businessService.GetAllAsync(category, city, q, cancellationToken));
-});
+app.MapGet("/api/businesses",
+    async (string? category, string? city, string? q, IBusinessService businessService,
+        CancellationToken cancellationToken) =>
+    {
+        return Results.Ok(await businessService.GetAllAsync(category, city, q, cancellationToken));
+    });
 // Get distinct cities for the filter
-app.MapGet("/api/cities", async (IBusinessService businessService, CancellationToken cancellationToken) =>
-{
-    return Results.Ok(await businessService.GetCitiesAsync(cancellationToken));
-});
+app.MapGet("/api/cities",
+    async (IBusinessService businessService, CancellationToken cancellationToken) =>
+    {
+        return Results.Ok(await businessService.GetCitiesAsync(cancellationToken));
+    });
 // Get business by id
-app.MapGet("/api/businesses/{id:guid}", async (Guid id, IBusinessService businessService, CancellationToken cancellationToken) =>
-{
-    var business = await businessService.GetByIdAsync(id, cancellationToken);
-    return business is null ? Results.NotFound() : Results.Ok(business);
-});
+app.MapGet("/api/businesses/{id:guid}",
+    async (Guid id, IBusinessService businessService, CancellationToken cancellationToken) =>
+    {
+        var business = await businessService.GetByIdAsync(id, cancellationToken);
+        return business is null ? Results.NotFound() : Results.Ok(business);
+    });
 // Get availability for a service and employee on a specific date
-app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly date, IBookingService bookingService, CancellationToken cancellationToken) =>
+app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly date, IBookingService bookingService,
+    CancellationToken cancellationToken) =>
 {
     var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
     return slots is null ? Results.NotFound() : Results.Ok(slots);
 });
 // Create a new booking
-app.MapPost("/api/bookings", async (CreateBookingRequest request, IBookingService bookingService, CancellationToken cancellationToken) =>
-{
-    var result = await bookingService.CreateAsync(request, cancellationToken);
-
-    return result.Outcome switch
+app.MapPost("/api/bookings",
+    async (CreateBookingRequest request, IBookingService bookingService, CancellationToken cancellationToken) =>
     {
-        CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
-        CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
-        CreateBookingOutcome.SlotTaken => Results.Conflict(new { message = "Tiden er dessverre ikke lenger ledig." }),
-        _ => Results.NotFound()
-    };
-});
+        var result = await bookingService.CreateAsync(request, cancellationToken);
+
+        return result.Outcome switch
+        {
+            CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
+            CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
+            CreateBookingOutcome.SlotTaken => Results.Conflict(
+                new { message = "Tiden er dessverre ikke lenger ledig." }),
+            _ => Results.NotFound()
+        };
+    });
 
 // Register a new business with its owner account
-app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request, IBusinessRegistrationService registrationService, CancellationToken cancellationToken) =>
+app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
+    IBusinessRegistrationService registrationService, CancellationToken cancellationToken) =>
 {
     var result = await registrationService.RegisterAsync(request, cancellationToken);
     return result.Success
@@ -93,6 +101,7 @@ app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<
     {
         return Results.Forbid();
     }
+
     return Results.Ok(await bookingService.GetForBusinessAsync(businessId, cancellationToken));
 }).RequireAuthorization();
 
@@ -105,6 +114,7 @@ app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<
     {
         return Results.Forbid();
     }
+
     var business = await businessService.GetByIdAsync(businessId, cancellationToken);
     return business is null ? Results.NotFound() : Results.Ok(business);
 }).RequireAuthorization();
@@ -179,7 +189,7 @@ app.MapPut("/api/panel/opening-hours", async (UpdateOpeningHoursRequest request,
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
 
-// Business panel: owner uploads a logo (PNG, JPG or WebP, max 500 KB)
+// Business panel: owner uploads a logo (PNG, JPG or WebP, max 10 MB, saved as small WebP)
 app.MapPost("/api/panel/logo", async (IFormFile file, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBusinessImageService imageService, CancellationToken cancellationToken) =>
 {
@@ -222,14 +232,14 @@ async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, C
             Results.Conflict(new { message = "Bestillingen kan ikke endres til denne statusen." }),
         _ => Results.NotFound()
     };
-    
 }
 
 
 // Confirm a booking
 app.MapPost("/api/panel/bookings/{id:guid}/bekreft", (Guid id, ClaimsPrincipal principal,
             UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-        ChangeBookingStatusAsync(id, BookingStatus.Bekreftet, principal, userManager, bookingService, cancellationToken))
+        ChangeBookingStatusAsync(id, BookingStatus.Bekreftet, principal, userManager, bookingService,
+            cancellationToken))
     .RequireAuthorization();
 
 // Cancel a booking
@@ -237,7 +247,6 @@ app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, ClaimsPrincipal pri
             UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
         ChangeBookingStatusAsync(id, BookingStatus.Avlyst, principal, userManager, bookingService, cancellationToken))
     .RequireAuthorization();
-
 
 
 app.Run();
