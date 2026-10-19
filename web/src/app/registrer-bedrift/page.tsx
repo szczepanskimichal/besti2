@@ -1,3 +1,4 @@
+import NextLink from "next/link";
 import { categoryOptions } from "@/lib/categories";
 import { registerAction } from "./actions";
 import styles from "./page.module.css";
@@ -70,7 +71,10 @@ export default async function RegisterBusinessPage({ searchParams }: RegisterPag
         <input name="password" type="password" required minLength={6} autoComplete="new-password" />
         </label>
         <p className={styles.hint}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
-
+        <p className={styles.hint}>
+            Ved å registrere bedriften godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
+            bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
+        </p>
     <button type="submit" className={styles.primaryButton}>
         Registrer bedrift
     </button>

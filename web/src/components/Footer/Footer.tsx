@@ -15,6 +15,8 @@ export default function Footer() {
                     <NextLink href="/">Finn bedrift</NextLink>
                     <NextLink href="/registrer-bedrift">Registrer bedrift</NextLink>
                     <NextLink href="/panel">Logg inn</NextLink>
+                    <NextLink href="/personvern">Personvern</NextLink>
+                    <NextLink href="/vilkar">Vilkår</NextLink>
                 </nav>
             </div>
             <p className={styles.copy}>© {year} BESTI</p>

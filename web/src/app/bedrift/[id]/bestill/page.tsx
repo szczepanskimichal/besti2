@@ -110,7 +110,10 @@ export default async function BookingPage({ params, searchParams }: Props) {
                             <input type="checkbox" name="marketingConsent" />
                             Ja, jeg vil motta nyhetsbrev og tilbud på e-post
                         </label>
-
+                        <p className={styles.muted}>
+                            Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
+                            bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
+                        </p>
                         <button type="submit" className={styles.primaryButton}>Bekreft bestilling</button>
                     </form>
                 </section>
