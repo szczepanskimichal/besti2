@@ -55,6 +55,17 @@
     background: #fff;
 }
 
+.field textarea {
+    font: inherit;
+    font-weight: 400;
+    min-height: 88px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    background: #fff;
+    resize: vertical;
+}
+
 .secondaryButton {
     font: inherit;
     font-weight: 600;

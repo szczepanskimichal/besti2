@@ -56,6 +56,7 @@ export type CreateBookingInput = {
     customerPhone: string;
     customerEmail: string;
     marketingConsent: boolean;
+    note?: string;
 };
 
 export type PanelBooking = {
@@ -68,4 +69,5 @@ export type PanelBooking = {
     customerName: string;
     customerPhone: string;
     customerEmail: string;
+    customerNote: string | null;
 };

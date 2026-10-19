@@ -7,5 +7,6 @@ public record CreateBookingRequest(
     string CustomerName,
     string CustomerPhone,
     string CustomerEmail,
-    bool MarketingConsent
+    bool MarketingConsent,
+    string? Note=null
 );

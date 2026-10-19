@@ -204,4 +204,18 @@ public class BookingServiceTests
         var booking = Assert.Single(result);
         Assert.Equal("Kari Nordmann", booking.CustomerName);
     }
+    
+    // Customer's note is trimmed, saved and shown in the business panel
+    
+    [Fact]
+    
+    public async Task CreateAsync_SavesNoteForTheBusiness()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var request = HerreklippHosIngrid() with { Note = "  Jeg har langt hår  " };
+        await service.CreateAsync(request);
+        var booking = Assert.Single(await service.GetForBusinessAsync(KlippOgStil));
+        Assert.Equal("Jeg har langt hår", booking.CustomerNote);
+    }
 }

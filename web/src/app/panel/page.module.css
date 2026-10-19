@@ -168,6 +168,27 @@
     }
 }
 
+.note {
+    margin: 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--color-primary);
+    background: var(--color-primary-soft);
+    border-radius: 4px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+.note p {
+    margin: 0;
+}
+
+.note a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
 @media (min-width: 1200px) {
     .main {
         max-width: 960px;

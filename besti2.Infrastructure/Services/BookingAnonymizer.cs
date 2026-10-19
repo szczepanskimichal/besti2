@@ -26,6 +26,7 @@ public class BookingAnonymizer(AppDbContext dbContext) : IBookingAnonymizer
             booking.CustomerEmail = AnonymizedEmail;
             booking.MarketingConsent = false;
             booking.MarketingConsentUtc = null;
+            booking.CustomerNote = null;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

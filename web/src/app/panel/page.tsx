@@ -84,7 +84,14 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                                 {" · "}
                                 <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
                             </p>
-
+                            {booking.customerNote && (
+                                <div className={styles.note}>
+                                    <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
+                                    <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
+                                        Svar på e-post
+                                    </a>
+                                </div>
+                            )}
                             {booking.status !== "Avlyst" && (
                                 <div className={styles.actions}>
                                     {booking.status === "Venter" && (

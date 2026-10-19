@@ -99,6 +99,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             CustomerEmail = request.CustomerEmail.Trim().ToLowerInvariant(),
             MarketingConsent = request.MarketingConsent,
             MarketingConsentUtc = request.MarketingConsent ? DateTime.UtcNow : null,
+            CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             Status = BookingStatus.Venter
         };
 
@@ -127,7 +128,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.Employee.Name + " " + b.Employee.LastName,
                 b.CustomerName,
                 b.CustomerPhone,
-                b.CustomerEmail))
+                b.CustomerEmail,
+                b.CustomerNote))
             .ToListAsync(cancellationToken);
     } 
     
@@ -178,7 +180,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return "Oppgi en gyldig e-postadresse.";
         }
-
+        if (request.Note is { Length: > 500 })
+        {
+            
+            return "Meldingen kan være maks 500 tegn.";
+        }
         return null;
     }
     

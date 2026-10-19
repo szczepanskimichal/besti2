@@ -125,6 +125,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x=>x.CustomerEmail).IsRequired().HasMaxLength(250);
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.CustomerPhone).IsRequired().HasMaxLength(20);
+            e.Property(x => x.CustomerNote).HasMaxLength(500);
             e.Property(x => x.StartUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             e.Property(x => x.EndUtc)
