@@ -180,6 +180,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<string>("CustomerUserId")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<Guid>("EmployeeId")
                         .HasColumnType("uniqueidentifier");
 
@@ -204,6 +207,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(30)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CustomerUserId");
 
                     b.HasIndex("ServiceId");
 
@@ -715,6 +720,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("FullName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");

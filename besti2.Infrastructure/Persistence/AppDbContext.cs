@@ -115,6 +115,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<Booking>(e =>
         {
             e.HasIndex(x => new { x.EmployeeId, x.StartUtc });
+            e.HasIndex(x => x.CustomerUserId);
             e.HasOne(x => x.Employee).WithMany()
                 .HasForeignKey(x => x.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);

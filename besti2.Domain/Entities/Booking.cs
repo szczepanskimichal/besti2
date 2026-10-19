@@ -14,7 +14,8 @@ public class Booking
     public DateTime? MarketingConsentUtc { get; set; }
     public string? CustomerNote { get; set; }
     public BookingStatus Status { get; set; }
-
+    // Id of the customer's account (null for bookings made before customer accounts)
+    public string? CustomerUserId { get; set; }
     public Guid EmployeeId { get; set; }
     public Employee Employee { get; set; } = null!;
     public Guid ServiceId { get; set; }
