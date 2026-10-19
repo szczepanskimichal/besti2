@@ -9,5 +9,6 @@ public record PanelBookingDto(
     string EmployeeName,
     string CustomerName,
     string CustomerPhone,
-    string CustomerEmail
+    string CustomerEmail,
+    string? CustomerNote
     );
