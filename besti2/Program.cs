@@ -75,12 +75,20 @@ app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly
     var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
     return slots is null ? Results.NotFound() : Results.Ok(slots);
 });
-// Create a new booking
-app.MapPost("/api/bookings",
-    async (CreateBookingRequest request, IBookingService bookingService, CancellationToken cancellationToken) =>
-    {
-        var result = await bookingService.CreateAsync(request, cancellationToken);
 
+// Create a new booking (customers only; name and email come from the account)
+app.MapPost("/api/bookings",
+    async (CreateBookingRequest request, ClaimsPrincipal principal, UserManager<AppUser> userManager,
+        IBookingService bookingService, CancellationToken cancellationToken) =>
+    {
+        var user = await userManager.GetUserAsync(principal);
+        if (user is null || user.BusinessId is not null)
+        {
+            return Results.BadRequest(new { message = "Logg inn med en kundekonto for å bestille." });
+        }
+    // Never trust name/email from the form: use the account's
+        var fromAccount = request with { CustomerName = user.FullName ?? "", CustomerEmail = user.Email ?? "" };
+        var result = await bookingService.CreateAsync(fromAccount, user.Id, cancellationToken);
         return result.Outcome switch
         {
             CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
@@ -89,7 +97,7 @@ app.MapPost("/api/bookings",
                 new { message = "Tiden er dessverre ikke lenger ledig." }),
             _ => Results.NotFound()
         };
-    });
+    }).RequireAuthorization();
 
 // Register a new business with its owner account
 app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,

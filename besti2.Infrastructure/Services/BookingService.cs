@@ -58,8 +58,9 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             DateTime.UtcNow);
     }
 
-        public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, CancellationToken cancellationToken = default)
-    {
+    public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, string? customerUserId = null,
+        
+        CancellationToken cancellationToken = default)    {
         var error = Validate(request);
         if (error is not null)
         {
@@ -99,6 +100,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             MarketingConsent = request.MarketingConsent,
             MarketingConsentUtc = request.MarketingConsent ? DateTime.UtcNow : null,
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            CustomerUserId = customerUserId,
             Status = BookingStatus.Venter
         };
 
