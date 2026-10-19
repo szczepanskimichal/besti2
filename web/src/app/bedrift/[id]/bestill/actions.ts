@@ -18,6 +18,7 @@ export async function createBookingAction(formData: FormData) {
         customerPhone: String(formData.get("customerPhone") ?? ""),
         customerEmail: String(formData.get("customerEmail") ?? ""),
         marketingConsent: formData.get("marketingConsent") === "on",
+        note: String(formData.get("note") ?? ""),
     });
 
     const basePath = `/bedrift/${businessId}/bestill`;

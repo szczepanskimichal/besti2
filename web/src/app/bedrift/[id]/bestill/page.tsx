@@ -105,7 +105,10 @@ export default async function BookingPage({ params, searchParams }: Props) {
                             E-post
                             <input name="customerEmail" type="email" required maxLength={250} autoComplete="email" />
                         </label>
-
+                        <label className={styles.field}>
+                            Melding til bedriften (valgfritt)
+                            <textarea name="note" maxLength={500} rows={3} placeholder="F.eks. «Jeg har langt hår»" />
+                        </label>
                         <label className={styles.checkbox}>
                             <input type="checkbox" name="marketingConsent" />
                             Ja, jeg vil motta nyhetsbrev og tilbud på e-post
