@@ -25,7 +25,7 @@ public static class DevUserSeeder
             if (await userManager.FindByEmailAsync(email) is not null)
                 continue;
 
-            var user = new AppUser { UserName = email, Email = email, BusinessId = businessId };
+            var user = new AppUser { UserName = email, Email = email, EmailConfirmed = true, BusinessId = businessId };
             var result = await userManager.CreateAsync(user, DevPassword);
 
             if (!result.Succeeded)

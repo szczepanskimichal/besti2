@@ -72,7 +72,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         await dbContext.SaveChangesAsync(cancellationToken);
 
         // 3. Create the owner account linked to the business
-        var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };
+        // Treated as confirmed until real email verification arrives with customer accounts
+        var user = new AppUser { UserName = email, Email = email, EmailConfirmed = true, BusinessId = business.Id };        
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
