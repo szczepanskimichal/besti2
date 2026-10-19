@@ -1,16 +1,5 @@
+import { getCategoryColor } from "@/lib/categories";
 import styles from "./BusinessLogo.module.css";
-
-// Dark enough for white text (WCAG contrast)
-const categoryColors: Record<string, string> = {
-    Frisor: "#be185d",
-    Barber: "#6d28d9",
-    Skjonnhet: "#a21caf",
-    Bygg: "#c2410c",
-    Rorlegger: "#0369a1",
-    Elektriker: "#a16207",
-    Helse: "#047857",
-    Annet: "#475569",
-};
 
 // "Klipp & Stil Frisør" -> "KS", "Fjord Bygg AS" -> "FB"
 function getInitials(name: string): string {
@@ -38,7 +27,7 @@ export default function BusinessLogo({ name, category, logoUrl, size = "small" }
     return (
         <span
             className={`${styles.logo} ${styles[size]}`}
-            style={{ backgroundColor: categoryColors[category] ?? categoryColors.Annet }}
+            style={{ backgroundColor: getCategoryColor(category) }}
             aria-hidden="true"
         >
             {getInitials(name)}

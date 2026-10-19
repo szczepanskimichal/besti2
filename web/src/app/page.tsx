@@ -1,6 +1,6 @@
 import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import {getBusinesses, getCities} from '@/lib/api';
-import {categoryOptions} from '@/lib/categories';
+import {categoryOptionGroups} from '@/lib/categories';
 import styles from "./page.module.css";
 
 type HomeProps = {
@@ -32,8 +32,12 @@ export default async function Home({searchParams}: HomeProps) {
                         Kategori
                         <select name="category" defaultValue={category ?? ""}>
                             <option value="">Alle kategorier</option>
-                            {categoryOptions.map((option) => (
-                                <option key={option.value} value={option.value}>{option.label}</option>
+                            {categoryOptionGroups.map((group) => (
+                                <optgroup key={group.label} label={group.label}>
+                                    {group.options.map((option) => (
+                                        <option key={option.value} value={option.value}>{option.label}</option>
+                                    ))}
+                                </optgroup>
                             ))}
                         </select>
                     </label>
