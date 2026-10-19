@@ -112,10 +112,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     public async Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
-        
         Guid businessId, CancellationToken cancellationToken = default)
     {
-        
         return await dbContext.Bookings
             .AsNoTracking()
             .Where(b => b.Service.BusinessId == businessId && b.EndUtc >= DateTime.UtcNow) // only future bookings!!!
@@ -131,8 +129,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerPhone,
                 b.CustomerEmail))
             .ToListAsync(cancellationToken);
-        
     } 
+    
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
         Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default)

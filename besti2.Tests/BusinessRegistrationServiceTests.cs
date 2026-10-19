@@ -22,7 +22,8 @@ public class BusinessRegistrationServiceTests
 
         var db = provider.GetRequiredService<AppDbContext>();
         var users = provider.GetRequiredService<UserManager<AppUser>>();
-        return (new BusinessRegistrationService(db, users, new FakeGeocodingService()), db, users);    }
+        return (new BusinessRegistrationService(db, users, new FakeGeocodingService()), db, users);
+    }
 
     private static RegisterBusinessRequest TestFrisor() => new(
         "Test Frisør", "912345678", "Frisor", "eier@testfrisor.example",

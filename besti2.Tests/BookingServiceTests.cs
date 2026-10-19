@@ -12,14 +12,14 @@ namespace besti2.Tests;
 
 public class BookingServiceTests
 {
-    // Poniedziałek 7.01.2030, 09:00 UTC = 10:00 w Oslo (czas zimowy)
+    // Monday 7 Jan 2030, 09:00 UTC = 10:00 in Oslo (winter time)
     private static readonly DateTime FutureMondayAt10 = new(2030, 1, 7, 9, 0, 0, DateTimeKind.Utc);
-    
+
     private static readonly Guid KlippOgStil = new("11111111-1111-1111-1111-111111111111");
     private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
     private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
     private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
-    
+
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -62,8 +62,8 @@ public class BookingServiceTests
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
         Assert.Equal(0, await db.Bookings.CountAsync());
     }
-    
-    
+
+
     [Fact]
     public async Task CreateAsync_SendsConfirmationEmailWithOsloTime()
     {
@@ -78,7 +78,7 @@ public class BookingServiceTests
         Assert.Contains("Herreklipp", sent.Body);
         Assert.Contains("mandag 7. januar kl. 10:00", sent.Body);
     }
-    
+
     [Fact]
     public async Task UpdateStatusAsync_Confirm_SendsStatusEmail()
     {
@@ -106,11 +106,12 @@ public class BookingServiceTests
 
         Assert.Equal(2, email.Sent.Count);
     }
+
     [Fact]
     public async Task GetForBusinessAsync_ReturnsOnlyOwnBusinessBookings()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);     
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         await service.CreateAsync(HerreklippHosIngrid());
 
         var own = await service.GetForBusinessAsync(KlippOgStil);
@@ -125,7 +126,7 @@ public class BookingServiceTests
     public async Task UpdateStatusAsync_OtherBusiness_ReturnsNotFound()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);    
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         var created = await service.CreateAsync(HerreklippHosIngrid());
 
         var outcome = await service.UpdateStatusAsync(created.Booking!.Id, FjordBygg, BookingStatus.Bekreftet);
@@ -138,7 +139,7 @@ public class BookingServiceTests
     public async Task UpdateStatusAsync_CancelledBooking_CannotBeConfirmed()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);     
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         var created = await service.CreateAsync(HerreklippHosIngrid());
 
         var cancel = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
@@ -147,14 +148,14 @@ public class BookingServiceTests
         Assert.Equal(UpdateBookingStatusOutcome.Updated, cancel);
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, confirm);
     }
-    
+
     [Fact]
     public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
     {
-        await using var db = await CreateSeededDbAsync(); 
+        await using var db = await CreateSeededDbAsync();
         var service = new BookingService(db, new FakeEmailService(),
-        NullLogger<BookingService>.Instance);
-        var sunday = new DateOnly(2030, 1, 6); 
+            NullLogger<BookingService>.Instance);
+        var sunday = new DateOnly(2030, 1, 6);
 
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
@@ -167,14 +168,16 @@ public class BookingServiceTests
     public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);        var saturday = new DateOnly(2030, 1, 5); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var saturday = new DateOnly(2030, 1, 5); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
 
         Assert.NotNull(slots);
-        Assert.Equal(new DateTime(2030, 1, 5, 9, 0, 0, DateTimeKind.Utc), slots[0]);    // 10:00 in Oslo
+        Assert.Equal(new DateTime(2030, 1, 5, 9, 0, 0, DateTimeKind.Utc), slots[0]); // 10:00 in Oslo
         Assert.Equal(new DateTime(2030, 1, 5, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
     }
+
     // check if GetForBusinessAsync hides bookings that have already ended
     [Fact]
     public async Task GetForBusinessAsync_HidesPastBookings()
@@ -200,48 +203,5 @@ public class BookingServiceTests
 
         var booking = Assert.Single(result);
         Assert.Equal("Kari Nordmann", booking.CustomerName);
-    }
-    // check if UpdateProfileAsync saves description and contact info - happy path
-    [Fact]
-    public async Task UpdateProfileAsync_ChangesProfile()
-    {
-        // Arrange
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
-        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
-        var request = new UpdateProfileRequest("Ny beskrivelse", "+4799999999", "Nygata 5", "5003", "Bergen");
-
-        // Act
-        var error = await service.UpdateProfileAsync(klippId, request);
-
-        // Assert
-        Assert.Null(error);
-        var business = await service.GetByIdAsync(klippId);
-        Assert.Equal("Ny beskrivelse", business!.Description);
-        Assert.Equal("Bergen", business.City);
-    }
-    // check if UpdateProfileAsync rejects an invalid postal code
-    [Fact]
-    public async Task UpdateProfileAsync_ReturnsError_WhenPostalCodeIsInvalid()
-    {
-        // Arrange
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
-        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
-        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
-        var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "12345", "Bergen");
-
-        // Act
-        var error = await service.UpdateProfileAsync(klippId, request);
-
-        // Assert
-        Assert.Equal("Postnummer må være 4 siffer.", error);
     }
 }

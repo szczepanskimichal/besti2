@@ -2,8 +2,6 @@ namespace besti2.Application.Bookings;
 
 public static class SlotCalculator
 {
-    //public static readonly TimeOnly OpensAt = new(9, 0);
-    //public static readonly TimeOnly ClosesAt = new(17, 0);
     public const int SlotMinutes = 30;
 
     private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");

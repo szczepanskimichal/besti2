@@ -10,7 +10,8 @@ using Microsoft.EntityFrameworkCore;
 namespace besti2.Infrastructure.Services;
 
 public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
-    IGeocodingService geocoding) : IBusinessRegistrationService{
+    IGeocodingService geocoding) : IBusinessRegistrationService 
+{
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
         // 1. Check the input
