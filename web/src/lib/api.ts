@@ -327,3 +327,17 @@ export async function confirmEmail(userId: string, code: string): Promise<boolea
     });
     return res.ok;
 }
+
+export type Me = {
+    email: string;
+    fullName: string | null;
+    isBusiness: boolean;
+};
+
+export async function getMe(token: string): Promise<Me | null> {
+    const res = await fetch(`${API_URL}/api/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+    return res.ok ? res.json() : null;
+}

@@ -12,11 +12,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     return (
         <main className={styles.main}>
             <h1 className={styles.title}>Logg inn</h1>
-            <p className={styles.muted}>For bedrifter som bruker besti2.</p>
+            <p className={styles.muted}>For kunder og bedrifter.</p>
             {feil && (
                 <p className={styles.error} role="alert">
-                    Feil e-post eller passord. Prøv igjen.
-                </p>
+                    Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først.                </p>
             )}
             {registrert && (
                 <p className={styles.success} role="status">
@@ -42,7 +41,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 </button>
             </form>
             <p className={styles.signup}>
-                Ny her? <Link href="/registrer-bedrift">Registrer bedriften din</Link>
+                Ny kunde? <Link href="/registrer">Opprett konto</Link>
+            </p>
+            <p className={styles.signup}>
+                Har du bedrift? <Link href="/registrer-bedrift">Registrer bedriften din</Link>
             </p>
             <p className={styles.signup}>
                 <Link href="/glemt-passord">Glemt passord?</Link>
