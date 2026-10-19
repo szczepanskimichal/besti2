@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { login } from "@/lib/api";
+import { getMe, login } from "@/lib/api";
 import { TOKEN_COOKIE } from "@/lib/auth";
 
 export async function loginAction(formData: FormData) {
@@ -24,7 +24,9 @@ export async function loginAction(formData: FormData) {
         maxAge: result.expiresIn,
     });
 
-    redirect("/panel");
+    // Business owners go to their panel, customers to the front page
+    const me = await getMe(result.accessToken);
+    redirect(me?.isBusiness ? "/panel" : "/");
 }
 
 export async function logoutAction() {

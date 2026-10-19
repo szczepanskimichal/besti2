@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using besti2.Application.Accounts;
 using Microsoft.AspNetCore.Identity;
 using besti2.Application.Bookings;
 using besti2.Infrastructure;
@@ -19,8 +20,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 // Add authentication and authorization
 builder.Services.AddAuthorization();
-builder.Services.AddIdentityApiEndpoints<AppUser>()
-    .AddEntityFrameworkStores<AppDbContext>();
+// Login only after the email is confirmed (business owners are confirmed at registration)
+builder.Services.AddIdentityApiEndpoints<AppUser>(options => options.SignIn.RequireConfirmedEmail = true)
+    .AddEntityFrameworkStores<AppDbContext>()
+    ;
 builder.Services.AddHostedService<BookingAnonymizationJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
@@ -97,6 +100,32 @@ app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
         ? Results.Created()
         : Results.BadRequest(new { message = result.Error });
 });
+
+// Customer sign-up: creates the account and sends a confirmation mail
+app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
+    ICustomerAccountService accountService, CancellationToken cancellationToken) =>
+{
+    var error = await accountService.RegisterAsync(request, cancellationToken);
+    return error is null ? Results.Created() : Results.BadRequest(new { message = error });
+});
+
+// Customer clicks the link in the mail; the web page sends the id and code here
+app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
+    ICustomerAccountService accountService) =>
+{
+    var confirmed = await accountService.ConfirmEmailAsync(request);
+    return confirmed
+        ? Results.NoContent()
+        : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
+});
+// Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
+app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    return user is null
+        ? Results.Unauthorized()
+        : Results.Ok(new { user.Email, user.FullName, IsBusiness = user.BusinessId is not null });
+}).RequireAuthorization();
 
 // Business panel: bookings for the logged-in owner's business
 app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
@@ -177,6 +206,7 @@ app.MapPost("/api/panel/employees", async (EmployeeRequest request, ClaimsPrinci
     {
         return Results.Forbid();
     }
+
     var error = await businessService.AddEmployeeAsync(businessId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
@@ -190,6 +220,7 @@ app.MapPut("/api/panel/employees/{id:guid}", async (Guid id, EmployeeRequest req
     {
         return Results.Forbid();
     }
+
     var error = await businessService.UpdateEmployeeAsync(businessId, id, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
@@ -203,6 +234,7 @@ app.MapDelete("/api/panel/employees/{id:guid}", async (Guid id, ClaimsPrincipal 
     {
         return Results.Forbid();
     }
+
     var error = await businessService.DeleteEmployeeAsync(businessId, id, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
@@ -216,6 +248,7 @@ app.MapPut("/api/panel/business", async (UpdateProfileRequest request, ClaimsPri
     {
         return Results.Forbid();
     }
+
     var error = await businessService.UpdateProfileAsync(businessId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();

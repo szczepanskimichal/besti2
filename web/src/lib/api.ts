@@ -303,3 +303,41 @@ export async function deleteEmployee(token: string, employeeId: string): Promise
     const body = await res.json().catch(() => null);
     return {ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen."};
 }
+
+export async function registerCustomer(input: { fullName: string; email: string; password: string }): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/account/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return { ok: true };
+    }
+    const body = await res.json().catch(() => null);
+    return { ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen." };
+}
+
+export async function confirmEmail(userId: string, code: string): Promise<boolean> {
+    const res = await fetch(`${API_URL}/api/account/confirm-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, code }),
+        cache: "no-store",
+    });
+    return res.ok;
+}
+
+export type Me = {
+    email: string;
+    fullName: string | null;
+    isBusiness: boolean;
+};
+
+export async function getMe(token: string): Promise<Me | null> {
+    const res = await fetch(`${API_URL}/api/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: "no-store",
+    });
+    return res.ok ? res.json() : null;
+}
