@@ -24,5 +24,5 @@ public class Business
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();
     public List<OpeningHours> OpeningHours { get; set; } = new();
-
+    public List<BusinessImage> Images { get; set; } = new();
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { updateProfile } from "@/lib/api";
+import { updateProfile, uploadLogo } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 export async function updateProfileAction(formData: FormData) {
@@ -25,4 +25,20 @@ export async function updateProfileAction(formData: FormData) {
     }
 
     redirect("/panel/profil?lagret=1");
+}
+
+export async function uploadLogoAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const file = formData.get("logo");
+    if (!(file instanceof File) || file.size === 0) {
+        redirect(`/panel/profil?feil=${encodeURIComponent("Velg et bilde.")}`);
+    }
+    const result = await uploadLogo(token, file);
+    if (!result.ok) {
+        redirect(`/panel/profil?feil=${encodeURIComponent(result.message)}`);
+    }
+    redirect("/panel/profil?logo=1");
 }

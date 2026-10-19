@@ -23,10 +23,18 @@ function getInitials(name: string): string {
 type Props = {
     name: string;
     category: string;
+    logoUrl?: string | null;
     size?: "small" | "large";
 };
 
-export default function BusinessLogo({ name, category, size = "small" }: Props) {
+export default function BusinessLogo({ name, category, logoUrl, size = "small" }: Props) {
+// Uploaded logo when the business has one, otherwise initials
+    if (logoUrl) {
+        return (
+// eslint-disable-next-line @next/next/no-img-element -- small logo from our own API, next/image not needed
+            <img src={logoUrl} alt="" className={`${styles.logo} ${styles.image} ${styles[size]}`} />
+        );
+    }
     return (
         <span
             className={`${styles.logo} ${styles[size]}`}

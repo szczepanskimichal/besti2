@@ -1,54 +1,63 @@
 using besti2.Application.Businesses;
 using besti2.Application.Geocoding;
+using besti2.Application.Images;
 using besti2.Domain.Enums;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
-public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding) : IBusinessService {
-public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
-    string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
-{
-    var query = dbContext.Businesses.AsNoTracking();
 
-    if (!string.IsNullOrWhiteSpace(category))
+public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding, IImageStorage imageStorage) : IBusinessService
+{
+    public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
+        string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
     {
-        if (!Enum.TryParse<BusinessCategory>(category, ignoreCase: true, out var parsedCategory)
-            || !Enum.IsDefined(parsedCategory))
+        var query = dbContext.Businesses.AsNoTracking();
+
+        if (!string.IsNullOrWhiteSpace(category))
         {
-            return [];
+            if (!Enum.TryParse<BusinessCategory>(category, ignoreCase: true, out var parsedCategory)
+                || !Enum.IsDefined(parsedCategory))
+            {
+                return [];
+            }
+
+            query = query.Where(b => b.Category == parsedCategory);
         }
 
-        query = query.Where(b => b.Category == parsedCategory);
-    }
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            var trimmedCity = city.Trim().ToLower();
+            query = query.Where(b => b.City.ToLower().Contains(trimmedCity));
+        }
 
-    if (!string.IsNullOrWhiteSpace(city))
-    {
-        var trimmedCity = city.Trim().ToLower();
-        query = query.Where(b => b.City.ToLower().Contains(trimmedCity));
-    }
+        if (!string.IsNullOrWhiteSpace(q))
+        {
+            var text = q.Trim().ToLower();
+            query = query.Where(b => b.Name.ToLower().Contains(text)
+                                     || b.Services.Any(s => !s.IsDeleted && s.Name.ToLower().Contains(text)));
+        }
 
-    if (!string.IsNullOrWhiteSpace(q))
-    {
-        var text = q.Trim().ToLower();
-        query = query.Where(b => b.Name.ToLower().Contains(text)
-                                 || b.Services.Any(s => !s.IsDeleted && s.Name.ToLower().Contains(text)));
-    }
-    
-    return await query
-        .OrderBy(b => b.Name)
+        var items = await query
+            .OrderBy(b => b.Name)
             .Select(b => new BusinessListItemDto(
                 b.Id,
                 b.Name,
                 b.Category.ToString(),
                 b.Description,
-                b.City
+                b.City,
+                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault()
             ))
             .ToListAsync(cancellationToken);
+
+        return items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
+            
     }
 
 
+    // The database keeps only the file name; the storage knows the public address
+    private string? ToLogoUrl(string? fileName) => fileName is null ? null : imageStorage.GetUrl(fileName);
     public async Task<IReadOnlyList<string>> GetCitiesAsync(CancellationToken cancellationToken = default)
     {
         return await dbContext.Businesses
@@ -59,9 +68,9 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
             .ToListAsync(cancellationToken);
     }
 
-      public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Businesses
+        var business = await dbContext.Businesses
             .AsNoTracking()
             .Where(b => b.Id == id)
             .Select(b => new BusinessDetailsDto(
@@ -89,11 +98,15 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                     .Select(h => new OpeningHoursDto(h.DayOfWeek, h.OpensAt, h.ClosesAt))
                     .ToList(),
                 b.Latitude,
-                b.Longitude
+                b.Longitude,
+                // Logo file name for now; turned into a URL below
+                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault()
             ))
             .FirstOrDefaultAsync(cancellationToken);
+
+        return business is null ? null : business with { LogoUrl = ToLogoUrl(business.LogoUrl) };
     }
-    
+
     public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -119,7 +132,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
-    
+
     public async Task<string?> UpdateServiceAsync(Guid businessId, Guid serviceId, CreateServiceRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -161,22 +174,24 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
     }
-    
-    
+
+
     public async Task<string?> UpdateProfileAsync(Guid businessId, UpdateProfileRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Phone) 
+        if (string.IsNullOrWhiteSpace(request.Phone)
             || string.IsNullOrWhiteSpace(request.Address)
             || string.IsNullOrWhiteSpace(request.City)
             || request.Phone.Length > 20 || request.City.Length > 200)
         {
             return "Fyll ut telefon, adresse og by.";
         }
+
         if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
         {
             return "Postnummer må være 4 siffer.";
         }
+
         if (request.Description is { Length: > 1000 })
         {
             return "Beskrivelsen kan ha maks 1000 tegn.";
@@ -187,7 +202,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         {
             return "Fant ikke bedriften.";
         }
-        
+
         var addressChanged = business.Address != request.Address.Trim() || business.PostalCode != request.PostalCode;
         business.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         business.PhoneNumber = request.Phone.Trim();
@@ -205,8 +220,8 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
-    
-    
+
+
     public async Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -215,6 +230,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         {
             return "Ugyldige dager.";
         }
+
         if (request.Days.Any(d => d.ClosesAt <= d.OpensAt))
         {
             return "Stengetid må være etter åpningstid.";
@@ -236,6 +252,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
                 row = new OpeningHours { Id = Guid.NewGuid(), BusinessId = businessId, DayOfWeek = day.DayOfWeek };
                 dbContext.OpeningHours.Add(row);
             }
+
             row.OpensAt = day.OpensAt;
             row.ClosesAt = day.ClosesAt;
         }
@@ -243,7 +260,7 @@ public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
-    
+
     // Shared validation for adding and editing a service; returns null when valid
     private static string? ValidateService(CreateServiceRequest request)
     {

@@ -485,3 +485,6 @@ $RECYCLE.BIN/
 AGENTS.md
 CLAUDE.md
 .claude/
+
+# Uploaded images (local development storage)
+besti2/uploads/

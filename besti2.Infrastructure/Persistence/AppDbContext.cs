@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Booking> Bookings { get; set; } = null!;
     
     public DbSet<OpeningHours> OpeningHours { get; set; } = null!;
+    public DbSet<BusinessImage> BusinessImages { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -149,6 +150,13 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 Hours(13, NordlysId, DayOfWeek.Tuesday, 8, 16),
                 Hours(14, NordlysId, DayOfWeek.Wednesday, 8, 16),
                 Hours(15, NordlysId, DayOfWeek.Thursday, 8, 16));
+        });
+        modelBuilder.Entity<BusinessImage>(e =>
+        {
+            e.Property(x => x.Kind).HasConversion<string>().IsRequired().HasMaxLength(20);
+            e.Property(x => x.FileName).IsRequired().HasMaxLength(100);
+            e.Property(x => x.Caption).HasMaxLength(200);
+            e.HasIndex(x => new { x.BusinessId, x.Kind });
         });
     }
         // Seed helpers for OpeningHours

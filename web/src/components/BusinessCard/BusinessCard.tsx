@@ -13,7 +13,7 @@ export default function BusinessCard({ business }: Props ) {
     <NextLink href={`/bedrift/${business.id}`}  className={styles.link}> 
         <article className={styles.card}>
             <div className={styles.top}>
-                <BusinessLogo name={business.name} category={business.category} />
+                <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl}/>
                 <span className={styles.category}>{getCategoryLabel(business.category)}</span>
             </div>
             <h2 className={styles.name}>{business.name}</h2>

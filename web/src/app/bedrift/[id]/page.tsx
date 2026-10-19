@@ -36,7 +36,7 @@ export default async function BusinessPage({ params }: Props) {
 
             <header className={styles.header}>
                 <div className={styles.top}>
-                    <BusinessLogo name={business.name} category={business.category} size="large" />
+                    <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
