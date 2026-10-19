@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import { categoryOptions } from "@/lib/categories";
+import { categoryOptionGroups } from "@/lib/categories";
 import { registerAction } from "./actions";
 import styles from "./page.module.css";
 
@@ -35,9 +35,13 @@ export default async function RegisterBusinessPage({ searchParams }: RegisterPag
         Kategori
         <select name="category" required defaultValue="">
     <option value="" disabled>Velg kategori</option>
-    {categoryOptions.map((option) => (
-        <option key={option.value} value={option.value}>{option.label}</option>
-    ))}
+            {categoryOptionGroups.map((group) => (
+                <optgroup key={group.label} label={group.label}>
+                    {group.options.map((option) => (
+                        <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                </optgroup>
+            ))}
     </select>
     </label>
 
