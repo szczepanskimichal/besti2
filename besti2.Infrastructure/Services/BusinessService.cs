@@ -90,6 +90,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                         s.Id, s.Name, s.Description, s.DurationMinutes, s.PriceNok, s.PriceType.ToString()))
                     .ToList(),
                 b.Employees
+                    .Where(e => !e.IsDeleted)
                     .OrderBy(e => e.Name)
                     .Select(e => new EmployeeDto(e.Id, e.Name, e.LastName))
                     .ToList(),
