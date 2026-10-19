@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
-    title: "Personvernerklæring – BESTI",
+    title: "Personvernerklæring",
 };
 export default function PrivacyPage() {
     return (
