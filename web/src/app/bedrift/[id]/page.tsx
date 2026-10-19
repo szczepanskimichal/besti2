@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
@@ -13,6 +14,26 @@ type Props = {
     params: Promise<{ id: string }>;
 };
 
+// Title, description and link preview per business (for Google, Messenger, SMS)
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { id } = await params;
+    const business = await getBusiness(id);
+    if (!business) {
+        return { title: "Fant ikke bedriften" };
+    }
+    const title = `${business.name} – Bestill time i ${business.city}`;
+    const description = business.description?.slice(0, 155)
+        ?? `Se tjenester, priser og ledige tider hos ${business.name} i ${business.city}, og bestill time på nett.`;
+    return {
+        title,
+        description,
+        openGraph: {
+            title,
+            description,
+            images: business.logoUrl ? [business.logoUrl] : undefined,
+        },
+    };
+}
 export default async function BusinessPage({ params }: Props) {
     const { id } = await params;
     const business = await getBusiness(id);

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
-    title: "Vilkår for bruk – BESTI",
+    title: "Vilkår for bruk",
 };
 
 export default function TermsPage() {

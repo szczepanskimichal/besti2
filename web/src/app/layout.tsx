@@ -3,8 +3,11 @@ import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 export const metadata: Metadata = {
-  title: "besti2 – Finn og bestill time",
-  description: "Finn bedrifter og bestill time på nett."
+    title: {
+        default: "BESTI – Finn og bestill time",
+        template: "%s | BESTI",
+    },
+    description: "Finn frisører, håndverkere og andre lokale bedrifter i Norge, se ledige tider og bestill time på nett.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
