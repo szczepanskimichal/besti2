@@ -3,11 +3,11 @@ import { loginAction } from "./actions";
 import styles from "./page.module.css";
 
 type LoginPageProps = {
-    searchParams: Promise<{ feil?: string, registrert?: string, nyttPassord?: string }>;
+    searchParams: Promise<{ feil?: string, registrert?: string, nyttPassord?: string, neste?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-    const { feil, registrert, nyttPassord } = await searchParams;
+    const { feil, registrert, nyttPassord, neste } = await searchParams;
 
     return (
         <main className={styles.main}>
@@ -28,6 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                 </p>
             )}
             <form action={loginAction} className={styles.form}>
+                <input type="hidden" name="neste" value={neste ?? ""} />
                 <label className={styles.field}>
                     E-post
                     <input name="email" type="email" required autoComplete="email" />
