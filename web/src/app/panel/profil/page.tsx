@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
-import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import { getToken } from "@/lib/auth";
-import { updateProfileAction, uploadLogoAction } from "./actions";
+import { updateProfileAction } from "./actions";
+import LogoUploadForm from "./LogoUploadForm";
 import styles from "../tjenester/page.module.css";
 
 type ProfilePageProps = {
@@ -40,16 +40,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     Logoen er lagret.
                 </p>
             )}
-            <form action={uploadLogoAction} className={styles.form}>
-                <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
-                <label className={styles.field}>
-                    Logo (PNG, JPG eller WebP, maks 500 KB)
-                    <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required />
-                </label>
-                <button type="submit" className={styles.primaryButton}>
-                    Last opp logo
-                </button>
-            </form>
+            <LogoUploadForm name={business.name} category={business.category} logoUrl={business.logoUrl} />
             <form action={updateProfileAction} className={styles.form}>
                 <label className={styles.field}>
                     Om oss (valgfritt)
