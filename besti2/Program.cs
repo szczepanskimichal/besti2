@@ -167,6 +167,45 @@ app.MapDelete("/api/panel/services/{id:guid}", async (Guid id, ClaimsPrincipal p
     return deleted ? Results.NoContent() : Results.NotFound();
 }).RequireAuthorization();
 
+// Business panel: add an employee
+app.MapPost("/api/panel/employees", async (EmployeeRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    var error = await businessService.AddEmployeeAsync(businessId, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
+// Business panel: edit one of the owner's employees
+app.MapPut("/api/panel/employees/{id:guid}", async (Guid id, EmployeeRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    var error = await businessService.UpdateEmployeeAsync(businessId, id, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
+// Business panel: soft delete one of the owner's employees (never the last one)
+app.MapDelete("/api/panel/employees/{id:guid}", async (Guid id, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    var error = await businessService.DeleteEmployeeAsync(businessId, id, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
 
 // Business panel: owner edits description and contact info
 app.MapPut("/api/panel/business", async (UpdateProfileRequest request, ClaimsPrincipal principal,
@@ -177,10 +216,10 @@ app.MapPut("/api/panel/business", async (UpdateProfileRequest request, ClaimsPri
     {
         return Results.Forbid();
     }
-
     var error = await businessService.UpdateProfileAsync(businessId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+
 // Business panel: owner updates opening hours
 app.MapPut("/api/panel/opening-hours", async (UpdateOpeningHoursRequest request, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBusinessService businessService, CancellationToken cancellationToken) =>

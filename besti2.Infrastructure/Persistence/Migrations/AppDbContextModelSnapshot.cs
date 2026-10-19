@@ -367,6 +367,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("BusinessId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -388,6 +391,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("b1111111-0000-0000-0000-000000000001"),
                             BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            IsDeleted = false,
                             LastName = "Hansen",
                             Name = "Ingrid"
                         },
@@ -395,6 +399,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("b1111111-0000-0000-0000-000000000002"),
                             BusinessId = new Guid("11111111-1111-1111-1111-111111111111"),
+                            IsDeleted = false,
                             LastName = "Berg",
                             Name = "Sofie"
                         },
@@ -402,6 +407,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("b2222222-0000-0000-0000-000000000001"),
                             BusinessId = new Guid("22222222-2222-2222-2222-222222222222"),
+                            IsDeleted = false,
                             LastName = "Johansen",
                             Name = "Lars"
                         },
@@ -409,6 +415,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("b3333333-0000-0000-0000-000000000001"),
                             BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
+                            IsDeleted = false,
                             LastName = "Nordmann",
                             Name = "Kari"
                         });

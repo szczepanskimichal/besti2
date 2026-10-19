@@ -262,3 +262,44 @@ export async function resetPassword(email: string, resetCode: string, newPasswor
     });
     return res.ok;
 }
+
+export async function addEmployee(token: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/employees`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return {ok: true};
+    }
+    const body = await res.json().catch(() => null);
+    return {ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen."};
+}
+export async function updateEmployee(token: string, employeeId: string, input: object): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/employees/${employeeId}`, {
+        method: "PUT",
+        headers: {"Content-Type": "application/json", Authorization: `Bearer ${token}`},
+        body: JSON.stringify(input),
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return {ok: true};
+    }
+    const body = await res.json().catch(() => null);
+    return {ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen."};
+}
+
+// Returns the API message too, because the last employee cannot be deleted
+export async function deleteEmployee(token: string, employeeId: string): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/panel/employees/${employeeId}`, {
+        method: "DELETE",
+        headers: {Authorization: `Bearer ${token}`},
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return {ok: true};
+    }
+    const body = await res.json().catch(() => null);
+    return {ok: false, message: body?.message ?? "Noe gikk galt. Prøv igjen."};
+}

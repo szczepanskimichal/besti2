@@ -27,6 +27,7 @@ public class BusinessServiceTests
             new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Psykologsenter" },
             result.Select(b => b.Name));
     }
+
     // check if GetByIdAsync returns the correct business with its services and employees -happyPath
     [Fact]
     public async Task GetByIdAsync_ReturnsBusinessWithServicesAndEmployees()
@@ -51,6 +52,7 @@ public class BusinessServiceTests
             result.Services.Select(s => s.Name));
         Assert.Equal(2, result.Employees.Count);
     }
+
     // check if GetByIdAsync returns null when the business does not exist - unhappy path
     [Fact]
     public async Task GetByIdAsync_ReturnsNull_WhenBusinessDoesNotExist()
@@ -69,6 +71,7 @@ public class BusinessServiceTests
         // Assert
         Assert.Null(result);
     }
+
     // check if GetAllAsync filters by category (case-insensitive)
     [Fact]
     public async Task GetAllAsync_FiltersByCategory()
@@ -88,7 +91,7 @@ public class BusinessServiceTests
         var business = Assert.Single(result);
         Assert.Equal("Klipp & Stil Frisør", business.Name);
     }
-    
+
     // check if AddServiceAsync saves a new service for the business - happy path
     [Fact]
     public async Task AddServiceAsync_SavesService()
@@ -111,6 +114,7 @@ public class BusinessServiceTests
         var business = await service.GetByIdAsync(klippId);
         Assert.Contains(business!.Services, s => s.Name == "Skjeggtrim" && s.DurationMinutes == 20);
     }
+
     // check if AddServiceAsync rejects an unknown price type - unhappy path
     [Fact]
     public async Task AddServiceAsync_ReturnsError_WhenPriceTypeIsInvalid()
@@ -131,7 +135,8 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Velg en gyldig pristype.", error);
     }
-        // check if UpdateServiceAsync changes the service - happy path
+
+    // check if UpdateServiceAsync changes the service - happy path
     [Fact]
     public async Task UpdateServiceAsync_ChangesService()
     {
@@ -154,6 +159,7 @@ public class BusinessServiceTests
         var business = await service.GetByIdAsync(klippId);
         Assert.Contains(business!.Services, s => s.Name == "Dameklipp lang" && s.DurationMinutes == 90);
     }
+
     // check if an owner cannot edit another business's service - security
     [Fact]
     public async Task UpdateServiceAsync_ReturnsError_ForOtherBusinessService()
@@ -175,6 +181,7 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Fant ikke tjenesten.", error);
     }
+
     // check if DeleteServiceAsync hides the service and cannot delete it twice
     [Fact]
     public async Task DeleteServiceAsync_HidesService()
@@ -199,8 +206,8 @@ public class BusinessServiceTests
         var business = await service.GetByIdAsync(klippId);
         Assert.DoesNotContain(business!.Services, s => s.Id == dameklippId);
     }
-    
-        // check if UpdateOpeningHoursAsync changes hours and closes days missing from the list
+
+    // check if UpdateOpeningHoursAsync changes hours and closes days missing from the list
     [Fact]
     public async Task UpdateOpeningHoursAsync_ReplacesWeek()
     {
@@ -249,7 +256,7 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Stengetid må være etter åpningstid.", error);
     }
-    
+
     // check if GetAllAsync finds a city by part of its name, ignoring case
     [Fact]
     public async Task GetAllAsync_FiltersByPartOfCity()
@@ -289,7 +296,7 @@ public class BusinessServiceTests
         var business = Assert.Single(result);
         Assert.Equal("Klipp & Stil Frisør", business.Name);
     }
-    
+
     // check if a new address gets new map coordinates
     [Fact]
     public async Task UpdateProfileAsync_UpdatesLocation_WhenAddressChanges()
@@ -313,6 +320,7 @@ public class BusinessServiceTests
         Assert.Equal(60.39, business!.Latitude);
         Assert.Equal(5.32, business.Longitude);
     }
+
     // check if UpdateProfileAsync saves description and contact info - happy path
     [Fact]
     public async Task UpdateProfileAsync_ChangesProfile()
@@ -336,6 +344,7 @@ public class BusinessServiceTests
         Assert.Equal("Ny beskrivelse", business!.Description);
         Assert.Equal("Bergen", business.City);
     }
+
     // check if UpdateProfileAsync rejects an invalid postal code
     [Fact]
     public async Task UpdateProfileAsync_ReturnsError_WhenPostalCodeIsInvalid()
@@ -357,4 +366,102 @@ public class BusinessServiceTests
         Assert.Equal("Postnummer må være 4 siffer.", error);
     }
 
+    [Fact]
+    public async Task AddEmployeeAsync_AddsEmployee()
+
+    {
+// Arrange
+
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        await using var db = new AppDbContext(options);
+
+        await db.Database.EnsureCreatedAsync();
+
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+
+// Act
+
+        var error = await service.AddEmployeeAsync(klippId, new EmployeeRequest("  Nora ", "Lie"));
+
+// Assert
+
+        Assert.Null(error);
+
+        var business = await service.GetByIdAsync(klippId);
+
+        Assert.Contains(business!.Employees, e => e.Name == "Nora" && e.LastName == "Lie");
+    }
+
+// check if DeleteEmployeeAsync hides the employee
+
+    [Fact]
+    public async Task DeleteEmployeeAsync_HidesEmployee()
+    {
+// Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var sofieId = new Guid("b1111111-0000-0000-0000-000000000002");
+
+// Act
+        var error = await service.DeleteEmployeeAsync(klippId, sofieId);
+
+// Assert
+        Assert.Null(error);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.DoesNotContain(business!.Employees, e => e.Id == sofieId);
+    }
+
+// check if the last employee cannot be deleted - unhappy path
+
+    [Fact]
+    public async Task DeleteEmployeeAsync_ReturnsError_ForLastEmployee()
+    {
+// Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var fjordByggId = new Guid("22222222-2222-2222-2222-222222222222");
+        var larsId = new Guid("b2222222-0000-0000-0000-000000000001");
+
+// Act
+        var error = await service.DeleteEmployeeAsync(fjordByggId, larsId);
+
+// Assert
+        Assert.Equal("Bedriften må ha minst én ansatt.", error);
+    }
+
+// check if a business cannot edit another business's employee - unhappy path
+
+    [Fact]
+    public async Task UpdateEmployeeAsync_ReturnsError_ForOtherBusinessEmployee()
+    {
+// Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var larsId = new Guid("b2222222-0000-0000-0000-000000000001");
+
+        // Act
+        var error = await service.UpdateEmployeeAsync(klippId, larsId, new EmployeeRequest("Hacker", ""));
+
+        // Assert
+        Assert.Equal("Fant ikke den ansatte.", error);
+    }
 }

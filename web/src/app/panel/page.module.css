@@ -189,6 +189,7 @@
     color: var(--color-primary);
     font-weight: 600;
 }
+
 @media (min-width: 1200px) {
     .main {
         max-width: 960px;
