@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createBooking } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 
 export async function createBookingAction(formData: FormData) {
     const businessId = String(formData.get("businessId"));
@@ -10,17 +11,22 @@ export async function createBookingAction(formData: FormData) {
     const startUtc = String(formData.get("startUtc"));
     const date = String(formData.get("date"));
 
+    const token = await getToken();
+
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    // Name and email come from the account in the API
     const result = await createBooking({
         serviceId,
         employeeId,
         startUtc,
-        customerName: String(formData.get("customerName") ?? ""),
+        customerName: "",
         customerPhone: String(formData.get("customerPhone") ?? ""),
-        customerEmail: String(formData.get("customerEmail") ?? ""),
+        customerEmail: "",
         marketingConsent: formData.get("marketingConsent") === "on",
         note: String(formData.get("note") ?? ""),
-    });
-
+    }, token);
     const basePath = `/bedrift/${businessId}/bestill`;
 
     if (!result.ok) {

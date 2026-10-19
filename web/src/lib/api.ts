@@ -57,10 +57,13 @@ export async function getAvailability(serviceId: string, employeeId: string, dat
     return res.json();
 }
 
-export async function createBooking(input: CreateBookingInput): Promise<{ ok: true } | { ok: false; message: string }> {
+export async function createBooking(input: CreateBookingInput, token: string): Promise<{ ok: true } | { ok: false; message: string }> {
     const res = await fetch(`${API_URL}/api/bookings`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(input),
         cache: "no-store",
     });

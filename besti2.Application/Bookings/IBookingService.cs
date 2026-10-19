@@ -6,8 +6,9 @@ public interface IBookingService
 {
     Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default);
+    // customerUserId = the logged-in customer's account id, saved on the booking
     Task<CreateBookingResult> CreateAsync(
-        CreateBookingRequest request, CancellationToken cancellationToken = default);
+        CreateBookingRequest request, string? customerUserId = null, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, CancellationToken cancellationToken = default);
     Task<UpdateBookingStatusOutcome> UpdateStatusAsync(

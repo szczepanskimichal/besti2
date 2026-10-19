@@ -218,4 +218,18 @@ public class BookingServiceTests
         var booking = Assert.Single(await service.GetForBusinessAsync(KlippOgStil));
         Assert.Equal("Jeg har langt hår", booking.CustomerNote);
     }
+    
+    // check if a booking made from an account remembers which customer made it
+    [Fact]
+    
+    public async Task CreateAsync_WithAccount_SavesCustomerUserId()
+    
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        await service.CreateAsync(HerreklippHosIngrid(), "kunde-123");
+        var booking = Assert.Single(db.Bookings);
+        Assert.Equal("kunde-123", booking.CustomerUserId);
+    }
+
 }

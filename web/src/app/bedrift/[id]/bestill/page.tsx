@@ -1,8 +1,9 @@
 import NextLink from "next/link";
-import { notFound } from "next/navigation";
-import { getAvailability, getBusiness } from "@/lib/api";
-import { formatDate, formatPrice, formatTime, todayInOslo } from "@/lib/format";
-import { createBookingAction } from "./actions";
+import {notFound} from "next/navigation";
+import {getAvailability, getBusiness, getMe} from "@/lib/api";
+import {getToken} from "@/lib/auth";
+import {formatDate, formatPrice, formatTime, todayInOslo} from "@/lib/format";
+import {createBookingAction} from "./actions";
 import styles from "./page.module.css";
 
 type Props = {
@@ -10,9 +11,9 @@ type Props = {
     searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; feil?: string }>;
 };
 
-export default async function BookingPage({ params, searchParams }: Props) {
-    const { id } = await params;
-    const { tjeneste, ansatt, dato, tid, feil } = await searchParams;
+export default async function BookingPage({params, searchParams}: Props) {
+    const {id} = await params;
+    const {tjeneste, ansatt, dato, tid, feil} = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -25,6 +26,11 @@ export default async function BookingPage({ params, searchParams }: Props) {
     const date = dato ?? todayInOslo();
     const slots = employeeId ? await getAvailability(service.id, employeeId, date) : null;
 
+    // Who is booking: null = not logged in
+    const token = await getToken();
+    const me = token ? await getMe(token) : null;
+    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(tid ?? "")}`;
+    
     return (
         <main className={styles.main}>
             <NextLink href={`/bedrift/${business.id}`} className={styles.back}>← Tilbake til {business.name}</NextLink>
@@ -35,7 +41,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
             </p>
 
             <form method="get" className={styles.filters}>
-                <input type="hidden" name="tjeneste" value={service.id} />
+                <input type="hidden" name="tjeneste" value={service.id}/>
 
                 <label className={styles.field}>
                     Ansatt
@@ -50,7 +56,7 @@ export default async function BookingPage({ params, searchParams }: Props) {
 
                 <label className={styles.field}>
                     Dato
-                    <input type="date" name="dato" defaultValue={date} min={todayInOslo()} />
+                    <input type="date" name="dato" defaultValue={date} min={todayInOslo()}/>
                 </label>
 
                 <button type="submit" className={styles.secondaryButton}>Vis ledige tider</button>
@@ -74,53 +80,54 @@ export default async function BookingPage({ params, searchParams }: Props) {
                     ))}
                 </ul>
             )}
-
             {tid && (
                 <section>
                     <h2 className={styles.sectionTitle}>Dine opplysninger</h2>
                     <p className={styles.muted}>
                         Valgt tid: <strong>{formatDate(tid)} kl. {formatTime(tid)}</strong>
                     </p>
-
                     {feil && <p className={styles.error} role="alert">{feil}</p>}
-
-                    <form action={createBookingAction} className={styles.form}>
-                        <input type="hidden" name="businessId" value={business.id} />
-                        <input type="hidden" name="serviceId" value={service.id} />
-                        <input type="hidden" name="employeeId" value={employeeId} />
-                        <input type="hidden" name="startUtc" value={tid} />
-                        <input type="hidden" name="date" value={date} />
-
-                        <label className={styles.field}>
-                            Navn
-                            <input name="customerName" required maxLength={100} autoComplete="name" />
-                        </label>
-
-                        <label className={styles.field}>
-                            Telefon
-                            <input name="customerPhone" type="tel" required maxLength={20} autoComplete="tel" />
-                        </label>
-
-                        <label className={styles.field}>
-                            E-post
-                            <input name="customerEmail" type="email" required maxLength={250} autoComplete="email" />
-                        </label>
-                        <label className={styles.field}>
-                            Melding til bedriften (valgfritt)
-                            <textarea name="note" maxLength={500} rows={3} placeholder="F.eks. «Jeg har langt hår»" />
-                        </label>
-                        <label className={styles.checkbox}>
-                            <input type="checkbox" name="marketingConsent" />
-                            Ja, jeg vil motta nyhetsbrev og tilbud på e-post
-                        </label>
+                    {!me && (
                         <p className={styles.muted}>
-                            Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
-                            bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
+                            Du må være logget inn for å bestille.{" "}
+                            <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
+                            {" "}eller <NextLink href="/registrer">opprett konto</NextLink>.
                         </p>
-                        <button type="submit" className={styles.primaryButton}>Bekreft bestilling</button>
-                    </form>
-                </section>
-            )}
-        </main>
-    );
+                    )}
+                    {me?.isBusiness && (
+                        <p className={styles.muted}>Du er logget inn som bedrift. Logg inn med en kundekonto for å
+                            bestille.</p>
+                    )}
+                    {me && !me.isBusiness && (
+                        <form action={createBookingAction} className={styles.form}>
+                            <p className={styles.muted}>Bestiller som <strong>{me.fullName}</strong> ({me.email})</p>
+                            <input type="hidden" name="businessId" value={business.id}/>
+                            <input type="hidden" name="serviceId" value={service.id}/>
+                            <input type="hidden" name="employeeId" value={employeeId}/>
+                            <input type="hidden" name="startUtc" value={tid}/>
+                            <input type="hidden" name="date" value={date}/>
+                            <label className={styles.field}>
+                                Telefon
+                                <input name="customerPhone" type="tel" required maxLength={20} autoComplete="tel"/>
+                            </label>
+                            <label className={styles.field}>
+                                Melding til bedriften (valgfritt)
+                                <textarea name="note" maxLength={500} rows={3}
+                                          placeholder="F.eks. «Jeg har langt hår»"/>
+                            </label>
+                            <label className={styles.checkbox}>
+                                <input type="checkbox" name="marketingConsent"/>
+                                Ja, jeg vil motta nyhetsbrev og tilbud på e-post
+                            </label>
+                            <p className={styles.muted}>
+                                Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
+                                bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
+                            </p>
+                            <button type="submit" className={styles.primaryButton}>Bekreft bestilling</button>
+                        </form>
+                    )}
+                        </section>
+                        )}
+                </main>
+            );
 }

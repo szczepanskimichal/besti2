@@ -23,10 +23,11 @@ export async function loginAction(formData: FormData) {
         path: "/",
         maxAge: result.expiresIn,
     });
-
-    // Business owners go to their panel, customers to the front page
+    // Customers go back to where they were (e.g. the chosen time), businesses to their panel
     const me = await getMe(result.accessToken);
-    redirect(me?.isBusiness ? "/panel" : "/");
+    const next = String(formData.get("neste") ?? "");
+    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    redirect(me?.isBusiness ? "/panel" : safeNext);
 }
 
 export async function logoutAction() {
