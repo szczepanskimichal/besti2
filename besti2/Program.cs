@@ -85,8 +85,8 @@ app.MapPost("/api/bookings",
         if (user is null || user.BusinessId is not null)
         {
             return Results.BadRequest(new { message = "Logg inn med en kundekonto for å bestille." });
-        }
-    // Never trust name/email from the form: use the account's
+        } 
+        // Never trust name/email from the form: use the account's
         var fromAccount = request with { CustomerName = user.FullName ?? "", CustomerEmail = user.Email ?? "" };
         var result = await bookingService.CreateAsync(fromAccount, user.Id, cancellationToken);
         return result.Outcome switch

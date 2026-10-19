@@ -9,11 +9,14 @@ using Microsoft.Extensions.Logging;
 
 namespace besti2.Infrastructure.Services;
 
-public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger) : IBookingService
+public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger)
+    : IBookingService
 {
     // date in norwegian!!!
     private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+
     private static readonly CultureInfo Norwegian = new("nb-NO");
+
     //
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default)
@@ -42,7 +45,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             .ToListAsync(cancellationToken);
         var hours = await dbContext.OpeningHours
             .AsNoTracking()
-            .FirstOrDefaultAsync(h => h.BusinessId == service.BusinessId && h.DayOfWeek == date.DayOfWeek, cancellationToken);
+            .FirstOrDefaultAsync(h => h.BusinessId == service.BusinessId && h.DayOfWeek == date.DayOfWeek,
+                cancellationToken);
 
         if (hours is null)
         {
@@ -59,8 +63,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, string? customerUserId = null,
-        
-        CancellationToken cancellationToken = default)    {
+        CancellationToken cancellationToken = default)
+    {
         var error = Validate(request);
         if (error is not null)
         {
@@ -132,8 +136,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerEmail,
                 b.CustomerNote))
             .ToListAsync(cancellationToken);
-    } 
-    
+    }
+
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
         Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default)
@@ -164,6 +168,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         await SendStatusEmailAsync(booking, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
+
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
     {
@@ -177,18 +182,20 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return "Telefonnummer er påkrevd (maks 20 tegn).";
         }
 
-        if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 || !request.CustomerEmail.Contains('@'))
+        if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 ||
+            !request.CustomerEmail.Contains('@'))
         {
             return "Oppgi en gyldig e-postadresse.";
         }
+
         if (request.Note is { Length: > 500 })
         {
-            
             return "Meldingen kan være maks 500 tegn.";
         }
+
         return null;
     }
-    
+
     // Send confirmation email to the customer; a failed email must not fail the booking
     private async Task SendConfirmationEmailAsync(Booking booking, Service service, CancellationToken cancellationToken)
     {
@@ -212,14 +219,15 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 "Bedriften bekrefter bestillingen så snart som mulig.\n\n" +
                 "Hilsen besti2";
 
-            await emailService.SendAsync(booking.CustomerEmail, $"Bestilling mottatt: {business.Name}", body, cancellationToken);
+            await emailService.SendAsync(booking.CustomerEmail, $"Bestilling mottatt: {business.Name}", body,
+                cancellationToken);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send confirmation email for booking {BookingId}", booking.Id);
         }
     }
-    
+
     // Notify the customer when the business confirms or cancels; a failed email must not fail the update
     private async Task SendStatusEmailAsync(Booking booking, CancellationToken cancellationToken)
     {
@@ -235,7 +243,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
             var (subject, message) = booking.Status == BookingStatus.Bekreftet
                 ? ($"Bestillingen er bekreftet: {business.Name}", "Bestillingen din er bekreftet. Velkommen!")
-                : ($"Bestillingen er avlyst: {business.Name}", "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på besti2.");
+                : ($"Bestillingen er avlyst: {business.Name}",
+                    "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på besti2.");
 
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +

@@ -130,4 +130,4 @@ export default async function BookingPage({params, searchParams}: Props) {
                         )}
                 </main>
             );
-            }
+}
