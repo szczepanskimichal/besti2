@@ -20,7 +20,7 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
         services.AddScoped<IBookingService, BookingService>();
-        services.AddScoped<IEmailService, SmtpEmailService>();
+        services.AddTransient<IEmailService, SmtpEmailService>();
         services.AddScoped<IBusinessRegistrationService, BusinessRegistrationService>();
         services.AddHttpClient<IGeocodingService, GeonorgeGeocodingService>(client =>
         {
