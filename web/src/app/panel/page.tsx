@@ -43,6 +43,9 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                     <Link href="/panel/galleri" className={styles.secondaryButton}>
                         Galleri
                     </Link>
+                    <Link href="/panel/vurderinger" className={styles.secondaryButton}>
+                        Vurderinger
+                    </Link>
                     <Link href="/panel/apningstider" className={styles.secondaryButton}>
                         Åpningstider
                     </Link>

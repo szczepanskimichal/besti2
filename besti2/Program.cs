@@ -179,17 +179,14 @@ app.MapPost("/api/me/reviews", async (CreateReviewRequest request, ClaimsPrincip
     UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
 {
     var userId = userManager.GetUserId(principal);
-
     if (userId is null)
-
     {
         return Results.Unauthorized();
     }
-
     var error = await reviewService.CreateAsync(userId, request, cancellationToken);
-
     return error is null ? Results.Created() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+
 // Public: reviews of a business, newest first, with the average
 app.MapGet("/api/businesses/{id:guid}/reviews", async (Guid id, IReviewService reviewService,
         CancellationToken cancellationToken) =>

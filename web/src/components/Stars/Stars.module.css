@@ -1,0 +1,12 @@
+.stars {
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+.on {
+    color: #f59e0b;
+}
+
+.off {
+    color: #d1d5db;
+}
