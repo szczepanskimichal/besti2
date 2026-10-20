@@ -184,3 +184,36 @@
         gap: 4px;
     }
 }
+
+/* Photos: swipe sideways on the phone, a grid on wider screens */
+.gallery {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 70%;
+    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.gallery li {
+    scroll-snap-align: start;
+}
+
+.galleryImage {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+@media (min-width: 768px) {
+    .gallery {
+        grid-auto-flow: row;
+        grid-template-columns: repeat(3, 1fr);
+        overflow-x: visible;
+    }
+}

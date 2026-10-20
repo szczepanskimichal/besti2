@@ -181,6 +181,25 @@ export async function uploadLogo(token: string, file: File): Promise<ApiResult> 
     return toResult(res);
 }
 
+export async function uploadGalleryImage(token: string, file: File): Promise<ApiResult> {
+    const body = new FormData();
+    body.append("file", file);
+// Not apiFetch: FormData sets its own Content-Type (with the file boundary)
+    const res = await fetch(`${API_URL}/api/panel/gallery`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body,
+        cache: "no-store",
+        signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+    return toResult(res);
+}
+
+export async function deleteGalleryImage(token: string, imageId: string): Promise<boolean> {
+    const res = await apiFetch(`/api/panel/gallery/${imageId}`, { method: "DELETE", token });
+    return res.ok;
+}
+
 // Always "ok": the API never says whether the e-mail exists (so nobody can check who has an account)
 export async function forgotPassword(email: string): Promise<void> {
     await apiFetch("/api/auth/forgotPassword", { method: "POST", body: { email }, forwardIp: true });

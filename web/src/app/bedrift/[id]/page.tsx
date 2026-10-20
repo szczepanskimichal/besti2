@@ -75,7 +75,22 @@ export default async function BusinessPage({ params }: Props) {
                     <a href={`mailto:${business.email}`}>{business.email}</a>
                 </address>
             </header>
-
+            {business.gallery.length > 0 && (
+                <section>
+                    <h2 className={styles.sectionTitle}>Bilder</h2>
+                    <ul className={styles.gallery}>
+                        {business.gallery.map((image) => (
+                            <li key={image.id}>
+                                {/* Opens the full photo in a new tab */}
+                                <a href={image.url} target="_blank" rel="noreferrer">
+                                    {/* eslint-disable-next-line @next/next/no-img-element -- our own resized WebP from the API */}
+                                    <img src={image.url} alt={`Bilde fra ${business.name}`} loading="lazy" className={styles.galleryImage}/>
+                                </a>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
             <section>
                 <h2 className={styles.sectionTitle}>Tjenester</h2>
                 <ul className={styles.list}>

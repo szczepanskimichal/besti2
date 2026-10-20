@@ -54,6 +54,12 @@ export type BusinessDetails = {
     latitude: number | null;
     longitude: number | null;
     logoUrl: string | null;
+    gallery: GalleryImage[];
+};
+
+export type GalleryImage = {
+    id: string;
+    url: string;
 };
 
 export type CreateBookingInput = {
