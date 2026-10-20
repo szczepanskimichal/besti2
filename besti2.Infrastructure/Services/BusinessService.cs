@@ -171,7 +171,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-    
+
     public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var business = await dbContext.Businesses
@@ -205,11 +205,21 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Latitude,
                 b.Longitude,
                 // Logo file name for now; turned into a URL below
-                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault()
-            ))
+                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault(),
+                // File names for now; turned into URLs below
+                b.Images.Where(i => i.Kind == ImageKind.Galleri)
+                    .OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedUtc)
+                    .Select(i => new GalleryImageDto(i.Id, i.FileName))
+                    .ToList()
+                ))
             .FirstOrDefaultAsync(cancellationToken);
-
-        return business is null ? null : business with { LogoUrl = ToLogoUrl(business.LogoUrl) };
+        
+    return business is null ? null : business with
+        {
+            LogoUrl = ToLogoUrl(business.LogoUrl),
+            Gallery = business.Gallery.Select(g => g with { Url = imageStorage.GetUrl(g.Url) }).ToList()
+        };
+        
     }
 
     public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,

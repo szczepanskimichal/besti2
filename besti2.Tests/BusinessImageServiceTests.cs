@@ -89,4 +89,49 @@ public class BusinessImageServiceTests
         Assert.Equal(512, bitmap.Width);
         Assert.Equal(256, bitmap.Height);
     }
+     
+    // check if a gallery photo is saved as WebP
+    [Fact]
+    public async Task AddGalleryImageAsync_SavesImage()
+    {
+        var (service, db, storage) = await CreateAsync();
+        var png = RealPng(50, 50);
+        var error = await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
+        Assert.Null(error);
+        var image = Assert.Single(db.BusinessImages.Where(i => i.Kind == ImageKind.Galleri));
+        Assert.True(storage.Files.ContainsKey(image.FileName));
+    }
+    
+    // check if the 13th photo is refused
+
+    [Fact]
+    public async Task AddGalleryImageAsync_StopsAtTwelveImages()
+    {
+        var (service, _, _) = await CreateAsync();
+        var png = RealPng(20, 20);
+        for (var i = 0; i < 12; i++)
+        {
+            await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
+        }
+        var error = await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
+        Assert.StartsWith("Galleriet kan ha maks 12 bilder", error);
+    }
+    
+    // check if a business cannot delete another business's photo
+
+    [Fact]
+    public async Task DeleteGalleryImageAsync_OnlyDeletesOwnImage()
+    {
+        var (service, db, storage) = await CreateAsync();
+        var png = RealPng(20, 20);
+        await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
+        var image = db.BusinessImages.Single(i => i.Kind == ImageKind.Galleri);
+        var otherBusinessId = new Guid("22222222-2222-2222-2222-222222222222");
+        var deletedByOther = await service.DeleteGalleryImageAsync(otherBusinessId, image.Id);
+        var deletedByOwner = await service.DeleteGalleryImageAsync(KlippId, image.Id);
+        Assert.False(deletedByOther);
+        Assert.True(deletedByOwner);
+        Assert.Empty(db.BusinessImages.Where(i => i.Kind == ImageKind.Galleri));
+        Assert.False(storage.Files.ContainsKey(image.FileName));
+    }
 }

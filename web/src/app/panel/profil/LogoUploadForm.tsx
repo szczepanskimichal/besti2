@@ -8,7 +8,7 @@ const SmallEnoughBytes = 900 * 1024;
 // Longest side after shrinking; the API makes the final logo 512 px
 const MaxSize = 1600;
 // Shrinks a large photo in the browser, so it fits the upload limits
-async function shrinkImage(file: File): Promise<File> {
+export async function shrinkImage(file: File): Promise<File> {
     const bitmap = await createImageBitmap(file); // also turns phone photos upright
     const scale = Math.min(1, MaxSize / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
