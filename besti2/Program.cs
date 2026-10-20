@@ -11,6 +11,8 @@ using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Jobs;
 using Microsoft.Extensions.FileProviders;
+using System.Threading.RateLimiting;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +29,27 @@ builder.Services.AddIdentityApiEndpoints<AppUser>(options => options.SignIn.Requ
 builder.Services.AddHostedService<BookingAnonymizationJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
-
+// Max 10 attempts per minute per visitor on login, sign-up and booking (stops spam and password guessing)
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.OnRejected = async (context, cancellationToken) =>
+        await context.HttpContext.Response.WriteAsJsonAsync(
+            new { message = "For mange forsøk. Prøv igjen om litt." }, cancellationToken);
+    options.AddPolicy("strict", httpContext =>
+    {
+// The web server forwards the visitor's IP; without it we use the caller's own address
+        var clientIp = httpContext.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim();
+        if (string.IsNullOrEmpty(clientIp))
+            clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 10,
+            Window = TimeSpan.FromMinutes(1),
+            QueueLimit = 0
+        });
+    });
+});
 var app = builder.Build();
 //--------------------------------------
 // Configure the HTTP request pipeline.
@@ -48,6 +70,8 @@ app.UseStaticFiles(new StaticFileOptions
 });
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseRateLimiter();
+
 // Get all businesses (optional filters: category, city, text q)
 app.MapGet("/api/businesses",
     async (string? category, string? city, string? q, IBusinessService businessService,
@@ -97,7 +121,7 @@ app.MapPost("/api/bookings",
                 new { message = "Tiden er dessverre ikke lenger ledig." }),
             _ => Results.NotFound()
         };
-    }).RequireAuthorization();
+    }).RequireAuthorization().RequireRateLimiting("strict");
 
 // Register a new business with its owner account
 app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
@@ -107,7 +131,7 @@ app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
     return result.Success
         ? Results.Created()
         : Results.BadRequest(new { message = result.Error });
-});
+}).RequireRateLimiting("strict");
 
 // Customer sign-up: creates the account and sends a confirmation mail
 app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
@@ -115,7 +139,7 @@ app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
 {
     var error = await accountService.RegisterAsync(request, cancellationToken);
     return error is null ? Results.Created() : Results.BadRequest(new { message = error });
-});
+}).RequireRateLimiting("strict");
 
 // Customer clicks the link in the mail; the web page sends the id and code here
 app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
@@ -125,7 +149,8 @@ app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
     return confirmed
         ? Results.NoContent()
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
-});
+}).RequireRateLimiting("strict");
+
 // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
 app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
 {
@@ -291,7 +316,7 @@ app.MapPost("/api/panel/logo", async (IFormFile file, ClaimsPrincipal principal,
 }).RequireAuthorization().DisableAntiforgery();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
-var auth = app.MapGroup("/api/auth");
+var auth = app.MapGroup("/api/auth").RequireRateLimiting("strict");
 // Block Identity's open /register; owners sign up via business registration instead
 auth.AddEndpointFilter(async (context, next) =>
     context.HttpContext.Request.Path.Value!.EndsWith("/register", StringComparison.OrdinalIgnoreCase)
