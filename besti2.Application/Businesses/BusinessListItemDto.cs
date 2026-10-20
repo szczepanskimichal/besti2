@@ -8,5 +8,6 @@ public record BusinessListItemDto(
     string City,
     string? LogoUrl,
     
-    IReadOnlyList<FreeSlotDto>? FreeSlots // null when searching without a date
-    );
+    IReadOnlyList<FreeSlotDto>? FreeSlots, // null when searching without a date
+    double? DistanceKm = null // only with "Nær meg"
+);

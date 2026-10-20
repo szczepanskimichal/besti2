@@ -45,6 +45,10 @@
     border: 1px solid var(--color-input-border);
     border-radius: var(--radius);
     background: #fff;
+    /* Fill the column and allow shrinking, so no field pushes the others out */
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 .searchButton {
@@ -79,17 +83,22 @@
     margin: 0 0 24px;
     color: #eff6ff;
 }
-
+/* Tablet: 2 columns that wrap, instead of everything in one row */
 @media (min-width: 640px) {
     .filters {
-        flex-direction: row;
-        align-items: flex-end;
-    }
-    .field {
-        flex: 1;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: end;
     }
     .hero {
         padding: 56px 40px;
+    }
+}
+
+/* Desktop: 3 columns, Hva Kategori By / Når Tid Søk */
+@media (min-width: 1000px) {
+    .filters {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 

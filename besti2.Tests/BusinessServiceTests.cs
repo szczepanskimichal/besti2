@@ -641,4 +641,20 @@ public class BusinessServiceTests
         Assert.All(result.SelectMany(b => b.FreeSlots!), s =>
             Assert.True(TimeZoneInfo.ConvertTimeFromUtc(s.StartUtc, oslo).Hour < 12));
     }
+    
+    // check if "Nær meg" puts the nearest business first and fills in the distance
+    [Fact]
+    public async Task GetAllAsync_WithLocation_SortsByDistance()
+    {
+        // Arrange: standing at Bryggen in Bergen
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+        // Act
+        var result = await service.GetAllAsync(lat: 60.3975, lng: 5.3240);
+        // Assert
+        Assert.Equal(
+            new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Psykologsenter" },
+            result.Select(b => b.Name));
+        Assert.True(result[0].DistanceKm < 1);
+    }
 }
