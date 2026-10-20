@@ -72,12 +72,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseRateLimiter();
 
-// Get all businesses (optional filters: category, city, text q)
+// Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
-    async (string? category, string? city, string? q, DateOnly? date, IBusinessService businessService,
+    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, IBusinessService businessService,
         CancellationToken cancellationToken) =>
     {
-        return Results.Ok(await businessService.GetAllAsync(category, city, q, date, cancellationToken));
+        return Results.Ok(await businessService.GetAllAsync(category, city, q, date, from, to, cancellationToken));
     });
 // Get distinct cities for the filter
 app.MapGet("/api/cities",

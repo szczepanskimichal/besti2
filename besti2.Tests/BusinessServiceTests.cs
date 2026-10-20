@@ -623,4 +623,22 @@ public class BusinessServiceTests
 
         Assert.DoesNotContain(result, b => b.Id == klippId);
     }
+    
+    // check if "før 12" only returns morning times (Oslo time)
+    
+    [Fact]
+    
+    public async Task GetAllAsync_WithTimeWindow_ReturnsOnlyTimesInsideIt()
+    {
+// Arrange
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+        var oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+// Act
+        var result = await service.GetAllAsync(date: Next(DayOfWeek.Monday), to: new TimeOnly(12, 0));
+// Assert
+        Assert.NotEmpty(result);
+        Assert.All(result.SelectMany(b => b.FreeSlots!), s =>
+            Assert.True(TimeZoneInfo.ConvertTimeFromUtc(s.StartUtc, oslo).Hour < 12));
+    }
 }

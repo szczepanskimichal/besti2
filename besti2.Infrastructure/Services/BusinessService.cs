@@ -9,12 +9,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
+
+
 public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding, IImageStorage imageStorage)
     : IBusinessService
 {
+    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+    
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
-        CancellationToken cancellationToken = default)    {
+        TimeOnly? from = null, TimeOnly? to = null,
+        CancellationToken cancellationToken = default)    
+    {
         var query = dbContext.Businesses.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -57,15 +63,14 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         var withLogos = items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
 
     // Without a date: the list as before. With a date: only businesses with a free time that day
-
-        return date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, cancellationToken);
-    }
+    return date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);    }
 
     // Free times for the whole list with 4 queries, however many businesses there are (no query per business)
 
     private async Task<IReadOnlyList<BusinessListItemDto>> AddFreeSlotsAsync(
-        List<BusinessListItemDto> businesses, DateOnly date, string? q, CancellationToken cancellationToken)
 
+        List<BusinessListItemDto> businesses, DateOnly date, string? q, TimeOnly? from, TimeOnly? to,
+        CancellationToken cancellationToken = default)
     {
         var businessIds = businesses.Select(b => b.Id).ToList();
 
@@ -132,6 +137,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                         date, dayHours.OpensAt, dayHours.ClosesAt, service.DurationMinutes,
                         bookings.Where(b => b.EmployeeId == e.Id).Select(b => (b.StartUtc, b.EndUtc)).ToList(),
                         nowUtc)
+                    .Where(start => IsInTimeWindow(start, from, to))
                     .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
                 .OrderBy(s => s.StartUtc)
                 .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button
@@ -141,11 +147,17 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             {
                 result.Add(business with { FreeSlots = slots });
             }
-        }
-    // Soonest free time first
+        } 
+        // Soonest free time first
         return result.OrderBy(b => b.FreeSlots![0].StartUtc).ToList();
     }
-
+    
+    // "Før 12" = to 12:00, "Etter 17" = from 17:00; compared in Oslo time
+    private static bool IsInTimeWindow(DateTime startUtc, TimeOnly? from, TimeOnly? to)
+    {
+        var local = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(startUtc, Oslo));
+        return (from is null || local >= from) && (to is null || local < to);
+    }
 
     // The database keeps only the file name; the storage knows the public address
     private string? ToLogoUrl(string? fileName) => fileName is null ? null : imageStorage.GetUrl(fileName);
@@ -159,7 +171,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-
+    
     public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var business = await dbContext.Businesses

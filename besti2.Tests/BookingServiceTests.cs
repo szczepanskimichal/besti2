@@ -297,4 +297,6 @@ public class BookingServiceTests
         var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
     }
+    
+    
 }
