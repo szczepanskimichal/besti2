@@ -9,7 +9,8 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string }>;};
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string }>;
+};
 
 // Time of day in the search -> from/to for the API (Oslo time)
 const timeWindows: Record<string, { from?: string; to?: string }> = {
@@ -20,11 +21,10 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
 
 export default async function Home({searchParams}: HomeProps) {
     const {category, city, q, date, tid, lat, lng} = await searchParams;
-
-// The same search without "Nær meg" (for the "Vis alle" link)
-
+    // The same search without "Nær meg" (for the "Vis alle" link)
     const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    // Only the cities here (fast); the businesses load inside Suspense below
+        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    
+    // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
@@ -95,15 +95,10 @@ export default async function Home({searchParams}: HomeProps) {
                 </Form>
             </section>
             {lat && lng && (
-
                 <p className={styles.subtitle}>
-
                     📍 Sortert etter avstand fra deg · <Link href={`/?${withoutNearMe}`}>Vis alle</Link>
-
                 </p>
-
             )}
-
             {/* key: every new search shows the skeleton again */}
             <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng})} fallback={<ResultsSkeleton/>}>
                 <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng}/>
@@ -126,7 +121,6 @@ type SearchProps = {
 async function Results({category, city, q, date, tid, lat, lng}: SearchProps) {
     const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
     const businesses = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng);
-    ;
     if (businesses.length === 0) {
         if (date) {
 // Same search, one day later
