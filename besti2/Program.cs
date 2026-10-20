@@ -12,6 +12,7 @@ using besti2.Infrastructure.Persistence;
 using besti2.Jobs;
 using Microsoft.Extensions.FileProviders;
 using System.Threading.RateLimiting;
+using besti2.Application.Reviews;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,11 +75,12 @@ app.UseRateLimiter();
 
 // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
-    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat, double? lng,
+    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
+        double? lng,
         IBusinessService businessService, CancellationToken cancellationToken) =>
     {
-        return Results.Ok(await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, cancellationToken));
-        
+        return Results.Ok(
+            await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, cancellationToken));
     });
 // Get distinct cities for the filter
 app.MapGet("/api/cities",
@@ -171,6 +173,52 @@ app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<App
         ? Results.Unauthorized()
         : Results.Ok(await bookingService.GetForCustomerAsync(userId, cancellationToken));
 }).RequireAuthorization();
+
+// Customer: review a past booking
+app.MapPost("/api/me/reviews", async (CreateReviewRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+    var error = await reviewService.CreateAsync(userId, request, cancellationToken);
+    return error is null ? Results.Created() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
+// Public: reviews of a business, newest first, with the average
+app.MapGet("/api/businesses/{id:guid}/reviews", async (Guid id, IReviewService reviewService,
+        CancellationToken cancellationToken) =>
+    Results.Ok(await reviewService.GetForBusinessAsync(id, cancellationToken)));
+// Business panel: the owner's reviews
+app.MapGet("/api/panel/reviews", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IReviewService reviewService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+
+    return user?.BusinessId is Guid businessId
+        ? Results.Ok(await reviewService.GetForBusinessAsync(businessId, cancellationToken))
+        : Results.Forbid();
+}).RequireAuthorization();
+// Business panel: reply to a review (cannot delete it)
+app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewRequest request,
+    ClaimsPrincipal principal, UserManager<AppUser> userManager, IReviewService reviewService,
+    CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+
+    if (user?.BusinessId is not Guid businessId)
+
+    {
+        return Results.Forbid();
+    }
+
+    var error = await reviewService.ReplyAsync(businessId, id, request.Reply, cancellationToken);
+
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
 
 // Customer: cancel own booking before it starts
 app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
@@ -355,6 +403,7 @@ app.MapPost("/api/panel/gallery", async (IFormFile file, ClaimsPrincipal princip
     {
         return Results.Forbid();
     }
+
     await using var stream = file.OpenReadStream();
     var error = await imageService.AddGalleryImageAsync(businessId, stream, file.Length, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
@@ -368,6 +417,7 @@ app.MapDelete("/api/panel/gallery/{id:guid}", async (Guid id, ClaimsPrincipal pr
     {
         return Results.Forbid();
     }
+
     return await imageService.DeleteGalleryImageAsync(businessId, id, cancellationToken)
         ? Results.NoContent()
         : Results.NotFound();

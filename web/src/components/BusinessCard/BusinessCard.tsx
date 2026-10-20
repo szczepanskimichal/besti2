@@ -24,7 +24,7 @@ export default function BusinessCard({ business, date }: Props) {
                 <h2 className={styles.name}>{business.name}</h2>
                 <p className={styles.city}>
                     <span aria-hidden="true">📍</span> {business.city}
-                    {business.distanceKm !== null && ` · ${formatDistance(business.distanceKm)} unna`}
+                    {business.distanceKm != null && ` · ${formatDistance(business.distanceKm)} unna`}
                 </p>
                 {business.description && <p className={styles.description}>{business.description}</p>}
             </NextLink>

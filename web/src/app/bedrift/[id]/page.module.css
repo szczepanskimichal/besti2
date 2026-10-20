@@ -217,3 +217,46 @@
         overflow-x: visible;
     }
 }
+.rating {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    margin: 4px 0 8px;
+    color: var(--color-text);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.reviews {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.review {
+    padding: 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+}
+
+.review p {
+    margin: 0 0 6px;
+}
+
+.reviewHead {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.reply {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-left: 3px solid var(--color-primary);
+    background: var(--color-primary-soft);
+    border-radius: 6px;
+}

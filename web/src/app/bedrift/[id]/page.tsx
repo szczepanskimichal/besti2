@@ -2,11 +2,12 @@ import { Metadata } from "next";
 import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusiness } from "@/lib/api";
+import { getBusiness, getBusinessReviews } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
 import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
+import Stars from "@/components/Stars/Stars";
 
 import styles from "./page.module.css";
 
@@ -36,12 +37,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function BusinessPage({ params }: Props) {
     const { id } = await params;
-    const business = await getBusiness(id);
+    // Business and reviews at the same time
+    const [business, reviews] = await Promise.all([getBusiness(id), getBusinessReviews(id)]);
 
     if (!business) {
         notFound();
     }
-    
+
     // OpenStreetMap embed: small box around the business with a marker
     const d = 0.005;
     const lat = business.latitude;
@@ -61,6 +63,11 @@ export default async function BusinessPage({ params }: Props) {
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
+                {reviews.average !== null && (
+                    <a href="#vurderinger" className={styles.rating}>
+                        <Stars value={reviews.average}/> {reviews.average.toString().replace(".", ",")} · {reviews.count} {reviews.count === 1 ? "vurdering" : "vurderinger"}
+                    </a>
+                )}
                 {business.description && <p className={styles.muted}>{business.description}</p>}
                 <address className={styles.contact}>
                     <span>{business.address}, {business.postalCode} {business.city}</span>
@@ -124,6 +131,29 @@ export default async function BusinessPage({ params }: Props) {
                         </li>
                     ))}
                 </ul>
+            </section>
+
+            <section id="vurderinger">
+                <h2 className={styles.sectionTitle}>Vurderinger</h2>
+                {reviews.count === 0 ? (
+                    <p className={styles.muted}>Ingen vurderinger ennå. Bare kunder som har vært her, kan gi vurdering.</p>
+                ) : (
+                    <ul className={styles.reviews}>
+                        {reviews.reviews.map((review) => (
+                            <li key={review.id} className={styles.review}>
+                                <p className={styles.reviewHead}>
+                                    <Stars value={review.stars}/> <strong>{review.customerName}</strong>
+                                </p>
+                                {review.comment && <p>{review.comment}</p>}
+                                {review.businessReply && (
+                                    <p className={styles.reply}>
+                                        <strong>Svar fra {business.name}:</strong> {review.businessReply}
+                                    </p>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </section>
 
             <section>

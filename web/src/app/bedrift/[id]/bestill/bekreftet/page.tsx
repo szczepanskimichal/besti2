@@ -25,9 +25,10 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
         <main className={styles.main}>
             <div className={styles.card}>
                 <p className={styles.icon}>✓</p>
-                <h1 className={styles.title}>Takk for bestillingen!</h1>
+                <h1 className={styles.title}>Så var det bestilt!</h1>
                 <p className={styles.muted}>
-                    Vi har registrert bestillingen din. {business.name} bekrefter den så snart som mulig.
+                    Klar for kvalitetstid med din besti? 💖 {business.name} bekrefter timen så snart som mulig,
+                    og du finner den under Min Besti.
                 </p>
 
                 <dl className={styles.details}>

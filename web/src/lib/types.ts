@@ -99,4 +99,20 @@ export type CustomerBooking = {
     businessAddress: string;
     serviceId: string;
     employeeId: string;
+    isReviewed: boolean; // the customer has already reviewed this visit
+};
+
+export type Review = {
+    id: string;
+    stars: number;
+    comment: string | null;
+    customerName: string;
+    createdUtc: string;
+    businessReply: string | null;
+};
+
+export type BusinessReviews = {
+    average: number | null; // null when there are no reviews yet
+    count: number;
+    reviews: Review[];
 };

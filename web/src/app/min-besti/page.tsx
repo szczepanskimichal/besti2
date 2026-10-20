@@ -7,12 +7,13 @@ import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import type { CustomerBooking } from "@/lib/types";
 import { cancelMyBookingAction } from "./actions";
+import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 
 export const metadata: Metadata = {
-    title: "Mine bestillinger",
+    title: "Min Besti",
 };
 
 // Upcoming = has not started yet; the API already sorts newest first
@@ -31,7 +32,7 @@ type MyBookingsPageProps = {
 export default async function MyBookingsPage({ searchParams }: MyBookingsPageProps) {
     const token = await getToken();
     if (!token) {
-        redirect("/logg-inn?neste=/mine-bestillinger");
+        redirect("/logg-inn?neste=/min-besti");
     }
     const me = await getMe(token);
     if (me?.isBusiness) {
@@ -39,13 +40,14 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     }
     const bookings = await getMyBookings(token);
     if (!bookings) {
-        redirect("/logg-inn?neste=/mine-bestillinger");
+        redirect("/logg-inn?neste=/min-besti");
     }
     const { feil, avbestilt } = await searchParams;
     const { upcoming, past } = splitBookings(bookings);
     return (
         <main className={styles.main}>
-            <h1 className={styles.title}>Mine bestillinger</h1>
+            <h1 className={styles.title}>Min Besti</h1>
+            <MinBestiTabs/>
             {feil && (
                 <p className={styles.error} role="alert">
                     Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt eller ha startet.
@@ -79,7 +81,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             </p>
                             {booking.status !== "Avlyst" && (
                                 <p>
-                                    <a href={`/mine-bestillinger/kalender/${booking.id}`}>Legg til i kalender</a>
+                                    <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
                                 </p>
                             )}
                             {booking.status !== "Avlyst" && (
@@ -120,6 +122,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                         Bestill igjen →
                                     </Link>
                                 </p>
+                                {booking.status !== "Avlyst" && !booking.isReviewed && (
+                                    <p>
+                                        <Link href={`/min-besti/vurderinger#v-${booking.id}`}>Gi vurdering ⭐</Link>
+                                    </p>
+                                )}
                             </li>
                         ))}
                     </ul>

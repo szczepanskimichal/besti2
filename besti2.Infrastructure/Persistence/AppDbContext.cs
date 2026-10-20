@@ -17,6 +17,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     
     public DbSet<OpeningHours> OpeningHours { get; set; } = null!;
     public DbSet<BusinessImage> BusinessImages { get; set; } = null!;
+    public DbSet<Review> Reviews { get; set; } = null!;
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -159,6 +160,18 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.FileName).IsRequired().HasMaxLength(100);
             e.Property(x => x.Caption).HasMaxLength(200);
             e.HasIndex(x => new { x.BusinessId, x.Kind });
+        });
+        modelBuilder.Entity<Review>(e =>
+        {
+            e.HasIndex(x => x.BookingId).IsUnique(); // one review per booking
+            e.HasIndex(x => x.BusinessId);
+            e.HasOne(x => x.Booking).WithMany()
+                .HasForeignKey(x => x.BookingId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.CustomerUserId).IsRequired().HasMaxLength(450);
+            e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
+            e.Property(x => x.Comment).HasMaxLength(500);
+            e.Property(x => x.BusinessReply).HasMaxLength(500);
         });
     }
         // Seed helpers for OpeningHours
