@@ -74,7 +74,8 @@ app.UseRateLimiter();
 
 // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
-    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, IBusinessService businessService,
+    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to,
+        IBusinessService businessService,
         CancellationToken cancellationToken) =>
     {
         return Results.Ok(await businessService.GetAllAsync(category, city, q, date, from, to, cancellationToken));
@@ -173,7 +174,6 @@ app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<App
 
 // Customer: cancel own booking before it starts
 app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
-    
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
 {
     var userId = userManager.GetUserId(principal);
@@ -181,6 +181,7 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
     {
         return Results.Unauthorized();
     }
+
     return await bookingService.CancelByCustomerAsync(id, userId, cancellationToken) switch
     {
         UpdateBookingStatusOutcome.Updated => Results.NoContent(),
@@ -344,6 +345,33 @@ app.MapPost("/api/panel/logo", async (IFormFile file, ClaimsPrincipal principal,
     var error = await imageService.SetLogoAsync(businessId, stream, file.Length, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization().DisableAntiforgery();
+
+// Business panel: add a photo to the gallery
+app.MapPost("/api/panel/gallery", async (IFormFile file, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessImageService imageService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    await using var stream = file.OpenReadStream();
+    var error = await imageService.AddGalleryImageAsync(businessId, stream, file.Length, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization().DisableAntiforgery();
+// Business panel: delete a gallery photo
+app.MapDelete("/api/panel/gallery/{id:guid}", async (Guid id, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBusinessImageService imageService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+    return await imageService.DeleteGalleryImageAsync(businessId, id, cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound();
+}).RequireAuthorization();
 
 // Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
 var auth = app.MapGroup("/api/auth").RequireRateLimiting("strict");
