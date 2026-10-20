@@ -27,7 +27,7 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         if (await userManager.FindByEmailAsync(email) is not null)
 
         {
-            return "E-postadressen er allerede i bruk.";
+            return "E-postadressen er allerede i bruk. Har du en bedriftskonto? Bruk en annen e-post for kundekonto, eller logg inn.";
         }
 
 // Customer = account without BusinessId; must confirm the email before logging in

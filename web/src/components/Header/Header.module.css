@@ -57,6 +57,32 @@
     background: var(--color-primary-dark);
 }
 
+.greeting {
+
+    color: var(--color-text);
+
+    font-weight: 500;
+
+    padding: 0 8px;
+}
+
+/* Looks like a link, but is a button because logging out changes state */
+.logoutButton {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 8px;
+    border: none;
+    background: none;
+    font: inherit;
+    color: var(--color-muted);
+    cursor: pointer;
+}
+
+.logoutButton:hover {
+    color: var(--color-text);
+}
+
 @media (min-width: 768px) {
     .inner {
         height: 64px;
