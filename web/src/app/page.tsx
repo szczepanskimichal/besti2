@@ -1,16 +1,28 @@
 import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import {getBusinesses, getCities} from '@/lib/api';
 import {categoryOptionGroups} from '@/lib/categories';
+import {todayInOslo} from '@/lib/format';
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string }>;
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string }>;
+}
+
+// Time of day in the search -> from/to for the API (Oslo time)
+const timeWindows: Record<string, { from?: string; to?: string }> = {
+    formiddag: {to: "12:00"},
+    ettermiddag: {from: "12:00", to: "17:00"},
+    kveld: {from: "17:00"},
 };
 
 export default async function Home({searchParams}: HomeProps) {
-    const {category, city, q} = await searchParams;
+    const {category, city, q, date, tid} = await searchParams;
+    const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
     // Both requests at the same time instead of one after the other
-    const [businesses, cities] = await Promise.all([getBusinesses(category, city, q), getCities()]);
+    const [businesses, cities] = await Promise.all([
+        getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to),
+        getCities(),
+    ]);
     return (
         <main className={styles.main}>
             <section className={styles.hero}>
