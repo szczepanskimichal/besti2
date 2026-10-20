@@ -1,6 +1,14 @@
 import type {BusinessListItem, BusinessDetails, CreateBookingInput, PanelBooking} from "@/lib/types";
+import {headers} from "next/headers";
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
+// Forward the visitor's IP so the API limits attempts per person, not per web server.
+// cf-connecting-ip is set by Cloudflare in production (cannot be faked); x-forwarded-for works locally.
+async function forwardedFor(): Promise<Record<string, string>> {
+    const h = await headers();
+    const ip = h.get("cf-connecting-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim();
+    return ip ? { "X-Forwarded-For": ip } : {};
+}
 
 export async function getBusinesses(category?: string, city?: string, q?: string): Promise<BusinessListItem[]> {
     const params = new URLSearchParams();
@@ -62,7 +70,8 @@ export async function createBooking(input: CreateBookingInput, token: string): P
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`
+            "Authorization": `Bearer ${token}`,
+            ...(await forwardedFor())
         },
         body: JSON.stringify(input),
         cache: "no-store",
@@ -82,7 +91,7 @@ export async function registerBusiness(input: Record<string, string>): Promise<{
 }> {
     const res = await fetch(`${API_URL}/api/businesses/register`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json", ...(await forwardedFor())},
         body: JSON.stringify(input),
         cache: "no-store",
     });
@@ -98,14 +107,17 @@ export async function registerBusiness(input: Record<string, string>): Promise<{
 export async function login(email: string, password: string): Promise<{
     accessToken: string;
     expiresIn: number
-} | null> {
+} | null | "tooMany"> {
     const res = await fetch(`${API_URL}/api/auth/login`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json", ...(await forwardedFor())},
         body: JSON.stringify({email, password}),
         cache: "no-store",
     });
-
+    // Too many attempts: the API's rate limiter answered 429
+    if (res.status === 429) {
+        return "tooMany";
+    }
     if (!res.ok) {
         return null;
     }
@@ -250,7 +262,7 @@ export async function uploadLogo(token: string, file: File): Promise<{ ok: true 
 export async function forgotPassword(email: string): Promise<void> {
     await fetch(`${API_URL}/api/auth/forgotPassword`, {
         method: "POST",
-        headers: {"Content-Type": "application/json"},
+        headers: {"Content-Type": "application/json", ...(await forwardedFor())},
         body: JSON.stringify({email}),
         cache: "no-store",
     });
@@ -259,7 +271,7 @@ export async function forgotPassword(email: string): Promise<void> {
 export async function resetPassword(email: string, resetCode: string, newPassword: string): Promise<boolean> {
     const res = await fetch(`${API_URL}/api/auth/resetPassword`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await forwardedFor()) },
         body: JSON.stringify({ email, resetCode, newPassword }),
         cache: "no-store",
     });
@@ -310,7 +322,7 @@ export async function deleteEmployee(token: string, employeeId: string): Promise
 export async function registerCustomer(input: { fullName: string; email: string; password: string }): Promise<{ ok: true } | { ok: false; message: string }> {
     const res = await fetch(`${API_URL}/api/account/register`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await forwardedFor()) },
         body: JSON.stringify(input),
         cache: "no-store",
     });
@@ -324,7 +336,7 @@ export async function registerCustomer(input: { fullName: string; email: string;
 export async function confirmEmail(userId: string, code: string): Promise<boolean> {
     const res = await fetch(`${API_URL}/api/account/confirm-email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...(await forwardedFor()) },
         body: JSON.stringify({ userId, code }),
         cache: "no-store",
     });

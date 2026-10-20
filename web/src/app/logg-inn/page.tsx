@@ -15,7 +15,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <p className={styles.muted}>For kunder og bedrifter.</p>
             {feil && (
                 <p className={styles.error} role="alert">
-                    Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først.                </p>
+                    {feil === "for-mange"
+                        ? "For mange forsøk. Prøv igjen om litt."
+                        : "Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først."}
+                </p>
             )}
             {registrert && (
                 <p className={styles.success} role="status">

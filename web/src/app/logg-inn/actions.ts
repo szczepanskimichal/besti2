@@ -11,6 +11,9 @@ export async function loginAction(formData: FormData) {
 
     const result = await login(email, password);
 
+    if(result === "tooMany") {
+        redirect("/logg-inn?feil=for-mange");
+    }
     if (!result) {
         redirect("/logg-inn?feil=1");
     }
@@ -26,7 +29,8 @@ export async function loginAction(formData: FormData) {
     // Customers go back to where they were (e.g. the chosen time), businesses to their panel
     const me = await getMe(result.accessToken);
     const next = String(formData.get("neste") ?? "");
-    const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/";
+    // "//evil.com" and "/\evil.com" would send the user to another site
+    const safeNext = next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/";
     redirect(me?.isBusiness ? "/panel" : safeNext);
 }
 
