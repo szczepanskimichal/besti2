@@ -4,6 +4,7 @@ import {getAvailability, getBusiness, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {formatDate, formatPrice, formatTime, todayInOslo} from "@/lib/format";
 import {createBookingAction} from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 type Props = {
@@ -123,8 +124,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                                 Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
                                 bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
                             </p>
-                            <button type="submit" className={styles.primaryButton}>Bekreft bestilling</button>
-                        </form>
+                            <SubmitButton className={styles.primaryButton} pendingText="Bestiller…">Bekreft bestilling</SubmitButton>                        </form>
                     )}
                         </section>
                         )}

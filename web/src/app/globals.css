@@ -33,3 +33,8 @@ body > main {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
+
+button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}

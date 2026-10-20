@@ -1,6 +1,7 @@
 import NextLink from "next/link";
 import { categoryOptionGroups } from "@/lib/categories";
 import { registerAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 type RegisterPageProps = {
@@ -79,9 +80,9 @@ export default async function RegisterBusinessPage({ searchParams }: RegisterPag
             Ved å registrere bedriften godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
             bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
         </p>
-    <button type="submit" className={styles.primaryButton}>
-        Registrer bedrift
-    </button>
+        <SubmitButton className={styles.primaryButton} pendingText="Registrerer…">
+            Registrer bedrift
+        </SubmitButton>
     </form>
     </main>
 );
