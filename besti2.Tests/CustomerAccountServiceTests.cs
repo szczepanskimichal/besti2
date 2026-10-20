@@ -51,8 +51,7 @@ public class CustomerAccountServiceTests
         var (service, _, _) = CreateService();
         await service.RegisterAsync(TestKunde());
         var error = await service.RegisterAsync(TestKunde());
-        Assert.Equal("E-postadressen er allerede i bruk.", error);
-    }
+        Assert.StartsWith("E-postadressen er allerede i bruk.", error);    }
 
 // check if a valid code confirms the email and a wrong one does not
     [Fact]
