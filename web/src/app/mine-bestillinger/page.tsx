@@ -85,7 +85,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                         <input type="hidden" name="bookingId" value={booking.id} />
                                         <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
                                             Ja, avbestill
-                                    </SubmitButton>
+                                        </SubmitButton>
                                     </form>
                                 </details>
                             )}

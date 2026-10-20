@@ -19,7 +19,7 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
 
 export default async function Home({searchParams}: HomeProps) {
     const {category, city, q, date, tid} = await searchParams;
-// Only the cities here (fast); the businesses load inside Suspense below
+    // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
