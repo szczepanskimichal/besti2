@@ -210,9 +210,10 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Images.Where(i => i.Kind == ImageKind.Galleri)
                     .OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedUtc)
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
-                    .ToList()            ))
+                    .ToList()
+                ))
             .FirstOrDefaultAsync(cancellationToken);
-    
+        
     return business is null ? null : business with
         {
             LogoUrl = ToLogoUrl(business.LogoUrl),
