@@ -3,15 +3,10 @@ import { redirect } from "next/navigation";
 import { getPanelBookings } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate, formatTime } from "@/lib/format";
+import { statusLabels } from "@/lib/bookingStatus";
 import { logoutAction } from "../logg-inn/actions";
 import { cancelBookingAction, confirmBookingAction } from "./actions";
 import styles from "./page.module.css";
-
-const statusLabels: Record<string, string> = {
-    Venter: "Venter på bekreftelse",
-    Bekreftet: "Bekreftet",
-    Avlyst: "Avlyst",
-};
 
 type PanelPageProps = {
     searchParams: Promise<{ feil?: string }>;
@@ -105,12 +100,16 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                                             </button>
                                         </form>
                                     )}
+                                    <details>
+                                    <summary className={styles.dangerButton}>Avlys</summary>
+                                    <p>Er du sikker? Kunden får beskjed på e-post.</p>
                                     <form action={cancelBookingAction}>
                                         <input type="hidden" name="bookingId" value={booking.id} />
                                         <button type="submit" className={styles.dangerButton}>
-                                            Avlys
+                                            Ja, avlys
                                         </button>
                                     </form>
+                                </details>
                                 </div>
                             )}
                         </li>

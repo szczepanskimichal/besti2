@@ -125,7 +125,6 @@ export async function login(email: string, password: string): Promise<{
     return res.json();
 }
 
-// 
 export async function getPanelBookings(token: string): Promise<PanelBooking[] | null> {
     const res = await fetch(`${API_URL}/api/panel/bookings`, {
         headers: {Authorization: `Bearer ${token}`},

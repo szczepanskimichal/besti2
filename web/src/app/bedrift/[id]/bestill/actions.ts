@@ -12,9 +12,10 @@ export async function createBookingAction(formData: FormData) {
     const date = String(formData.get("date"));
 
     const token = await getToken();
-
     if (!token) {
-        redirect("/logg-inn");
+    // Come back to the same time after logging in
+        const back = `/bedrift/${businessId}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc })}`;
+        redirect(`/logg-inn?neste=${encodeURIComponent(back)}`);
     }
     // Name and email come from the account in the API
     const result = await createBooking({
