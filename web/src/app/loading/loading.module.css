@@ -1,0 +1,31 @@
+main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 48px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.title,
+.block {
+    border-radius: 12px;
+    background: var(--color-border);
+    animation: pulse 1.2s ease-in-out infinite;
+}
+.title {
+    height: 40px;
+    width: 60%;
+}
+.block {
+    height: 140px;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .title,
+    .block {
+        animation: none;
+    }
+}
