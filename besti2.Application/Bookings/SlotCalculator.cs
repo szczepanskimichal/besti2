@@ -46,6 +46,11 @@ public static class SlotCalculator
     private static DateTime ToUtc(DateOnly date, TimeOnly time)
     {
         var osloTime = date.ToDateTime(time);
+        // 02:00–03:00 does not exist on the night clocks go forward; use 03:00 instead of crashing
+        if (Oslo.IsInvalidTime(osloTime))
+        {
+            osloTime = osloTime.AddHours(1);
+        }
         return TimeZoneInfo.ConvertTimeToUtc(osloTime, Oslo);
     }
 }

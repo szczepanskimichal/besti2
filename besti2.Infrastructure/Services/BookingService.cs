@@ -31,6 +31,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return null;
         }
+        // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
+        if (date.Year is < 2000 or > 2100)
+        {
+            return [];
+        }
 
         var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
         var toUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(2);
@@ -79,7 +84,22 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
         }
 
-        var date = DateOnly.FromDateTime(request.StartUtc);
+        // The day in Oslo, not in UTC (00:30 on Tuesday in Oslo is still Monday in UTC)
+        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(request.StartUtc, Oslo));
+
+        // Only one booking per employee is checked and saved at a time, so two clicks in the same
+        // second cannot both get the slot (SQL Server lock; the in-memory test database has no locks)
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null)
+        {
+            var lockName = $"booking-{request.EmployeeId}";
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"EXEC sp_getapplock @Resource = {lockName}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000",
+                cancellationToken);
+        }
+
         var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, cancellationToken);
         if (freeSlots is null)
         {
@@ -109,7 +129,21 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         };
 
         dbContext.Bookings.Add(booking);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException)
+        {
+            // Second line of defence: the unique index refused a second booking for the same time
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
         await SendConfirmationEmailAsync(booking, service, cancellationToken);
 
         return new CreateBookingResult(
@@ -206,6 +240,12 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
+        // A visit that has started can still be confirmed, but no longer cancelled
+        // (otherwise a business could cancel past visits to block reviews)
+        if (newStatus == BookingStatus.Avlyst && booking.StartUtc <= DateTime.UtcNow)
+        {
+            return UpdateBookingStatusOutcome.InvalidTransition;
+        }
 
         booking.Status = newStatus;
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -221,9 +261,14 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return "Navn er påkrevd (maks 100 tegn).";
         }
 
-        if (string.IsNullOrWhiteSpace(request.CustomerPhone) || request.CustomerPhone.Length > 20)
+        // Digits, spaces and an optional + only, at least 8 digits (91234567, +47 912 34 567)
+        var phone = request.CustomerPhone?.Trim() ?? "";
+        if (phone.Length is 0 or > 20
+            || !phone.All(c => char.IsDigit(c) || c == ' ' || c == '+')
+            || phone.Count(char.IsDigit) < 8
+            || phone.LastIndexOf('+') > 0)
         {
-            return "Telefonnummer er påkrevd (maks 20 tegn).";
+            return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
 
         if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 ||

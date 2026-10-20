@@ -43,7 +43,7 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
 
 // Honest reviews: only after a visit that really happened
 
-        if (booking.Status == BookingStatus.Avlyst || booking.EndUtc > DateTime.UtcNow)
+        if (booking.Status != BookingStatus.Bekreftet || booking.EndUtc > DateTime.UtcNow)
 
         {
             return "Du kan gi en vurdering etter timen.";

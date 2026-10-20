@@ -77,6 +77,11 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         List<BusinessListItemDto> businesses, DateOnly date, string? q, TimeOnly? from, TimeOnly? to,
         CancellationToken cancellationToken = default)
     {
+        // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
+        if (date.Year is < 2000 or > 2100)
+        {
+            return [];
+        }
         var businessIds = businesses.Select(b => b.Id).ToList();
 
         var services = await dbContext.Services.AsNoTracking()

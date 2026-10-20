@@ -109,7 +109,9 @@ export default async function BookingPage({params, searchParams}: Props) {
                             <input type="hidden" name="date" value={date}/>
                             <label className={styles.field}>
                                 Telefon
-                                <input name="customerPhone" type="tel" required maxLength={20} autoComplete="tel"/>
+                                <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}
+                                       autoComplete="tel" pattern="\+?[0-9 ]{8,20}" placeholder="912 34 567"
+                                       title="Bare tall, mellomrom og +, minst 8 sifre"/>
                             </label>
                             <label className={styles.field}>
                                 Melding til bedriften (valgfritt)
