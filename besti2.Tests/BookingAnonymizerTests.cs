@@ -19,6 +19,7 @@ public class BookingAnonymizerTests
         CustomerEmail = "kunde@test.example",
         MarketingConsent = true,
         MarketingConsentUtc = startUtc,
+        CustomerUserId = "kunde-1",
         Status = BookingStatus.Bekreftet,
         ServiceId = new Guid("a1111111-0000-0000-0000-000000000002"),
         EmployeeId = new Guid("b1111111-0000-0000-0000-000000000001")
@@ -45,6 +46,7 @@ public class BookingAnonymizerTests
         var old = await db.Bookings.SingleAsync(b => b.CustomerEmail == BookingAnonymizer.AnonymizedEmail);
         Assert.Equal("Anonymisert", old.CustomerName);
         Assert.False(old.MarketingConsent);
+        Assert.Null(old.CustomerUserId);
         Assert.Contains(db.Bookings, b => b.CustomerName == "Ny Kunde");
     }
 

@@ -137,6 +137,47 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerNote))
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
+        string customerUserId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.CustomerUserId == customerUserId)
+            .OrderByDescending(b => b.StartUtc)
+            .Select(b => new CustomerBookingDto(
+                b.Id,
+                b.StartUtc,
+                b.EndUtc,
+                b.Status.ToString(),
+                b.Service.Name,
+                b.Employee.Name + " " + b.Employee.LastName,
+                b.Service.BusinessId,
+                b.Service.Business.Name,
+                b.Service.Business.Address + ", " + b.Service.Business.PostalCode + " " + b.Service.Business.City))
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
+        Guid bookingId, string customerUserId, CancellationToken cancellationToken = default)
+    {
+        // Only the customer's own booking; someone else's id looks like "not found"
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
+        if (booking is null)
+        {
+            return UpdateBookingStatusOutcome.NotFound;
+        }
+        // Already cancelled or already started: too late to cancel
+        if (booking.Status == BookingStatus.Avlyst || booking.StartUtc <= DateTime.UtcNow)
+        {
+            return UpdateBookingStatusOutcome.InvalidTransition;
+        }
+        booking.Status = BookingStatus.Avlyst;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
+        return UpdateBookingStatusOutcome.Updated;
+    }
 
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
@@ -259,6 +300,33 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
+        }
+    }
+    
+    // Tell the business that a customer cancelled; a failed email must not fail the cancellation
+    private async Task SendCancelledByCustomerEmailAsync(Booking booking, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
+            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var body =
+                $"Hei {business.Name}!\n\n" +
+                $"{booking.CustomerName} har avbestilt timen.\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n\n" +
+                "Tiden er nå ledig for andre.\n\n" +
+                "Hilsen besti2";
+            await emailService.SendAsync(business.Email, $"Avbestilling: {service.Name}, {when}", body,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
 }

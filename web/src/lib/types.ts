@@ -71,3 +71,15 @@ export type PanelBooking = {
     customerEmail: string;
     customerNote: string | null;
 };
+
+export type CustomerBooking = {
+    id: string;
+    startUtc: string;
+    endUtc: string;
+    status: string;
+    serviceName: string;
+    employeeName: string;
+    businessId: string;
+    businessName: string;
+    businessAddress: string;
+};

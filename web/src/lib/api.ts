@@ -1,4 +1,4 @@
-import type {BusinessListItem, BusinessDetails, CreateBookingInput, PanelBooking} from "@/lib/types";
+import type {BusinessListItem, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking} from "@/lib/types";
 import {headers} from "next/headers";
 
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
@@ -355,4 +355,33 @@ export async function getMe(token: string): Promise<Me | null> {
         cache: "no-store",
     });
     return res.ok ? res.json() : null;
+}
+
+// Customer: own bookings; null = not logged in (token expired)
+export async function getMyBookings(token: string): Promise<CustomerBooking[] | null> {
+    const res = await fetch(`${API_URL}/api/me/bookings`, {
+        headers: {Authorization: `Bearer ${token}`},
+        cache: "no-store",
+    });
+    if (res.status === 401 || res.status === 403) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente bestillinger (${res.status})`);
+    }
+    return res.json();
+}
+
+// Customer cancels an own booking; returns the API's message when it fails
+export async function cancelMyBooking(token: string, bookingId: string): Promise<{ ok: true } | { ok: false; message: string }> {
+    const res = await fetch(`${API_URL}/api/me/bookings/${bookingId}/avbestill`, {
+        method: "POST",
+        headers: {Authorization: `Bearer ${token}`},
+        cache: "no-store",
+    });
+    if (res.ok) {
+        return {ok: true};
+    }
+    const body = await res.json().catch(() => null);
+    return {ok: false, message: body?.message ?? "Kunne ikke avbestille. Prøv igjen."};
 }

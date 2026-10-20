@@ -22,8 +22,10 @@ export default async function Header() {
                             {me.isBusiness ? (
                                 <NextLink href="/panel" className={styles.ctaLink}>Panel</NextLink>
                             ) : (
-                                firstName && <span className={styles.greeting}>Hei, {firstName}</span>
-                            )}
+                                <>
+                                    {firstName && <span className={styles.greeting}>Hei, {firstName}</span>}
+                                    <NextLink href="/mine-bestillinger" className={styles.navLink}>Mine bestillinger</NextLink>
+                                </>                            )}
                             <form action={logoutAction}>
                                 <button type="submit" className={styles.logoutButton}>Logg ut</button>
                             </form>
