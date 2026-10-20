@@ -20,5 +20,5 @@ export async function cancelMyBookingAction(formData: FormData) {
 
         ? "/mine-bestillinger?avbestilt=1"
 
-        : `/mine-bestillinger?feil=${encodeURIComponent(result.message)}`);
+        : "/mine-bestillinger?feil=1");
 }

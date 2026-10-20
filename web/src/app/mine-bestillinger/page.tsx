@@ -50,7 +50,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     return (
         <main className={styles.main}>
             <h1 className={styles.title}>Mine bestillinger</h1>
-            {feil && <p className={styles.error} role="alert">{feil}</p>}
+            {feil && (
+                <p className={styles.error} role="alert">
+                    Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt eller ha startet.
+                </p>
+            )}
             {avbestilt && <p className={styles.muted} role="status">Bestillingen er avbestilt.</p>}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
