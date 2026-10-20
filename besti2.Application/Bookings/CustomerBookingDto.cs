@@ -1,0 +1,12 @@
+// One booking as the customer sees it on "Mine bestillinger"
+public record CustomerBookingDto(
+    Guid Id,
+    DateTime StartUtc,
+    DateTime EndUtc,
+    string Status,
+    string ServiceName,
+    string EmployeeName,
+    Guid BusinessId,
+    string BusinessName,
+    string BusinessAddress
+    );

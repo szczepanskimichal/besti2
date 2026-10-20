@@ -204,11 +204,10 @@ public class BookingServiceTests
         var booking = Assert.Single(result);
         Assert.Equal("Kari Nordmann", booking.CustomerName);
     }
-    
+
     // Customer's note is trimmed, saved and shown in the business panel
-    
+
     [Fact]
-    
     public async Task CreateAsync_SavesNoteForTheBusiness()
     {
         await using var db = await CreateSeededDbAsync();
@@ -218,12 +217,11 @@ public class BookingServiceTests
         var booking = Assert.Single(await service.GetForBusinessAsync(KlippOgStil));
         Assert.Equal("Jeg har langt hår", booking.CustomerNote);
     }
-    
+
     // check if a booking made from an account remembers which customer made it
     [Fact]
-    
     public async Task CreateAsync_WithAccount_SavesCustomerUserId()
-    
+
     {
         await using var db = await CreateSeededDbAsync();
         var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
@@ -232,4 +230,67 @@ public class BookingServiceTests
         Assert.Equal("kunde-123", booking.CustomerUserId);
     }
 
+    // check if a customer sees only their own bookings
+    [Fact]
+    public async Task GetForCustomerAsync_ReturnsOnlyOwnBookings()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
+        var own = await service.GetForCustomerAsync("kunde-1");
+        var other = await service.GetForCustomerAsync("kunde-2");
+        var booking = Assert.Single(own);
+        Assert.Equal("Herreklipp", booking.ServiceName);
+        Assert.Empty(other);
+    }
+
+// check if a customer can cancel their own upcoming booking
+    [Fact]
+    public async Task CancelByCustomerAsync_OwnFutureBooking_IsCancelled()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
+        var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1");
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+        Assert.Equal(BookingStatus.Avlyst, (await db.Bookings.SingleAsync()).Status);
+    }
+
+// check if nobody can cancel someone else's booking
+    [Fact]
+    public async Task CancelByCustomerAsync_OtherCustomer_ReturnsNotFound()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
+        var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-2");
+        Assert.Equal(UpdateBookingStatusOutcome.NotFound, outcome);
+        Assert.Equal(BookingStatus.Venter, (await db.Bookings.SingleAsync()).Status);
+    }
+
+// check if a booking that already started cannot be cancelled
+    [Fact]
+    public async Task CancelByCustomerAsync_PastBooking_ReturnsInvalidTransition()
+
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            StartUtc = DateTime.UtcNow.AddDays(-1),
+            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
+            CustomerName = "Kari Nordmann",
+            CustomerPhone = "+4790000000",
+            CustomerEmail = "kari@test.example",
+            Status = BookingStatus.Bekreftet,
+            CustomerUserId = "kunde-1",
+            ServiceId = HerreklippId,
+            EmployeeId = IngridId
+        };
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
+        Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
+    }
 }

@@ -161,6 +161,35 @@ app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> use
         : Results.Ok(new { user.Email, user.FullName, IsBusiness = user.BusinessId is not null });
 }).RequireAuthorization();
 
+// Customer: own bookings for "Mine bestillinger"
+app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    return userId is null
+        ? Results.Unauthorized()
+        : Results.Ok(await bookingService.GetForCustomerAsync(userId, cancellationToken));
+}).RequireAuthorization();
+
+// Customer: cancel own booking before it starts
+app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
+    
+    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+    return await bookingService.CancelByCustomerAsync(id, userId, cancellationToken) switch
+    {
+        UpdateBookingStatusOutcome.Updated => Results.NoContent(),
+        UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(
+            new { message = "Bestillingen kan ikke avbestilles lenger." }),
+        _ => Results.NotFound()
+    };
+}).RequireAuthorization();
+
 // Business panel: bookings for the logged-in owner's business
 app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IBookingService bookingService, CancellationToken cancellationToken) =>

@@ -137,6 +137,46 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerNote))
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
+        string customerUserId, CancellationToken cancellationToken = default)
+    {
+        return await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.CustomerUserId == customerUserId)
+            .OrderByDescending(b => b.StartUtc)
+            .Select(b => new CustomerBookingDto(
+                b.Id,
+                b.StartUtc,
+                b.EndUtc,
+                b.Status.ToString(),
+                b.Service.Name,
+                b.Employee.Name + " " + b.Employee.LastName,
+                b.Service.BusinessId,
+                b.Service.Business.Name,
+                b.Service.Business.Address + ", " + b.Service.Business.PostalCode + " " + b.Service.Business.City))
+            .ToListAsync(cancellationToken);
+    }
+    
+    public async Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
+        Guid bookingId, string customerUserId, CancellationToken cancellationToken = default)
+    {
+        // Only the customer's own booking; someone else's id looks like "not found"
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
+        if (booking is null)
+        {
+            return UpdateBookingStatusOutcome.NotFound;
+        }
+        // Already cancelled or already started: too late to cancel
+        if (booking.Status == BookingStatus.Avlyst || booking.StartUtc <= DateTime.UtcNow)
+        {
+            return UpdateBookingStatusOutcome.InvalidTransition;
+        }
+        booking.Status = BookingStatus.Avlyst;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return UpdateBookingStatusOutcome.Updated;
+    }
 
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
