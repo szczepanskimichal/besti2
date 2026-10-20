@@ -60,8 +60,7 @@ export async function getBusinesses(category?: string, city?: string, q?: string
 }
 
 export async function getBusiness(id: string): Promise<BusinessDetails | null> {
-    const res = await fetch(`${API_URL}/api/businesses/${id}`, {cache: "no-store"});
-
+    const res = await apiFetch(`/api/businesses/${id}`);
     if (res.status === 404) {
         return null;
     }
