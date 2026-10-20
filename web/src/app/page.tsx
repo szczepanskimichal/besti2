@@ -56,19 +56,32 @@ export default async function Home({searchParams}: HomeProps) {
                             ))}
                         </datalist>
                     </label>
-
+                    <label className={styles.field}>
+                        Når
+                        <input name="date" type="date" defaultValue={date ?? ""} min={todayInOslo()}/>
+                    </label>
+                    <label className={styles.field}>
+                        Tid på dagen
+                        <select name="tid" defaultValue={tid ?? ""}>
+                            <option value="">Hele dagen</option>
+                            <option value="formiddag">Før kl. 12</option>
+                            <option value="ettermiddag">Kl. 12–17</option>
+                            <option value="kveld">Etter kl. 17</option>
+                        </select>
+                    </label>
                     <button type="submit" className={styles.searchButton}>Søk</button>
                 </form>
             </section>
-
             {businesses.length === 0 && (
-                <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>
-            )}
-
+                <p className={styles.subtitle}>
+                    {date
+                        ? "Ingen ledige tider da. Prøv en annen dag eller tid på dagen."
+                        : "Ingen bedrifter funnet. Prøv et annet søk."}
+                </p>            )}
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>
-                        <BusinessCard business={business}/>
+                        <BusinessCard business={business} date={date}/>
                     </li>
                 ))}
             </ul>

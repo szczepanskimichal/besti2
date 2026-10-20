@@ -6,6 +6,14 @@ export type BusinessListItem = {
     description: string | null;
     city: string;
     logoUrl: string | null;
+    freeSlots: FreeSlot[] | null; // only when searching with a date
+};
+
+export type FreeSlot = {
+    startUtc: string;
+    serviceId: string;
+    serviceName: string;
+    employeeId: string;
 };
 
 export type Service = {
