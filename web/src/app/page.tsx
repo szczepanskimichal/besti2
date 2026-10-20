@@ -6,7 +6,7 @@ import styles from "./page.module.css";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string }>;
-}
+};
 
 // Time of day in the search -> from/to for the API (Oslo time)
 const timeWindows: Record<string, { from?: string; to?: string }> = {
@@ -89,7 +89,8 @@ export default async function Home({searchParams}: HomeProps) {
                     {date
                         ? "Ingen ledige tider da. Prøv en annen dag eller tid på dagen."
                         : "Ingen bedrifter funnet. Prøv et annet søk."}
-                </p>            )}
+                </p>
+            )}
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>
