@@ -42,6 +42,7 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
                     Passord
                     <input name="password" type="password" required minLength={6} autoComplete="new-password" />
                 </label>
+                <p className={styles.muted}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
                 <p className={styles.muted}>
                     Ved å opprette konto godtar du <NextLink href="/vilkar">vilkårene</NextLink> og bekrefter at du
                     har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMe, getMyBookings } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import type { CustomerBooking } from "@/lib/types";
 import { cancelMyBookingAction } from "./actions";
@@ -11,12 +12,6 @@ import styles from "../panel/page.module.css";
 
 export const metadata: Metadata = {
     title: "Mine bestillinger",
-};
-
-const statusLabels: Record<string, string> = {
-    Venter: "Venter på bekreftelse",
-    Bekreftet: "Bekreftet",
-    Avlyst: "Avlyst",
 };
 
 // Upcoming = has not started yet; the API already sorts newest first
