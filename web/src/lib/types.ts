@@ -7,6 +7,7 @@ export type BusinessListItem = {
     city: string;
     logoUrl: string | null;
     freeSlots: FreeSlot[] | null; // only when searching with a date
+    distanceKm: number | null; // only with "Nær meg"
 };
 
 export type FreeSlot = {

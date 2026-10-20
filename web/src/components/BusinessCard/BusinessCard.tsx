@@ -22,7 +22,10 @@ export default function BusinessCard({ business, date }: Props) {
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                 </div>
                 <h2 className={styles.name}>{business.name}</h2>
-                <p className={styles.city}><span aria-hidden="true">📍</span> {business.city}</p>
+                <p className={styles.city}>
+                    <span aria-hidden="true">📍</span> {business.city}
+                    {business.distanceKm !== null && ` · ${formatDistance(business.distanceKm)} unna`}
+                </p>
                 {business.description && <p className={styles.description}>{business.description}</p>}
             </NextLink>
             {slots.length > 0 && (
@@ -43,4 +46,9 @@ export default function BusinessCard({ business, date }: Props) {
             <NextLink href={href} className={styles.more}>Se tjenester →</NextLink>
         </article>
     );
+}
+
+// 0.45 -> "450 m", 3.27 -> "3,3 km" (Norwegian decimal comma)
+function formatDistance(km: number): string {
+    return km < 1 ? `${Math.round(km * 1000)} m` : `${km.toFixed(1).replace(".", ",")} km`;
 }
