@@ -4,6 +4,7 @@ import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { weekdays } from "@/lib/weekdays";
 import { updateOpeningHoursAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../tjenester/page.module.css";
 import dayStyles from "./page.module.css";
 
@@ -68,10 +69,9 @@ export default async function OpeningHoursPage({ searchParams }: OpeningHoursPag
                         </fieldset>
                     );
                 })}
-
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Lagre åpningstider
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );

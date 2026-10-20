@@ -4,6 +4,7 @@ import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { updateProfileAction } from "./actions";
 import LogoUploadForm from "./LogoUploadForm";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../tjenester/page.module.css";
 
 type ProfilePageProps = {
@@ -62,9 +63,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     By
                     <input name="city" required maxLength={200} defaultValue={business.city} />
                 </label>
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Lagre profil
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );
