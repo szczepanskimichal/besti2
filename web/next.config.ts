@@ -7,9 +7,12 @@ const nextConfig: NextConfig = {
         serverActions: {bodySizeLimit: "4mb"},
 
     },
-// The customer page moved from /mine-bestillinger to /min-besti
+    // The customer page moved from /mine-bestillinger to /min-besti
     async redirects() {
-        return [{source: "/mine-bestillinger/:path*", destination: "/min-besti/:path*", permanent: true}];
+        return [
+            {source: "/mine-bestillinger", destination: "/min-besti", permanent: true},
+            {source: "/mine-bestillinger/:path*", destination: "/min-besti/:path*", permanent: true},
+        ];
     },
 };
 

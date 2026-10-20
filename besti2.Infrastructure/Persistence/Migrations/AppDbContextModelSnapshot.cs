@@ -212,7 +212,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ServiceId");
 
-                    b.HasIndex("EmployeeId", "StartUtc");
+                    b.HasIndex("EmployeeId", "StartUtc")
+                        .IsUnique()
+                        .HasFilter("[Status] <> 'Avlyst'");
 
                     b.ToTable("Bookings");
                 });

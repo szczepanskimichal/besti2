@@ -115,7 +115,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
         
         modelBuilder.Entity<Booking>(e =>
         {
-            e.HasIndex(x => new { x.EmployeeId, x.StartUtc });
+            // One active booking per employee and start time; cancelled ones do not count
+            e.HasIndex(x => new { x.EmployeeId, x.StartUtc })
+                .IsUnique()
+                .HasFilter("[Status] <> 'Avlyst'");
             e.HasIndex(x => x.CustomerUserId);
             e.HasOne(x => x.Employee).WithMany()
                 .HasForeignKey(x => x.EmployeeId)

@@ -1,6 +1,7 @@
 using besti2.Domain.Enums;
 using besti2.Application.Bookings;
 using besti2.Application.Businesses;
+using besti2.Application.Reviews;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
@@ -298,5 +299,102 @@ public class BookingServiceTests
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
     }
     
+    // check if a phone number with letters is refused
+    [Fact]
+    public async Task CreateAsync_InvalidPhone_ReturnsInvalid()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+
+        var result = await service.CreateAsync(HerreklippHosIngrid() with { CustomerPhone = "aaa" });
+
+        Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
+    }
     
+    // check if a longer service cannot overlap a booking that starts inside it
+    [Fact]
+    public async Task CreateAsync_OverlappingLongerService_IsSlotTaken()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        // Herreklipp (30 min) at 10:30, then Dameklipp (60 min) at 10:00 would overlap 10:30–11:00
+        var first = await service.CreateAsync(HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddMinutes(30) });
+        var dameklipp = HerreklippHosIngrid() with { ServiceId = new Guid("a1111111-0000-0000-0000-000000000001") };
+        var second = await service.CreateAsync(dameklipp);
+
+        Assert.Equal(CreateBookingOutcome.Created, first.Outcome);
+        Assert.Equal(CreateBookingOutcome.SlotTaken, second.Outcome);
+    }
+
+    // check if a cancelled booking frees the time for someone else
+    [Fact]
+    public async Task CreateAsync_AfterCancellation_SlotIsFreeAgain()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var first = await service.CreateAsync(HerreklippHosIngrid());
+        await service.UpdateStatusAsync(first.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
+
+        var second = await service.CreateAsync(HerreklippHosIngrid(email: "ola@test.example"));
+
+        Assert.Equal(CreateBookingOutcome.Created, second.Outcome);
+    }
+
+    // check if 00:30 on Monday in Oslo (Sunday 23:30 UTC) uses Monday's opening hours
+    [Fact]
+    public async Task CreateAsync_JustAfterMidnightInOslo_UsesTheOsloDay()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var monday = db.OpeningHours.Single(h => h.BusinessId == KlippOgStil && h.DayOfWeek == DayOfWeek.Monday);
+        monday.OpensAt = new TimeOnly(0, 0);
+        await db.SaveChangesAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        // Monday 7 Jan 2030 00:30 Oslo = Sunday 6 Jan 23:30 UTC
+        var request = HerreklippHosIngrid() with { StartUtc = new DateTime(2030, 1, 6, 23, 30, 0, DateTimeKind.Utc) };
+
+        var result = await service.CreateAsync(request);
+
+        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
+    }
+
+    // check if a business cannot cancel a visit that has already started
+    [Fact]
+    public async Task UpdateStatusAsync_CancelAfterStart_IsInvalidTransition()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            StartUtc = DateTime.UtcNow.AddHours(-2),
+            EndUtc = DateTime.UtcNow.AddHours(-1),
+            CustomerName = "Kari Nordmann",
+            CustomerPhone = "+4790000000",
+            CustomerEmail = "kari@test.example",
+            Status = BookingStatus.Bekreftet,
+            EmployeeId = IngridId,
+            ServiceId = HerreklippId
+        };
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+
+        var outcome = await service.UpdateStatusAsync(booking.Id, KlippOgStil, BookingStatus.Avlyst);
+
+        Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
+    }
+
+    // check if an absurd date gives no slots instead of a crash
+    [Fact]
+    public async Task GetFreeSlotsAsync_ExtremeDate_ReturnsNoSlots()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, new DateOnly(9999, 12, 31));
+
+        Assert.NotNull(slots);
+        Assert.Empty(slots);
+    }
+
+
 }
