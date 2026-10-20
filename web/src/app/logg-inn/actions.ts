@@ -11,6 +11,9 @@ export async function loginAction(formData: FormData) {
 
     const result = await login(email, password);
 
+    if(result === "tooMany") {
+        redirect("/logg-inn?feil=for-mange");
+    }
     if (!result) {
         redirect("/logg-inn?feil=1");
     }

@@ -38,7 +38,7 @@ builder.Services.AddRateLimiter(options =>
             new { message = "For mange forsøk. Prøv igjen om litt." }, cancellationToken);
     options.AddPolicy("strict", httpContext =>
     {
-// The web server forwards the visitor's IP; without it we use the caller's own address
+        // The web server forwards the visitor's IP; without it we use the caller's own address
         var clientIp = httpContext.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim();
         if (string.IsNullOrEmpty(clientIp))
             clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
@@ -109,7 +109,8 @@ app.MapPost("/api/bookings",
         if (user is null || user.BusinessId is not null)
         {
             return Results.BadRequest(new { message = "Logg inn med en kundekonto for å bestille." });
-        } 
+        }
+
         // Never trust name/email from the form: use the account's
         var fromAccount = request with { CustomerName = user.FullName ?? "", CustomerEmail = user.Email ?? "" };
         var result = await bookingService.CreateAsync(fromAccount, user.Id, cancellationToken);
