@@ -156,7 +156,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.Service.Business.Name,
                 b.Service.Business.Address + ", " + b.Service.Business.PostalCode + " " + b.Service.Business.City,
                 b.ServiceId,
-                b.EmployeeId))
+                b.EmployeeId,
+                dbContext.Reviews.Any(r => r.BookingId == b.Id)))
             .ToListAsync(cancellationToken);
     }
     

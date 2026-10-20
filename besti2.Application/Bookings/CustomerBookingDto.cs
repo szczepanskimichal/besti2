@@ -11,5 +11,6 @@ public record CustomerBookingDto(
     string BusinessName,
     string BusinessAddress,
     Guid ServiceId,
-    Guid EmployeeId
-    );
+    Guid EmployeeId,
+    bool IsReviewed
+);
