@@ -4,6 +4,7 @@ import {categoryOptionGroups} from '@/lib/categories';
 import {todayInOslo} from '@/lib/format';
 import {Suspense} from "react";
 import Form from "next/form";
+import Link from "next/link";
 import styles from "./page.module.css";
 
 type HomeProps = {
@@ -97,13 +98,21 @@ async function Results({category, city, q, date, tid}: SearchProps) {
     const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
     const businesses = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to);
     if (businesses.length === 0) {
-        return (
-            <p className={styles.subtitle}>
-                {date
-                    ? "Ingen ledige tider da. Prøv en annen dag eller tid på dagen."
-                    : "Ingen bedrifter funnet. Prøv et annet søk."}
-            </p>
-        );
+        if (date) {
+// Same search, one day later
+            const params = new URLSearchParams({date: nextDay(date)});
+            if (category) params.set("category", category);
+            if (city) params.set("city", city);
+            if (q) params.set("q", q);
+            if (tid) params.set("tid", tid);
+            return (
+                <p className={styles.subtitle}>
+                    Ingen ledige tider da.{" "}
+                    <Link href={`/?${params}`}>Prøv dagen etter →</Link>
+                </p>
+            );
+        }
+        return <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>;
     }
 
     return (
@@ -126,4 +135,11 @@ function ResultsSkeleton() {
             ))}
         </ul>
     );
+}
+
+// "2026-10-24" -> "2026-10-25" (noon UTC, so summer time never moves the day)
+function nextDay(date: string): string {
+    const day = new Date(`${date}T12:00:00Z`);
+    day.setUTCDate(day.getUTCDate() + 1);
+    return day.toISOString().slice(0, 10);
 }
