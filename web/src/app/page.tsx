@@ -9,8 +9,8 @@ type HomeProps = {
 
 export default async function Home({searchParams}: HomeProps) {
     const {category, city, q} = await searchParams;
-    const businesses = await getBusinesses(category, city, q);
-    const cities = await getCities();
+    // Both requests at the same time instead of one after the other
+    const [businesses, cities] = await Promise.all([getBusinesses(category, city, q), getCities()]);
     return (
         <main className={styles.main}>
             <section className={styles.hero}>
