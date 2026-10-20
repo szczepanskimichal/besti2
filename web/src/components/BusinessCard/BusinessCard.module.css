@@ -1,6 +1,5 @@
 .link {
     display: block;
-    height: 100%;
     color: inherit;
     text-decoration: none;
     border-radius: 12px;
@@ -22,7 +21,6 @@
     padding: 20px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     transition: box-shadow 0.2s, transform 0.2s;
-    cursor: pointer;
 }
 
 .card:hover {
@@ -63,6 +61,7 @@
     padding-top: 16px;
     font-weight: 600;
     color: var(--color-primary);
+    text-decoration: none;
 }
 
 .top {
@@ -77,4 +76,54 @@
         transition: none;
         transform: none;
     }
+}
+
+
+.slots {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 16px;
+}
+.slotsLabel {
+
+    width: 100%;
+
+    margin: 0;
+
+    font-size: 0.85rem;
+
+    color: var(--color-muted);
+}
+.slot {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    min-height: 40px;
+
+    padding: 0 14px;
+
+    border: 1px solid var(--color-primary);
+
+    border-radius: 999px;
+
+    color: var(--color-primary);
+
+    font-weight: 600;
+
+    text-decoration: none;
+}
+.slot:hover {
+
+    background: var(--color-primary);
+
+    color: #fff;
 }
