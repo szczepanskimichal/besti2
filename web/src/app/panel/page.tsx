@@ -6,6 +6,7 @@ import { formatDate, formatTime } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
 import { logoutAction } from "../logg-inn/actions";
 import { cancelBookingAction, confirmBookingAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 type PanelPageProps = {
@@ -95,9 +96,9 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                                     {booking.status === "Venter" && (
                                         <form action={confirmBookingAction}>
                                             <input type="hidden" name="bookingId" value={booking.id} />
-                                            <button type="submit" className={styles.primaryButton}>
+                                            <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">
                                                 Bekreft
-                                            </button>
+                                            </SubmitButton>
                                         </form>
                                     )}
                                     <details>
@@ -105,9 +106,9 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                                     <p>Er du sikker? Kunden får beskjed på e-post.</p>
                                     <form action={cancelBookingAction}>
                                         <input type="hidden" name="bookingId" value={booking.id} />
-                                        <button type="submit" className={styles.dangerButton}>
+                                        <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">
                                             Ja, avlys
-                                        </button>
+                                        </SubmitButton>
                                     </form>
                                 </details>
                                 </div>

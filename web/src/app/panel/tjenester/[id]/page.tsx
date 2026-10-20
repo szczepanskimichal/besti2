@@ -4,6 +4,7 @@ import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { priceTypeOptions } from "@/lib/priceTypes";
 import { updateServiceAction } from "../actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../page.module.css";
 
 type EditServicePageProps = {
@@ -73,9 +74,9 @@ export default async function EditServicePage({ params, searchParams }: EditServ
                     <input name="priceNok" type="number" min={0} step={1} defaultValue={service.priceNok ?? ""} />
                 </label>
 
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Lagre endringer
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );

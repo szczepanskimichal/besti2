@@ -5,6 +5,7 @@ import { getToken } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
 import { priceTypeOptions } from "@/lib/priceTypes";
 import { addServiceAction, deleteServiceAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 
@@ -75,9 +76,9 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                                     <p>Er du sikker? Kunder kan ikke lenger bestille denne tjenesten.</p>
                                     <form action={deleteServiceAction}>
                                         <input type="hidden" name="serviceId" value={service.id} />
-                                        <button type="submit" className={styles.dangerButton}>
+                                        <SubmitButton className={styles.dangerButton} pendingText="Sletter…">
                                             Ja, slett
-                                        </button>
+                                        </SubmitButton>
                                     </form>
                                 </details>
                             </div>
@@ -118,9 +119,9 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                     <input name="priceNok" type="number" min={0} step={1} />
                 </label>
 
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Legg til
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );

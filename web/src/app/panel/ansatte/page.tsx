@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { addEmployeeAction, deleteEmployeeAction, updateEmployeeAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../tjenester/page.module.css";
 
 type EmployeesPageProps = {
@@ -64,9 +65,9 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                                         Etternavn (valgfritt)
                                         <input name="lastName" maxLength={200} defaultValue={employee.lastName} />
                                     </label>
-                                    <button type="submit" className={styles.primaryButton}>
+                                    <SubmitButton className={styles.primaryButton}>
                                         Lagre
-                                    </button>
+                                    </SubmitButton>
                                 </form>
                             </details>
                             {!isLast && (
@@ -75,9 +76,9 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                                     <p>Er du sikker? Kunder kan ikke lenger bestille time hos denne personen.</p>
                                     <form action={deleteEmployeeAction}>
                                         <input type="hidden" name="employeeId" value={employee.id} />
-                                        <button type="submit" className={styles.dangerButton}>
+                                        <SubmitButton className={styles.dangerButton} pendingText="Sletter…">
                                             Ja, slett
-                                        </button>
+                                        </SubmitButton>
                                     </form>
                                 </details>
                             )}
@@ -98,9 +99,9 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                     Etternavn (valgfritt)
                     <input name="lastName" maxLength={200} />
                 </label>
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Legg til
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );
