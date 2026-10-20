@@ -90,4 +90,6 @@ export type CustomerBooking = {
     businessId: string;
     businessName: string;
     businessAddress: string;
+    serviceId: string;
+    employeeId: string;
 };

@@ -78,6 +78,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 {booking.businessAddress}
                             </p>
                             {booking.status !== "Avlyst" && (
+                                <p>
+                                    <a href={`/mine-bestillinger/kalender/${booking.id}`}>Legg til i kalender</a>
+                                </p>
+                            )}
+                            {booking.status !== "Avlyst" && (
                                 <details className={styles.actions}>
                                     <summary>Avbestill</summary>
                                     <p>Er du sikker? Tiden blir ledig for andre.</p>
@@ -109,6 +114,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 </div>
                                 <p className={styles.service}>
                                     {booking.serviceName} hos {booking.businessName}
+                                </p>
+                                <p>
+                                    <Link href={`/bedrift/${booking.businessId}/bestill?tjeneste=${booking.serviceId}&ansatt=${booking.employeeId}`}>
+                                        Bestill igjen →
+                                    </Link>
                                 </p>
                             </li>
                         ))}
