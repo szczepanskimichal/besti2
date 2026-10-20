@@ -244,19 +244,23 @@ public class BookingServiceTests
         Assert.Empty(other);
     }
 
-// check if a customer can cancel their own upcoming booking
+    // check if a customer can cancel their own upcoming booking
     [Fact]
     public async Task CancelByCustomerAsync_OwnFutureBooking_IsCancelled()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
         var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
         var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1");
         Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
         Assert.Equal(BookingStatus.Avlyst, (await db.Bookings.SingleAsync()).Status);
+        // 1st mail = "Bestilling mottatt" to the customer, 2nd = cancellation to the business
+        Assert.Equal(2, email.Sent.Count);
+        Assert.StartsWith("Avbestilling", email.Sent[^1].Subject);
     }
 
-// check if nobody can cancel someone else's booking
+    // check if nobody can cancel someone else's booking
     [Fact]
     public async Task CancelByCustomerAsync_OtherCustomer_ReturnsNotFound()
     {

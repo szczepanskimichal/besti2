@@ -175,6 +175,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
         booking.Status = BookingStatus.Avlyst;
         await dbContext.SaveChangesAsync(cancellationToken);
+        await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
 
@@ -299,6 +300,33 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
+        }
+    }
+    
+    // Tell the business that a customer cancelled; a failed email must not fail the cancellation
+    private async Task SendCancelledByCustomerEmailAsync(Booking booking, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
+            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var body =
+                $"Hei {business.Name}!\n\n" +
+                $"{booking.CustomerName} har avbestilt timen.\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n\n" +
+                "Tiden er nå ledig for andre.\n\n" +
+                "Hilsen besti2";
+            await emailService.SendAsync(business.Email, $"Avbestilling: {service.Name}, {when}", body,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
 }
