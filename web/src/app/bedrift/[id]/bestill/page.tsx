@@ -124,7 +124,8 @@ export default async function BookingPage({params, searchParams}: Props) {
                                 Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
                                 bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
                             </p>
-                            <SubmitButton className={styles.primaryButton} pendingText="Bestiller…">Bekreft bestilling</SubmitButton>                        </form>
+                            <SubmitButton className={styles.primaryButton} pendingText="Bestiller…">Bekreft bestilling</SubmitButton>
+                        </form>
                     )}
                         </section>
                         )}

@@ -46,18 +46,12 @@ async function toResult(res: Response, fallback = GENERIC_ERROR): Promise<ApiRes
 
 export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string): Promise<BusinessListItem[]> {    
     const params = new URLSearchParams();
-    if (category) 
-        params.set("category", category);
-    if (city) 
-        params.set("city", city);
-    if (q) 
-        params.set("q", q);
-    if (date) 
-        params.set("date", date);
-    if (from) 
-        params.set("from", from);
-    if (to) 
-        params.set("to", to);
+    if (category) params.set("category", category);
+    if (city) params.set("city", city);
+    if (q) params.set("q", q);
+    if (date) params.set("date", date);
+    if (from) params.set("from", from);
+    if (to) params.set("to", to);
     
     const res = await apiFetch(`/api/businesses?${params}`);
     

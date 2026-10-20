@@ -28,15 +28,16 @@ export default async function Home({searchParams}: HomeProps) {
                 <p className={styles.heroLead}>
                     Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
                 </p>
-                <Form action="/" className={styles.filters}> <label className={styles.field}>
-                    Hva leter du etter?
-                    <input
-                        name="q"
-                        type="search"
-                        defaultValue={q ?? ""}
-                        placeholder="F.eks. herreklipp eller fliser"
-                    />
-                </label>
+                <Form action="/" className={styles.filters}>
+                    <label className={styles.field}>
+                        Hva leter du etter?
+                        <input
+                            name="q"
+                            type="search"
+                            defaultValue={q ?? ""}
+                            placeholder="F.eks. herreklipp eller fliser"
+                        />
+                    </label>
                     <label className={styles.field}>
                         Kategori
                         <select name="category" defaultValue={category ?? ""}>
@@ -82,7 +83,6 @@ export default async function Home({searchParams}: HomeProps) {
                 </Form>
             </section>
             {/* key: every new search shows the skeleton again */}
-
             <Suspense key={JSON.stringify({category, city, q, date, tid})} fallback={<ResultsSkeleton/>}>
                 <Results category={category} city={city} q={q} date={date} tid={tid}/>
             </Suspense>
