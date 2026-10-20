@@ -258,7 +258,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tid: {when}\n" +
                 $"Adresse: {business.Address}, {business.PostalCode} {business.City}\n\n" +
                 "Bedriften bekrefter bestillingen så snart som mulig.\n\n" +
-                "Hilsen besti2";
+                "Hilsen BESTI";
 
             await emailService.SendAsync(booking.CustomerEmail, $"Bestilling mottatt: {business.Name}", body,
                 cancellationToken);
@@ -293,7 +293,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tjeneste: {service.Name}\n" +
                 $"Tid: {when}\n" +
                 $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
-                "Hilsen besti2";
+                "Hilsen BESTI";
 
             await emailService.SendAsync(booking.CustomerEmail, subject, body, cancellationToken);
         }
@@ -320,7 +320,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tjeneste: {service.Name}\n" +
                 $"Tid: {when}\n\n" +
                 "Tiden er nå ledig for andre.\n\n" +
-                "Hilsen besti2";
+                "Hilsen BESTI";
             await emailService.SendAsync(business.Email, $"Avbestilling: {service.Name}, {when}", body,
                 cancellationToken);
         }
