@@ -44,7 +44,8 @@ async function toResult(res: Response, fallback = GENERIC_ERROR): Promise<ApiRes
     return { ok: false, message: body?.message ?? fallback };
 }
 
-export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string): Promise<BusinessListItem[]> {    const params = new URLSearchParams();
+export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string): Promise<BusinessListItem[]> {    
+    const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (city) params.set("city", city);
     if (q) params.set("q", q);

@@ -85,12 +85,27 @@
         flex-direction: row;
         align-items: flex-end;
     }
-
     .field {
         flex: 1;
     }
-    
     .hero {
         padding: 56px 40px;
+    }
+}
+
+/* Grey pulsing card while the results load */
+.skeleton {
+    height: 220px;
+    border-radius: 12px;
+    background: var(--color-border);
+    animation: pulse 1.2s ease-in-out infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .skeleton {
+        animation: none;
     }
 }

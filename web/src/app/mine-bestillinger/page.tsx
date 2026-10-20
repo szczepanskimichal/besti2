@@ -7,6 +7,7 @@ import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import type { CustomerBooking } from "@/lib/types";
 import { cancelMyBookingAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 
@@ -82,9 +83,9 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     <p>Er du sikker? Tiden blir ledig for andre.</p>
                                     <form action={cancelMyBookingAction}>
                                         <input type="hidden" name="bookingId" value={booking.id} />
-                                        <button type="submit" className={styles.dangerButton}>
+                                        <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
                                             Ja, avbestill
-                                        </button>
+                                    </SubmitButton>
                                     </form>
                                 </details>
                             )}

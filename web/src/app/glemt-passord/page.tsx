@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { forgotPasswordAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../logg-inn/page.module.css";
 
 type Props = {
@@ -22,9 +23,9 @@ export default async function ForgotPasswordPage({ searchParams }: Props) {
                     E-post
                     <input name="email" type="email" required autoComplete="email" />
                 </label>
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Send lenke
-                </button>
+                </SubmitButton>
             </form>
             <p className={styles.signup}>
                 <Link href="/logg-inn">Tilbake til innlogging</Link>

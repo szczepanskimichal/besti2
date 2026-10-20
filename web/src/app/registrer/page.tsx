@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { registerCustomerAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../logg-inn/page.module.css";
 
 export const metadata: Metadata = {
@@ -47,7 +48,7 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
                     Ved å opprette konto godtar du <NextLink href="/vilkar">vilkårene</NextLink> og bekrefter at du
                     har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
                 </p>
-                <button type="submit" className={styles.primaryButton}>Opprett konto</button>
+                <SubmitButton className={styles.primaryButton}>Opprett konto</SubmitButton>
             </form>
             <p className={styles.muted}>
                 Har du allerede konto? <NextLink href="/logg-inn">Logg inn</NextLink>

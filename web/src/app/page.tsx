@@ -2,11 +2,13 @@ import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import {getBusinesses, getCities} from '@/lib/api';
 import {categoryOptionGroups} from '@/lib/categories';
 import {todayInOslo} from '@/lib/format';
+import {Suspense} from "react";
+import Form from "next/form";
 import styles from "./page.module.css";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string }>;
-}
+};
 
 // Time of day in the search -> from/to for the API (Oslo time)
 const timeWindows: Record<string, { from?: string; to?: string }> = {
@@ -17,12 +19,8 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
 
 export default async function Home({searchParams}: HomeProps) {
     const {category, city, q, date, tid} = await searchParams;
-    const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
-    // Both requests at the same time instead of one after the other
-    const [businesses, cities] = await Promise.all([
-        getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to),
-        getCities(),
-    ]);
+// Only the cities here (fast); the businesses load inside Suspense below
+    const cities = await getCities();
     return (
         <main className={styles.main}>
             <section className={styles.hero}>
@@ -30,7 +28,7 @@ export default async function Home({searchParams}: HomeProps) {
                 <p className={styles.heroLead}>
                     Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
                 </p>
-                <form method="get" className={styles.filters}>
+                <Form action="/" className={styles.filters}>
                     <label className={styles.field}>
                         Hva leter du etter?
                         <input
@@ -82,21 +80,50 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <button type="submit" className={styles.searchButton}>Søk</button>
-                </form>
+                </Form>
             </section>
-            {businesses.length === 0 && (
-                <p className={styles.subtitle}>
-                    {date
-                        ? "Ingen ledige tider da. Prøv en annen dag eller tid på dagen."
-                        : "Ingen bedrifter funnet. Prøv et annet søk."}
-                </p>            )}
-            <ul className={styles.grid}>
-                {businesses.map((business) => (
-                    <li key={business.id}>
-                        <BusinessCard business={business} date={date}/>
-                    </li>
-                ))}
-            </ul>
+            {/* key: every new search shows the skeleton again */}
+            <Suspense key={JSON.stringify({category, city, q, date, tid})} fallback={<ResultsSkeleton/>}>
+                <Results category={category} city={city} q={q} date={date} tid={tid}/>
+            </Suspense>
         </main>
     )
+}
+
+type SearchProps = { category?: string; city?: string; q?: string; date?: string; tid?: string };
+
+// The slow part: with a date the API calculates free times for every business
+async function Results({category, city, q, date, tid}: SearchProps) {
+    const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
+    const businesses = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to);
+    if (businesses.length === 0) {
+        return (
+            <p className={styles.subtitle}>
+                {date
+                    ? "Ingen ledige tider da. Prøv en annen dag eller tid på dagen."
+                    : "Ingen bedrifter funnet. Prøv et annet søk."}
+            </p>
+        );
+    }
+
+    return (
+        <ul className={styles.grid}>
+            {businesses.map((business) => (
+                <li key={business.id}>
+                    <BusinessCard business={business} date={date}/>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
+// Grey placeholder cards while the results load
+function ResultsSkeleton() {
+    return (
+        <ul className={styles.grid} aria-busy="true" aria-label="Laster bedrifter">
+            {[1, 2, 3].map((n) => (
+                <li key={n} className={styles.skeleton}/>
+            ))}
+        </ul>
+    );
 }

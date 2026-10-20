@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { resetPasswordAction } from "../actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../../logg-inn/page.module.css";
 
 type Props = {
@@ -36,9 +37,9 @@ export default async function NewPasswordPage({ searchParams }: Props) {
                     <input name="password" type="password" required minLength={6} autoComplete="new-password" />
                 </label>
                 <p className={styles.muted}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton}>
                     Lagre nytt passord
-                </button>
+                </SubmitButton>
             </form>
         </main>
     );

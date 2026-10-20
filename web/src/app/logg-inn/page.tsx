@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { loginAction } from "./actions";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 type LoginPageProps = {
@@ -40,9 +41,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     Passord
                     <input name="password" type="password" required autoComplete="current-password" />
                 </label>
-                <button type="submit" className={styles.primaryButton}>
+                <SubmitButton className={styles.primaryButton} pendingText="Logger inn…">
                     Logg inn
-                </button>
+                </SubmitButton>
             </form>
             <p className={styles.signup}>
                 Ny kunde? <Link href="/registrer">Opprett konto</Link>
