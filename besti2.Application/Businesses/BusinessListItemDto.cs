@@ -6,5 +6,7 @@ public record BusinessListItemDto(
     string Category,
     string? Description,
     string City,
-    string? LogoUrl
-);
+    string? LogoUrl,
+    
+    IReadOnlyList<FreeSlotDto>? FreeSlots // null when searching without a date
+    );

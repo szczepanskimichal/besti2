@@ -1,4 +1,6 @@
 ﻿using besti2.Application.Businesses;
+using besti2.Domain.Entities;
+using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -463,5 +465,162 @@ public class BusinessServiceTests
 
         // Assert
         Assert.Equal("Fant ikke den ansatte.", error);
+    }
+    // A weekday at least a week ahead, so "now" never removes slots in the test
+
+    private static DateOnly Next(DayOfWeek day)
+
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        return today.AddDays(7 + ((int)day - (int)today.DayOfWeek + 7) % 7);
+    }
+
+    private static async Task<(AppDbContext Db, BusinessService Service)> CreateServiceAsync()
+
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+
+        var db = new AppDbContext(options);
+
+        await db.Database.EnsureCreatedAsync();
+
+        return (db, new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage()));
+    }
+
+// check if a date shows only open businesses, soonest first, with max 3 free times each
+
+    [Fact]
+    public async Task GetAllAsync_WithDate_ReturnsOpenBusinessesSoonestFirst()
+
+    {
+// Arrange
+
+        var (db, service) = await CreateServiceAsync();
+
+        await using var _ = db;
+
+// Act: Monday - all three seeded businesses are open
+
+        var result = await service.GetAllAsync(date: Next(DayOfWeek.Monday));
+
+// Assert: Fjord Bygg opens at 07:00, the earliest
+
+        Assert.Equal(3, result.Count);
+
+        Assert.Equal("Fjord Bygg AS", result[0].Name);
+
+        Assert.All(result, b => Assert.Equal(3, b.FreeSlots!.Count));
+    }
+
+// check if closed businesses are left out (Saturday: only Klipp & Stil, Sunday: nobody)
+
+    [Fact]
+    public async Task GetAllAsync_WithDate_LeavesOutClosedBusinesses()
+
+    {
+// Arrange
+
+        var (db, service) = await CreateServiceAsync();
+
+        await using var _ = db;
+
+// Act
+
+        var saturday = await service.GetAllAsync(date: Next(DayOfWeek.Saturday));
+
+        var sunday = await service.GetAllAsync(date: Next(DayOfWeek.Sunday));
+
+// Assert
+
+        Assert.Equal("Klipp & Stil Frisør", Assert.Single(saturday).Name);
+
+        Assert.Empty(sunday);
+    }
+
+// check if the searched service is the one used for the free times
+
+    [Fact]
+    public async Task GetAllAsync_WithDateAndText_UsesTheSearchedService()
+
+    {
+// Arrange
+
+        var (db, service) = await CreateServiceAsync();
+
+        await using var _ = db;
+
+// Act
+
+        var result = await service.GetAllAsync(q: "herreklipp", date: Next(DayOfWeek.Monday));
+
+// Assert
+
+        var business = Assert.Single(result);
+
+        Assert.All(business.FreeSlots!, s => Assert.Equal("Herreklipp", s.ServiceName));
+    }
+
+// check if a fully booked business disappears from the results
+
+    [Fact]
+    public async Task GetAllAsync_WithDate_LeavesOutFullyBookedBusiness()
+
+    {
+// Arrange
+
+        var (db, service) = await CreateServiceAsync();
+
+        await using var _ = db;
+
+        var monday = Next(DayOfWeek.Monday);
+
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+
+        var dameklippId = new Guid("a1111111-0000-0000-0000-000000000001");
+
+        var klippEmployees = await db.Employees.Where(e => e.BusinessId == klippId).ToListAsync();
+
+        foreach (var employee in klippEmployees)
+
+        {
+// One long booking that covers the whole Oslo day
+
+            db.Bookings.Add(new Booking
+
+            {
+                Id = Guid.NewGuid(),
+
+                StartUtc = monday.ToDateTime(TimeOnly.MinValue).AddHours(-3),
+
+                EndUtc = monday.ToDateTime(TimeOnly.MinValue).AddHours(27),
+
+                CustomerName = "Opptatt",
+
+                CustomerPhone = "12345678",
+
+                CustomerEmail = "opptatt@example.example",
+
+                Status = BookingStatus.Bekreftet,
+
+                EmployeeId = employee.Id,
+
+                ServiceId = dameklippId,
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+// Act
+
+        var result = await service.GetAllAsync(date: monday);
+
+// Assert
+
+        Assert.Equal(2, result.Count);
+
+        Assert.DoesNotContain(result, b => b.Id == klippId);
     }
 }

@@ -1,3 +1,4 @@
+using besti2.Application.Bookings;
 using besti2.Application.Businesses;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
@@ -12,8 +13,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     : IBusinessService
 {
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
-        string? category = null, string? city = null, string? q = null, CancellationToken cancellationToken = default)
-    {
+        string? category = null, string? city = null, string? q = null, DateOnly? date = null,
+        CancellationToken cancellationToken = default)    {
         var query = dbContext.Businesses.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(category))
@@ -48,11 +49,101 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Category.ToString(),
                 b.Description,
                 b.City,
-                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault()
+                b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault(),
+                null
             ))
             .ToListAsync(cancellationToken);
 
-        return items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
+        var withLogos = items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
+
+    // Without a date: the list as before. With a date: only businesses with a free time that day
+
+        return date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, cancellationToken);
+    }
+
+    // Free times for the whole list with 4 queries, however many businesses there are (no query per business)
+
+    private async Task<IReadOnlyList<BusinessListItemDto>> AddFreeSlotsAsync(
+        List<BusinessListItemDto> businesses, DateOnly date, string? q, CancellationToken cancellationToken)
+
+    {
+        var businessIds = businesses.Select(b => b.Id).ToList();
+
+        var services = await dbContext.Services.AsNoTracking()
+            .Where(s => businessIds.Contains(s.BusinessId) && !s.IsDeleted)
+            .Select(s => new { s.Id, s.BusinessId, s.Name, s.DurationMinutes })
+            .ToListAsync(cancellationToken);
+
+        var employees = await dbContext.Employees.AsNoTracking()
+            .Where(e => businessIds.Contains(e.BusinessId) && !e.IsDeleted)
+            .Select(e => new { e.Id, e.BusinessId })
+            .ToListAsync(cancellationToken);
+
+        var hours = await dbContext.OpeningHours.AsNoTracking()
+            .Where(h => businessIds.Contains(h.BusinessId) && h.DayOfWeek == date.DayOfWeek)
+            .ToListAsync(cancellationToken);
+
+        // Same wide UTC window as BookingService.GetFreeSlotsAsync (the whole Oslo day is inside it)
+
+        var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
+
+        var toUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(2);
+
+        var employeeIds = employees.Select(e => e.Id).ToList();
+
+        var bookings = await dbContext.Bookings.AsNoTracking()
+            .Where(b => employeeIds.Contains(b.EmployeeId)
+                        && b.Status != BookingStatus.Avlyst
+                        && b.StartUtc < toUtc
+                        && b.EndUtc > fromUtc)
+            .Select(b => new { b.EmployeeId, b.StartUtc, b.EndUtc })
+            .ToListAsync(cancellationToken);
+
+        var nowUtc = DateTime.UtcNow;
+
+        var text = q?.Trim().ToLower();
+
+        var result = new List<BusinessListItemDto>();
+
+        foreach (var business in businesses)
+
+        {
+            var dayHours = hours.FirstOrDefault(h => h.BusinessId == business.Id);
+
+            var businessServices = services.Where(s => s.BusinessId == business.Id).ToList();
+
+            // The searched service ("klipp" -> Herreklipp), otherwise the shortest one
+
+            var service = businessServices
+                              .Where(s => !string.IsNullOrEmpty(text) && s.Name.ToLower().Contains(text))
+                              .OrderBy(s => s.DurationMinutes)
+                              .FirstOrDefault()
+                          ?? businessServices.OrderBy(s => s.DurationMinutes).FirstOrDefault();
+
+            if (dayHours is null || service is null)
+
+            {
+                continue; // closed that day, or no services
+            }
+
+            var slots = employees
+                .Where(e => e.BusinessId == business.Id)
+                .SelectMany(e => SlotCalculator.GetFreeSlots(
+                        date, dayHours.OpensAt, dayHours.ClosesAt, service.DurationMinutes,
+                        bookings.Where(b => b.EmployeeId == e.Id).Select(b => (b.StartUtc, b.EndUtc)).ToList(),
+                        nowUtc)
+                    .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
+                .OrderBy(s => s.StartUtc)
+                .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button
+                .Take(3)
+                .ToList();
+            if (slots.Count > 0)
+            {
+                result.Add(business with { FreeSlots = slots });
+            }
+        }
+    // Soonest free time first
+        return result.OrderBy(b => b.FreeSlots![0].StartUtc).ToList();
     }
 
 
@@ -186,6 +277,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return error;
         }
+
         dbContext.Employees.Add(new Employee
         {
             Id = Guid.NewGuid(),
