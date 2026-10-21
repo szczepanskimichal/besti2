@@ -36,6 +36,17 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             return new RegisterBusinessResult(false, "Velg en gyldig kategori.");
         }
+        
+        // Check the password first, so a weak one never starts saving anything
+        foreach (var validator in userManager.PasswordValidators)
+        {
+            var check = await validator.ValidateAsync(userManager, new AppUser(), request.Password);
+            if (!check.Succeeded)
+            {
+                return new RegisterBusinessResult(false,
+                    "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.");
+            }
+        }
 
         var email = request.Email.Trim().ToLowerInvariant();
 

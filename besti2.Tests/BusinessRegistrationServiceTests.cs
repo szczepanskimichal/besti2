@@ -69,4 +69,18 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Fyll ut alle feltene.", result.Error);
     }
+    
+    // check if a weak password is refused before anything is saved (no half-registered business)
+    [Fact]
+    public async Task RegisterAsync_WeakPassword_SavesNothing()
+    {
+        var (service, db, users) = CreateService();
+
+        var result = await service.RegisterAsync(TestFrisor() with { Password = "abc" });
+
+        Assert.False(result.Success);
+        Assert.StartsWith("Passordet må ha minst 6 tegn", result.Error);
+        Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345678"));
+        Assert.Empty(users.Users);
+    }
 }
