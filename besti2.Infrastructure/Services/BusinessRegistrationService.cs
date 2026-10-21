@@ -51,6 +51,11 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         
         // Map position from the address; the business is saved without it when not found
         var location = await geocoding.GeocodeAsync(request.Address.Trim(), request.PostalCode.Trim(), cancellationToken);
+        // All or nothing: business, owner account, employee and opening hours are saved together
+        // (the in-memory test database has no transactions)
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
 
         // 2. Save the business
         var business = new Business
@@ -104,6 +109,10 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
         return new RegisterBusinessResult(true);
     }
 }
