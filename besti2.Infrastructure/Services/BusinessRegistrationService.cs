@@ -96,7 +96,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             // No owner, no business: remove it again
             dbContext.Businesses.Remove(business);
             await dbContext.SaveChangesAsync(cancellationToken);
-            return new RegisterBusinessResult(false, "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.");
+            return new RegisterBusinessResult(false, "Kunne ikke opprette kontoen. Prøv igjen.");
+            
         }
         // 4. Defaults so the business is bookable right away: owner as employee, Mon-Fri 09-17
         dbContext.Employees.Add(new Employee
