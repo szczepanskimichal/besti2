@@ -1,7 +1,8 @@
 "use client";
-import { useState, type ChangeEvent } from "react";
+import { useActionState, useState, type ChangeEvent } from "react";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import { uploadLogoAction } from "./actions";
+import type { FormState } from "@/lib/formState";
 import styles from "../tjenester/page.module.css";
 // Files up to this size are sent as they are (keeps transparent PNG logos)
 const SmallEnoughBytes = 900 * 1024;
@@ -33,6 +34,8 @@ type Props = {
 };
 export default function LogoUploadForm({ name, category, logoUrl }: Props) {
     const [preparing, setPreparing] = useState(false);
+    // isPending: the upload is running ("Laster opp …"), so the button cannot be clicked twice
+    const [state, formAction, isPending] = useActionState<FormState, FormData>(uploadLogoAction, {});
     async function handleChange(event: ChangeEvent<HTMLInputElement>) {
         const input = event.currentTarget;
         const file = input.files?.[0];
@@ -54,14 +57,19 @@ export default function LogoUploadForm({ name, category, logoUrl }: Props) {
     }
 
     return (
-        <form action={uploadLogoAction} className={styles.form}>
+        <form action={formAction} className={styles.form}>
+            {state.error && (
+                <p className={styles.error} role="alert">
+                    {state.error}
+                </p>
+            )}
             <BusinessLogo name={name} category={category} logoUrl={logoUrl} size="large" />
             <label className={styles.field}>
                 Logo (PNG, JPG eller WebP, maks 10 MB)
                 <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required onChange={handleChange} />
             </label>
-            <button type="submit" className={styles.primaryButton} disabled={preparing}>
-                {preparing ? "Forbereder bildet …" : "Last opp logo"}
+            <button type="submit" className={styles.primaryButton} disabled={preparing || isPending}>
+                {preparing ? "Forbereder bildet …" : isPending ? "Laster opp …" : "Last opp logo"}
             </button>
         </form>
     );

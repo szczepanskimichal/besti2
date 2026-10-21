@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
-import { priceTypeOptions } from "@/lib/priceTypes";
 import { addServiceAction, deleteServiceAction } from "./actions";
+import ServiceForm from "./ServiceForm";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
@@ -29,10 +29,10 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
             <h1 className={styles.title}>Tjenester</h1>
             <p className={styles.muted}>{business.name}</p>
-            
-            {params.feil && (
+            {/* Fixed text only: nothing from the URL is shown as a message */}
+            {params.feil === "slett" && (
                 <p className={styles.error} role="alert">
-                    {params.feil}
+                    Kunne ikke slette tjenesten.
                 </p>
             )}
             
@@ -89,40 +89,8 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
 
             <h2 className={styles.subtitle}>Legg til tjeneste</h2>
 
-            <form action={addServiceAction} className={styles.form}>
-                <label className={styles.field}>
-                    Navn
-                    <input name="name" required maxLength={200} />
-                </label>
+            <ServiceForm action={addServiceAction} submitText="Legg til" />
 
-                <label className={styles.field}>
-                    Beskrivelse (valgfritt)
-                    <input name="description" maxLength={500} />
-                </label>
-
-                <label className={styles.field}>
-                    Hvor lenge varer timen? (minutter)
-                    <input name="durationMinutes" type="number" required min={5} max={480} step={5} defaultValue={30} />
-                </label>
-
-                <label className={styles.field}>
-                    Pristype
-                    <select name="priceType" required defaultValue="FastPris">
-                        {priceTypeOptions.map((option) => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
-                        ))}
-                    </select>
-                </label>
-
-                <label className={styles.field}>
-                    Pris i NOK (tom ved pris etter avtale)
-                    <input name="priceNok" type="number" min={0} step={1} />
-                </label>
-
-                <SubmitButton className={styles.primaryButton}>
-                    Legg til
-                </SubmitButton>
-            </form>
         </main>
     );
 }
