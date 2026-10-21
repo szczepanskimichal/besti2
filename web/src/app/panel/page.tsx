@@ -7,6 +7,8 @@ import {
 } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
 import type { BusinessDetails, PanelBooking } from "@/lib/types";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import { cancelBookingAction, confirmBookingAction } from "./actions";
 import PanelNav from "./PanelNav";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
@@ -15,7 +17,7 @@ import calendar from "./calendar.module.css";
 const PX_PER_MINUTE = 80 / 60;
 
 type CalendarPageProps = {
-    searchParams: Promise<{ dag?: string; visning?: string; ansatt?: string; avlyste?: string; feil?: string }>;
+    searchParams: Promise<{ dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; feil?: string }>;
 };
 
 type Column = { id: string; title: string; bookings: PanelBooking[] };
@@ -59,6 +61,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         return `/panel?${params}`;
     };
     const step = week ? 7 : 1;
+    // The visit opened in the details window (also a cancelled one, even when those are hidden)
+    const selected = allBookings.find((b) => b.id === query.bestilling);
+    const here = link({}); // this view without the details window
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
@@ -124,13 +129,24 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <p className={styles.muted}>Stengt denne dagen.</p>
             )}
 
-            <TimeGrid columns={columns} range={range} showEmployee={week}/>
+            <TimeGrid columns={columns} range={range} showEmployee={week}
+                      hrefFor={(booking) => link({ bestilling: booking.id })}/>
+
+            {/* Phone: the same visits as a simple list (the grid is too narrow there) */}
+            <PhoneList columns={week ? columns : [{ id: day, title: formatDay(day), bookings }]}
+                       hrefFor={(booking) => link({ bestilling: booking.id })}/>
+
+            {selected && <BookingDetails booking={selected} closeHref={here}/>}
         </main>
     );
 }
 
 // The grid: hours on the left, one column per employee (day) or per day (week)
-function TimeGrid({ columns, range, showEmployee }: { columns: Column[]; range: Range; showEmployee: boolean }) {
+type Href = (booking: PanelBooking) => string;
+
+function TimeGrid({ columns, range, showEmployee, hrefFor }: {
+    columns: Column[]; range: Range; showEmployee: boolean; hrefFor: Href;
+}) {
     const height = (range.end - range.start) * PX_PER_MINUTE;
     const marks = hourMarks(range);
     return (
@@ -158,8 +174,10 @@ function TimeGrid({ columns, range, showEmployee }: { columns: Column[]; range: 
                             const start = Math.max(osloMinutes(booking.startUtc), range.start);
                             const end = Math.min(osloMinutes(booking.endUtc) || 24 * 60, range.end);
                             return (
-                                <div
+                                <Link
                                     key={booking.id}
+                                    href={hrefFor(booking)}
+                                    scroll={false}
                                     className={`${calendar.booking} ${calendar[booking.status] ?? ""}`}
                                     style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
                                     title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName} (${statusLabels[booking.status] ?? booking.status})`}
@@ -169,7 +187,7 @@ function TimeGrid({ columns, range, showEmployee }: { columns: Column[]; range: 
                                     <span className={calendar.service}>
                                         {showEmployee ? `${booking.employeeName} · ${booking.serviceName}` : booking.serviceName}
                                     </span>
-                                </div>
+                                </Link>
                             );
                         })}
                     </div>
@@ -177,6 +195,99 @@ function TimeGrid({ columns, range, showEmployee }: { columns: Column[]; range: 
             </div>
         </div>
     );
+}
+
+// Phone: the visits of each day as a list of cards; a tap opens the details window
+function PhoneList({ columns, hrefFor }: { columns: Column[]; hrefFor: Href }) {
+    const days = columns.filter((c) => c.bookings.length > 0);
+    return (
+        <div className={calendar.phoneList}>
+            {days.length === 0 && <p className={styles.muted}>Ingen bestillinger.</p>}
+            {days.map((column) => (
+                <section key={column.id}>
+                    <h3 className={calendar.phoneDay}>{column.title}</h3>
+                    <ul className={styles.list}>
+                        {[...column.bookings].sort((a, b) => a.startUtc.localeCompare(b.startUtc)).map((booking) => (
+                            <li key={booking.id}>
+                                <Link href={hrefFor(booking)} scroll={false}
+                                      className={`${calendar.phoneCard} ${calendar[booking.status] ?? ""}`}>
+                                    <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                    <span>{booking.customerName}</span>
+                                    <span className={calendar.service}>{booking.serviceName} hos {booking.employeeName}</span>
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            ))}
+        </div>
+    );
+}
+
+// The details window for one visit: customer, contact, note and Bekreft / Avlys
+function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHref: string }) {
+    const { canConfirm, canCancel } = allowedActions(booking);
+    return (
+        <div className={calendar.overlay}>
+            <section className={calendar.dialog} role="dialog" aria-modal="true" aria-labelledby="booking-title">
+                <div className={calendar.dialogHead}>
+                    <h2 id="booking-title" className={calendar.dialogTitle}>{booking.customerName}</h2>
+                    <Link href={closeHref} scroll={false} className={calendar.close} aria-label="Lukk">✕</Link>
+                </div>
+                <p className={calendar.dialogWhen}>
+                    {formatDay(osloDate(booking.startUtc))}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
+                </p>
+                <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
+                    {statusLabels[booking.status] ?? booking.status}
+                </span>
+                <p className={styles.service}>{booking.serviceName} hos {booking.employeeName}</p>
+                <p className={styles.customer}>
+                    <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
+                    {" · "}
+                    <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
+                </p>
+                {booking.customerNote && (
+                    <div className={styles.note}>
+                        <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
+                        <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
+                            Svar på e-post
+                        </a>
+                    </div>
+                )}
+                {(canConfirm || canCancel) && (
+                    <div className={styles.actions}>
+                        {canConfirm && (
+                            <form action={confirmBookingAction}>
+                                <input type="hidden" name="bookingId" value={booking.id}/>
+                                <input type="hidden" name="tilbake" value={closeHref}/>
+                                <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">Bekreft</SubmitButton>
+                            </form>
+                        )}
+                        {canCancel && (
+                            <details>
+                                <summary className={styles.dangerButton}>Avlys</summary>
+                                <p>Er du sikker? Kunden får beskjed på e-post.</p>
+                                <form action={cancelBookingAction}>
+                                    <input type="hidden" name="bookingId" value={booking.id}/>
+                                    <input type="hidden" name="tilbake" value={closeHref}/>
+                                    <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">Ja, avlys</SubmitButton>
+                                </form>
+                            </details>
+                        )}
+                    </div>
+                )}
+            </section>
+        </div>
+    );
+}
+
+// Bekreft while waiting; Avlys only before the visit starts (the API refuses it afterwards)
+function allowedActions(booking: PanelBooking) {
+    const started = new Date(booking.startUtc).getTime() <= Date.now();
+    return {
+        canConfirm: booking.status === "Venter",
+        canCancel: booking.status !== "Avlyst" && !started,
+    };
 }
 
 // Day view: the employees as columns; a booking for an employee who was removed still gets a column
