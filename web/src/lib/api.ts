@@ -67,7 +67,7 @@ export async function getBusinesses(category?: string, city?: string, q?: string
     return res.json();
 }
 
-export async function getBusiness(id: string): Promise<BusinessDetails | null> {
+export const getBusiness = cache(async (id: string): Promise<BusinessDetails | null> => {
     const res = await apiFetch(`/api/businesses/${id}`);
     if (res.status === 404) {
         return null;
@@ -78,7 +78,7 @@ export async function getBusiness(id: string): Promise<BusinessDetails | null> {
     }
 
     return res.json();
-}
+};
 
 export async function getCities(): Promise<string[]> {
     const res = await apiFetch("/api/cities");

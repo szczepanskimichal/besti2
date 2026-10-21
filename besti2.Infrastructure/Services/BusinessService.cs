@@ -222,10 +222,13 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-    
+    // Services, employees, hours and photos as separate small queries instead of one huge joined one
+
     public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var business = await dbContext.Businesses
+            // Services, employees, hours and photos as separate small queries instead of one huge joined one
+            .AsSplitQuery()
             .AsNoTracking()
             .Where(b => b.Id == id && !b.IsHidden)
             .Select(b => new BusinessDetailsDto(
