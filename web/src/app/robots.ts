@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: "*",
             allow: "/",
-            disallow: ["/panel", "/min-besti", "/logg-inn", "/registrer", "/glemt-passord", "/bekreft-epost", "/bedrift/*/bestill"],
+            disallow: ["/panel", "/min-besti", "/logg-inn", "/registrer$", "/registrer?", "/glemt-passord", "/bekreft-epost", "/bedrift/*/bestill", ],
         },
         sitemap: `${SITE_URL}/sitemap.xml`,
     };

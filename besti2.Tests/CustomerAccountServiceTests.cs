@@ -93,6 +93,7 @@ public class CustomerAccountServiceTests
         Assert.True(ok);
         Assert.True((await users.FindByIdAsync(user.Id))!.EmailConfirmed);
     }
+
     // check if signing up again before confirming takes the NEW password (a stranger who signed up
 // first with this e-mail must not get his password activated by the real owner)
     [Fact]
@@ -108,4 +109,14 @@ public class CustomerAccountServiceTests
         Assert.Equal("Kari Ekte", user.FullName);
     }
     
+
+    // check if a name longer than a booking allows (100) is refused already at sign-up
+    [Fact]
+    public async Task RegisterAsync_NameOver100Characters_Fails()
+    {
+        var (service, _, _) = CreateService();
+        var error = await service.RegisterAsync(TestKunde() with { FullName = new string('a', 101) });
+        Assert.Equal("Fyll ut alle feltene.", error);
+    }
+
 }
