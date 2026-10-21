@@ -13,6 +13,7 @@ using besti2.Jobs;
 using Microsoft.Extensions.FileProviders;
 using System.Threading.RateLimiting;
 using besti2.Application.Reviews;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,32 +25,47 @@ builder.Services.AddInfrastructure(builder.Configuration);
 // Add authentication and authorization
 builder.Services.AddAuthorization();
 // Login only after the email is confirmed (business owners are confirmed at registration)
-builder.Services.AddIdentityApiEndpoints<AppUser>(options => options.SignIn.RequireConfirmedEmail = true)
-    .AddEntityFrameworkStores<AppDbContext>()
-    ;
+builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
+    {
+        options.SignIn.RequireConfirmedEmail = true;
+        // A long password is much harder to guess than a short one full of symbols
+        options.Password.RequiredLength = 6;
+    })
+    .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddHostedService<BookingAnonymizationJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
-// Max 10 attempts per minute per visitor on login, sign-up and booking (stops spam and password guessing)
+// The web server tells us the visitor's IP in X-Forwarded-For. Only callers on this machine are trusted
+// (the default), so a visitor who sends the header straight to the API cannot pretend to be someone else.
+// In Docker the web server has its own address: add it to KnownProxies when deploying.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor);
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.OnRejected = async (context, cancellationToken) =>
         await context.HttpContext.Response.WriteAsJsonAsync(
             new { message = "For mange forsøk. Prøv igjen om litt." }, cancellationToken);
+    // Max 10 attempts per minute per visitor on login, sign-up and booking (stops spam and password guessing)
     options.AddPolicy("strict", httpContext =>
-    {
-        // The web server forwards the visitor's IP; without it we use the caller's own address
-        var clientIp = httpContext.Request.Headers["X-Forwarded-For"].ToString().Split(',')[0].Trim();
-        if (string.IsNullOrEmpty(clientIp))
-            clientIp = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        return RateLimitPartition.GetFixedWindowLimiter(clientIp, _ => new FixedWindowRateLimiterOptions
-        {
-            PermitLimit = 10,
-            Window = TimeSpan.FromMinutes(1),
-            QueueLimit = 0
-        });
-    });
+        // Already the visitor's own IP here, thanks to UseForwardedHeaders
+        RateLimitPartition.GetFixedWindowLimiter(httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+    // Max 10 image uploads per minute per account (reading a photo is heavy work for the server)
+    options.AddPolicy("upload", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 });
 var app = builder.Build();
 //--------------------------------------
@@ -60,6 +76,8 @@ if (app.Environment.IsDevelopment())
     await DevUserSeeder.SeedAsync(app.Services);
 }
 
+// First: the visitor's real IP for everything after (rate limiting)
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 // Uploaded images (development storage), e.g. /uploads/abc.webp
 var uploadsFolder = Path.Combine(app.Environment.ContentRootPath, "uploads");
@@ -207,13 +225,10 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
     CancellationToken cancellationToken) =>
 {
     var user = await userManager.GetUserAsync(principal);
-
     if (user?.BusinessId is not Guid businessId)
-
     {
         return Results.Forbid();
     }
-
     var error = await reviewService.ReplyAsync(businessId, id, request.Reply, cancellationToken);
 
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
@@ -392,7 +407,7 @@ app.MapPost("/api/panel/logo", async (IFormFile file, ClaimsPrincipal principal,
     await using var stream = file.OpenReadStream();
     var error = await imageService.SetLogoAsync(businessId, stream, file.Length, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
-}).RequireAuthorization().DisableAntiforgery();
+}).RequireAuthorization().DisableAntiforgery().RequireRateLimiting("upload");
 
 // Business panel: add a photo to the gallery
 app.MapPost("/api/panel/gallery", async (IFormFile file, ClaimsPrincipal principal,
@@ -407,7 +422,7 @@ app.MapPost("/api/panel/gallery", async (IFormFile file, ClaimsPrincipal princip
     await using var stream = file.OpenReadStream();
     var error = await imageService.AddGalleryImageAsync(businessId, stream, file.Length, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
-}).RequireAuthorization().DisableAntiforgery();
+}).RequireAuthorization().DisableAntiforgery().RequireRateLimiting("upload");
 // Business panel: delete a gallery photo
 app.MapDelete("/api/panel/gallery/{id:guid}", async (Guid id, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBusinessImageService imageService, CancellationToken cancellationToken) =>
@@ -423,13 +438,18 @@ app.MapDelete("/api/panel/gallery/{id:guid}", async (Guid id, ClaimsPrincipal pr
         : Results.NotFound();
 }).RequireAuthorization();
 
-// Identity endpoints: /api/auth/register, /api/auth/login, /api/auth/refresh ...
+// Identity endpoints: we only use login, forgotPassword and resetPassword.
+// Everything else (register, manage, confirmEmail, refresh ...) answers 404,
+// also with a "/" at the end or in other letter case (/api/auth/Register/)
+string[] allowedAuthPaths = ["/api/auth/login", "/api/auth/forgotPassword", "/api/auth/resetPassword"];
 var auth = app.MapGroup("/api/auth").RequireRateLimiting("strict");
-// Block Identity's open /register; owners sign up via business registration instead
 auth.AddEndpointFilter(async (context, next) =>
-    context.HttpContext.Request.Path.Value!.EndsWith("/register", StringComparison.OrdinalIgnoreCase)
-        ? Results.NotFound()
-        : await next(context));
+{
+    var path = context.HttpContext.Request.Path.Value?.TrimEnd('/') ?? "";
+    return allowedAuthPaths.Contains(path, StringComparer.OrdinalIgnoreCase)
+        ? await next(context)
+        : Results.NotFound();
+});
 auth.MapIdentityApi<AppUser>();
 
 // Shared logic for panel status changes (confirm / cancel)

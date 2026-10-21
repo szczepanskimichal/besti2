@@ -14,6 +14,7 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
     private const int LogoMaxSize = 512; // longest side in pixels after resizing
     private const int GalleryMaxSize = 1600; // big enough for a sharp photo on any screen
     private const int MaxGalleryImages = 12;
+    private const long MaxPixels = 50_000_000; // 50 megapixels: more than any phone camera (48 MP)
     public async Task<string?> SetLogoAsync(Guid businessId, Stream content, long length,
         CancellationToken cancellationToken = default)
     {
@@ -185,36 +186,43 @@ private static string? DetectImageType(byte[] data)
 // Fits the image inside maxSize x maxSize(keeps proportions) and saves it as WebP.
 
 // A new file is created, so EXIF data like GPS location is not kept.
-private static byte[]? ResizeToWebp(byte[] data, int maxSize)
-{
-    using var codec = SKCodec.Create(new MemoryStream(data));
-    if (codec is null)
+    private static byte[]? ResizeToWebp(byte[] data, int maxSize)
     {
-        return null;
-    }
+        using var codec = SKCodec.Create(new MemoryStream(data));
+        if (codec is null)
+        {
+            return null;
+        }
 
-    using var decoded = SKBitmap.Decode(codec);
-    if (decoded is null)
-    {
-        return null;
-    }
+        // A small file can unpack into a gigantic picture ("image bomb"); check the size before decoding
+        if ((long)codec.Info.Width * codec.Info.Height > MaxPixels)
+        {
+            return null;
+        }
 
-// Phone photos are often stored sideways with a "rotate me" flag; apply it
-    using var upright = ApplyOrientation(decoded, codec.EncodedOrigin);
-    var scale = Math.Min(1.0, (double)maxSize / Math.Max(upright.Width, upright.Height));
-    var width = Math.Max(1, (int)Math.Round(upright.Width * scale));
-    var height = Math.Max(1, (int)Math.Round(upright.Height * scale));
-    using var resized = upright.Resize(new SKImageInfo(width, height),
-        new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
-    if (resized is null)
-    {
-        return null;
-    }
+        using var decoded = SKBitmap.Decode(codec);
+        if (decoded is null)
+        {
+            return null;
+        }
 
-    using var image = SKImage.FromBitmap(resized);
-    using var encoded = image.Encode(SKEncodedImageFormat.Webp, 80);
-    return encoded?.ToArray();
-}
+        var scale = Math.Min(1.0, (double)maxSize / Math.Max(decoded.Width, decoded.Height));
+        var width = Math.Max(1, (int)Math.Round(decoded.Width * scale));
+        var height = Math.Max(1, (int)Math.Round(decoded.Height * scale));
+        using var resized = decoded.Resize(new SKImageInfo(width, height),
+            new SKSamplingOptions(SKFilterMode.Linear, SKMipmapMode.Linear));
+        if (resized is null)
+        {
+            return null;
+        }
+
+        // Phone photos are often stored sideways with a "rotate me" flag; apply it.
+        // Rotated after shrinking, so the extra copy is small (not a second full-size photo in memory)
+        using var upright = ApplyOrientation(resized, codec.EncodedOrigin);
+        using var image = SKImage.FromBitmap(upright);
+        using var encoded = image.Encode(SKEncodedImageFormat.Webp, 80);
+        return encoded?.ToArray();
+    }
 
 // Returns an upright copy of the bitmap (handles 90, 180 and 270 degree photos)
 private static SKBitmap ApplyOrientation(SKBitmap bitmap, SKEncodedOrigin origin)

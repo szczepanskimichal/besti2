@@ -15,8 +15,8 @@ services:
     image: axllent/mailpit:latest
     container_name: besti2-mail
     ports:
-      - "1025:1025"
-      - "8025:8025"
-
+      - "8025:8025" - "127.0.0.1:8025:8025"
+      - "1025:1025" - "127.0.0.1:1025:1025"
+      - "1433:1433" - "127.0.0.1:1433:1433"
 volumes:
   sqldata:
