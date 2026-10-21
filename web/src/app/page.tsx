@@ -119,12 +119,14 @@ type SearchProps = {
 
 // The slow part: with a date the API calculates free times for every business
 async function Results({category, city, q, date, tid, lat, lng}: SearchProps) {
-    const timeWindow = date ? timeWindows[tid ?? ""] : undefined;
-    const businesses = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng);
+    // "Tid på dagen" without a date means today
+    const day = date || (tid ? todayInOslo() : undefined);
+    const timeWindow = day ? timeWindows[tid ?? ""] : undefined;
+    const businesses = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng);
     if (businesses.length === 0) {
-        if (date) {
+        if (day) {
 // Same search, one day later
-            const params = new URLSearchParams({date: nextDay(date)});
+            const params = new URLSearchParams({date: nextDay(day)});
             if (category) params.set("category", category);
             if (city) params.set("city", city);
             if (q) params.set("q", q);
@@ -145,7 +147,7 @@ async function Results({category, city, q, date, tid, lat, lng}: SearchProps) {
         <ul className={styles.grid}>
             {businesses.map((business) => (
                 <li key={business.id}>
-                    <BusinessCard business={business} date={date}/>
+                    <BusinessCard business={business} date={day}/>
                 </li>
             ))}
         </ul>
