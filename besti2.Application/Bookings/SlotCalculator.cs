@@ -43,7 +43,8 @@ public static class SlotCalculator
         return true;
     }
 
-    private static DateTime ToUtc(DateOnly date, TimeOnly time)
+// A day and time in Oslo -> UTC (also used by the business calendar for "from midnight")
+    public static DateTime ToUtc(DateOnly date, TimeOnly time) 
     {
         var osloTime = date.ToDateTime(time);
         // 02:00–03:00 does not exist on the night clocks go forward; use 03:00 instead of crashing

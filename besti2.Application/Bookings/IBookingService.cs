@@ -9,9 +9,9 @@ public interface IBookingService
     // customerUserId = the logged-in customer's account id, saved on the booking
     Task<CreateBookingResult> CreateAsync(
         CreateBookingRequest request, string? customerUserId = null, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
-        Guid businessId, CancellationToken cancellationToken = default);
-    Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
+        // from/to = days in Oslo time for the calendar; without them: upcoming bookings and the last 14 days
+        Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
+        Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);    Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
         Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default);
     // Customer: own bookings, newest first
     Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(

@@ -10,5 +10,6 @@ public record PanelBookingDto(
     string CustomerName,
     string CustomerPhone,
     string CustomerEmail,
-    string? CustomerNote
+    string? CustomerNote,
+    Guid EmployeeId // the calendar puts the booking in this employee's column
     );
