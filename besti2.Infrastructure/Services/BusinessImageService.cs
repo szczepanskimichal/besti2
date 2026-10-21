@@ -14,6 +14,7 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
     private const int LogoMaxSize = 512; // longest side in pixels after resizing
     private const int GalleryMaxSize = 1600; // big enough for a sharp photo on any screen
     private const int MaxGalleryImages = 12;
+    private const long MaxPixels = 50_000_000; // 50 megapixels: more than any phone camera (48 MP)
     public async Task<string?> SetLogoAsync(Guid businessId, Stream content, long length,
         CancellationToken cancellationToken = default)
     {
@@ -192,7 +193,11 @@ private static byte[]? ResizeToWebp(byte[] data, int maxSize)
     {
         return null;
     }
-
+    // A small file can unpack into a gigantic picture ("image bomb"); check the size before decoding
+    if ((long)codec.Info.Width * codec.Info.Height > MaxPixels)
+    {
+        return null;
+    }
     using var decoded = SKBitmap.Decode(codec);
     if (decoded is null)
     {
