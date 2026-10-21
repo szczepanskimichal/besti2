@@ -41,6 +41,12 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     Logoen er lagret.
                 </p>
             )}
+            {business.latitude === null && (
+                <p className={styles.error} role="status">
+                    Vi fant ikke adressen på kartet – sjekk adressen og postnummeret.
+                    Uten kart vises dere ikke i «Nær meg».
+                </p>
+            )}
             <LogoUploadForm name={business.name} category={business.category} logoUrl={business.logoUrl} />
             <form action={updateProfileAction} className={styles.form}>
                 <label className={styles.field}>
