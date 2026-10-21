@@ -2,13 +2,13 @@ import NextLink from "next/link";
 import {notFound} from "next/navigation";
 import {getAvailability, getBusiness, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {formatDate, formatPrice, formatTime, todayInOslo} from "@/lib/format";
+import {formatDate, formatPrice, formatTime, isIsoDate, todayInOslo} from "@/lib/format";
 import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; feil?: string }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
@@ -22,14 +22,18 @@ export default async function BookingPage({params, searchParams}: Props) {
         notFound();
     }
 
-    const employeeId = ansatt ?? business.employees[0]?.id;
-    const date = dato ?? todayInOslo();
+
+    // Only values that still make sense (old "Bestill igjen" links, edited or cut-off addresses)
+    const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt! : business.employees[0]?.id;
+    const date = isIsoDate(dato) ? dato : todayInOslo();
     const slots = employeeId ? await getAvailability(service.id, employeeId, date) : null;
+    // The chosen time must still be free; otherwise the customer picks a new one
+    const chosenTime = tid && slots?.includes(tid) ? tid : undefined;
 
     // Who is booking: null = not logged in
     const token = await getToken();
     const me = token ? await getMe(token) : null;
-    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(tid ?? "")}`;
+    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(chosenTime ?? "")}`;
     
     return (
         <main className={styles.main}>
@@ -72,7 +76,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         <li key={slot}>
                             <NextLink
                                 href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(slot)}`}
-                                className={slot === tid ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
+                                className={slot === chosenTime ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
                             >
                                 {formatTime(slot)}
                             </NextLink>
@@ -80,11 +84,14 @@ export default async function BookingPage({params, searchParams}: Props) {
                     ))}
                 </ul>
             )}
-            {tid && (
+            {tid && !chosenTime && (
+                <p className={styles.error} role="alert">Den valgte tiden er ikke lenger ledig. Velg en annen tid.</p>
+            )}
+            {chosenTime && (
                 <section>
                     <h2 className={styles.sectionTitle}>Dine opplysninger</h2>
                     <p className={styles.muted}>
-                        Valgt tid: <strong>{formatDate(tid)} kl. {formatTime(tid)}</strong>
+                        {formatDate(chosenTime)} kl. {formatTime(chosenTime)}
                     </p>
                     {!me && (
                         <p className={styles.muted}>
@@ -98,7 +105,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                     )}
                     {me && !me.isBusiness && (
                         <BookingForm businessId={business.id} serviceId={service.id} employeeId={employeeId}
-                                     startUtc={tid} date={date} fullName={me.fullName} email={me.email}/>
+                                     startUtc={chosenTime} date={date} fullName={me.fullName} email={me.email}/>
                     )}
                         </section>
                         )}
