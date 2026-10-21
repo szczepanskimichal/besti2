@@ -1,16 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBookings, getPanelBusiness } from "@/lib/api";
+import { getPanelBookings, getPanelBusiness, getPanelTimeOff } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import {
     clockMinutes, formatDay, formatTime, isIsoDate, osloMinutes, shiftDay, todayInOslo, weekdayOf,
 } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
-import type { BusinessDetails, PanelBooking } from "@/lib/types";
+import type { BusinessDetails, PanelBooking, TimeOff } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import { cancelBookingAction, confirmBookingAction } from "./actions";
+import { cancelBookingAction, confirmBookingAction, deleteTimeOffAction } from "./actions";
 import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
+import TimeOffForm from "./TimeOffForm";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
 
@@ -20,11 +21,12 @@ const PX_PER_MINUTE = 80 / 60;
 type CalendarPageProps = {
     searchParams: Promise<{
         dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; feil?: string;
-        ny?: string; tid?: string; for?: string;
+        ny?: string; tid?: string; for?: string; blokker?: string; blokkering?: string; varsel?: string;
     }>;
 };
 
-type Column = { id: string; title: string; bookings: PanelBooking[] };
+// day = the date shown in the column (the same for every employee in the day view)
+type Column = { id: string; title: string; day: string; bookings: PanelBooking[]; blocks: TimeOff[] };
 type Range = { start: number; end: number };
 
 // The business calendar: one day with a column per employee, or one week with a column per day
@@ -42,8 +44,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const first = week ? shiftDay(day, -((weekdayOf(day) + 6) % 7)) : day;
     const last = week ? shiftDay(first, 6) : day;
 
-    const [business, allBookings] = await Promise.all([getPanelBusiness(token), getPanelBookings(token, first, last)]);
-    if (!business || !allBookings) {
+    const [business, allBookings, allBlocks] = await Promise.all([
+        getPanelBusiness(token), getPanelBookings(token, first, last), getPanelTimeOff(token, first, last),
+    ]);
+    if (!business || !allBookings || !allBlocks) {
         redirect("/logg-inn");
     }
 
@@ -51,7 +55,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const bookings = allBookings
         .filter((b) => showCancelled || b.status !== "Avlyst")
         .filter((b) => !employeeFilter || b.employeeId === employeeFilter);
-    const columns = week ? dayColumns(first, bookings) : employeeColumns(business, bookings);
+    // Week view with one employee: that employee's blocks and the closed days of the whole business
+    const blocks = allBlocks.filter((t) => !employeeFilter || !t.employeeId || t.employeeId === employeeFilter);
+    const columns = week ? dayColumns(first, bookings, blocks) : employeeColumns(business, bookings, blocks, day);
     const range = visibleRange(business, week ? weekDays(first) : [day], bookings);
 
     // The same view with one value changed (keeps the other choices)
@@ -72,6 +78,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const newBooking = query.ny === "1";
     const newTime = query.tid && /^\d{2}:\d{2}$/.test(query.tid) ? query.tid : "09:00";
     const newEmployee = business.employees.some((e) => e.id === query.for) ? query.for : undefined;
+    const newTimeOff = query.blokker === "1";
+    const selectedBlock = allBlocks.find((t) => t.id === query.blokkering);
+    // Visits already in a time that was just blocked (they are kept)
+    const overlapping = Number(query.varsel);
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
@@ -84,6 +94,12 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                         : "Kunne ikke endre bestillingen. Prøv igjen."}
                 </p>
             )}
+            {Number.isInteger(overlapping) && overlapping > 0 && (
+                <p className={calendar.notice} role="status">
+                    Tiden er blokkert, men det finnes allerede {overlapping === 1 ? "1 bestilling" : `${overlapping} bestillinger`} i
+                    perioden. De er ikke avlyst – åpne dem i kalenderen hvis kunden må få beskjed.
+                </p>
+            )}
 
             <div className={calendar.toolbar}>
                 <div className={calendar.segmented} role="group" aria-label="Visning">
@@ -91,6 +107,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                     <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
                 </div>
                 <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
+                <Link href={link({ blokker: "1" })} scroll={false} className={styles.secondaryButton}>Blokker tid</Link>
                 <Link href={link({ dag: shiftDay(day, -step) })} className={styles.secondaryButton}
                       aria-label={week ? "Forrige uke" : "Forrige dag"}>←</Link>
                 <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
@@ -140,6 +157,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <TimeGrid columns={columns} range={range} showEmployee={week}
                       hrefFor={(booking) => link({ bestilling: booking.id })}
+                      blockHref={(block) => link({ blokkering: block.id })}
                       newHref={(column, minute) => link({
                           ny: "1",
                           tid: clock(minute),
@@ -148,10 +166,16 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                       })}/>
 
             {/* Phone: the same visits as a simple list (the grid is too narrow there) */}
-            <PhoneList columns={week ? columns : [{ id: day, title: formatDay(day), bookings }]}
-                       hrefFor={(booking) => link({ bestilling: booking.id })}/>
+            <PhoneList columns={week ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
+                       hrefFor={(booking) => link({ bestilling: booking.id })}
+                       blockHref={(block) => link({ blokkering: block.id })}/>
 
             {selected && <BookingDetails booking={selected} closeHref={here}/>}
+            {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
+            {newTimeOff && (
+                <TimeOffForm employees={business.employees} date={day} employeeId={employeeFilter} week={week}
+                             closeHref={here}/>
+            )}
             {newBooking && (
                 <NewBookingForm services={business.services} employees={business.employees} date={day}
                                 time={newTime} employeeId={newEmployee ?? employeeFilter} week={week} closeHref={here}/>
@@ -163,8 +187,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 // The grid: hours on the left, one column per employee (day) or per day (week)
 type Href = (booking: PanelBooking) => string;
 
-function TimeGrid({ columns, range, showEmployee, hrefFor, newHref }: {
-    columns: Column[]; range: Range; showEmployee: boolean; hrefFor: Href;
+type BlockHref = (block: TimeOff) => string;
+
+function TimeGrid({ columns, range, showEmployee, hrefFor, blockHref, newHref }: {
+    columns: Column[]; range: Range; showEmployee: boolean; hrefFor: Href; blockHref: BlockHref;
     newHref: (column: Column, minute: number) => string;
 }) {
     const height = (range.end - range.start) * PX_PER_MINUTE;
@@ -196,6 +222,18 @@ function TimeGrid({ columns, range, showEmployee, hrefFor, newHref }: {
                                   style={{ top: (minute - range.start) * PX_PER_MINUTE, height: 30 * PX_PER_MINUTE }}
                                   aria-label={`Ny bestilling ${column.title} kl. ${clock(minute)}`}/>
                         ))}
+                        {/* Blocked time: grey, under the visits, over the empty slots */}
+                        {column.blocks.map((block) => {
+                            const { start, end } = blockMinutes(block, column.day, range);
+                            if (end <= start) return null;
+                            return (
+                                <Link key={block.id} href={blockHref(block)} scroll={false} className={calendar.blocked}
+                                      style={{ top: (start - range.start) * PX_PER_MINUTE, height: (end - start) * PX_PER_MINUTE }}
+                                      title={`${blockLabel(block, showEmployee)} – ${describeBlock(block)}`}>
+                                    {blockLabel(block, showEmployee)}
+                                </Link>
+                            );
+                        })}
                         {column.bookings.map((booking) => {
                             const start = Math.max(osloMinutes(booking.startUtc), range.start);
                             const end = Math.min(osloMinutes(booking.endUtc) || 24 * 60, range.end);
@@ -224,8 +262,8 @@ function TimeGrid({ columns, range, showEmployee, hrefFor, newHref }: {
 }
 
 // Phone: the visits of each day as a list of cards; a tap opens the details window
-function PhoneList({ columns, hrefFor }: { columns: Column[]; hrefFor: Href }) {
-    const days = columns.filter((c) => c.bookings.length > 0);
+function PhoneList({ columns, hrefFor, blockHref }: { columns: Column[]; hrefFor: Href; blockHref: BlockHref }) {
+    const days = columns.filter((c) => c.bookings.length > 0 || c.blocks.length > 0);
     return (
         <div className={calendar.phoneList}>
             {days.length === 0 && <p className={styles.muted}>Ingen bestillinger.</p>}
@@ -233,6 +271,14 @@ function PhoneList({ columns, hrefFor }: { columns: Column[]; hrefFor: Href }) {
                 <section key={column.id}>
                     <h3 className={calendar.phoneDay}>{column.title}</h3>
                     <ul className={styles.list}>
+                        {column.blocks.map((block) => (
+                            <li key={block.id}>
+                                <Link href={blockHref(block)} scroll={false} className={`${calendar.phoneCard} ${calendar.phoneBlocked}`}>
+                                    <span className={calendar.time}>{blockHoursOn(block, column.day)}</span>
+                                    <span>{blockLabel(block, true)}</span>
+                                </Link>
+                            </li>
+                        ))}
                         {[...column.bookings].sort((a, b) => a.startUtc.localeCompare(b.startUtc)).map((booking) => (
                             <li key={booking.id}>
                                 <Link href={hrefFor(booking)} scroll={false}
@@ -313,6 +359,27 @@ function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHr
     );
 }
 
+// The details window for blocked time: when, who, and "Fjern blokkering"
+function TimeOffDetails({ block, closeHref }: { block: TimeOff; closeHref: string }) {
+    return (
+        <div className={calendar.overlay}>
+            <section className={calendar.dialog} role="dialog" aria-modal="true" aria-labelledby="time-off-details-title">
+                <div className={calendar.dialogHead}>
+                    <h2 id="time-off-details-title" className={calendar.dialogTitle}>{block.reason ?? "Blokkert tid"}</h2>
+                    <Link href={closeHref} scroll={false} className={calendar.close} aria-label="Lukk">✕</Link>
+                </div>
+                <p className={calendar.dialogWhen}>{describeBlock(block)}</p>
+                <p className={styles.service}>{block.employeeName ?? "Hele bedriften (stengt)"}</p>
+                <form action={deleteTimeOffAction} className={styles.actions}>
+                    <input type="hidden" name="timeOffId" value={block.id}/>
+                    <input type="hidden" name="tilbake" value={closeHref}/>
+                    <SubmitButton className={styles.dangerButton} pendingText="Fjerner…">Fjern blokkering</SubmitButton>
+                </form>
+            </section>
+        </div>
+    );
+}
+
 // Bekreft while waiting; Avlys only before the visit starts (the API refuses it afterwards)
 function allowedActions(booking: PanelBooking) {
     const started = new Date(booking.startUtc).getTime() <= Date.now();
@@ -323,18 +390,24 @@ function allowedActions(booking: PanelBooking) {
 }
 
 // Day view: the employees as columns; a booking for an employee who was removed still gets a column
-function employeeColumns(business: BusinessDetails, bookings: PanelBooking[]): Column[] {
+// A block of the whole business (employeeId null) is shown in every column
+function employeeColumns(business: BusinessDetails, bookings: PanelBooking[], blocks: TimeOff[], day: string): Column[] {
+    const blocksFor = (employeeId: string) => blocksOn(blocks, day).filter((t) => !t.employeeId || t.employeeId === employeeId);
     const columns: Column[] = business.employees.map((e) => ({
         id: e.id,
         title: `${e.name} ${e.lastName}`.trim(),
+        day,
         bookings: bookings.filter((b) => b.employeeId === e.id),
+        blocks: blocksFor(e.id),
     }));
     for (const booking of bookings) {
         if (!columns.some((c) => c.id === booking.employeeId)) {
             columns.push({
                 id: booking.employeeId,
                 title: booking.employeeName,
+                day,
                 bookings: bookings.filter((b) => b.employeeId === booking.employeeId),
+                blocks: blocksFor(booking.employeeId),
             });
         }
     }
@@ -342,12 +415,55 @@ function employeeColumns(business: BusinessDetails, bookings: PanelBooking[]): C
 }
 
 // Week view: Monday to Sunday as columns
-function dayColumns(monday: string, bookings: PanelBooking[]): Column[] {
+function dayColumns(monday: string, bookings: PanelBooking[], blocks: TimeOff[]): Column[] {
     return weekDays(monday).map((date) => ({
         id: date,
         title: shortDay(date),
+        day: date,
         bookings: bookings.filter((b) => osloDate(b.startUtc) === date),
+        blocks: blocksOn(blocks, date),
     }));
+}
+
+// Blocks that touch this day in Oslo (a holiday over several days touches each of them)
+function blocksOn(blocks: TimeOff[], date: string): TimeOff[] {
+    return blocks.filter((t) => osloDate(t.startUtc) <= date && (osloDate(t.endUtc) > date
+        || (osloDate(t.endUtc) === date && osloMinutes(t.endUtc) > 0)));
+}
+
+// The part of a block on one day, cut to the shown hours (a whole day = from opening to closing in the grid)
+function blockMinutes(block: TimeOff, date: string, range: Range): Range {
+    const start = osloDate(block.startUtc) < date ? 0 : osloMinutes(block.startUtc);
+    const end = osloDate(block.endUtc) > date ? 24 * 60 : osloMinutes(block.endUtc);
+    return { start: Math.max(start, range.start), end: Math.min(end, range.end) };
+}
+
+// "Ferie", in the week view with the employee: "Ingrid Hansen · Ferie"
+function blockLabel(block: TimeOff, withEmployee: boolean): string {
+    const reason = block.reason ?? "Blokkert";
+    const who = block.employeeName ?? "Hele bedriften";
+    return withEmployee || !block.employeeId ? `${who} · ${reason}` : reason;
+}
+
+// The hours of a block on one day for the phone list: "10:00–12:00", "Hele dagen", "14:00–24:00"
+function blockHoursOn(block: TimeOff, date: string): string {
+    const from = osloDate(block.startUtc) < date ? "00:00" : formatTime(block.startUtc);
+    const to = osloDate(block.endUtc) > date ? "24:00" : formatTime(block.endUtc);
+    return from === "00:00" && to === "24:00" ? "Hele dagen" : `${from}–${to}`;
+}
+
+// "torsdag 22. oktober, 10:00–12:00", "torsdag 22. oktober, hele dagen", "mandag 2. – fredag 6. november"
+function describeBlock(block: TimeOff): string {
+    const startDay = osloDate(block.startUtc);
+    const endDay = osloDate(block.endUtc);
+    const wholeDays = osloMinutes(block.startUtc) === 0 && osloMinutes(block.endUtc) === 0;
+    if (wholeDays) {
+        const lastDay = shiftDay(endDay, -1);
+        return lastDay === startDay ? `${formatDay(startDay)}, hele dagen` : `${formatDay(startDay)} – ${formatDay(lastDay)}`;
+    }
+    return startDay === endDay
+        ? `${formatDay(startDay)}, ${formatTime(block.startUtc)}–${formatTime(block.endUtc)}`
+        : `${formatDay(startDay)} ${formatTime(block.startUtc)} – ${formatDay(endDay)} ${formatTime(block.endUtc)}`;
 }
 
 // "2026-10-19" -> "man. 19.10." (short enough for a column head)

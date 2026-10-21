@@ -1,4 +1,4 @@
-import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -164,6 +164,31 @@ export async function getPanelBookings(token: string, from?: string, to?: string
 // Business adds a visit itself (phone call, walk-in); date and time in Oslo
 export async function createManualBooking(token: string, input: object): Promise<ApiResult> {
     return toResult(await apiFetch("/api/panel/bookings", { method: "POST", token, body: input }));
+}
+// Blocked time touching the days from-to ("2026-10-20"); null = not logged in as a business
+export async function getPanelTimeOff(token: string, from: string, to: string): Promise<TimeOff[] | null> {
+    const res = await apiFetch(`/api/panel/timeoff?${new URLSearchParams({ from, to })}`, { token });
+    if (res.status === 401 || res.status === 403) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente blokkert tid (${res.status})`);
+    }
+    return res.json();
+}
+
+// overlapping = visits already in the blocked time (they are kept, the calendar warns about them)
+export async function createTimeOff(token: string, input: object): Promise<{ ok: true; overlapping: number } | { ok: false; message: string }> {
+    const res = await apiFetch("/api/panel/timeoff", { method: "POST", token, body: input });
+    const body = await res.json().catch(() => null);
+    return res.ok
+        ? { ok: true, overlapping: body?.overlappingBookings ?? 0 }
+        : { ok: false, message: body?.message ?? GENERIC_ERROR };
+}
+
+export async function deleteTimeOff(token: string, id: string): Promise<boolean> {
+    const res = await apiFetch(`/api/panel/timeoff/${id}`, { method: "DELETE", token });
+    return res.ok;
 }
 // "tooLate" = the API refused because the visit has started (409), so the panel can say why
 export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys"): Promise<"ok" | "tooLate" | "error"> {

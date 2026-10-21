@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { changeBookingStatus, createManualBooking } from "@/lib/api";
+import { changeBookingStatus, createManualBooking, createTimeOff, deleteTimeOff } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import type { FormState } from "@/lib/formState";
@@ -64,5 +64,51 @@ export async function createManualBookingAction(_previous: FormState, formData: 
 
     const week = formData.get("visning") === "uke" ? "&visning=uke" : "";
     redirect(`/panel?dag=${values.date}${week}`);
+}
+const TIME_OFF_FIELDS = ["employeeId", "fromDate", "fromTime", "toDate", "toTime", "allDay", "reason"];
+
+// "Blokker tid": errors come back to the form; on success the calendar shows the first blocked day,
+// with a warning when visits are already in that time
+export async function createTimeOffAction(_previous: FormState, formData: FormData): Promise<FormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+
+    const values: Record<string, string> = {};
+    for (const field of TIME_OFF_FIELDS) {
+        values[field] = String(formData.get(field) ?? "");
+    }
+    const allDay = values.allDay === "on";
+
+    const result = await createTimeOff(token, {
+        employeeId: values.employeeId || null, // "" = Hele bedriften
+        fromDate: values.fromDate,
+        fromTime: allDay || !values.fromTime ? "00:00" : values.fromTime,
+        toDate: values.toDate,
+        toTime: allDay || !values.toTime ? "00:00" : values.toTime,
+        allDay,
+        reason: values.reason,
+    });
+    if (!result.ok) {
+        return { error: result.message, values };
+    }
+
+    const week = formData.get("visning") === "uke" ? "&visning=uke" : "";
+    const warning = result.overlapping > 0 ? `&varsel=${result.overlapping}` : "";
+    redirect(`/panel?dag=${values.fromDate}${week}${warning}`);
+}
+
+export async function deleteTimeOffAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+
+    const ok = await deleteTimeOff(token, String(formData.get("timeOffId") ?? ""));
+
+    const back = safeRedirectPath(String(formData.get("tilbake") ?? ""));
+    const page = back.startsWith("/panel") ? back : "/panel";
+    redirect(ok ? page : `${page}${page.includes("?") ? "&" : "?"}feil=1`);
 }
 

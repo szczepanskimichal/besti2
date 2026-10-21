@@ -89,6 +89,15 @@ export type PanelBooking = {
     customerNote: string | null;
     employeeId: string; // the calendar puts the booking in this employee's column
 };
+// Blocked time in the calendar; employeeId null = the whole business is closed
+export type TimeOff = {
+    id: string;
+    employeeId: string | null;
+    employeeName: string | null;
+    startUtc: string;
+    endUtc: string;
+    reason: string | null;
+};
 
 export type CustomerBooking = {
     id: string;
