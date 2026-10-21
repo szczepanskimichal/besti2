@@ -79,6 +79,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                                 href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(slot)}`}
                                 className={slot === chosenTime ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
                             >
+                                aria-current={slot === chosenTime ? "true" : undefined}
                                 {formatTime(slot)}
                             </NextLink>
                         </li>

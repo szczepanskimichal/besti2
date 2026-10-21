@@ -1,7 +1,7 @@
 import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import {getBusinesses, getCities} from '@/lib/api';
 import {categoryOptionGroups} from '@/lib/categories';
-import {isIsoDate, isNumber, todayInOslo} from '@/lib/format';
+import {isDecimal, isIsoDate, isPageNumber, todayInOslo} from '@/lib/format';
 import {Suspense} from "react";
 import Form from "next/form";
 import Link from "next/link";
@@ -25,10 +25,10 @@ export default async function Home({searchParams}: HomeProps) {
     const {category, city, q, tid} = query;
     // Broken or edited links (e.g. ?date=abc) must not crash the page: invalid values are ignored
     const date = isIsoDate(query.date) ? query.date : undefined;
-    const lat = isNumber(query.lat) ? query.lat : undefined;
-    const lng = isNumber(query.lng) ? query.lng : undefined;
-    const km = isNumber(query.km) ? query.km : undefined;
-    const page = isNumber(query.page) ? query.page : undefined;
+    const lat = isDecimal(query.lat) ? query.lat : undefined;
+    const lng = isDecimal(query.lng) ? query.lng : undefined;
+    const km = isDecimal(query.km) ? query.km : undefined;
+    const page = isPageNumber(query.page) ? query.page : undefined;
     const withoutNearMe = new URLSearchParams(
         Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));
         // Only the cities here (fast); the businesses load inside Suspense below

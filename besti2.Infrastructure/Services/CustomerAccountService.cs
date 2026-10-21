@@ -15,7 +15,7 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         if (string.IsNullOrWhiteSpace(request.FullName) || string.IsNullOrWhiteSpace(request.Email)
                                                         || !request.Email.Contains('@') ||
                                                         string.IsNullOrWhiteSpace(request.Password)
-                                                        || request.FullName.Length > 200 || request.Email.Length > 250)
+                                                        || request.FullName.Length > 100 || request.Email.Length > 250)
         {
             return "Fyll ut alle feltene.";
         }
