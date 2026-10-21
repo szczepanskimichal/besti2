@@ -1,63 +1,43 @@
-import Link from 'next/link';
+import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBookings } from "@/lib/api";
-import type { PanelBooking } from "@/lib/types";
+import { getPanelBookings, getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { formatDate, formatTime } from "@/lib/format";
+import { clockMinutes, formatDay, formatTime, isIsoDate, osloMinutes, shiftDay, todayInOslo, weekdayOf } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
-import { logoutAction } from "../logg-inn/actions";
-import { cancelBookingAction, confirmBookingAction } from "./actions";
-import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import type { Employee, PanelBooking } from "@/lib/types";
+import PanelNav from "./PanelNav";
 import styles from "./page.module.css";
+import calendar from "./calendar.module.css";
 
-type PanelPageProps = {
-    searchParams: Promise<{ feil?: string }>;
+// One hour in the grid is 80 px high (a 30 min visit = 40 px: time and customer fit)
+const PX_PER_MINUTE = 80 / 60;
+
+type CalendarPageProps = {
+    searchParams: Promise<{ dag?: string; feil?: string }>;
 };
 
-export default async function PanelPage({ searchParams }: PanelPageProps) {
+// The business calendar: one day, a column per employee, visits as blocks from start to end
+export default async function CalendarPage({ searchParams }: CalendarPageProps) {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
 
-    const bookings = await getPanelBookings(token);
-    if (!bookings) {
+    const { dag, feil } = await searchParams;
+    const day = isIsoDate(dag) ? dag : todayInOslo();
+    const [business, bookings] = await Promise.all([getPanelBusiness(token), getPanelBookings(token, day, day)]);
+    if (!business || !bookings) {
         redirect("/logg-inn");
     }
 
-    const { feil } = await searchParams;
-    const { upcoming, past } = splitBookings(bookings);
+    const columns = calendarColumns(business.employees, bookings);
+    const hours = business.openingHours.find((h) => h.dayOfWeek === weekdayOf(day));
+    const range = visibleRange(hours ? { opens: clockMinutes(hours.opensAt), closes: clockMinutes(hours.closesAt) } : null, bookings);
+    const height = (range.end - range.start) * PX_PER_MINUTE;
 
     return (
-        <main className={styles.main}>
-            <div className={styles.topBar}>
-                <h1 className={styles.title}>Bestillinger</h1>
-                <div className={styles.topActions}>
-                    <Link href="/panel/tjenester" className={styles.secondaryButton}>
-                        Tjenester
-                    </Link>
-                    <Link href="/panel/ansatte" className={styles.secondaryButton}>
-                        Ansatte
-                    </Link>
-                    <Link href={"/panel/profil"} className={styles.secondaryButton}>
-                        Profil
-                    </Link>
-                    <Link href="/panel/galleri" className={styles.secondaryButton}>
-                        Galleri
-                    </Link>
-                    <Link href="/panel/vurderinger" className={styles.secondaryButton}>
-                        Vurderinger
-                    </Link>
-                    <Link href="/panel/apningstider" className={styles.secondaryButton}>
-                        Åpningstider
-                    </Link>
-                    <form action={logoutAction}>
-                        <button type="submit" className={styles.secondaryButton}>
-                            Logg ut
-                        </button>
-                    </form>
-                </div>
-            </div>
+        <main className={`${styles.main} ${calendar.wide}`}>
+            <PanelNav title="Kalender"/>
 
             {feil && (
                 <p className={styles.error} role="alert">
@@ -67,93 +47,96 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
                 </p>
             )}
 
-            {upcoming.length === 0 ? (
-                <p className={styles.muted}>Ingen kommende bestillinger.</p>
-            ) : (
-                <ul className={styles.list}>
-                    {upcoming.map((booking) => (
-                        <BookingCard key={booking.id} booking={booking} showActions/>
-                    ))}
-                </ul>
-            )}
+            <div className={calendar.toolbar}>
+                <Link href={`/panel?dag=${shiftDay(day, -1)}`} className={styles.secondaryButton} aria-label="Forrige dag">←</Link>
+                <Link href="/panel" className={styles.secondaryButton}>I dag</Link>
+                <Link href={`/panel?dag=${shiftDay(day, 1)}`} className={styles.secondaryButton} aria-label="Neste dag">→</Link>
+                <h2 className={calendar.dayTitle}>{formatDay(day)}</h2>
+                <form method="get" className={calendar.datePicker}>
+                    <label>
+                        <span className={calendar.srOnly}>Velg dato</span>
+                        <input type="date" name="dag" defaultValue={day}/>
+                    </label>
+                    <button type="submit" className={styles.secondaryButton}>Vis</button>
+                </form>
+            </div>
 
-            {past.length > 0 && (
-                <>
-                    <h2 className={styles.sectionTitle}>Siste 14 dager</h2>
-                    <ul className={styles.list}>
-                        {past.map((booking) => (
-                            <BookingCard key={booking.id} booking={booking} showActions={false}/>
+            {!hours && <p className={styles.muted}>Stengt denne dagen.</p>}
+
+            <div className={calendar.scroller}>
+                <div className={calendar.grid} style={{ gridTemplateColumns: `56px repeat(${columns.length}, minmax(160px, 1fr))` }}>
+                    {/* Header row: one name per column */}
+                    <div className={calendar.corner}/>
+                    {columns.map((column) => (
+                        <div key={column.id} className={calendar.columnHead}>{column.name}</div>
+                    ))}
+
+                    {/* Hour labels on the left */}
+                    <div className={calendar.hours} style={{ height }}>
+                        {hourMarks(range).map((minute) => (
+                            <span key={minute} style={{ top: (minute - range.start) * PX_PER_MINUTE }}>
+                                {String(minute / 60).padStart(2, "0")}:00
+                            </span>
                         ))}
-                    </ul>
-                </>
-            )}
+                    </div>
+
+                    {/* One column per employee with the visits as blocks */}
+                    {columns.map((column) => (
+                        <div key={column.id} className={calendar.column} style={{ height }}>
+                            {hourMarks(range).map((minute) => (
+                                <div key={minute} className={calendar.hourLine} style={{ top: (minute - range.start) * PX_PER_MINUTE }}/>
+                            ))}
+                            {bookings.filter((b) => b.employeeId === column.id).map((booking) => {
+                                const start = Math.max(osloMinutes(booking.startUtc), range.start);
+                                const end = Math.min(osloMinutes(booking.endUtc) || 24 * 60, range.end);
+                                return (
+                                    <div
+                                        key={booking.id}
+                                        className={`${calendar.booking} ${calendar[booking.status] ?? ""}`}
+                                        style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
+                                        title={`${booking.customerName} – ${booking.serviceName} (${statusLabels[booking.status] ?? booking.status})`}
+                                    >
+                                        <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                        <span className={calendar.customer}>{booking.customerName}</span>
+                                        <span className={calendar.service}>{booking.serviceName}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    ))}
+                </div>
+            </div>
         </main>
     );
 }
 
-// Visits that are over come last, newest first, without buttons (they can no longer be cancelled)
-function splitBookings(bookings: PanelBooking[]) {
-    const now = Date.now();
-    return {
-        upcoming: bookings.filter((b) => new Date(b.endUtc).getTime() >= now),
-        past: bookings.filter((b) => new Date(b.endUtc).getTime() < now).reverse(),
-    };
+// The employees as columns; a booking for an employee who was removed still gets a column
+function calendarColumns(employees: Employee[], bookings: PanelBooking[]) {
+    const columns = employees.map((e) => ({ id: e.id, name: `${e.name} ${e.lastName}`.trim() }));
+    for (const booking of bookings) {
+        if (!columns.some((c) => c.id === booking.employeeId)) {
+            columns.push({ id: booking.employeeId, name: booking.employeeName });
+        }
+    }
+    return columns;
 }
 
-// One booking: time, status, service, customer, note, and Bekreft / Avlys for upcoming visits
-function BookingCard({ booking, showActions }: { booking: PanelBooking; showActions: boolean }) {
-    return (
-        <li className={styles.card}>
-            <div className={styles.cardHeader}>
-                <p className={styles.when}>
-                    {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
-                </p>
-                <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
-                    {statusLabels[booking.status] ?? booking.status}
-                </span>
-            </div>
+// From the opening hour to the closing hour, widened to whole hours and to visits outside the hours
+function visibleRange(hours: { opens: number; closes: number } | null, bookings: PanelBooking[]) {
+    let start = hours?.opens ?? 8 * 60;
+    let end = hours?.closes ?? 17 * 60;
+    for (const booking of bookings) {
+        start = Math.min(start, osloMinutes(booking.startUtc));
+        end = Math.max(end, osloMinutes(booking.endUtc) || 24 * 60);
+    }
+    return { start: Math.floor(start / 60) * 60, end: Math.min(Math.ceil(end / 60) * 60, 24 * 60) };
+}
 
-            <p className={styles.service}>
-                {booking.serviceName} hos {booking.employeeName}
-            </p>
-
-            <p className={styles.customer}>
-                {booking.customerName}
-                <br />
-                <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
-                {" · "}
-                <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
-            </p>
-            {booking.customerNote && (
-                <div className={styles.note}>
-                    <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
-                    <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
-                        Svar på e-post
-                    </a>
-                </div>
-            )}
-            {showActions && booking.status !== "Avlyst" && (
-                <div className={styles.actions}>
-                    {booking.status === "Venter" && (
-                        <form action={confirmBookingAction}>
-                            <input type="hidden" name="bookingId" value={booking.id} />
-                            <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">
-                                Bekreft
-                            </SubmitButton>
-                        </form>
-                    )}
-                    <details>
-                        <summary className={styles.dangerButton}>Avlys</summary>
-                        <p>Er du sikker? Kunden får beskjed på e-post.</p>
-                        <form action={cancelBookingAction}>
-                            <input type="hidden" name="bookingId" value={booking.id} />
-                            <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">
-                                Ja, avlys
-                            </SubmitButton>
-                        </form>
-                    </details>
-                </div>
-            )}
-        </li>
-    );
+// 480, 540, 600 ... for every whole hour in the range
+function hourMarks(range: { start: number; end: number }) {
+    const marks: number[] = [];
+    for (let minute = range.start; minute < range.end; minute += 60) {
+        marks.push(minute);
+    }
+    return marks;
 }
