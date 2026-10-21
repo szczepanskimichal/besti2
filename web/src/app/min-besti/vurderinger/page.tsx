@@ -72,9 +72,8 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
                                 <form action={createReviewAction} className={styles.form}>
                                     <input type="hidden" name="bookingId" value={booking.id}/>
                                     <p className={styles.label}>Hvor fornøyd var du?</p>
-                                    {/* Stars in reverse order: with CSS, hovering a star also lights up the ones before it */}
-                                    <div className={styles.stars} role="radiogroup" aria-label="Antall stjerner">
-                                        {[5, 4, 3, 2, 1].map((n) => (
+                                    {/* Stars 1..5 for keyboard and screen readers; CSS lights up the chosen one and those before it */}                                    <div className={styles.stars} role="radiogroup" aria-label="Antall stjerner">
+                                        {[1, 2, 3, 4, 5].map((n) => (
                                             <Fragment key={n}>
                                                 <input type="radio" id={`s${n}-${booking.id}`} name="stars" value={n} required/>
                                                 <label htmlFor={`s${n}-${booking.id}`} title={`${n} av 5`}>

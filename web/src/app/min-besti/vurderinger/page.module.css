@@ -26,11 +26,10 @@
     resize: vertical;
 }
 
-/* 5 stars as radio buttons; the DOM order is 5..1, row-reverse shows them 1..5 */
+/* 5 stars as radio buttons, in the order 1..5 */
 .stars {
     position: relative;
     display: inline-flex;
-    flex-direction: row-reverse;
     gap: 4px;
 }
 
@@ -53,11 +52,22 @@
     cursor: pointer;
 }
 
-/* The chosen star and the ones before it; on hover the same */
-.stars input:checked ~ label,
-.stars label:hover,
-.stars label:hover ~ label {
+/* The chosen star and the ones before it are gold, the ones after it grey again */
+.stars:has(input:checked) label {
     color: #f5a623;
+}
+
+.stars input:checked + label ~ label {
+    color: #d1d5db;
+}
+
+/* While hovering: gold up to the star under the mouse (.stars.stars = wins over the chosen star) */
+.stars.stars:has(label:hover) label {
+    color: #f5a623;
+}
+
+.stars.stars label:hover ~ label {
+    color: #d1d5db;
 }
 
 .stars input:focus-visible + label {
