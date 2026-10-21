@@ -657,4 +657,25 @@ public class BusinessServiceTests
             result.Select(b => b.Name));
         Assert.True(result[0].DistanceKm < 1);
     }
+    
+    // check if a hidden business (owner has not confirmed the email) is not listed and has no page
+    [Fact]
+    public async Task HiddenBusiness_IsNotListedAndHasNoPage()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        (await db.Businesses.FindAsync(klippId))!.IsHidden = true;
+        await db.SaveChangesAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+
+        var list = await service.GetAllAsync();
+        var page = await service.GetByIdAsync(klippId);
+
+        Assert.DoesNotContain(list, b => b.Id == klippId);
+        Assert.Null(page);
+    }
 }
