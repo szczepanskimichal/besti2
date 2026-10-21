@@ -11,9 +11,10 @@ async function changeStatus(formData: FormData, action: "bekreft" | "avlys") {
     }
 
     const bookingId = String(formData.get("bookingId") ?? "");
-    const ok = await changeBookingStatus(token, bookingId, action);
+    const result = await changeBookingStatus(token, bookingId, action);
 
-    redirect(ok ? "/panel" : "/panel?feil=1");
+    // Only a short code in the URL; the page shows a fixed text for it
+    redirect(result === "ok" ? "/panel" : result === "tooLate" ? "/panel?feil=for-sent" : "/panel?feil=1");
 }
 
 export async function confirmBookingAction(formData: FormData) {
