@@ -678,4 +678,18 @@ public class BusinessServiceTests
         Assert.DoesNotContain(list, b => b.Id == klippId);
         Assert.Null(page);
     }
+    
+    
+    // check if "Nær meg" with a radius leaves out businesses further away
+    [Fact]
+    public async Task GetAllAsync_WithRadius_OnlyNearBusinesses()
+    {
+        // Arrange: standing at Bryggen in Bergen
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+        // Act: max 50 km (Oslo and Trondheim are much further)
+        var result = await service.GetAllAsync(lat: 60.3975, lng: 5.3240, maxKm: 50);
+        // Assert
+        Assert.Equal(new[] { "Fjord Bygg AS" }, result.Select(b => b.Name));
+    }
 }

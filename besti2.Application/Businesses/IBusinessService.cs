@@ -4,7 +4,7 @@ public interface IBusinessService
 {
     Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
-        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,
+        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
         CancellationToken cancellationToken = default);
     Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<string>> GetCitiesAsync(CancellationToken cancellationToken = default);

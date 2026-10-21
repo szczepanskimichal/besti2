@@ -18,7 +18,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
-        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,
+        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
         CancellationToken cancellationToken = default)    
     {
         // Hidden businesses (owner has not confirmed the email yet) are never shown
@@ -66,7 +66,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         var list = date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);
         // "Nær meg": nearest first instead of by name or soonest time
         return lat is double userLat && lng is double userLng
-            ? await SortByDistanceAsync(list, userLat, userLng, cancellationToken)
+            ? await SortByDistanceAsync(list, userLat, userLng, maxKm, cancellationToken)
             : list;
     }
 
@@ -172,7 +172,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     
     // "Nær meg": distance from the customer to each business, nearest first; businesses without a map point go last
     private async Task<IReadOnlyList<BusinessListItemDto>> SortByDistanceAsync(
-        IReadOnlyList<BusinessListItemDto> businesses, double lat, double lng, CancellationToken cancellationToken)
+        IReadOnlyList<BusinessListItemDto> businesses, double lat, double lng, double? maxKm, CancellationToken cancellationToken)
     {
         var ids = businesses.Select(b => b.Id).ToList();
         var points = await dbContext.Businesses.AsNoTracking()
@@ -184,6 +184,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .Select(b => points[b.Id] is { Latitude: double bLat, Longitude: double bLng }
                 ? b with { DistanceKm = Math.Round(HaversineKm(lat, lng, bLat, bLng), 1) }
                 : b)
+            // With a radius: only businesses that close (no map point = unknown distance = left out)
+            .Where(b => maxKm is null || b.DistanceKm <= maxKm)            
             .OrderBy(b => b.DistanceKm ?? double.MaxValue)
             .ToList();
     }
@@ -213,7 +215,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-
+    
     public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var business = await dbContext.Businesses
