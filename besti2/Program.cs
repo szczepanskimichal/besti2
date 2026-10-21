@@ -283,7 +283,7 @@ app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPri
     }
 
     return Results.Ok(await bookingService.GetForBusinessAsync(businessId, from, to, cancellationToken));
-});
+}).RequireAuthorization();
 
 // Business panel: the owner's own business with services and employees
 app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
