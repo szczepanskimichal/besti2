@@ -9,6 +9,9 @@ public interface IBookingService
     // customerUserId = the logged-in customer's account id, saved on the booking
     Task<CreateBookingResult> CreateAsync(
         CreateBookingRequest request, string? customerUserId = null, CancellationToken cancellationToken = default);
+// Business panel: the business adds a visit itself (confirmed at once)
+    Task<CreateBookingResult> CreateByBusinessAsync(
+        Guid businessId, CreateManualBookingRequest request, CancellationToken cancellationToken = default);
         // from/to = days in Oslo time for the calendar; without them: upcoming bookings and the last 14 days
         Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);
