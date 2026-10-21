@@ -26,6 +26,17 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         // Signed up before but never confirmed (e.g. the mail got lost): send a new link instead of an error
         if (existing is { EmailConfirmed: false, BusinessId: null })
         {
+            // The newest sign-up decides the name and password. Otherwise a stranger could sign up with
+            // someone else's e-mail and his own password, and the real owner would activate HIS password
+            // by clicking the link. Changing the password also makes older links stop working.
+            var passwordError = await CheckPasswordAsync(request.Password);
+            if (passwordError is not null)
+            {
+                return passwordError;
+            }
+            existing.FullName = request.FullName.Trim();
+            await userManager.RemovePasswordAsync(existing);
+            await userManager.AddPasswordAsync(existing, request.Password);
             await TrySendConfirmationAsync(existing, cancellationToken);
             return null;
         }
@@ -61,13 +72,25 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
     }
 
     // Builds the confirmation link and mails it; a mail error must not break sign-up
+    // null when the password follows the rules, otherwise the message for the form
+    private async Task<string?> CheckPasswordAsync(string password)
+    {
+        foreach (var validator in userManager.PasswordValidators)
+        {
+            if (!(await validator.ValidateAsync(userManager, new AppUser(), password)).Succeeded)
+            {
+                return "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.";
+            }
+        }
+        return null;
+    }
     private async Task<bool> TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
     {
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
-        var body =
-            $"Hei {user.FullName}!\n\n" +
-            "Takk for at du opprettet en konto hos BESTI.\n" +
+        var body = 
+            // No name from the form in the mail: it goes to an address nobody has confirmed yet
+            "Hei!\n\n" +            "Takk for at du opprettet en konto hos BESTI.\n" +
             $"Klikk på lenken for å bekrefte e-postadressen din:\n{link}\n\n" +
             "Har du ikke opprettet en konto, kan du se bort fra denne e-posten.";
         try

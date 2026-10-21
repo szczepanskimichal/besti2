@@ -93,4 +93,19 @@ public class CustomerAccountServiceTests
         Assert.True(ok);
         Assert.True((await users.FindByIdAsync(user.Id))!.EmailConfirmed);
     }
+    // check if signing up again before confirming takes the NEW password (a stranger who signed up
+// first with this e-mail must not get his password activated by the real owner)
+    [Fact]
+    public async Task RegisterAsync_SignUpAgainUnconfirmed_UsesTheNewPassword()
+    {
+        var (service, users, _) = CreateService();
+        await service.RegisterAsync(TestKunde() with { Password = "Fremmed1!" });
+        await service.RegisterAsync(TestKunde() with { FullName = "Kari Ekte", Password = "Ekte123!" });
+
+        var user = (await users.FindByEmailAsync("kari@test.example"))!;
+        Assert.True(await users.CheckPasswordAsync(user, "Ekte123!"));
+        Assert.False(await users.CheckPasswordAsync(user, "Fremmed1!"));
+        Assert.Equal("Kari Ekte", user.FullName);
+    }
+    
 }
