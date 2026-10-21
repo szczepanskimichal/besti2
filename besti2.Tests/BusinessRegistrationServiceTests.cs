@@ -17,13 +17,15 @@ public class BusinessRegistrationServiceTests
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddDbContext<AppDbContext>(options => options.UseInMemoryDatabase(dbName));
-        services.AddIdentityCore<AppUser>().AddEntityFrameworkStores<AppDbContext>();
+        services.AddIdentityCore<AppUser>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddTokenProvider<EmailTokenProvider<AppUser>>(TokenOptions.DefaultProvider);
         var provider = services.BuildServiceProvider();
 
         var db = provider.GetRequiredService<AppDbContext>();
         var users = provider.GetRequiredService<UserManager<AppUser>>();
-        return (new BusinessRegistrationService(db, users, new FakeGeocodingService()), db, users);
-    }
+        return (new BusinessRegistrationService(db, users, new FakeGeocodingService(), new FakeEmailService(),
+            "http://localhost:3000"), db, users);    }
 
     private static RegisterBusinessRequest TestFrisor() => new(
         "Test Frisør", "912345678", "Frisor", "eier@testfrisor.example",
@@ -82,5 +84,23 @@ public class BusinessRegistrationServiceTests
         Assert.StartsWith("Passordet må ha minst 6 tegn", result.Error);
         Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345678"));
         Assert.Empty(users.Users);
+    }
+    
+    // check if the owner must confirm the email: the account starts unconfirmed and a link is mailed
+    [Fact]
+    public async Task RegisterAsync_OwnerGetsConfirmationLink()
+    {
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email, "http://localhost:3000");
+
+        var result = await service.RegisterAsync(TestFrisor());
+
+        Assert.True(result.Success);
+        var owner = await users.FindByEmailAsync("eier@testfrisor.example");
+        Assert.False(owner!.EmailConfirmed);
+        var mail = Assert.Single(email.Sent);
+        Assert.Equal("eier@testfrisor.example", mail.To);
+        Assert.Contains("http://localhost:3000/bekreft-epost?id=", mail.Body);
     }
 }

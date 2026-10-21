@@ -25,7 +25,12 @@ public static class DependencyInjection
         services.AddScoped<IBusinessService, BusinessService>();
         services.AddScoped<IBookingService, BookingService>();
         services.AddTransient<IEmailService, SmtpEmailService>();
-        services.AddScoped<IBusinessRegistrationService, BusinessRegistrationService>();
+        services.AddScoped<IBusinessRegistrationService>(provider => new BusinessRegistrationService(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<UserManager<AppUser>>(),
+            provider.GetRequiredService<IGeocodingService>(),
+            provider.GetRequiredService<IEmailService>(),
+            configuration["WebBaseUrl"] ?? "http://localhost:3000"));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),

@@ -1,4 +1,5 @@
 using besti2.Application.Businesses;
+using besti2.Application.Email;
 using besti2.Application.Geocoding;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
@@ -9,8 +10,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
+// webBaseUrl = address of the Next.js site, used in the confirmation link
 public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
-    IGeocodingService geocoding) : IBusinessRegistrationService 
+    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl) : IBusinessRegistrationService
 {
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
@@ -88,8 +90,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         await dbContext.SaveChangesAsync(cancellationToken);
 
         // 3. Create the owner account linked to the business
-        // Treated as confirmed until real email verification arrives with customer accounts
-        var user = new AppUser { UserName = email, Email = email, EmailConfirmed = true, BusinessId = business.Id };        
+        // The owner must confirm the email before logging in (link in the mail at the end)
+        var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };       
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
@@ -125,6 +127,29 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             await transaction.CommitAsync(cancellationToken);
         }
+        await TrySendConfirmationAsync(user, business.Name, cancellationToken);
         return new RegisterBusinessResult(true);
+        // Only after the commit, so a link is never sent for a registration that was undone
+    }
+    
+    // Mails the confirmation link; a mail error must not undo the registration
+    private async Task TrySendConfirmationAsync(AppUser user, string businessName, CancellationToken cancellationToken)
+    {
+        var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
+        var body =
+            "Hei!\n\n" +
+            $"Takk for at du registrerte {businessName} hos BESTI.\n" +
+            $"Klikk på lenken for å bekrefte e-postadressen, så kan du logge inn:\n{link}\n\n" +
+            "Har du ikke registrert en bedrift, kan du se bort fra denne e-posten.\n\n" +
+            "Hilsen BESTI";
+        try
+        {
+            await emailService.SendAsync(user.Email!, "Bekreft e-postadressen til bedriften din hos BESTI", body, cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Mail server down: the business is saved, the link can be sent again later
+        }
     }
 }
