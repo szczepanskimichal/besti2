@@ -3,8 +3,7 @@ import {notFound} from "next/navigation";
 import {getAvailability, getBusiness, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {formatDate, formatPrice, formatTime, todayInOslo} from "@/lib/format";
-import {createBookingAction} from "./actions";
-import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
@@ -14,7 +13,7 @@ type Props = {
 
 export default async function BookingPage({params, searchParams}: Props) {
     const {id} = await params;
-    const {tjeneste, ansatt, dato, tid, feil} = await searchParams;
+    const {tjeneste, ansatt, dato, tid} = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -87,7 +86,6 @@ export default async function BookingPage({params, searchParams}: Props) {
                     <p className={styles.muted}>
                         Valgt tid: <strong>{formatDate(tid)} kl. {formatTime(tid)}</strong>
                     </p>
-                    {feil && <p className={styles.error} role="alert">{feil}</p>}
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}
@@ -99,34 +97,8 @@ export default async function BookingPage({params, searchParams}: Props) {
                             bestille.</p>
                     )}
                     {me && !me.isBusiness && (
-                        <form action={createBookingAction} className={styles.form}>
-                            <p className={styles.muted}>Bestiller som <strong>{me.fullName}</strong> ({me.email})</p>
-                            <input type="hidden" name="businessId" value={business.id}/>
-                            <input type="hidden" name="serviceId" value={service.id}/>
-                            <input type="hidden" name="employeeId" value={employeeId}/>
-                            <input type="hidden" name="startUtc" value={tid}/>
-                            <input type="hidden" name="date" value={date}/>
-                            <label className={styles.field}>
-                                Telefon
-                                <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}
-                                       autoComplete="tel" pattern="\+?[0-9 ]{8,20}" placeholder="912 34 567"
-                                       title="Bare tall, mellomrom og +, minst 8 sifre"/>
-                            </label>
-                            <label className={styles.field}>
-                                Melding til bedriften (valgfritt)
-                                <textarea name="note" maxLength={500} rows={3}
-                                          placeholder="F.eks. «Jeg har langt hår»"/>
-                            </label>
-                            <label className={styles.checkbox}>
-                                <input type="checkbox" name="marketingConsent"/>
-                                Ja, jeg vil motta nyhetsbrev og tilbud på e-post
-                            </label>
-                            <p className={styles.muted}>
-                                Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
-                                bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
-                            </p>
-                            <SubmitButton className={styles.primaryButton} pendingText="Bestiller…">Bekreft bestilling</SubmitButton>
-                        </form>
+                        <BookingForm businessId={business.id} serviceId={service.id} employeeId={employeeId}
+                                     startUtc={tid} date={date} fullName={me.fullName} email={me.email}/>
                     )}
                         </section>
                         )}
