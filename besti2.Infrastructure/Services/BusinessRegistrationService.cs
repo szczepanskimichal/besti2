@@ -90,8 +90,15 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             IsHidden = true // customers see it after the owner confirms the email            
         };
         dbContext.Businesses.Add(business);
-        await dbContext.SaveChangesAsync(cancellationToken);
-
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            // Two registrations with the same org number at the same moment: the second one stops here
+            return new RegisterBusinessResult(false, "Denne bedriften er allerede registrert.");
+        }
         // 3. Create the owner account linked to the business
         // The owner must confirm the email before logging in (link in the mail at the end)
         var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };       

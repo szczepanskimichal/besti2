@@ -61,6 +61,11 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
 
     public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequest request)
     {
+        // A cut-off link without id or code is simply "invalid", not a server error
+        if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.Code))
+        {
+            return false;
+        }
         var user = await userManager.FindByIdAsync(request.UserId);
         if (user is null)
         {

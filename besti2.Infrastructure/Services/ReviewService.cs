@@ -75,8 +75,15 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
             CreatedUtc = DateTime.UtcNow
         });
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            // Double click on "Send": the first one was saved, the second hit the unique index
+            return "Du har allerede vurdert denne timen.";
+        }
         return null;
     }
 

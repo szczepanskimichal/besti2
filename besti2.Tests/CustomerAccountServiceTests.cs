@@ -118,5 +118,12 @@ public class CustomerAccountServiceTests
         var error = await service.RegisterAsync(TestKunde() with { FullName = new string('a', 101) });
         Assert.Equal("Fyll ut alle feltene.", error);
     }
-
+// check if a confirmation link without id or code is just "invalid" (no server error)
+    [Fact]
+    public async Task ConfirmEmailAsync_MissingIdOrCode_ReturnsFalse()
+    {
+        var (service, _, _) = CreateService();
+        Assert.False(await service.ConfirmEmailAsync(new ConfirmEmailRequest(null!, "kode")));
+        Assert.False(await service.ConfirmEmailAsync(new ConfirmEmailRequest("id", "")));
+    }
 }

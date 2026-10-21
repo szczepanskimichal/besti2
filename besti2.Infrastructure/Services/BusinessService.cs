@@ -473,8 +473,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     public async Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,
         CancellationToken cancellationToken = default)
     {
+        if (request.Days is null)
+        {
+            return "Ugyldige dager.";
+        }
         if (request.Days.Any(d => !Enum.IsDefined(d.DayOfWeek))
-            || request.Days.Select(d => d.DayOfWeek).Distinct().Count() != request.Days.Count)
+                     || request.Days.Select(d => d.DayOfWeek).Distinct().Count() != request.Days.Count)
         {
             return "Ugyldige dager.";
         }

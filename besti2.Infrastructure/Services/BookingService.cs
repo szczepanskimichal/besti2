@@ -5,6 +5,7 @@ using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 
 namespace besti2.Infrastructure.Services;
@@ -69,6 +70,9 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, string? customerUserId = null,
         CancellationToken cancellationToken = default)
     {
+        // "2026-10-22T10:00:00+02:00" arrives as local time: turn every start into real UTC first
+        request = request with { StartUtc = ToUtc(request.StartUtc) };
+
         var error = Validate(request);
         if (error is not null)
         {
@@ -94,9 +98,18 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         if (transaction is not null)
         {
             var lockName = $"booking-{request.EmployeeId}";
-            await dbContext.Database.ExecuteSqlInterpolatedAsync(
-                $"EXEC sp_getapplock @Resource = {lockName}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000",
-                cancellationToken);
+            try
+            {
+                // If the lock is not granted within 10 s, SQL Server stops here instead of going on without it
+                await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                    $"DECLARE @result int; EXEC @result = sp_getapplock @Resource = {lockName}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000; IF @result < 0 THROW 51000, 'Booking lock not granted', 1;",
+                    cancellationToken);
+            }
+            catch (SqlException ex) when (ex.Number == 51000)
+            {
+                // Someone else is booking this employee right now: the customer simply tries another time
+                return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+            }
         }
 
         var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, cancellationToken);
@@ -132,7 +145,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             await dbContext.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
         {
             // Second line of defence: the unique index refused a second booking for the same time
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
@@ -376,4 +389,12 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
+    
+    // Local -> UTC; a time without a zone is taken as UTC (that is what the web app sends)
+    private static DateTime ToUtc(DateTime value) => value.Kind switch
+    {
+        DateTimeKind.Local => value.ToUniversalTime(),
+        DateTimeKind.Unspecified => DateTime.SpecifyKind(value, DateTimeKind.Utc),
+        _ => value
+    };
 }
