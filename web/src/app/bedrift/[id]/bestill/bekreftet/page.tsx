@@ -2,7 +2,7 @@ import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusiness } from "@/lib/api";
 import { formatDate, formatTime } from "@/lib/format";
-import styles from "../page.module.css";
+import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -17,8 +17,9 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
     const service = business?.services.find((s) => s.id === tjeneste);
     const employee = business?.employees.find((e) => e.id === ansatt);
 
-    if (!business || !service || !employee || !tid) {
-        notFound();
+
+    // A cut-off or edited link (e.g. tid=abc) shows "not found" instead of crashing
+    if (!business || !service || !employee || !tid || Number.isNaN(Date.parse(tid))) {        notFound();
     }
 
     return (
