@@ -292,9 +292,13 @@ const NO_REVIEWS: BusinessReviews = {average: null, count: 0, reviews: []};
 
 // Public: reviews of a business with the average
 export async function getBusinessReviews(businessId: string): Promise<BusinessReviews> {
-    const res = await apiFetch(`/api/businesses/${businessId}/reviews`);
-    // No reviews section rather than a broken business page when the API fails
-    return res.ok ? res.json() : NO_REVIEWS;
+    // No reviews section rather than a broken business page when the API fails or is too slow
+    try {
+        const res = await apiFetch(`/api/businesses/${businessId}/reviews`);
+        return res.ok ? await res.json() : NO_REVIEWS;
+    } catch {
+        return NO_REVIEWS;
+    }
 }
 
 // Business panel: the owner's reviews (null = not logged in as a business)

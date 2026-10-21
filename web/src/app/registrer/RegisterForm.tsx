@@ -19,7 +19,7 @@ export default function RegisterForm({ neste }: { neste: string }) {
             <input type="hidden" name="neste" value={neste} />
             <label className={styles.field}>
                 Fullt navn
-                <input name="fullName" required maxLength={200} autoComplete="name"
+                <input name="fullName" required maxLength={100} autoComplete="name"
                        defaultValue={state.values?.fullName ?? ""} />
             </label>
             <label className={styles.field}>

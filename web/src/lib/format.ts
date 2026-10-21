@@ -53,6 +53,11 @@ export function isIsoDate(value: string | undefined): value is string {
     return !!value && /^\d{4}-\d{2}-\d{2}$/.test(value)
         && !Number.isNaN(Date.parse(value)) && new Date(`${value}T12:00:00Z`).toISOString().startsWith(value);
 }
-export function isNumber(value: string | undefined): value is string {
-    return !!value && value.trim() !== "" && Number.isFinite(Number(value));
+// A whole page number (1..999999); "1.5" or "99999999999" would make the API answer 400
+export function isPageNumber(value: string | undefined): value is string {
+    return !!value && /^\d{1,6}$/.test(value);
+}
+// A plain decimal like 59.912, -5.3 or 25 (not "0x10", "1e3" or huge numbers the API cannot read)
+export function isDecimal(value: string | undefined): value is string {
+    return !!value && /^-?\d{1,3}(\.\d{1,6})?$/.test(value);
 }

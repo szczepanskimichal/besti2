@@ -22,6 +22,7 @@ export default function NearMeButton() {
                 params.set("lat", position.coords.latitude.toFixed(3));
                 params.set("lng", position.coords.longitude.toFixed(3));
                 params.delete("city"); // near me replaces the city
+                params.delete("page"); // a new list starts on page 1
                 setStatus("idle");
                 router.push(`/?${params}`);
             },
