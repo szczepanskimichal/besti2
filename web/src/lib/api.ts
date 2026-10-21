@@ -5,7 +5,7 @@ import {cache} from "react";
 const API_URL = process.env.API_URL ?? "http://localhost:5156";
 // Forward the visitor's IP so the API limits attempts per person, not per web server.
 // In production only cf-connecting-ip counts: Cloudflare sets it and a visitor cannot fake it
-// (anyone can send their own x-forwarded-for, so that one is only used locally).async function forwardedFor(): Promise<Record<string, string>> {
+// (anyone can send their own x-forwarded-for, so that one is only used locally).
 async function forwardedFor(): Promise<Record<string, string>> {
     const h = await headers();
     const ip = h.get("cf-connecting-ip")
