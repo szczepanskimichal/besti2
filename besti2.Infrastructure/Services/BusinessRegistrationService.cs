@@ -83,8 +83,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             PostalCode = request.PostalCode.Trim(),
             City = request.City.Trim(),
             Latitude = location?.Latitude,
-            Longitude = location?.Longitude
-            
+            Longitude = location?.Longitude,
+            IsHidden = true // customers see it after the owner confirms the email            
         };
         dbContext.Businesses.Add(business);
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -129,7 +129,24 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
         await TrySendConfirmationAsync(user, business.Name, cancellationToken);
         return new RegisterBusinessResult(true);
-        // Only after the commit, so a link is never sent for a registration that was undone
+    }
+    
+    
+    // After the owner has confirmed the email, the business becomes visible to customers
+    public async Task ShowBusinessOfOwnerAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var owner = await userManager.FindByIdAsync(userId);
+        if (owner is not { EmailConfirmed: true, BusinessId: not null })
+        {
+            return;
+        }
+
+        var business = await dbContext.Businesses.FindAsync([owner.BusinessId.Value], cancellationToken);
+        if (business is { IsHidden: true })
+        {
+            business.IsHidden = false;
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
     }
     
     // Mails the confirmation link; a mail error must not undo the registration

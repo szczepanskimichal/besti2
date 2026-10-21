@@ -165,9 +165,14 @@ app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
 
 // Customer clicks the link in the mail; the web page sends the id and code here
 app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
-    ICustomerAccountService accountService) =>
+    ICustomerAccountService accountService, IBusinessRegistrationService registrationService) =>
 {
     var confirmed = await accountService.ConfirmEmailAsync(request);
+    if (confirmed)
+    {
+        // A business owner: the business now shows up for customers
+        await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
+    }
     return confirmed
         ? Results.NoContent()
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });

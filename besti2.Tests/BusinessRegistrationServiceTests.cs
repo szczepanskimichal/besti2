@@ -103,4 +103,25 @@ public class BusinessRegistrationServiceTests
         Assert.Equal("eier@testfrisor.example", mail.To);
         Assert.Contains("http://localhost:3000/bekreft-epost?id=", mail.Body);
     }
+    
+    
+    // check if a new business is hidden until the owner confirms the email
+    [Fact]
+    public async Task NewBusiness_IsHiddenUntilOwnerConfirms()
+    {
+        var (service, db, users) = CreateService();
+        await service.RegisterAsync(TestFrisor());
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345678");
+        Assert.True(business.IsHidden);
+
+        // Not confirmed yet: stays hidden
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
+        Assert.True(business.IsHidden);
+
+        // Confirmed: visible
+        await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
+        Assert.False(business.IsHidden);
+    }
 }
