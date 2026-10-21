@@ -13,7 +13,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     : IBookingService
 {
     // date in norwegian!!!
-    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+    private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
     private static readonly CultureInfo Norwegian = new("nb-NO");
 

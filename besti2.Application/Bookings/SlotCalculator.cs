@@ -4,8 +4,8 @@ public static class SlotCalculator
 {
     public const int SlotMinutes = 30;
 
-    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
-
+        // The one Oslo time zone for the whole app (opening hours, booking days, mails)
+    public static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
     public static IReadOnlyList<DateTime> GetFreeSlots(
         DateOnly date,
         TimeOnly opensAt,

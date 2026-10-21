@@ -107,7 +107,7 @@
 
     align-items: center;
 
-    min-height: 40px;
+    min-height: 44px;
 
     padding: 0 14px;
 
@@ -126,4 +126,10 @@
     background: var(--color-primary);
 
     color: #fff;
+}
+/* "★★★★★ 4,7 · 12 vurderinger" under the city */
+.rating {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
 }

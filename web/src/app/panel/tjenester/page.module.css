@@ -154,6 +154,15 @@
     color: var(--color-text);
     text-decoration: none;
 }
+/* Same box as "Slett", but blue: editing is not dangerous */
+.editBox summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-primary);
+    font-weight: 600;
+    cursor: pointer;
+}
 .deleteBox summary {
     display: flex;
     align-items: center;

@@ -49,7 +49,7 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                             {employee.name} {employee.lastName}
                         </p>
                         <div className={styles.cardActions}>
-                            <details className={styles.deleteBox}>
+                            <details className={styles.editBox}>
                                 <summary>Rediger</summary>
                                 <EmployeeForm action={updateEmployeeAction} employeeId={employee.id}
                                               name={employee.name} lastName={employee.lastName} submitText="Lagre" />

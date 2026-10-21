@@ -9,7 +9,7 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string }>;
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string }>;
 };
 
 // Time of day in the search -> from/to for the API (Oslo time)
@@ -27,9 +27,11 @@ export default async function Home({searchParams}: HomeProps) {
     const date = isIsoDate(query.date) ? query.date : undefined;
     const lat = isNumber(query.lat) ? query.lat : undefined;
     const lng = isNumber(query.lng) ? query.lng : undefined;
-    const km = isNumber(query.km) ? query.km : undefined;    // The same search without "Nær meg" (for the "Vis alle" link)
+    const km = isNumber(query.km) ? query.km : undefined;
+    const page = isNumber(query.page) ? query.page : undefined;
     const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    // Only the cities here (fast); the businesses load inside Suspense below
+        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));
+        // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
@@ -124,8 +126,8 @@ export default async function Home({searchParams}: HomeProps) {
                 </p>
             )}
             {/* key: every new search shows the skeleton again */}
-            <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng, km})} fallback={<ResultsSkeleton/>}>
-                <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng} km={km}/>
+            <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng, km, page})} fallback={<ResultsSkeleton/>}>
+                <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng} km={km} page={page}/>
             </Suspense>
         </main>
     )
@@ -140,14 +142,16 @@ type SearchProps = {
     lat?: string;
     lng?: string;
     km?: string;
+    page?: string;
 };
 
 // The slow part: with a date the API calculates free times for every business
-async function Results({category, city, q, date, tid, lat, lng, km}: SearchProps) {
+async function Results({category, city, q, date, tid, lat, lng, km, page}: SearchProps) {
     // "Tid på dagen" without a date means today
     const day = date || (tid ? todayInOslo() : undefined);
     const timeWindow = day ? timeWindows[tid ?? ""] : undefined;
-    const businesses = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng, km);
+    const result = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng, km, page);
+    const businesses = result.items;
     if (businesses.length === 0) {
         if (day) {
 // Same search, one day later
@@ -169,14 +173,32 @@ async function Results({category, city, q, date, tid, lat, lng, km}: SearchProps
         return <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>;
     }
 
+    // The same search on another page (all filters stay)
+    const pageHref = (target: number) => {
+        const params = new URLSearchParams(
+            Object.entries({category, city, q, date, tid, lat, lng, km})
+                .filter((entry): entry is [string, string] => !!entry[1]));
+        if (target > 1) params.set("page", String(target));
+        return `/?${params}`;
+    };
+
     return (
-        <ul className={styles.grid}>
-            {businesses.map((business) => (
-                <li key={business.id}>
-                    <BusinessCard business={business} date={day}/>
-                </li>
-            ))}
-        </ul>
+        <>
+            <ul className={styles.grid}>
+                {businesses.map((business) => (
+                    <li key={business.id}>
+                        <BusinessCard business={business} date={day}/>
+                    </li>
+                ))}
+            </ul>
+            {result.pageCount > 1 && (
+                <nav className={styles.pagination} aria-label="Sider">
+                    {result.page > 1 ? <Link href={pageHref(result.page - 1)}>← Forrige</Link> : <span/>}
+                    <span>Side {result.page} av {result.pageCount}</span>
+                    {result.page < result.pageCount ? <Link href={pageHref(result.page + 1)}>Neste →</Link> : <span/>}
+                </nav>
+            )}
+        </>
     );
 }
 

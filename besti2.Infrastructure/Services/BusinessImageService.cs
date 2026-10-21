@@ -241,7 +241,7 @@ private static SKBitmap ApplyOrientation(SKBitmap bitmap, SKEncodedOrigin origin
     canvas.Translate(result.Width / 2f, result.Height / 2f);
     canvas.RotateDegrees(degrees);
     canvas.Translate(-bitmap.Width / 2f, -bitmap.Height / 2f);
-    canvas.DrawBitmap(bitmap, 0, 0);
+    canvas.DrawBitmap(bitmap, 0, 0, new SKSamplingOptions(SKFilterMode.Linear));
     return result;
 }
 

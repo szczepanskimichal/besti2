@@ -14,8 +14,8 @@ namespace besti2.Infrastructure.Services;
 public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding, IImageStorage imageStorage)
     : IBusinessService
 {
-    private static readonly TimeZoneInfo Oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
-    
+    private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
+
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
@@ -56,12 +56,19 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Description,
                 b.City,
                 b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault(),
-                null
+                null,
+                null,
+                // Stars for the card, counted in the same query (no extra request per business)
+                dbContext.Reviews.Where(r => r.BusinessId == b.Id).Average(r => (double?)r.Stars),
+                dbContext.Reviews.Count(r => r.BusinessId == b.Id)
             ))
             .ToListAsync(cancellationToken);
 
-        var withLogos = items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
-
+        var withLogos = items.Select(b => b with
+        {
+            LogoUrl = ToLogoUrl(b.LogoUrl),
+            AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
+        }).ToList();
         // Without a date: the list as before. With a date: only businesses with a free time that day
         var list = date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);
         // "Nær meg": nearest first instead of by name or soonest time
@@ -215,10 +222,13 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .OrderBy(city => city)
             .ToListAsync(cancellationToken);
     }
-    
+    // Services, employees, hours and photos as separate small queries instead of one huge joined one
+
     public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var business = await dbContext.Businesses
+            // Services, employees, hours and photos as separate small queries instead of one huge joined one
+            .AsSplitQuery()
             .AsNoTracking()
             .Where(b => b.Id == id && !b.IsHidden)
             .Select(b => new BusinessDetailsDto(

@@ -93,6 +93,20 @@
     font-weight: 700;
     text-decoration: none;
 }
+/* "← Forrige · Side 2 av 5 · Neste →" under the list */
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.pagination a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+}
 /* Tablet: 2 columns that wrap, instead of everything in one row */
 @media (min-width: 640px) {
     .filters {

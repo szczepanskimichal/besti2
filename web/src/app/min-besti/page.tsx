@@ -34,11 +34,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     if (!token) {
         redirect("/logg-inn?neste=/min-besti");
     }
-    const me = await getMe(token);
+    // Both at the same time instead of one after the other
+    const [me, bookings] = await Promise.all([getMe(token), getMyBookings(token)]);
     if (me?.isBusiness) {
         redirect("/panel");
     }
-    const bookings = await getMyBookings(token);
     if (!bookings) {
         redirect("/logg-inn?neste=/min-besti");
     }

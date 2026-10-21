@@ -8,6 +8,8 @@ export type BusinessListItem = {
     logoUrl: string | null;
     freeSlots: FreeSlot[] | null; // only when searching with a date
     distanceKm: number | null; // only with "Nær meg"
+    averageRating: number | null; // e.g. 4.7; null when nobody has reviewed yet
+    reviewCount: number;
 };
 
 export type FreeSlot = {
@@ -115,4 +117,12 @@ export type BusinessReviews = {
     average: number | null; // null when there are no reviews yet
     count: number;
     reviews: Review[];
+};
+
+// One page of the business list (24 per page)
+export type BusinessPage = {
+    items: BusinessListItem[];
+    page: number;
+    pageCount: number;
+    totalCount: number;
 };

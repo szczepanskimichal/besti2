@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import RegisterBusinessForm from "./RegisterBusinessForm";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+    title: "Registrer bedriften din",
+    description: "Få kundene dine til å bestille time på nett.",
+};
 
 export default function RegisterBusinessPage() {
     return (

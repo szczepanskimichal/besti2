@@ -26,13 +26,14 @@ export default async function BookingPage({params, searchParams}: Props) {
     // Only values that still make sense (old "Bestill igjen" links, edited or cut-off addresses)
     const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt! : business.employees[0]?.id;
     const date = isIsoDate(dato) ? dato : todayInOslo();
-    const slots = employeeId ? await getAvailability(service.id, employeeId, date) : null;
+    // Free times and who is booking (null = not logged in), both at the same time
+    const token = await getToken();
+    const [slots, me] = await Promise.all([
+        employeeId ? getAvailability(service.id, employeeId, date) : null,
+        token ? getMe(token) : null,
+    ]);
     // The chosen time must still be free; otherwise the customer picks a new one
     const chosenTime = tid && slots?.includes(tid) ? tid : undefined;
-
-    // Who is booking: null = not logged in
-    const token = await getToken();
-    const me = token ? await getMe(token) : null;
     const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(chosenTime ?? "")}`;
     
     return (
@@ -97,7 +98,8 @@ export default async function BookingPage({params, searchParams}: Props) {
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}
                             <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
-                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett konto</NextLink>.                        </p>
+                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett konto</NextLink>.
+                        </p>
                     )}
                     {me?.isBusiness && (
                         <p className={styles.muted}>Du er logget inn som bedrift. Logg inn med en kundekonto for å

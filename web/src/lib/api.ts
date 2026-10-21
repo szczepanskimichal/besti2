@@ -1,4 +1,4 @@
-import type {BusinessListItem, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -46,7 +46,18 @@ async function toResult(res: Response, fallback = GENERIC_ERROR): Promise<ApiRes
     return { ok: false, message: body?.message ?? fallback };
 }
 
-export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string, lat?: string, lng?: string, km?: string): Promise<BusinessListItem[]> {
+export async function getBusinesses(
+    category?: string, 
+    city?: string, 
+    q?: string, 
+    date?: string, 
+    from?: string, 
+    to?: string, 
+    lat?: string, 
+    lng?: string, 
+    km?: string, 
+    page?: string
+    ): Promise<BusinessPage> {
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (city) params.set("city", city);
@@ -57,7 +68,8 @@ export async function getBusinesses(category?: string, city?: string, q?: string
     if (lat) params.set("lat", lat);
     if (lng) params.set("lng", lng);
     if (km) params.set("maxKm", km);
-    
+    if (page) params.set("page", page);
+
     const res = await apiFetch(`/api/businesses?${params}`);
     
     if (!res.ok) {
@@ -67,7 +79,7 @@ export async function getBusinesses(category?: string, city?: string, q?: string
     return res.json();
 }
 
-export async function getBusiness(id: string): Promise<BusinessDetails | null> {
+export const getBusiness = cache(async (id: string): Promise<BusinessDetails | null> => {
     const res = await apiFetch(`/api/businesses/${id}`);
     if (res.status === 404) {
         return null;
@@ -78,7 +90,7 @@ export async function getBusiness(id: string): Promise<BusinessDetails | null> {
     }
 
     return res.json();
-}
+});
 
 export async function getCities(): Promise<string[]> {
     const res = await apiFetch("/api/cities");
