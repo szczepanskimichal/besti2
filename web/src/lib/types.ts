@@ -118,3 +118,11 @@ export type BusinessReviews = {
     count: number;
     reviews: Review[];
 };
+
+// One page of the business list (24 per page)
+export type BusinessPage = {
+    items: BusinessListItem[];
+    page: number;
+    pageCount: number;
+    totalCount: number;
+};
