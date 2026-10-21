@@ -32,7 +32,9 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
             <h1 className={styles.title}>Opprett konto</h1>
             <p className={styles.muted}>Med en konto kan du bestille time og se bestillingene dine.</p>
             <RegisterForm neste={neste ?? ""} />
+            <p>
             Har du allerede konto? <NextLink href={`/logg-inn?neste=${encodeURIComponent(neste ?? "/")}`}>Logg inn</NextLink>
+            </p>
         </main>
     );
 }
