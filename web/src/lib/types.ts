@@ -87,6 +87,7 @@ export type PanelBooking = {
     customerPhone: string;
     customerEmail: string;
     customerNote: string | null;
+    employeeId: string; // the calendar puts the booking in this employee's column
 };
 
 export type CustomerBooking = {

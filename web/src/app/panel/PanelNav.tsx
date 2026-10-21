@@ -1,0 +1,25 @@
+import Link from "next/link";
+import { logoutAction } from "../logg-inn/actions";
+import styles from "./page.module.css";
+
+// The top bar of the panel: title, Kalender / Liste and the settings pages
+export default function PanelNav({ title }: { title: string }) {
+    return (
+        <div className={styles.topBar}>
+            <h1 className={styles.title}>{title}</h1>
+            <nav className={styles.topActions} aria-label="Panel">
+                <Link href="/panel" className={styles.secondaryButton}>Kalender</Link>
+                <Link href="/panel/liste" className={styles.secondaryButton}>Liste</Link>
+                <Link href="/panel/tjenester" className={styles.secondaryButton}>Tjenester</Link>
+                <Link href="/panel/ansatte" className={styles.secondaryButton}>Ansatte</Link>
+                <Link href="/panel/profil" className={styles.secondaryButton}>Profil</Link>
+                <Link href="/panel/galleri" className={styles.secondaryButton}>Galleri</Link>
+                <Link href="/panel/vurderinger" className={styles.secondaryButton}>Vurderinger</Link>
+                <Link href="/panel/apningstider" className={styles.secondaryButton}>Åpningstider</Link>
+                <form action={logoutAction}>
+                    <button type="submit" className={styles.secondaryButton}>Logg ut</button>
+                </form>
+            </nav>
+        </div>
+    );
+}

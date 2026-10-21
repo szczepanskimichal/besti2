@@ -148,8 +148,11 @@ export async function login(email: string, password: string): Promise<{ accessTo
     return res.json();
 }
 
-export async function getPanelBookings(token: string): Promise<PanelBooking[] | null> {
-    const res = await apiFetch("/api/panel/bookings", { token });
+// from/to = "2026-10-20" days for the calendar; without them: upcoming bookings and the last 14 days
+export async function getPanelBookings(token: string, from?: string, to?: string): Promise<PanelBooking[] | null> {
+    const params = from && to ? `?${new URLSearchParams({ from, to })}` : "";
+    const res = await apiFetch(`/api/panel/bookings${params}`, { token });
+
     if (res.status === 401 || res.status === 403) {
         return null;
     }

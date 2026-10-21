@@ -446,4 +446,20 @@ public class BookingServiceTests
         Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
         Assert.Equal(FutureMondayAt10, result.Booking!.StartUtc);
     }
+    // check if the calendar gets only the bookings of the chosen days, with the employee for the column
+    [Fact]
+    public async Task GetForBusinessAsync_WithDays_ReturnsOnlyThoseDays()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        await service.CreateAsync(HerreklippHosIngrid());                                          // Monday
+        await service.CreateAsync(HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddDays(7) }); // a week later
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        var result = await service.GetForBusinessAsync(KlippOgStil, monday, monday);
+
+        var booking = Assert.Single(result);
+        Assert.Equal(FutureMondayAt10, booking.StartUtc);
+        Assert.Equal(IngridId, booking.EmployeeId);
+    }
 }

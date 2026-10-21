@@ -266,9 +266,9 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
     };
 }).RequireAuthorization();
 
-// Business panel: bookings for the logged-in owner's business
-app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    IBookingService bookingService, CancellationToken cancellationToken) =>
+// ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
+app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
 {
     var user = await userManager.GetUserAsync(principal);
     if (user?.BusinessId is not Guid businessId)
@@ -276,7 +276,13 @@ app.MapGet("/api/panel/bookings", async (ClaimsPrincipal principal, UserManager<
         return Results.Forbid();
     }
 
-    return Results.Ok(await bookingService.GetForBusinessAsync(businessId, cancellationToken));
+    // A calendar shows at most about two months at once
+    if (from is DateOnly first && to is DateOnly last && (last < first || last.DayNumber - first.DayNumber > 62))
+    {
+        return Results.BadRequest(new { message = "Ugyldig periode." });
+    }
+
+    return Results.Ok(await bookingService.GetForBusinessAsync(businessId, from, to, cancellationToken));
 }).RequireAuthorization();
 
 // Business panel: the owner's own business with services and employees

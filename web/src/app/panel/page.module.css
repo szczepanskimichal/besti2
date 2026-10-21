@@ -6,6 +6,7 @@
 
 .topBar {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
@@ -142,10 +143,10 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
+/* Many buttons: they wrap to the next line instead of running off the screen (also on phones) */
 .topActions {
-
     display: flex;
-
+    flex-wrap: wrap;
     gap: 8px;
 }
 .secondaryButton {

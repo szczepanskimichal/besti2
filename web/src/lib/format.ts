@@ -61,3 +61,45 @@ export function isPageNumber(value: string | undefined): value is string {
 export function isDecimal(value: string | undefined): value is string {
     return !!value && /^-?\d{1,3}(\.\d{1,6})?$/.test(value);
 }
+
+const osloClock = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Oslo",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+});
+// Minutes since midnight in Oslo: "2026-10-26T08:30:00Z" -> 570 (09:30 in winter)
+export function osloMinutes(utc: string): number {
+    const [hours, minutes] = osloClock.format(new Date(utc)).split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
+// "09:30:00" -> 570
+export function clockMinutes(time: string): number {
+    const [hours, minutes] = time.split(":").map(Number);
+    return hours * 60 + minutes;
+}
+
+// "2026-10-26" + 1 -> "2026-10-27" (noon UTC, so summer time never moves the day)
+export function shiftDay(date: string, days: number): string {
+    const day = new Date(`${date}T12:00:00Z`);
+    day.setUTCDate(day.getUTCDate() + days);
+    return day.toISOString().slice(0, 10);
+}
+
+// "2026-10-26" -> 1 (Monday); 0 = Sunday, like DayOfWeek in the API
+export function weekdayOf(date: string): number {
+    return new Date(`${date}T12:00:00Z`).getUTCDay();
+}
+
+const dayHeading = new Intl.DateTimeFormat("nb-NO", {
+    timeZone: "UTC",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+});
+
+// "2026-10-26" -> "mandag 26. oktober"
+export function formatDay(date: string): string {
+    return dayHeading.format(new Date(`${date}T12:00:00Z`));
+}

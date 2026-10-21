@@ -164,12 +164,23 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     public async Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
-        Guid businessId, CancellationToken cancellationToken = default)
+        Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default)
     {
-        return await dbContext.Bookings
+        // Calendar: from midnight of the first day in Oslo. List: upcoming bookings and the last 14 days
+        var fromUtc = from is DateOnly firstDay
+            ? SlotCalculator.ToUtc(firstDay, TimeOnly.MinValue)
+            : DateTime.UtcNow.AddDays(-14);
+        var query = dbContext.Bookings
             .AsNoTracking()
-            // Upcoming bookings and the last 14 days (the business still sees today's and yesterday's visits)
-            .Where(b => b.Service.BusinessId == businessId && b.EndUtc >= DateTime.UtcNow.AddDays(-14))
+            .Where(b => b.Service.BusinessId == businessId && b.EndUtc > fromUtc);
+        if (to is DateOnly lastDay)
+        {
+            // ... until midnight after the last day (a visit is shown on every day it touches)
+            var toUtc = SlotCalculator.ToUtc(lastDay.AddDays(1), TimeOnly.MinValue);
+            query = query.Where(b => b.StartUtc < toUtc);
+        }
+
+        return await query
             .OrderBy(b => b.StartUtc)
             .Select(b => new PanelBookingDto(
                 b.Id,
@@ -181,7 +192,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerName,
                 b.CustomerPhone,
                 b.CustomerEmail,
-                b.CustomerNote))
+                b.CustomerNote,
+                b.EmployeeId))
             .ToListAsync(cancellationToken);
     }
     
