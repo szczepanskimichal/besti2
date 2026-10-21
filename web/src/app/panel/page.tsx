@@ -9,6 +9,7 @@ import { statusLabels } from "@/lib/bookingStatus";
 import type { BusinessDetails, PanelBooking } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { cancelBookingAction, confirmBookingAction } from "./actions";
+import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
@@ -17,7 +18,10 @@ import calendar from "./calendar.module.css";
 const PX_PER_MINUTE = 80 / 60;
 
 type CalendarPageProps = {
-    searchParams: Promise<{ dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; feil?: string }>;
+    searchParams: Promise<{
+        dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; feil?: string;
+        ny?: string; tid?: string; for?: string;
+    }>;
 };
 
 type Column = { id: string; title: string; bookings: PanelBooking[] };
@@ -64,6 +68,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     // The visit opened in the details window (also a cancelled one, even when those are hidden)
     const selected = allBookings.find((b) => b.id === query.bestilling);
     const here = link({}); // this view without the details window
+    // "+ Ny bestilling", or a click on an empty place in the grid (time and employee filled in)
+    const newBooking = query.ny === "1";
+    const newTime = query.tid && /^\d{2}:\d{2}$/.test(query.tid) ? query.tid : "09:00";
+    const newEmployee = business.employees.some((e) => e.id === query.for) ? query.for : undefined;
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
@@ -82,6 +90,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                     <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={week ? undefined : "page"}>Dag</Link>
                     <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
                 </div>
+                <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
                 <Link href={link({ dag: shiftDay(day, -step) })} className={styles.secondaryButton}
                       aria-label={week ? "Forrige uke" : "Forrige dag"}>←</Link>
                 <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
@@ -130,13 +139,23 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
             )}
 
             <TimeGrid columns={columns} range={range} showEmployee={week}
-                      hrefFor={(booking) => link({ bestilling: booking.id })}/>
+                      hrefFor={(booking) => link({ bestilling: booking.id })}
+                      newHref={(column, minute) => link({
+                          ny: "1",
+                          tid: clock(minute),
+                          // day view: the column is an employee; week view: the column is a day
+                          ...(week ? { dag: column.id } : { for: column.id }),
+                      })}/>
 
             {/* Phone: the same visits as a simple list (the grid is too narrow there) */}
             <PhoneList columns={week ? columns : [{ id: day, title: formatDay(day), bookings }]}
                        hrefFor={(booking) => link({ bestilling: booking.id })}/>
 
             {selected && <BookingDetails booking={selected} closeHref={here}/>}
+            {newBooking && (
+                <NewBookingForm services={business.services} employees={business.employees} date={day}
+                                time={newTime} employeeId={newEmployee ?? employeeFilter} week={week} closeHref={here}/>
+            )}
         </main>
     );
 }
@@ -144,8 +163,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 // The grid: hours on the left, one column per employee (day) or per day (week)
 type Href = (booking: PanelBooking) => string;
 
-function TimeGrid({ columns, range, showEmployee, hrefFor }: {
+function TimeGrid({ columns, range, showEmployee, hrefFor, newHref }: {
     columns: Column[]; range: Range; showEmployee: boolean; hrefFor: Href;
+    newHref: (column: Column, minute: number) => string;
 }) {
     const height = (range.end - range.start) * PX_PER_MINUTE;
     const marks = hourMarks(range);
@@ -169,6 +189,12 @@ function TimeGrid({ columns, range, showEmployee, hrefFor }: {
                     <div key={column.id} className={calendar.column} style={{ height }}>
                         {marks.map((minute) => (
                             <div key={minute} className={calendar.hourLine} style={{ top: (minute - range.start) * PX_PER_MINUTE }}/>
+                        ))}
+                        {/* Empty half hours: a click opens "Ny bestilling" with this time (visits lie on top) */}
+                        {halfHours(range).map((minute) => (
+                            <Link key={minute} href={newHref(column, minute)} scroll={false} className={calendar.emptySlot}
+                                  style={{ top: (minute - range.start) * PX_PER_MINUTE, height: 30 * PX_PER_MINUTE }}
+                                  aria-label={`Ny bestilling ${column.title} kl. ${clock(minute)}`}/>
                         ))}
                         {column.bookings.map((booking) => {
                             const start = Math.max(osloMinutes(booking.startUtc), range.start);
@@ -243,15 +269,21 @@ function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHr
                 <p className={styles.service}>{booking.serviceName} hos {booking.employeeName}</p>
                 <p className={styles.customer}>
                     <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
-                    {" · "}
-                    <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
+                    {booking.customerEmail && (
+                        <>
+                            {" · "}
+                            <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
+                        </>
+                    )}
                 </p>
                 {booking.customerNote && (
                     <div className={styles.note}>
                         <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
-                        <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
-                            Svar på e-post
-                        </a>
+                        {booking.customerEmail && (
+                            <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
+                                Svar på e-post
+                            </a>
+                        )}
                     </div>
                 )}
                 {(canConfirm || canCancel) && (
@@ -266,7 +298,7 @@ function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHr
                         {canCancel && (
                             <details>
                                 <summary className={styles.dangerButton}>Avlys</summary>
-                                <p>Er du sikker? Kunden får beskjed på e-post.</p>
+                                <p>Er du sikker?{booking.customerEmail && " Kunden får beskjed på e-post."}</p>
                                 <form action={cancelBookingAction}>
                                     <input type="hidden" name="bookingId" value={booking.id}/>
                                     <input type="hidden" name="tilbake" value={closeHref}/>
@@ -352,6 +384,20 @@ function hourMarks(range: Range): number[] {
         marks.push(minute);
     }
     return marks;
+}
+
+// Every half hour in the range: 480, 510, 540 ...
+function halfHours(range: Range): number[] {
+    const slots: number[] = [];
+    for (let minute = range.start; minute < range.end; minute += 30) {
+        slots.push(minute);
+    }
+    return slots;
+}
+
+// 570 -> "09:30"
+function clock(minute: number): string {
+    return `${String(Math.floor(minute / 60)).padStart(2, "0")}:${String(minute % 60).padStart(2, "0")}`;
 }
 
 // ISO week number (week 1 has the first Thursday of the year), as on Norwegian calendars

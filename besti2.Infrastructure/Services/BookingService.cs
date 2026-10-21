@@ -95,21 +95,10 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         await using var transaction = dbContext.Database.IsRelational()
             ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
             : null;
-        if (transaction is not null)
+        if (transaction is not null && !await TryLockEmployeeAsync(request.EmployeeId, cancellationToken))
         {
-            var lockName = $"booking-{request.EmployeeId}";
-            try
-            {
-                // If the lock is not granted within 10 s, SQL Server stops here instead of going on without it
-                await dbContext.Database.ExecuteSqlInterpolatedAsync(
-                    $"DECLARE @result int; EXEC @result = sp_getapplock @Resource = {lockName}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000; IF @result < 0 THROW 51000, 'Booking lock not granted', 1;",
-                    cancellationToken);
-            }
-            catch (SqlException ex) when (ex.Number == 51000)
-            {
-                // Someone else is booking this employee right now: the customer simply tries another time
-                return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
-            }
+            // Someone else is booking this employee right now: the customer simply tries another time
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
 
         var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, cancellationToken);
@@ -157,6 +146,88 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
 
         await SendConfirmationEmailAsync(booking, service, cancellationToken);
+
+        return new CreateBookingResult(
+            CreateBookingOutcome.Created,
+            new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
+    }
+// The business adds a visit itself (phone call, walk-in). Confirmed at once; it may be outside the
+    // opening hours, but never on top of another visit of the same employee
+    public async Task<CreateBookingResult> CreateByBusinessAsync(Guid businessId, CreateManualBookingRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var error = ValidateManual(request);
+        if (error is not null)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: error);
+        }
+
+        // Service and employee must belong to this business
+        var service = await dbContext.Services.AsNoTracking()
+            .FirstOrDefaultAsync(s => s.Id == request.ServiceId && s.BusinessId == businessId && !s.IsDeleted,
+                cancellationToken);
+        var employeeExists = await dbContext.Employees.AnyAsync(
+            e => e.Id == request.EmployeeId && e.BusinessId == businessId && !e.IsDeleted, cancellationToken);
+        if (service is null || !employeeExists)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.NotFound);
+        }
+
+        var startUtc = SlotCalculator.ToUtc(request.Date, request.Time);
+        var endUtc = startUtc.AddMinutes(service.DurationMinutes);
+
+        // Same protection as online bookings: one booking per employee is checked and saved at a time
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null && !await TryLockEmployeeAsync(request.EmployeeId, cancellationToken))
+        {
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+        }
+
+        var overlaps = await dbContext.Bookings.AnyAsync(b => b.EmployeeId == request.EmployeeId
+                                                              && b.Status != BookingStatus.Avlyst
+                                                              && b.StartUtc < endUtc && b.EndUtc > startUtc,
+            cancellationToken);
+        if (overlaps)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+        }
+
+        var email = request.CustomerEmail?.Trim().ToLowerInvariant() ?? "";
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            ServiceId = request.ServiceId,
+            EmployeeId = request.EmployeeId,
+            StartUtc = startUtc,
+            EndUtc = endUtc,
+            CustomerName = request.CustomerName.Trim(),
+            CustomerPhone = request.CustomerPhone.Trim(),
+            CustomerEmail = email,
+            CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
+            Status = BookingStatus.Bekreftet
+        };
+        dbContext.Bookings.Add(booking);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
+        // Only when the business asked for it and gave an e-mail address
+        if (request.SendConfirmation && email.Length > 0)
+        {
+            await SendStatusEmailAsync(booking, cancellationToken);
+        }
 
         return new CreateBookingResult(
             CreateBookingOutcome.Created,
@@ -286,16 +357,10 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return "Navn er påkrevd (maks 100 tegn).";
         }
 
-        // Digits, spaces and an optional + only, at least 8 digits (91234567, +47 912 34 567)
-        var phone = request.CustomerPhone?.Trim() ?? "";
-        if (phone.Length is 0 or > 20
-            || !phone.All(c => char.IsDigit(c) || c == ' ' || c == '+')
-            || phone.Count(char.IsDigit) < 8
-            || phone.LastIndexOf('+') > 0)
+        if (!IsValidPhone(request.CustomerPhone))
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
-
         if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 ||
             !request.CustomerEmail.Contains('@'))
         {
@@ -309,7 +374,59 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         return null;
     }
+private static string? ValidateManual(CreateManualBookingRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.CustomerName) || request.CustomerName.Length > 100)
+        {
+            return "Navn er påkrevd (maks 100 tegn).";
+        }
+        if (!IsValidPhone(request.CustomerPhone))
+        {
+            return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
+        }
+        // E-mail is optional here (a walk-in customer may not give one)
+        if (!string.IsNullOrWhiteSpace(request.CustomerEmail)
+            && (request.CustomerEmail.Length > 250 || !request.CustomerEmail.Contains('@')))
+        {
+            return "Oppgi en gyldig e-postadresse, eller la feltet stå tomt.";
+        }
+        if (request.Note is { Length: > 500 })
+        {
+            return "Notatet kan være maks 500 tegn.";
+        }
+        if (request.Date.Year is < 2000 or > 2100)
+        {
+            return "Ugyldig dato.";
+        }
+        return null;
+    }
 
+    // Digits, spaces and an optional + only, at least 8 digits (91234567, +47 912 34 567)
+    private static bool IsValidPhone(string? value)
+    {
+        var phone = value?.Trim() ?? "";
+        return phone.Length is > 0 and <= 20
+               && phone.All(c => char.IsDigit(c) || c == ' ' || c == '+')
+               && phone.Count(char.IsDigit) >= 8
+               && phone.LastIndexOf('+') <= 0;
+    }
+
+    // SQL Server lock per employee inside the open transaction; false when not granted within 10 s
+    private async Task<bool> TryLockEmployeeAsync(Guid employeeId, CancellationToken cancellationToken)
+    {
+        var lockName = $"booking-{employeeId}";
+        try
+        {
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"DECLARE @result int; EXEC @result = sp_getapplock @Resource = {lockName}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000; IF @result < 0 THROW 51000, 'Booking lock not granted', 1;",
+                cancellationToken);
+            return true;
+        }
+        catch (SqlException ex) when (ex.Number == 51000)
+        {
+            return false;
+        }
+    }
     // Send confirmation email to the customer; a failed email must not fail the booking
     private async Task SendConfirmationEmailAsync(Booking booking, Service service, CancellationToken cancellationToken)
     {
@@ -345,6 +462,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     // Notify the customer when the business confirms or cancels; a failed email must not fail the update
     private async Task SendStatusEmailAsync(Booking booking, CancellationToken cancellationToken)
     {
+        // A visit added by the business may have no e-mail address
+        if (booking.CustomerEmail.Length == 0)
+        {
+            return;
+        }
         try
         {
             var service = await dbContext.Services.AsNoTracking()
@@ -358,7 +480,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             var (subject, message) = booking.Status == BookingStatus.Bekreftet
                 ? ($"Bestillingen er bekreftet: {business.Name}", "Bestillingen din er bekreftet. Velkommen!")
                 : ($"Bestillingen er avlyst: {business.Name}",
-                    "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på besti2.");
+                    "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på BESTI.");
 
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +

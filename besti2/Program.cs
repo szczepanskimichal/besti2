@@ -285,6 +285,27 @@ app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPri
     return Results.Ok(await bookingService.GetForBusinessAsync(businessId, from, to, cancellationToken));
 }).RequireAuthorization();
 
+// Business panel: the business adds a visit itself (phone call, walk-in); confirmed at once
+app.MapPost("/api/panel/bookings", async (CreateManualBookingRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var result = await bookingService.CreateByBusinessAsync(businessId, request, cancellationToken);
+    return result.Outcome switch
+    {
+        CreateBookingOutcome.Created => Results.Created($"/api/panel/bookings/{result.Booking!.Id}", result.Booking),
+        CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
+        CreateBookingOutcome.SlotTaken => Results.Conflict(
+            new { message = "Den ansatte har allerede en time da. Velg et annet tidspunkt." }),
+        _ => Results.NotFound()
+    };
+}).RequireAuthorization();
+
 // Business panel: the owner's own business with services and employees
 app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IBusinessService businessService, CancellationToken cancellationToken) =>

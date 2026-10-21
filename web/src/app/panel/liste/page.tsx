@@ -93,15 +93,20 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                 {booking.customerName}
                 <br />
                 <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
-                {" · "}
-                <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
-            </p>
+                {booking.customerEmail && (
+                    <>
+                        {" · "}
+                        <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
+                    </>
+                )}            </p>
             {booking.customerNote && (
                 <div className={styles.note}>
                     <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
-                    <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
-                        Svar på e-post
-                    </a>
+                    {booking.customerEmail && (
+                        <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
+                            Svar på e-post
+                        </a>
+                    )}
                 </div>
             )}
             {showActions && booking.status !== "Avlyst" && (
@@ -117,7 +122,7 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                     )}
                     <details>
                         <summary className={styles.dangerButton}>Avlys</summary>
-                        <p>Er du sikker? Kunden får beskjed på e-post.</p>
+                        <p>Er du sikker?{booking.customerEmail && " Kunden får beskjed på e-post."}</p>
                         <form action={cancelBookingAction}>
                             <input type="hidden" name="bookingId" value={booking.id} />
                             <input type="hidden" name="tilbake" value="/panel/liste" />

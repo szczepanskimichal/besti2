@@ -462,4 +462,82 @@ public class BookingServiceTests
         Assert.Equal(FutureMondayAt10, booking.StartUtc);
         Assert.Equal(IngridId, booking.EmployeeId);
     }
+    
+    private static CreateManualBookingRequest WalkIn(DateOnly date, TimeOnly time, string? email = null,
+        bool sendConfirmation = false) =>
+        new(HerreklippId, IngridId, date, time, "Ola Drop-in", "912 34 567", email, null, sendConfirmation);
+
+    // check if the business can add a confirmed visit outside the opening hours (Sunday evening)
+    [Fact]
+    public async Task CreateByBusinessAsync_OutsideOpeningHours_IsConfirmed()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var sunday = DateOnly.FromDateTime(FutureMondayAt10).AddDays(-1);
+
+        var result = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(sunday, new TimeOnly(19, 0)));
+
+        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
+        Assert.Equal("Bekreftet", result.Booking!.Status);
+    }
+
+    // check if a visit added by the business can never overlap another visit of the same employee
+    [Fact]
+    public async Task CreateByBusinessAsync_OnTopOfAnotherVisit_IsSlotTaken()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        await service.CreateAsync(HerreklippHosIngrid()); // 10:00–10:30 in Oslo
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        var result = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(10, 15)));
+
+        Assert.Equal(CreateBookingOutcome.SlotTaken, result.Outcome);
+    }
+
+    // check if a business cannot add a visit with another business's service
+    [Fact]
+    public async Task CreateByBusinessAsync_OtherBusinessService_IsNotFound()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        var result = await service.CreateByBusinessAsync(FjordBygg, WalkIn(monday, new TimeOnly(12, 0)));
+
+        Assert.Equal(CreateBookingOutcome.NotFound, result.Outcome);
+    }
+
+    // check if the customer gets a confirmation mail only when the business asks for it
+    [Fact]
+    public async Task CreateByBusinessAsync_SendsMailOnlyWhenAsked()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(12, 0), "ola@test.example"));
+        await service.CreateByBusinessAsync(KlippOgStil,
+            WalkIn(monday, new TimeOnly(13, 0), "ola@test.example", sendConfirmation: true));
+
+        var mail = Assert.Single(email.Sent);
+        Assert.Equal("ola@test.example", mail.To);
+    }
+
+    [Fact]
+    public async Task UpdateStatusAsync_VisitWithoutEmail_SendsNoMail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+        var created = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(12, 0), null));
+
+        var outcome = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+        Assert.Empty(email.Sent);
+    }
+
 }

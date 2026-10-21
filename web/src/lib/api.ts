@@ -161,7 +161,10 @@ export async function getPanelBookings(token: string, from?: string, to?: string
     }
     return res.json();
 }
-
+// Business adds a visit itself (phone call, walk-in); date and time in Oslo
+export async function createManualBooking(token: string, input: object): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/panel/bookings", { method: "POST", token, body: input }));
+}
 // "tooLate" = the API refused because the visit has started (409), so the panel can say why
 export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys"): Promise<"ok" | "tooLate" | "error"> {
     const res = await apiFetch(`/api/panel/bookings/${bookingId}/${action}`, { method: "POST", token });

@@ -11,6 +11,12 @@
     gap: 8px;
     margin-bottom: 16px;
 }
+/* Links in the toolbar look like the buttons next to them */
+.toolbar a {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
 
 .dayTitle {
     margin: 0 8px;
@@ -271,6 +277,7 @@ a.booking:hover {
     max-width: 480px;
     max-height: calc(100vh - 32px);
     overflow-y: auto;
+    overscroll-behavior: contain;
     padding: 20px 24px;
     background: var(--color-surface);
     border-radius: 16px;
@@ -323,4 +330,59 @@ a.booking:hover {
 
 .dialog summary::-webkit-details-marker {
     display: none;
+}
+
+/* Empty half hour in the grid: a light "+" on hover, a click opens "Ny bestilling" */
+.emptySlot {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    text-decoration: none;
+}
+
+.emptySlot:hover,
+.emptySlot:focus-visible {
+    background: var(--color-primary-soft);
+}
+
+.emptySlot:hover::after,
+.emptySlot:focus-visible::after {
+    content: "+";
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* Visits lie above the empty slots */
+.booking {
+    z-index: 1;
+}
+
+/* "Ny bestilling" form inside the window */
+.dialogForm {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-top: 12px;
+}
+
+.formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.checkbox {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+}
+
+.checkbox input {
+    width: 20px;
+    height: 20px;
 }
