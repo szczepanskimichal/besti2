@@ -46,7 +46,7 @@ async function toResult(res: Response, fallback = GENERIC_ERROR): Promise<ApiRes
     return { ok: false, message: body?.message ?? fallback };
 }
 
-export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string, lat?: string, lng?: string): Promise<BusinessListItem[]> {
+export async function getBusinesses(category?: string, city?: string, q?: string, date?: string, from?: string, to?: string, lat?: string, lng?: string, km?: string): Promise<BusinessListItem[]> {
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (city) params.set("city", city);
@@ -56,6 +56,7 @@ export async function getBusinesses(category?: string, city?: string, q?: string
     if (to) params.set("to", to);
     if (lat) params.set("lat", lat);
     if (lng) params.set("lng", lng);
+    if (km) params.set("maxKm", km);
     
     const res = await apiFetch(`/api/businesses?${params}`);
     

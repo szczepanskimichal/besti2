@@ -9,7 +9,7 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string }>;
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string }>;
 };
 
 // Time of day in the search -> from/to for the API (Oslo time)
@@ -18,13 +18,13 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
     ettermiddag: {from: "12:00", to: "17:00"},
     kveld: {from: "17:00"},
 };
-
+// "Nær meg" radius choices in km (0 = all distances)
+const radiusOptions = [0, 2, 5, 10, 25, 50, 75, 100];
 export default async function Home({searchParams}: HomeProps) {
-    const {category, city, q, date, tid, lat, lng} = await searchParams;
+    const {category, city, q, date, tid, lat, lng, km} = await searchParams;
     // The same search without "Nær meg" (for the "Vis alle" link)
     const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    
-    // Only the cities here (fast); the businesses load inside Suspense below
+        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
@@ -89,6 +89,7 @@ export default async function Home({searchParams}: HomeProps) {
                         <>
                             <input type="hidden" name="lat" value={lat}/>
                             <input type="hidden" name="lng" value={lng}/>
+                            {km && <input type="hidden" name="km" value={km}/>}
                         </>
                     )}
                     <NearMeButton/>
@@ -99,9 +100,27 @@ export default async function Home({searchParams}: HomeProps) {
                     📍 Sortert etter avstand fra deg · <Link href={`/?${withoutNearMe}`}>Vis alle</Link>
                 </p>
             )}
+            {lat && lng && (
+                <p className={styles.subtitle}>
+                    Innen:{" "}
+                    {radiusOptions.map((option) => {
+                        const params = new URLSearchParams(withoutNearMe);
+                        params.set("lat", lat);
+                        params.set("lng", lng);
+                        if (option) params.set("km", String(option));
+                        const active = String(option) === (km ?? "0");
+                        return (
+                            <Link key={option} href={`/?${params}`} className={styles.radius}
+                                  aria-current={active ? "true" : undefined}>
+                                {option ? `${option} km` : "Alle"}
+                            </Link>
+                        );
+                    })}
+                </p>
+            )}
             {/* key: every new search shows the skeleton again */}
-            <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng})} fallback={<ResultsSkeleton/>}>
-                <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng}/>
+            <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng, km})} fallback={<ResultsSkeleton/>}>
+                <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng} km={km}/>
             </Suspense>
         </main>
     )
@@ -114,15 +133,16 @@ type SearchProps = {
     date?: string;
     tid?: string;
     lat?: string;
-    lng?: string
+    lng?: string;
+    km?: string;
 };
 
 // The slow part: with a date the API calculates free times for every business
-async function Results({category, city, q, date, tid, lat, lng}: SearchProps) {
+async function Results({category, city, q, date, tid, lat, lng, km}: SearchProps) {
     // "Tid på dagen" without a date means today
     const day = date || (tid ? todayInOslo() : undefined);
     const timeWindow = day ? timeWindows[tid ?? ""] : undefined;
-    const businesses = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng);
+    const businesses = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng, km);
     if (businesses.length === 0) {
         if (day) {
 // Same search, one day later
@@ -133,6 +153,7 @@ async function Results({category, city, q, date, tid, lat, lng}: SearchProps) {
             if (tid) params.set("tid", tid);
             if (lat) params.set("lat", lat);
             if (lng) params.set("lng", lng);
+            if (km) params.set("km", km);
             return (
                 <p className={styles.subtitle}>
                     Ingen ledige tider da.{" "}

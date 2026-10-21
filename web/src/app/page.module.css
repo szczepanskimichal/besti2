@@ -83,6 +83,16 @@
     margin: 0 0 24px;
     color: #eff6ff;
 }
+
+/* "Nær meg" radius links; the chosen one is bold */
+.radius {
+    margin-right: 0.75rem;
+    white-space: nowrap;
+}
+.radius[aria-current="true"] {
+    font-weight: 700;
+    text-decoration: none;
+}
 /* Tablet: 2 columns that wrap, instead of everything in one row */
 @media (min-width: 640px) {
     .filters {
