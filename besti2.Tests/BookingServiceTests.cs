@@ -176,22 +176,34 @@ public class BookingServiceTests
         Assert.Equal(new DateTime(2099, 1, 3, 9, 0, 0, DateTimeKind.Utc), slots[0]); // 10:00 in Oslo
         Assert.Equal(new DateTime(2099, 1, 3, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
     }
-
-    // check if GetForBusinessAsync hides bookings that have already ended
+    
+    // check if the panel shows yesterday's visit, but not visits older than 14 days
     [Fact]
-    public async Task GetForBusinessAsync_HidesPastBookings()
+    public async Task GetForBusinessAsync_ShowsTheLast14DaysOnly()
     {
         await using var db = await CreateSeededDbAsync();
         var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         db.Bookings.Add(new Booking
         {
             Id = Guid.NewGuid(),
-            StartUtc = DateTime.UtcNow.AddDays(-1),
-            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
+            StartUtc = DateTime.UtcNow.AddDays(-20),
+            EndUtc = DateTime.UtcNow.AddDays(-20).AddMinutes(30),
             CustomerName = "Gammel Kunde",
             CustomerPhone = "+4790000001",
             CustomerEmail = "gammel@test.example",
             Status = BookingStatus.Bekreftet,
+            ServiceId = HerreklippId,
+            EmployeeId = IngridId
+        });
+        db.Bookings.Add(new Booking
+        {
+            Id = Guid.NewGuid(),
+            StartUtc = DateTime.UtcNow.AddDays(-1),
+            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
+            CustomerName = "I Går",
+            CustomerPhone = "+4790000002",
+            CustomerEmail = "igaar@test.example",
+            Status = BookingStatus.Venter,
             ServiceId = HerreklippId,
             EmployeeId = IngridId
         });
@@ -200,11 +212,8 @@ public class BookingServiceTests
 
         var result = await service.GetForBusinessAsync(KlippOgStil);
 
-        var booking = Assert.Single(result);
-        Assert.Equal("Kari Nordmann", booking.CustomerName);
+        Assert.Equal(["I Går", "Kari Nordmann"], result.Select(b => b.CustomerName));
     }
-
-    // Customer's note is trimmed, saved and shown in the business panel
 
     [Fact]
     public async Task CreateAsync_SavesNoteForTheBusiness()

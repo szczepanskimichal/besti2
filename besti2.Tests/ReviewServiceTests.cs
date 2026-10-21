@@ -141,15 +141,15 @@ public class ReviewServiceTests
         Assert.Equal("Takk for besøket!", db.Reviews.Single().BusinessReply);
     }
     
-    // check if a visit the business never confirmed cannot be reviewed
+    // check if a past visit can be reviewed even when the business never confirmed it)
     [Fact]
-    public async Task CreateAsync_UnconfirmedBooking_Fails()
+    public async Task CreateAsync_PastVisitNeverConfirmed_IsAllowed()
     {
         var (service, db) = await CreateAsync();
         var booking = await AddBookingAsync(db, hoursFromNow: -24, BookingStatus.Venter);
 
         var error = await service.CreateAsync("kunde-1", new CreateReviewRequest(booking.Id, 1, null));
 
-        Assert.Equal("Du kan gi en vurdering etter timen.", error);
+        Assert.Null(error);
     }
 }

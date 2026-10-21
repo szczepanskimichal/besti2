@@ -189,6 +189,11 @@
     color: var(--color-primary);
     font-weight: 600;
 }
+/* "Siste 14 dager" above the visits that are over */
+.sectionTitle {
+    margin: 40px 0 16px;
+    font-size: 1.25rem;
+}
 
 @media (min-width: 1200px) {
     .main {

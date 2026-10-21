@@ -41,10 +41,9 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
             return "Fant ikke bestillingen.";
         }
 
-// Honest reviews: only after a visit that really happened
-
-        if (booking.Status != BookingStatus.Bekreftet || booking.EndUtc > DateTime.UtcNow)
-
+        // Every customer may review a visit that is over and was not cancelled, also when the business
+        // never pressed "Bekreft": the business must not choose who gets to review it
+        if (booking.Status == BookingStatus.Avlyst || booking.EndUtc > DateTime.UtcNow)
         {
             return "Du kan gi en vurdering etter timen.";
         }

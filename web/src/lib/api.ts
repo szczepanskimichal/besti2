@@ -144,9 +144,11 @@ export async function getPanelBookings(token: string): Promise<PanelBooking[] | 
     return res.json();
 }
 
-export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys"): Promise<boolean> {
+// "tooLate" = the API refused because the visit has started (409), so the panel can say why
+export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys"): Promise<"ok" | "tooLate" | "error"> {
     const res = await apiFetch(`/api/panel/bookings/${bookingId}/${action}`, { method: "POST", token });
-    return res.ok;
+    if (res.ok) return "ok";
+    return res.status === 409 ? "tooLate" : "error";
 }
 
 export async function getPanelBusiness(token: string): Promise<BusinessDetails | null> {

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { redirect } from "next/navigation";
 import { getPanelBookings } from "@/lib/api";
+import type { PanelBooking } from "@/lib/types";
 import { getToken } from "@/lib/auth";
 import { formatDate, formatTime } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
@@ -25,6 +26,7 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
     }
 
     const { feil } = await searchParams;
+    const { upcoming, past } = splitBookings(bookings);
 
     return (
         <main className={styles.main}>
@@ -59,70 +61,99 @@ export default async function PanelPage({ searchParams }: PanelPageProps) {
 
             {feil && (
                 <p className={styles.error} role="alert">
-                    Kunne ikke endre bestillingen. Prøv igjen.
+                    {feil === "for-sent"
+                        ? "Bestillingen kan ikke avlyses lenger – timen har allerede startet."
+                        : "Kunne ikke endre bestillingen. Prøv igjen."}
                 </p>
             )}
 
-            {bookings.length === 0 ? (
-                <p className={styles.muted}>Ingen bestillinger ennå.</p>
+            {upcoming.length === 0 ? (
+                <p className={styles.muted}>Ingen kommende bestillinger.</p>
             ) : (
                 <ul className={styles.list}>
-                    {bookings.map((booking) => (
-                        <li key={booking.id} className={styles.card}>
-                            <div className={styles.cardHeader}>
-                                <p className={styles.when}>
-                                    {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
-                                </p>
-                                <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
-                                    {statusLabels[booking.status] ?? booking.status}
-                                </span>
-                            </div>
-
-                            <p className={styles.service}>
-                                {booking.serviceName} hos {booking.employeeName}
-                            </p>
-
-                            <p className={styles.customer}>
-                                {booking.customerName}
-                                <br />
-                                <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
-                                {" · "}
-                                <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
-                            </p>
-                            {booking.customerNote && (
-                                <div className={styles.note}>
-                                    <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
-                                    <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
-                                        Svar på e-post
-                                    </a>
-                                </div>
-                            )}
-                            {booking.status !== "Avlyst" && (
-                                <div className={styles.actions}>
-                                    {booking.status === "Venter" && (
-                                        <form action={confirmBookingAction}>
-                                            <input type="hidden" name="bookingId" value={booking.id} />
-                                            <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">
-                                                Bekreft
-                                            </SubmitButton>
-                                        </form>
-                                    )}
-                                    <details>
-                                    <summary className={styles.dangerButton}>Avlys</summary>
-                                    <p>Er du sikker? Kunden får beskjed på e-post.</p>
-                                    <form action={cancelBookingAction}>
-                                        <input type="hidden" name="bookingId" value={booking.id} />
-                                        <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">
-                                            Ja, avlys
-                                        </SubmitButton>
-                                    </form>
-                                </details>
-                                </div>
-                            )}
-                        </li>
+                    {upcoming.map((booking) => (
+                        <BookingCard key={booking.id} booking={booking} showActions/>
                     ))}
                 </ul>
             )}
+
+            {past.length > 0 && (
+                <>
+                    <h2 className={styles.sectionTitle}>Siste 14 dager</h2>
+                    <ul className={styles.list}>
+                        {past.map((booking) => (
+                            <BookingCard key={booking.id} booking={booking} showActions={false}/>
+                        ))}
+                    </ul>
+                </>
+            )}
         </main>
+    );
+}
+
+// Visits that are over come last, newest first, without buttons (they can no longer be cancelled)
+function splitBookings(bookings: PanelBooking[]) {
+    const now = Date.now();
+    return {
+        upcoming: bookings.filter((b) => new Date(b.endUtc).getTime() >= now),
+        past: bookings.filter((b) => new Date(b.endUtc).getTime() < now).reverse(),
+    };
+}
+
+// One booking: time, status, service, customer, note, and Bekreft / Avlys for upcoming visits
+function BookingCard({ booking, showActions }: { booking: PanelBooking; showActions: boolean }) {
+    return (
+        <li className={styles.card}>
+            <div className={styles.cardHeader}>
+                <p className={styles.when}>
+                    {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
+                </p>
+                <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
+                    {statusLabels[booking.status] ?? booking.status}
+                </span>
+            </div>
+
+            <p className={styles.service}>
+                {booking.serviceName} hos {booking.employeeName}
+            </p>
+
+            <p className={styles.customer}>
+                {booking.customerName}
+                <br />
+                <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
+                {" · "}
+                <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
+            </p>
+            {booking.customerNote && (
+                <div className={styles.note}>
+                    <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
+                    <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
+                        Svar på e-post
+                    </a>
+                </div>
+            )}
+            {showActions && booking.status !== "Avlyst" && (
+                <div className={styles.actions}>
+                    {booking.status === "Venter" && (
+                        <form action={confirmBookingAction}>
+                            <input type="hidden" name="bookingId" value={booking.id} />
+                            <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">
+                                Bekreft
+                            </SubmitButton>
+                        </form>
+                    )}
+                    <details>
+                        <summary className={styles.dangerButton}>Avlys</summary>
+                        <p>Er du sikker? Kunden får beskjed på e-post.</p>
+                        <form action={cancelBookingAction}>
+                            <input type="hidden" name="bookingId" value={booking.id} />
+                            <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">
+                                Ja, avlys
+                            </SubmitButton>
+                        </form>
+                    </details>
+                </div>
+            )}
+        </li>
     );
 }
