@@ -48,18 +48,6 @@ public class BusinessRegistrationServiceTests
         Assert.Single(db.Employees.Where(e => e.BusinessId == business.Id));
         Assert.Equal(5, db.OpeningHours.Count(h => h.BusinessId == business.Id));
     }
-
-    [Fact]
-    public async Task RegisterAsync_SameOrgNumberTwice_SecondFails()
-    {
-        var (service, _, _) = CreateService();
-
-        await service.RegisterAsync(TestFrisor());
-        var second = await service.RegisterAsync(TestFrisor());
-
-        Assert.False(second.Success);
-        Assert.Equal("Denne bedriften er allerede registrert.", second.Error);
-    }
     
     [Fact]
     public async Task RegisterAsync_EmptyBusinessName_Fails()
@@ -123,5 +111,36 @@ public class BusinessRegistrationServiceTests
         await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
         await service.ShowBusinessOfOwnerAsync(owner.Id);
         Assert.False(business.IsHidden);
+    }
+    // check if an unconfirmed registration (lost mail, or someone else using the org number) does not
+    // block a new registration: the old hidden business and its owner are replaced
+    [Fact]
+    public async Task RegisterAsync_SameOrgNumberUnconfirmed_ReplacesTheOldRegistration()
+    {
+        var (service, db, users) = CreateService();
+        await service.RegisterAsync(TestFrisor() with { Email = "fremmed@test.example" });
+
+        var result = await service.RegisterAsync(TestFrisor());
+
+        Assert.True(result.Success);
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345678");
+        var owner = await users.FindByEmailAsync("eier@testfrisor.example");
+        Assert.Equal(business.Id, owner!.BusinessId);
+        Assert.Null(await users.FindByEmailAsync("fremmed@test.example"));
+    }
+
+    // check if a CONFIRMED business can never be replaced by a new registration
+    [Fact]
+    public async Task RegisterAsync_SameOrgNumberConfirmed_StillFails()
+    {
+        var (service, _, users) = CreateService();
+        await service.RegisterAsync(TestFrisor());
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
+
+        var result = await service.RegisterAsync(TestFrisor() with { Email = "fremmed@test.example" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Denne bedriften er allerede registrert.", result.Error);
     }
 }

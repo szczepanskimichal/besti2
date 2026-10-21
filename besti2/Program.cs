@@ -28,6 +28,8 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
         options.SignIn.RequireConfirmedEmail = true;
+        // The e-mail is the user name: allow every character (o'brien@…, bjørn@… must work)
+        options.User.AllowedUserNameCharacters = null!;
         // Min. 6 characters with upper and lower case, a digit and a symbol (Identity's default rules)
         options.Password.RequiredLength = 6;
     })
@@ -46,16 +48,20 @@ builder.Services.AddRateLimiter(options =>
     options.OnRejected = async (context, cancellationToken) =>
         await context.HttpContext.Response.WriteAsJsonAsync(
             new { message = "For mange forsøk. Prøv igjen om litt." }, cancellationToken);
-    // Max 10 attempts per minute per visitor on login, sign-up and booking (stops spam and password guessing)
-    options.AddPolicy("strict", httpContext =>
-        // Already the visitor's own IP here, thanks to UseForwardedHeaders
-        RateLimitPartition.GetFixedWindowLimiter(httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 10,
-                Window = TimeSpan.FromMinutes(1),
-                QueueLimit = 0
-            }));
+    // Max 10 attempts per minute per visitor, counted SEPARATELY for login, sign-up and booking
+    // (10 wrong passwords must not also block booking for everyone behind the same network)
+    foreach (var name in new[] { "login", "signup", "booking" })
+    {
+        options.AddPolicy(name, httpContext =>
+            // Already the visitor's own IP here, thanks to UseForwardedHeaders
+            RateLimitPartition.GetFixedWindowLimiter($"{name}:{httpContext.Connection.RemoteIpAddress}",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = 10,
+                    Window = TimeSpan.FromMinutes(1),
+                    QueueLimit = 0
+                }));
+    }
     // Max 10 image uploads per minute per account (reading a photo is heavy work for the server)
     options.AddPolicy("upload", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -144,7 +150,7 @@ app.MapPost("/api/bookings",
                 new { message = "Tiden er dessverre ikke lenger ledig." }),
             _ => Results.NotFound()
         };
-    }).RequireAuthorization().RequireRateLimiting("strict");
+    }).RequireAuthorization().RequireRateLimiting("booking");
 
 // Register a new business with its owner account
 app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
@@ -154,7 +160,7 @@ app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
     return result.Success
         ? Results.Created()
         : Results.BadRequest(new { message = result.Error });
-}).RequireRateLimiting("strict");
+}).RequireRateLimiting("signup");
 
 // Customer sign-up: creates the account and sends a confirmation mail
 app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
@@ -162,7 +168,7 @@ app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
 {
     var error = await accountService.RegisterAsync(request, cancellationToken);
     return error is null ? Results.Created() : Results.BadRequest(new { message = error });
-}).RequireRateLimiting("strict");
+}).RequireRateLimiting("signup");
 
 // Customer clicks the link in the mail; the web page sends the id and code here
 app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
@@ -177,7 +183,7 @@ app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
     return confirmed
         ? Results.NoContent()
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
-}).RequireRateLimiting("strict");
+}).RequireRateLimiting("signup");
 
 // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
 app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
@@ -448,7 +454,7 @@ app.MapDelete("/api/panel/gallery/{id:guid}", async (Guid id, ClaimsPrincipal pr
 // Everything else (register, manage, confirmEmail, refresh ...) answers 404,
 // also with a "/" at the end or in other letter case (/api/auth/Register/)
 string[] allowedAuthPaths = ["/api/auth/login", "/api/auth/forgotPassword", "/api/auth/resetPassword"];
-var auth = app.MapGroup("/api/auth").RequireRateLimiting("strict");
+var auth = app.MapGroup("/api/auth").RequireRateLimiting("login");
 auth.AddEndpointFilter(async (context, next) =>
 {
     var path = context.HttpContext.Request.Path.Value?.TrimEnd('/') ?? "";

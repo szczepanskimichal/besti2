@@ -51,6 +51,9 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
 
         var email = request.Email.Trim().ToLowerInvariant();
+        // An earlier registration that was never confirmed (lost mail, expired link, or someone else
+        // using this org number or e-mail) must not block a new one: it is removed first
+        await RemoveUnconfirmedRegistrationsAsync(request.OrgNumber, email, cancellationToken);
 
         if (await dbContext.Businesses.AnyAsync(b => b.OrgNumber == request.OrgNumber, cancellationToken))
         {
@@ -124,7 +127,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             await transaction.CommitAsync(cancellationToken);
         }
-        await TrySendConfirmationAsync(user, business.Name, cancellationToken);
+        await TrySendConfirmationAsync(user, cancellationToken);
         return new RegisterBusinessResult(true);
     }
     
@@ -147,13 +150,14 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
     }
     
     // Mails the confirmation link; a mail error must not undo the registration
-    private async Task TrySendConfirmationAsync(AppUser user, string businessName, CancellationToken cancellationToken)
+    private async Task TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
     {
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
         var body =
             "Hei!\n\n" +
-            $"Takk for at du registrerte {businessName} hos BESTI.\n" +
+// No business name from the form in the mail: it goes to an address nobody has confirmed yet
+            "Takk for at du registrerte bedriften din hos BESTI.\n" +
             $"Klikk på lenken for å bekrefte e-postadressen, så kan du logge inn:\n{link}\n\n" +
             "Har du ikke registrert en bedrift, kan du se bort fra denne e-posten.\n\n" +
             "Hilsen BESTI";
@@ -164,6 +168,37 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         catch (Exception)
         {
             // Mail server down: the business is saved, the link can be sent again later
+        }
+    }
+    
+    // A hidden business whose owner never confirmed the e-mail, found by org number or by the owner's
+    // e-mail, is deleted together with its owner. A confirmed owner is never touched.
+    private async Task RemoveUnconfirmedRegistrationsAsync(string orgNumber, string email,
+        CancellationToken cancellationToken)
+    {
+        var businessIds = await dbContext.Businesses
+            .Where(b => b.IsHidden && b.OrgNumber == orgNumber)
+            .Select(b => b.Id)
+            .ToListAsync(cancellationToken);
+        if (await userManager.FindByEmailAsync(email) is { EmailConfirmed: false, BusinessId: Guid ownBusinessId })
+        {
+            businessIds.Add(ownBusinessId);
+        }
+
+        foreach (var businessId in businessIds.Distinct())
+        {
+            var owners = await dbContext.Users.Where(u => u.BusinessId == businessId).ToListAsync(cancellationToken);
+            var business = await dbContext.Businesses.FindAsync([businessId], cancellationToken);
+            if (business is not { IsHidden: true } || owners.Any(u => u.EmailConfirmed))
+            {
+                continue;
+            }
+            foreach (var owner in owners)
+            {
+                await userManager.DeleteAsync(owner);
+            }
+            dbContext.Businesses.Remove(business);
+            await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
 }
