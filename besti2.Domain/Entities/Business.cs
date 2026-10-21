@@ -21,6 +21,9 @@ public class Business
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
     
+    // A new business is hidden from customers until the owner has confirmed the email
+    public bool IsHidden { get; set; }
+    
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();
     public List<OpeningHours> OpeningHours { get; set; } = new();

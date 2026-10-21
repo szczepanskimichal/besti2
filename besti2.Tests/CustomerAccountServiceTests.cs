@@ -44,14 +44,40 @@ public class CustomerAccountServiceTests
         Assert.Contains("http://localhost:3000/bekreft-epost?id=", mail.Body);
     }
 
-// check if the same email cannot sign up twice
+// check if signing up again before confirming sends a new link instead of an error (lost mail)
     [Fact]
-    public async Task RegisterAsync_SameEmailTwice_SecondFails()
+    public async Task RegisterAsync_SameEmailTwice_Unconfirmed_SendsNewLink()
     {
-        var (service, _, _) = CreateService();
+        var (service, users, email) = CreateService();
         await service.RegisterAsync(TestKunde());
         var error = await service.RegisterAsync(TestKunde());
-        Assert.StartsWith("E-postadressen er allerede i bruk.", error);    }
+        Assert.Null(error);
+        Assert.Equal(2, email.Sent.Count);
+        Assert.Single(users.Users);
+    }
+
+// check if a confirmed email cannot sign up twice
+    [Fact]
+    public async Task RegisterAsync_SameEmailTwice_Confirmed_SecondFails()
+    {
+        var (service, users, _) = CreateService();
+        await service.RegisterAsync(TestKunde());
+        var user = (await users.FindByEmailAsync("kari@test.example"))!;
+        await users.ConfirmEmailAsync(user, await users.GenerateEmailConfirmationTokenAsync(user));
+        var error = await service.RegisterAsync(TestKunde());
+        Assert.StartsWith("E-postadressen er allerede i bruk.", error);
+    }
+
+// check if a failed mail does not fail the sign-up (the customer can sign up again for a new link)
+    [Fact]
+    public async Task RegisterAsync_MailFails_AccountIsStillCreated()
+    {
+        var (_, users, _) = CreateService();
+        var service = new CustomerAccountService(users, new FailingEmailService(), "http://localhost:3000");
+        var error = await service.RegisterAsync(TestKunde());
+        Assert.Null(error);
+        Assert.NotNull(await users.FindByEmailAsync("kari@test.example"));
+    }
 
 // check if a valid code confirms the email and a wrong one does not
     [Fact]

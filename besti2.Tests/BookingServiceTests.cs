@@ -395,6 +395,5 @@ public class BookingServiceTests
         Assert.NotNull(slots);
         Assert.Empty(slots);
     }
-
-
+    
 }

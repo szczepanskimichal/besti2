@@ -22,6 +22,9 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
                 <p className={styles.muted}>
                     Vi har sendt deg en lenke. Klikk på den for å bekrefte e-postadressen, så kan du logge inn.
                 </p>
+                <p className={styles.muted}>
+                    Fikk du ingen e-post? Sjekk søppelpost, eller registrer deg på nytt med samme e-post, så sender vi en ny lenke.
+                </p>
             </main>
         );
     }

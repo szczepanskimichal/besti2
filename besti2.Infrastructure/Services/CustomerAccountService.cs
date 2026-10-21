@@ -11,65 +11,74 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
 {
     public async Task<string?> RegisterAsync(RegisterCustomerRequest request,
         CancellationToken cancellationToken = default)
-
     {
         if (string.IsNullOrWhiteSpace(request.FullName) || string.IsNullOrWhiteSpace(request.Email)
                                                         || !request.Email.Contains('@') ||
                                                         string.IsNullOrWhiteSpace(request.Password)
                                                         || request.FullName.Length > 200 || request.Email.Length > 250)
-
         {
             return "Fyll ut alle feltene.";
         }
 
         var email = request.Email.Trim().ToLowerInvariant();
+        var existing = await userManager.FindByEmailAsync(email);
 
-        if (await userManager.FindByEmailAsync(email) is not null)
+        // Signed up before but never confirmed (e.g. the mail got lost): send a new link instead of an error
+        if (existing is { EmailConfirmed: false, BusinessId: null })
+        {
+            await TrySendConfirmationAsync(existing, cancellationToken);
+            return null;
+        }
 
+        if (existing is not null)
         {
             return "E-postadressen er allerede i bruk. Har du en bedriftskonto? Bruk en annen e-post for kundekonto, eller logg inn.";
         }
 
-// Customer = account without BusinessId; must confirm the email before logging in
-
+        // Customer = account without BusinessId; must confirm the email before logging in
         var user = new AppUser { UserName = email, Email = email, FullName = request.FullName.Trim() };
-
         var created = await userManager.CreateAsync(user, request.Password);
-
         if (!created.Succeeded)
-
         {
             return "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.";
         }
 
-        var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
-
-        var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
-
-        var body =
-            $"Hei {user.FullName}!\n\n" +
-            "Takk for at du opprettet en konto hos BESTI.\n" +
-            $"Klikk på lenken for å bekrefte e-postadressen din:\n{link}\n\n" +
-            "Har du ikke opprettet en konto, kan du se bort fra denne e-posten.";
-
-        await emailService.SendAsync(email, "Bekreft e-postadressen din hos BESTI", body, cancellationToken);
-
+        // The account is kept even if the mail fails; signing up again sends a new link
+        await TrySendConfirmationAsync(user, cancellationToken);
         return null;
     }
 
     public async Task<bool> ConfirmEmailAsync(ConfirmEmailRequest request)
-
     {
         var user = await userManager.FindByIdAsync(request.UserId);
-
         if (user is null)
-
         {
             return false;
         }
 
         var result = await userManager.ConfirmEmailAsync(user, request.Code);
-
         return result.Succeeded;
+    }
+
+    // Builds the confirmation link and mails it; a mail error must not break sign-up
+    private async Task<bool> TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
+    {
+        var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
+        var body =
+            $"Hei {user.FullName}!\n\n" +
+            "Takk for at du opprettet en konto hos BESTI.\n" +
+            $"Klikk på lenken for å bekrefte e-postadressen din:\n{link}\n\n" +
+            "Har du ikke opprettet en konto, kan du se bort fra denne e-posten.";
+        try
+        {
+            await emailService.SendAsync(user.Email!, "Bekreft e-postadressen din hos BESTI", body, cancellationToken);
+            return true;
+        }
+        catch (Exception)
+        {
+            // Mail server down or slow: the account is kept, the customer can sign up again for a new link
+            return false;
+        }
     }
 }

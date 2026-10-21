@@ -153,4 +153,5 @@ public class BusinessImageServiceTests
         Assert.Empty(db.BusinessImages.Where(i => i.Kind == ImageKind.Galleri));
         Assert.False(storage.Files.ContainsKey(image.FileName));
     }
+   
 }

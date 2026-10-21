@@ -23,7 +23,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             )}
             {registrert && (
                 <p className={styles.success} role="status">
-                    Bedriften er registrert. Logg inn med e-post og passord.
+                    Bedriften er registrert. Sjekk e-posten din og klikk på lenken for å bekrefte, så kan du logge inn.
                 </p>
             )}
             {nyttPassord && (

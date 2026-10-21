@@ -248,6 +248,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit");
+
                     b.Property<double?>("Latitude")
                         .HasColumnType("float");
 
@@ -290,6 +293,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             City = "Oslo",
                             Description = "Hårklipp og farging for hele familien.",
                             Email = "post@klippogstil.example",
+                            IsHidden = false,
                             Latitude = 59.911810000000003,
                             Longitude = 10.746460000000001,
                             Name = "Klipp & Stil Frisør",
@@ -305,6 +309,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             City = "Bergen",
                             Description = "Befaring og oppussing av bad og kjøkken.",
                             Email = "kontakt@fjordbygg.example",
+                            IsHidden = false,
                             Latitude = 60.396120000000003,
                             Longitude = 5.3255299999999997,
                             Name = "Fjord Bygg AS",
@@ -320,6 +325,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             City = "Trondheim",
                             Description = "Samtaleterapi for voksne.",
                             Email = "time@nordlyspsykolog.example",
+                            IsHidden = false,
                             Latitude = 63.429519999999997,
                             Longitude = 10.395160000000001,
                             Name = "Nordlys Psykologsenter",
