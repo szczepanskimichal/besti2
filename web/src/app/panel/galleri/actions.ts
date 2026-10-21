@@ -3,25 +3,33 @@
 import { redirect } from "next/navigation";
 import { deleteGalleryImage, uploadGalleryImage } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import type { FormState } from "@/lib/formState";
 
-export async function uploadGalleryImageAction(formData: FormData) {
+// Errors come back to the form (no text in the URL); success reloads the page with a short code
+export async function uploadGalleryImageAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
     const file = formData.get("image");
     if (!(file instanceof File) || file.size === 0) {
-        redirect("/panel/galleri?feil=1");
+        return { error: "Velg et bilde." };
     }
     const result = await uploadGalleryImage(token, file);
-    redirect(result.ok ? "/panel/galleri?lagt=1" : `/panel/galleri?feil=${encodeURIComponent(result.message)}`);
+    if (!result.ok) {
+        return { error: result.message };
+    }
+    redirect("/panel/galleri?lagt=1");
 }
 
-export async function deleteGalleryImageAction(formData: FormData) {
+export async function deleteGalleryImageAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
     const ok = await deleteGalleryImage(token, String(formData.get("imageId") ?? ""));
-    redirect(ok ? "/panel/galleri?slettet=1" : "/panel/galleri?feil=1");
+    if (!ok) {
+        return { error: "Bildet kunne ikke slettes. Prøv igjen." };
+    }
+    redirect("/panel/galleri?slettet=1");
 }
