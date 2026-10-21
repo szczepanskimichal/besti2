@@ -11,18 +11,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         { url: `${SITE_URL}/personvern`, changeFrequency: "yearly" },
     ];
 
-    // The list comes 24 at a time, so read every page
-    let page = 1;
-    let pageCount = 1;
-    do {
-        const result = await getBusinesses(undefined, undefined, undefined, undefined, undefined, undefined,
-            undefined, undefined, undefined, String(page));
-        for (const business of result.items) {
-            pages.push({ url: `${SITE_URL}/bedrift/${business.id}`, changeFrequency: "weekly" });
-        }
-        pageCount = result.pageCount;
-        page++;
-    } while (page <= pageCount);
+    // The list comes 24 at a time, so read every page. API down: the fixed pages only, not an error
+    try {
+        let page = 1;
+        let pageCount = 1;
+        do {
+            const result = await getBusinesses(undefined, undefined, undefined, undefined, undefined, undefined,
+                undefined, undefined, undefined, String(page));
+            for (const business of result.items) {
+                pages.push({ url: `${SITE_URL}/bedrift/${business.id}`, changeFrequency: "weekly" });
+            }
+            pageCount = result.pageCount;
+            page++;
+        } while (page <= pageCount);
+    } catch {
+        // keep the fixed pages
+    }
 
     return pages;
 }

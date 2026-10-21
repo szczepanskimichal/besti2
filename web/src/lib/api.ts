@@ -13,7 +13,9 @@ async function forwardedFor(): Promise<Record<string, string>> {
     return ip ? { "X-Forwarded-For": ip } : {};
 }
 const TIMEOUT_MS = 8000;
+const UPLOAD_TIMEOUT_MS = 30000; // a photo can take longer on a slow phone connection
 const GENERIC_ERROR = "Noe gikk galt. Prøv igjen.";
+const NO_CONTACT = "Vi fikk ikke kontakt med BESTI akkurat nå. Prøv igjen om litt.";
 export type ApiResult = { ok: true } | { ok: false; message: string };
 type RequestOptions = {
     method?: string;
@@ -22,19 +24,27 @@ type RequestOptions = {
     forwardIp?: boolean;
 };
 // One place for the API address, headers, no-store and an 8 s timeout
-// (a hanging API shows the error page instead of a page that never loads)
 async function apiFetch(path: string, options: RequestOptions = {}): Promise<Response> {
     const headers: Record<string, string> = {};
     if (options.body !== undefined) headers["Content-Type"] = "application/json";
     if (options.token) headers.Authorization = `Bearer ${options.token}`;
     if (options.forwardIp) Object.assign(headers, await forwardedFor());
-    return fetch(`${API_URL}${path}`, {
+    return safeFetch(`${API_URL}${path}`, {
         method: options.method ?? "GET",
         headers,
         body: options.body === undefined ? undefined : JSON.stringify(options.body),
         cache: "no-store",
         signal: AbortSignal.timeout(TIMEOUT_MS),
     });
+}
+// API down or too slow: answer like a failed request (503) instead of throwing. Forms then show
+// a message and keep what was typed; pages that need the data still show the error page.
+async function safeFetch(url: string, init: RequestInit): Promise<Response> {
+    try {
+        return await fetch(url, init);
+    } catch {
+        return Response.json({ message: NO_CONTACT }, { status: 503 });
+    }
 }
 // { ok: true }, or { ok: false, message } with the API's own message (e.g. "Tiden er ikke lenger ledig")
 async function toResult(res: Response, fallback = GENERIC_ERROR): Promise<ApiResult> {
@@ -114,7 +124,12 @@ export async function getAvailability(serviceId: string, employeeId: string, dat
     return res.json();
 }
 export async function createBooking(input: CreateBookingInput, token: string): Promise<ApiResult> {
-    return toResult(await apiFetch("/api/bookings", { method: "POST", token, body: input, forwardIp: true }));
+    const res = await apiFetch("/api/bookings", { method: "POST", token, body: input, forwardIp: true });
+    // No answer in time: the booking may still have been saved, so do not just say "try again"
+    if (res.status === 503) {
+        return { ok: false, message: "Vi fikk ikke svar i tide. Sjekk Min Besti om timen er bestilt før du prøver igjen." };
+    }
+    return toResult(res);
 }
 
 export async function registerBusiness(input: Record<string, string>): Promise<ApiResult> {
@@ -190,7 +205,7 @@ export async function uploadLogo(token: string, file: File): Promise<ApiResult> 
     const body = new FormData();
     body.append("file", file);
 // Not apiFetch: FormData sets its own Content-Type (with the file boundary)
-    const res = await fetch(`${API_URL}/api/panel/logo`, {
+    const res = await safeFetch(`${API_URL}/api/panel/logo`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body,
@@ -204,12 +219,12 @@ export async function uploadGalleryImage(token: string, file: File): Promise<Api
     const body = new FormData();
     body.append("file", file);
 // Not apiFetch: FormData sets its own Content-Type (with the file boundary)
-    const res = await fetch(`${API_URL}/api/panel/gallery`, {
+    const res = await safeFetch(`${API_URL}/api/panel/gallery`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body,
         cache: "no-store",
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
     });
     return toResult(res);
 }
@@ -257,10 +272,13 @@ export type Me = {
     isBusiness: boolean;
 };
 
-// cache(): the header and the page ask for the same user, but the API is called once per request
+// null = not logged in (401/403). Other errors (API down) are thrown, so a logged-in business
+// sees the error page instead of being sent to the login page again and again
 export const getMe = cache(async (token: string): Promise<Me | null> => {
     const res = await apiFetch("/api/me", { token });
-    return res.ok ? res.json() : null;
+    if (res.ok) return res.json();
+    if (res.status === 401 || res.status === 403) return null;
+    throw new Error(`Kunne ikke hente brukeren (${res.status})`);
 });
 
 // Customer: own bookings; null = not logged in (token expired)

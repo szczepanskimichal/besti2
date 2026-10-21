@@ -6,6 +6,8 @@ import type { FormState } from "@/lib/formState";
 import styles from "../tjenester/page.module.css";
 // Files up to this size are sent as they are (keeps transparent PNG logos)
 const SmallEnoughBytes = 900 * 1024;
+// Bigger than this can not be sent at all (the server accepts 4 MB per form); shown as a message instead
+export const MaxSendBytes = 3.5 * 1024 * 1024;
 // Longest side after shrinking; the API makes the final logo 512 px
 const MaxSize = 1600;
 // Shrinks a large photo in the browser, so it fits the upload limits
@@ -34,12 +36,14 @@ type Props = {
 };
 export default function LogoUploadForm({ name, category, logoUrl }: Props) {
     const [preparing, setPreparing] = useState(false);
+    const [tooBig, setTooBig] = useState(false);
     // isPending: the upload is running ("Laster opp …"), so the button cannot be clicked twice
     const [state, formAction, isPending] = useActionState<FormState, FormData>(uploadLogoAction, {});
     async function handleChange(event: ChangeEvent<HTMLInputElement>) {
         const input = event.currentTarget;
         const file = input.files?.[0];
         if (!file || file.size <= SmallEnoughBytes) {
+            setTooBig(false);
             return;
         }
         setPreparing(true);
@@ -53,6 +57,8 @@ export default function LogoUploadForm({ name, category, logoUrl }: Props) {
 // Browser could not read the file; send the original and let the API answer
         } finally {
             setPreparing(false);
+            // Still too big (the browser could not shrink it): say so instead of an error page
+            setTooBig((input.files?.[0]?.size ?? 0) > MaxSendBytes);
         }
     }
 
@@ -68,7 +74,12 @@ export default function LogoUploadForm({ name, category, logoUrl }: Props) {
                 Logo (PNG, JPG eller WebP, maks 10 MB)
                 <input type="file" name="logo" accept="image/png,image/jpeg,image/webp" required onChange={handleChange} />
             </label>
-            <button type="submit" className={styles.primaryButton} disabled={preparing || isPending}>
+            {tooBig && (
+                <p className={styles.error} role="alert">
+                    Bildet er for stort. Velg et bilde under 3,5 MB.
+                </p>
+            )}
+            <button type="submit" className={styles.primaryButton} disabled={preparing || isPending || tooBig}>
                 {preparing ? "Forbereder bildet …" : isPending ? "Laster opp …" : "Last opp logo"}
             </button>
         </form>

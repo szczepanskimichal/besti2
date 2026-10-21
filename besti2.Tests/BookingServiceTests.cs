@@ -432,4 +432,18 @@ public class BookingServiceTests
         Assert.Null(fjord.AverageRating);
         Assert.Equal(0, fjord.ReviewCount);
     }
+    
+    // check if a start time sent with a time zone (+02:00 arrives as local time) is booked, not a server error
+    [Fact]
+    public async Task CreateAsync_StartTimeAsLocalTime_IsBooked()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var request = HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.ToLocalTime() };
+
+        var result = await service.CreateAsync(request);
+
+        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
+        Assert.Equal(FutureMondayAt10, result.Booking!.StartUtc);
+    }
 }
