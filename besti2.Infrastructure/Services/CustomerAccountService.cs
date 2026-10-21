@@ -76,8 +76,9 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         return result.Succeeded;
     }
 
-    // Builds the confirmation link and mails it; a mail error must not break sign-up
+    
     // null when the password follows the rules, otherwise the message for the form
+    // Builds the confirmation link and mails it; a mail error must not break sign-up
     private async Task<string?> CheckPasswordAsync(string password)
     {
         foreach (var validator in userManager.PasswordValidators)
@@ -93,9 +94,10 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
     {
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
-        var body = 
+        var body =
             // No name from the form in the mail: it goes to an address nobody has confirmed yet
-            "Hei!\n\n" +            "Takk for at du opprettet en konto hos BESTI.\n" +
+            "Hei!\n\n" +
+            "Takk for at du opprettet en konto hos BESTI.\n" +
             $"Klikk på lenken for å bekrefte e-postadressen din:\n{link}\n\n" +
             "Har du ikke opprettet en konto, kan du se bort fra denne e-posten.";
         try
