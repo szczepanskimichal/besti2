@@ -90,6 +90,25 @@ public class BusinessImageServiceTests
         Assert.Equal(256, bitmap.Height);
     }
      
+    
+    // A tiny file that says it is 8000 x 7000 pixels (56 MP) must be refused before decoding
+    [Fact]
+    public async Task SetLogoAsync_RejectsImageOverFiftyMegapixels()
+    {
+        var (service, db, storage) = await CreateAsync();
+        // Gray8 = 1 byte per pixel, so the test itself needs only ~56 MB; one color compresses to a small file
+        using var bitmap = new SKBitmap(new SKImageInfo(8000, 7000, SKColorType.Gray8));
+        bitmap.Erase(SKColors.Black);
+        using var data = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 100);
+        var png = data.ToArray();
+
+        var error = await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
+
+        Assert.Equal("Kunne ikke lese bildet.", error);
+        Assert.Empty(db.BusinessImages);
+        Assert.Empty(storage.Files);
+    }
+    
     // check if a gallery photo is saved as WebP
     [Fact]
     public async Task AddGalleryImageAsync_SavesImage()
