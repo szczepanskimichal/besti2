@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             )}
             <LoginForm neste={neste ?? ""} />
             <p className={styles.signup}>
-                Ny kunde? <Link href="/registrer">Opprett konto</Link>
+                Ny kunde? <Link href={`/registrer?neste=${encodeURIComponent(neste ?? "/")}`}>Opprett konto</Link>
             </p>
             <p className={styles.signup}>
                 Har du bedrift? <Link href="/registrer-bedrift">Registrer bedriften din</Link>

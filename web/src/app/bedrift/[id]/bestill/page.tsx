@@ -92,8 +92,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}
                             <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
-                            {" "}eller <NextLink href="/registrer">opprett konto</NextLink>.
-                        </p>
+                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett konto</NextLink>.                        </p>
                     )}
                     {me?.isBusiness && (
                         <p className={styles.muted}>Du er logget inn som bedrift. Logg inn med en kundekonto for å
