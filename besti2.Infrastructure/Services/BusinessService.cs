@@ -21,8 +21,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,
         CancellationToken cancellationToken = default)    
     {
-        var query = dbContext.Businesses.AsNoTracking();
-
+        // Hidden businesses (owner has not confirmed the email yet) are never shown
+        var query = dbContext.Businesses.AsNoTracking().Where(b => !b.IsHidden);
         if (!string.IsNullOrWhiteSpace(category))
         {
             if (!Enum.TryParse<BusinessCategory>(category, ignoreCase: true, out var parsedCategory)
@@ -207,6 +207,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     {
         return await dbContext.Businesses
             .AsNoTracking()
+            .Where(b => !b.IsHidden)
             .Select(b => b.City)
             .Distinct()
             .OrderBy(city => city)
@@ -217,7 +218,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     {
         var business = await dbContext.Businesses
             .AsNoTracking()
-            .Where(b => b.Id == id)
+            .Where(b => b.Id == id && !b.IsHidden)
             .Select(b => new BusinessDetailsDto(
                 b.Id,
                 b.Name,
