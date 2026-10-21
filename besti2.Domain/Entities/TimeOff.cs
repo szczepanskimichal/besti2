@@ -1,7 +1,6 @@
 // Blocked time in the calendar (holiday, doctor, closed day); nobody can book it
 
-using besti2.Domain.Entities;
-
+namespace besti2.Domain.Entities;
 public class TimeOff
 {
     public Guid Id { get; set; }

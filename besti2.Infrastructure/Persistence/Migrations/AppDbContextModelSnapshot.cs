@@ -756,6 +756,37 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.TimeOff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("EndUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("StartUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("BusinessId", "StartUtc");
+
+                    b.ToTable("TimeOffs");
+                });
+
             modelBuilder.Entity("besti2.Infrastructure.Identity.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -950,6 +981,24 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.TimeOff", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("besti2.Domain.Entities.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Business");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Business", b =>
