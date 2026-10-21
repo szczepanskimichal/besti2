@@ -56,12 +56,19 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Description,
                 b.City,
                 b.Images.Where(i => i.Kind == ImageKind.Logo).Select(i => i.FileName).FirstOrDefault(),
-                null
+                null,
+                null,
+                // Stars for the card, counted in the same query (no extra request per business)
+                dbContext.Reviews.Where(r => r.BusinessId == b.Id).Average(r => (double?)r.Stars),
+                dbContext.Reviews.Count(r => r.BusinessId == b.Id)
             ))
             .ToListAsync(cancellationToken);
 
-        var withLogos = items.Select(b => b with { LogoUrl = ToLogoUrl(b.LogoUrl) }).ToList();
-
+        var withLogos = items.Select(b => b with
+        {
+            LogoUrl = ToLogoUrl(b.LogoUrl),
+            AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
+        }).ToList();
         // Without a date: the list as before. With a date: only businesses with a free time that day
         var list = date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);
         // "Nær meg": nearest first instead of by name or soonest time

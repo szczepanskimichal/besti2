@@ -4,6 +4,8 @@ import { getCategoryLabel } from "@/lib/categories";
 import { formatTime } from "@/lib/format";
 import styles from "./BusinessCard.module.css";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
+import Stars from "@/components/Stars/Stars";
+
 
 type Props = {
     business: BusinessListItem;
@@ -26,6 +28,13 @@ export default function BusinessCard({ business, date }: Props) {
                     <span aria-hidden="true">📍</span> {business.city}
                     {business.distanceKm != null && ` · ${formatDistance(business.distanceKm)} unna`}
                 </p>
+                {business.averageRating !== null && (
+                    <p className={styles.rating}>
+                    <Stars value={business.averageRating}/>{" "}
+                    {business.averageRating.toString().replace(".", ",")} · {business.reviewCount}{" "}
+                    {business.reviewCount === 1 ? "vurdering" : "vurderinger"}
+                </p>
+            )}
                 {business.description && <p className={styles.description}>{business.description}</p>}
             </NextLink>
             {slots.length > 0 && (

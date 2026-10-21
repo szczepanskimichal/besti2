@@ -8,6 +8,8 @@ export type BusinessListItem = {
     logoUrl: string | null;
     freeSlots: FreeSlot[] | null; // only when searching with a date
     distanceKm: number | null; // only with "Nær meg"
+    averageRating: number | null; // e.g. 4.7; null when nobody has reviewed yet
+    reviewCount: number;
 };
 
 export type FreeSlot = {

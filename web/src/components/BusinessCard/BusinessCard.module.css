@@ -127,3 +127,9 @@
 
     color: #fff;
 }
+/* "★★★★★ 4,7 · 12 vurderinger" under the city */
+.rating {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
