@@ -23,8 +23,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     {
         var service = await dbContext.Services
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted, cancellationToken);
-        var employee = await dbContext.Employees
+            .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted && !s.Business.IsHidden, cancellationToken);        var employee = await dbContext.Employees
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == employeeId && !e.IsDeleted, cancellationToken);
         if (service is null || employee is null || service.BusinessId != employee.BusinessId)
