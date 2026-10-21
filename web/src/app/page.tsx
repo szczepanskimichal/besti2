@@ -30,8 +30,8 @@ export default async function Home({searchParams}: HomeProps) {
     const km = isNumber(query.km) ? query.km : undefined;
     const page = isNumber(query.page) ? query.page : undefined;
     const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    
-            // Only the cities here (fast); the businesses load inside Suspense below
+        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));
+        // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>

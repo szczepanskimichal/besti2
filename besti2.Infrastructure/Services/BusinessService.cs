@@ -14,7 +14,8 @@ namespace besti2.Infrastructure.Services;
 public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding, IImageStorage imageStorage)
     : IBusinessService
 {
-    private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;    
+    private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
+
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
