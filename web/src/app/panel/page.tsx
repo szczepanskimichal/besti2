@@ -2,9 +2,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBookings, getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { clockMinutes, formatDay, formatTime, isIsoDate, osloMinutes, shiftDay, todayInOslo, weekdayOf } from "@/lib/format";
+import {
+    clockMinutes, formatDay, formatTime, isIsoDate, osloMinutes, shiftDay, todayInOslo, weekdayOf,
+} from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
-import type { Employee, PanelBooking } from "@/lib/types";
+import type { BusinessDetails, PanelBooking } from "@/lib/types";
 import PanelNav from "./PanelNav";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
@@ -13,46 +15,80 @@ import calendar from "./calendar.module.css";
 const PX_PER_MINUTE = 80 / 60;
 
 type CalendarPageProps = {
-    searchParams: Promise<{ dag?: string; feil?: string }>;
+    searchParams: Promise<{ dag?: string; visning?: string; ansatt?: string; avlyste?: string; feil?: string }>;
 };
 
-// The business calendar: one day, a column per employee, visits as blocks from start to end
+type Column = { id: string; title: string; bookings: PanelBooking[] };
+type Range = { start: number; end: number };
+
+// The business calendar: one day with a column per employee, or one week with a column per day
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
 
-    const { dag, feil } = await searchParams;
-    const day = isIsoDate(dag) ? dag : todayInOslo();
-    const [business, bookings] = await Promise.all([getPanelBusiness(token), getPanelBookings(token, day, day)]);
-    if (!business || !bookings) {
+    const query = await searchParams;
+    const day = isIsoDate(query.dag) ? query.dag : todayInOslo();
+    const week = query.visning === "uke";
+    const showCancelled = query.avlyste === "1";
+    // Week = Monday to Sunday around the chosen day
+    const first = week ? shiftDay(day, -((weekdayOf(day) + 6) % 7)) : day;
+    const last = week ? shiftDay(first, 6) : day;
+
+    const [business, allBookings] = await Promise.all([getPanelBusiness(token), getPanelBookings(token, first, last)]);
+    if (!business || !allBookings) {
         redirect("/logg-inn");
     }
 
-    const columns = calendarColumns(business.employees, bookings);
-    const hours = business.openingHours.find((h) => h.dayOfWeek === weekdayOf(day));
-    const range = visibleRange(hours ? { opens: clockMinutes(hours.opensAt), closes: clockMinutes(hours.closesAt) } : null, bookings);
-    const height = (range.end - range.start) * PX_PER_MINUTE;
+    const employeeFilter = week && business.employees.some((e) => e.id === query.ansatt) ? query.ansatt : undefined;
+    const bookings = allBookings
+        .filter((b) => showCancelled || b.status !== "Avlyst")
+        .filter((b) => !employeeFilter || b.employeeId === employeeFilter);
+    const columns = week ? dayColumns(first, bookings) : employeeColumns(business, bookings);
+    const range = visibleRange(business, week ? weekDays(first) : [day], bookings);
+
+    // The same view with one value changed (keeps the other choices)
+    const link = (change: Record<string, string | undefined>) => {
+        const params = new URLSearchParams();
+        const values = { dag: day, visning: week ? "uke" : undefined, ansatt: employeeFilter,
+            avlyste: showCancelled ? "1" : undefined, ...change };
+        for (const [key, value] of Object.entries(values)) {
+            if (value) params.set(key, value);
+        }
+        return `/panel?${params}`;
+    };
+    const step = week ? 7 : 1;
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
             <PanelNav title="Kalender"/>
 
-            {feil && (
+            {query.feil && (
                 <p className={styles.error} role="alert">
-                    {feil === "for-sent"
+                    {query.feil === "for-sent"
                         ? "Bestillingen kan ikke avlyses lenger – timen har allerede startet."
                         : "Kunne ikke endre bestillingen. Prøv igjen."}
                 </p>
             )}
 
             <div className={calendar.toolbar}>
-                <Link href={`/panel?dag=${shiftDay(day, -1)}`} className={styles.secondaryButton} aria-label="Forrige dag">←</Link>
-                <Link href="/panel" className={styles.secondaryButton}>I dag</Link>
-                <Link href={`/panel?dag=${shiftDay(day, 1)}`} className={styles.secondaryButton} aria-label="Neste dag">→</Link>
-                <h2 className={calendar.dayTitle}>{formatDay(day)}</h2>
+                <div className={calendar.segmented} role="group" aria-label="Visning">
+                    <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={week ? undefined : "page"}>Dag</Link>
+                    <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
+                </div>
+                <Link href={link({ dag: shiftDay(day, -step) })} className={styles.secondaryButton}
+                      aria-label={week ? "Forrige uke" : "Forrige dag"}>←</Link>
+                <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
+                <Link href={link({ dag: shiftDay(day, step) })} className={styles.secondaryButton}
+                      aria-label={week ? "Neste uke" : "Neste dag"}>→</Link>
+                <h2 className={calendar.dayTitle}>
+                    {week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
+                </h2>
                 <form method="get" className={calendar.datePicker}>
+                    {week && <input type="hidden" name="visning" value="uke"/>}
+                    {employeeFilter && <input type="hidden" name="ansatt" value={employeeFilter}/>}
+                    {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
                     <label>
                         <span className={calendar.srOnly}>Velg dato</span>
                         <input type="date" name="dag" defaultValue={day}/>
@@ -61,70 +97,136 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </form>
             </div>
 
-            {!hours && <p className={styles.muted}>Stengt denne dagen.</p>}
-
-            <div className={calendar.scroller}>
-                <div className={calendar.grid} style={{ gridTemplateColumns: `56px repeat(${columns.length}, minmax(160px, 1fr))` }}>
-                    {/* Header row: one name per column */}
-                    <div className={calendar.corner}/>
-                    {columns.map((column) => (
-                        <div key={column.id} className={calendar.columnHead}>{column.name}</div>
-                    ))}
-
-                    {/* Hour labels on the left */}
-                    <div className={calendar.hours} style={{ height }}>
-                        {hourMarks(range).map((minute) => (
-                            <span key={minute} style={{ top: (minute - range.start) * PX_PER_MINUTE }}>
-                                {String(minute / 60).padStart(2, "0")}:00
-                            </span>
-                        ))}
-                    </div>
-
-                    {/* One column per employee with the visits as blocks */}
-                    {columns.map((column) => (
-                        <div key={column.id} className={calendar.column} style={{ height }}>
-                            {hourMarks(range).map((minute) => (
-                                <div key={minute} className={calendar.hourLine} style={{ top: (minute - range.start) * PX_PER_MINUTE }}/>
-                            ))}
-                            {bookings.filter((b) => b.employeeId === column.id).map((booking) => {
-                                const start = Math.max(osloMinutes(booking.startUtc), range.start);
-                                const end = Math.min(osloMinutes(booking.endUtc) || 24 * 60, range.end);
-                                return (
-                                    <div
-                                        key={booking.id}
-                                        className={`${calendar.booking} ${calendar[booking.status] ?? ""}`}
-                                        style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
-                                        title={`${booking.customerName} – ${booking.serviceName} (${statusLabels[booking.status] ?? booking.status})`}
-                                    >
-                                        <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
-                                        <span className={calendar.customer}>{booking.customerName}</span>
-                                        <span className={calendar.service}>{booking.serviceName}</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ))}
-                </div>
+            <div className={calendar.filters}>
+                {week && (
+                    <form method="get" className={calendar.employeeFilter}>
+                        <input type="hidden" name="visning" value="uke"/>
+                        <input type="hidden" name="dag" value={day}/>
+                        {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
+                        <label>
+                            Ansatt{" "}
+                            <select name="ansatt" defaultValue={employeeFilter ?? ""}>
+                                <option value="">Alle ansatte</option>
+                                {business.employees.map((e) => (
+                                    <option key={e.id} value={e.id}>{e.name} {e.lastName}</option>
+                                ))}
+                            </select>
+                        </label>
+                        <button type="submit" className={styles.secondaryButton}>Vis</button>
+                    </form>
+                )}
+                <Link href={link({ avlyste: showCancelled ? undefined : "1" })} className={calendar.toggle}>
+                    {showCancelled ? "Skjul avlyste" : "Vis avlyste"}
+                </Link>
             </div>
+
+            {!week && !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(day)) && (
+                <p className={styles.muted}>Stengt denne dagen.</p>
+            )}
+
+            <TimeGrid columns={columns} range={range} showEmployee={week}/>
         </main>
     );
 }
 
-// The employees as columns; a booking for an employee who was removed still gets a column
-function calendarColumns(employees: Employee[], bookings: PanelBooking[]) {
-    const columns = employees.map((e) => ({ id: e.id, name: `${e.name} ${e.lastName}`.trim() }));
+// The grid: hours on the left, one column per employee (day) or per day (week)
+function TimeGrid({ columns, range, showEmployee }: { columns: Column[]; range: Range; showEmployee: boolean }) {
+    const height = (range.end - range.start) * PX_PER_MINUTE;
+    const marks = hourMarks(range);
+    return (
+        <div className={calendar.scroller}>
+            <div className={calendar.grid} style={{ gridTemplateColumns: `56px repeat(${columns.length}, minmax(140px, 1fr))` }}>
+                <div className={calendar.corner}/>
+                {columns.map((column) => (
+                    <div key={column.id} className={calendar.columnHead}>{column.title}</div>
+                ))}
+
+                <div className={calendar.hours} style={{ height }}>
+                    {marks.map((minute) => (
+                        <span key={minute} style={{ top: (minute - range.start) * PX_PER_MINUTE }}>
+                            {String(minute / 60).padStart(2, "0")}:00
+                        </span>
+                    ))}
+                </div>
+
+                {columns.map((column) => (
+                    <div key={column.id} className={calendar.column} style={{ height }}>
+                        {marks.map((minute) => (
+                            <div key={minute} className={calendar.hourLine} style={{ top: (minute - range.start) * PX_PER_MINUTE }}/>
+                        ))}
+                        {column.bookings.map((booking) => {
+                            const start = Math.max(osloMinutes(booking.startUtc), range.start);
+                            const end = Math.min(osloMinutes(booking.endUtc) || 24 * 60, range.end);
+                            return (
+                                <div
+                                    key={booking.id}
+                                    className={`${calendar.booking} ${calendar[booking.status] ?? ""}`}
+                                    style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
+                                    title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName} (${statusLabels[booking.status] ?? booking.status})`}
+                                >
+                                    <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                    <span className={calendar.customer}>{booking.customerName}</span>
+                                    <span className={calendar.service}>
+                                        {showEmployee ? `${booking.employeeName} · ${booking.serviceName}` : booking.serviceName}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Day view: the employees as columns; a booking for an employee who was removed still gets a column
+function employeeColumns(business: BusinessDetails, bookings: PanelBooking[]): Column[] {
+    const columns: Column[] = business.employees.map((e) => ({
+        id: e.id,
+        title: `${e.name} ${e.lastName}`.trim(),
+        bookings: bookings.filter((b) => b.employeeId === e.id),
+    }));
     for (const booking of bookings) {
         if (!columns.some((c) => c.id === booking.employeeId)) {
-            columns.push({ id: booking.employeeId, name: booking.employeeName });
+            columns.push({
+                id: booking.employeeId,
+                title: booking.employeeName,
+                bookings: bookings.filter((b) => b.employeeId === booking.employeeId),
+            });
         }
     }
     return columns;
 }
 
-// From the opening hour to the closing hour, widened to whole hours and to visits outside the hours
-function visibleRange(hours: { opens: number; closes: number } | null, bookings: PanelBooking[]) {
-    let start = hours?.opens ?? 8 * 60;
-    let end = hours?.closes ?? 17 * 60;
+// Week view: Monday to Sunday as columns
+function dayColumns(monday: string, bookings: PanelBooking[]): Column[] {
+    return weekDays(monday).map((date) => ({
+        id: date,
+        title: shortDay(date),
+        bookings: bookings.filter((b) => osloDate(b.startUtc) === date),
+    }));
+}
+
+// "2026-10-19" -> "man. 19.10." (short enough for a column head)
+function shortDay(date: string): string {
+    return new Intl.DateTimeFormat("nb-NO", { timeZone: "UTC", weekday: "short", day: "numeric", month: "numeric" })
+        .format(new Date(`${date}T12:00:00Z`));
+}
+
+function weekDays(monday: string): string[] {
+    return [0, 1, 2, 3, 4, 5, 6].map((n) => shiftDay(monday, n));
+}
+
+// "2026-10-26T08:30:00Z" -> "2026-10-26" (the day in Oslo)
+function osloDate(utc: string): string {
+    return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" }).format(new Date(utc));
+}
+
+// From the earliest opening to the latest closing of the shown days, widened to whole hours and to visits
+function visibleRange(business: BusinessDetails, days: string[], bookings: PanelBooking[]): Range {
+    const hours = business.openingHours.filter((h) => days.some((d) => weekdayOf(d) === h.dayOfWeek));
+    let start = hours.length ? Math.min(...hours.map((h) => clockMinutes(h.opensAt))) : 8 * 60;
+    let end = hours.length ? Math.max(...hours.map((h) => clockMinutes(h.closesAt))) : 17 * 60;
     for (const booking of bookings) {
         start = Math.min(start, osloMinutes(booking.startUtc));
         end = Math.max(end, osloMinutes(booking.endUtc) || 24 * 60);
@@ -133,10 +235,17 @@ function visibleRange(hours: { opens: number; closes: number } | null, bookings:
 }
 
 // 480, 540, 600 ... for every whole hour in the range
-function hourMarks(range: { start: number; end: number }) {
+function hourMarks(range: Range): number[] {
     const marks: number[] = [];
     for (let minute = range.start; minute < range.end; minute += 60) {
         marks.push(minute);
     }
     return marks;
+}
+
+// ISO week number (week 1 has the first Thursday of the year), as on Norwegian calendars
+function isoWeek(monday: string): number {
+    const thursday = new Date(`${shiftDay(monday, 3)}T12:00:00Z`);
+    const yearStart = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));
+    return Math.ceil(((thursday.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
