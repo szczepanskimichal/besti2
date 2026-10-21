@@ -77,7 +77,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             : list;
     }
 
-    // Free times for the whole list with 4 queries, however many businesses there are (no query per business)
+    // Free times for the whole list with 5 queries, however many businesses there are (no query per business)
 
     private async Task<IReadOnlyList<BusinessListItemDto>> AddFreeSlotsAsync(
 
@@ -120,7 +120,13 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.EmployeeId, b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);
-
+        // Blocked time: EmployeeId null = the whole business is closed
+        var timeOffs = await dbContext.TimeOffs.AsNoTracking()
+            .Where(t => businessIds.Contains(t.BusinessId)
+                        && t.StartUtc < toUtc
+                        && t.EndUtc > fromUtc)
+            .Select(t => new { t.BusinessId, t.EmployeeId, t.StartUtc, t.EndUtc })
+            .ToListAsync(cancellationToken);
         var nowUtc = DateTime.UtcNow;
 
         var text = q?.Trim().ToLower();
@@ -152,8 +158,11 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 .Where(e => e.BusinessId == business.Id)
                 .SelectMany(e => SlotCalculator.GetFreeSlots(
                         date, dayHours.OpensAt, dayHours.ClosesAt, service.DurationMinutes,
-                        bookings.Where(b => b.EmployeeId == e.Id).Select(b => (b.StartUtc, b.EndUtc)).ToList(),
-                        nowUtc)
+                        bookings.Where(b => b.EmployeeId == e.Id).Select(b => (b.StartUtc, b.EndUtc))
+                            .Concat(timeOffs.Where(t => t.BusinessId == business.Id
+                                                        && (t.EmployeeId == null || t.EmployeeId == e.Id))
+                                .Select(t => (t.StartUtc, t.EndUtc)))
+                            .ToList(),                        nowUtc)
                     .Where(start => IsInTimeWindow(start, from, to))
                     .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
                 .OrderBy(s => s.StartUtc)
@@ -468,7 +477,6 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
-
 
     public async Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,
         CancellationToken cancellationToken = default)

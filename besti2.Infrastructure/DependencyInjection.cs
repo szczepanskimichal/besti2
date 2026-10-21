@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IBusinessImageService, BusinessImageService>();
         services.AddScoped<IBookingAnonymizer, BookingAnonymizer>();
         services.AddScoped<IReviewService, ReviewService>();
+        services.AddScoped<ITimeOffService, TimeOffService>();
         return services;
     }
 

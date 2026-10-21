@@ -305,6 +305,59 @@ app.MapPost("/api/panel/bookings", async (CreateManualBookingRequest request, Cl
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
+// Business panel: blocked time (holiday, doctor, closed day) for the calendar days from-to
+app.MapGet("/api/panel/timeoff", async (DateOnly from, DateOnly to, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, ITimeOffService timeOffService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    if (to < from || to.DayNumber - from.DayNumber > 62)
+    {
+        return Results.BadRequest(new { message = "Ugyldig periode." });
+    }
+
+    return Results.Ok(await timeOffService.GetForBusinessAsync(businessId, from, to, cancellationToken));
+}).RequireAuthorization();
+
+// Business panel: block time for one employee or the whole business (visits already there are kept)
+app.MapPost("/api/panel/timeoff", async (CreateTimeOffRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, ITimeOffService timeOffService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    var result = await timeOffService.CreateAsync(businessId, request, cancellationToken);
+    if (result is null)
+    {
+        return Results.NotFound();
+    }
+
+    return result.Error is null
+        ? Results.Created($"/api/panel/timeoff/{result.TimeOff!.Id}", result)
+        : Results.BadRequest(new { message = result.Error });
+}).RequireAuthorization();
+
+// Business panel: remove blocked time
+app.MapDelete("/api/panel/timeoff/{id:guid}", async (Guid id, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, ITimeOffService timeOffService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
+
+    return await timeOffService.DeleteAsync(businessId, id, cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound();
+}).RequireAuthorization();
 
 // Business panel: the owner's own business with services and employees
 app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
