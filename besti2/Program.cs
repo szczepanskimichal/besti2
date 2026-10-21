@@ -28,7 +28,7 @@ builder.Services.AddAuthorization();
 builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
         options.SignIn.RequireConfirmedEmail = true;
-        // A long password is much harder to guess than a short one full of symbols
+        // Min. 6 characters with upper and lower case, a digit and a symbol (Identity's default rules)
         options.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<AppDbContext>();

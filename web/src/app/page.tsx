@@ -30,7 +30,8 @@ export default async function Home({searchParams}: HomeProps) {
     const km = isNumber(query.km) ? query.km : undefined;
     const page = isNumber(query.page) ? query.page : undefined;
     const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    // Only the cities here (fast); the businesses load inside Suspense below
+        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    
+            // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
@@ -150,7 +151,8 @@ async function Results({category, city, q, date, tid, lat, lng, km, page}: Searc
     const day = date || (tid ? todayInOslo() : undefined);
     const timeWindow = day ? timeWindows[tid ?? ""] : undefined;
     const result = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng, km, page);
-    const businesses = result.items;    if (businesses.length === 0) {
+    const businesses = result.items;
+    if (businesses.length === 0) {
         if (day) {
 // Same search, one day later
             const params = new URLSearchParams({date: nextDay(day)});

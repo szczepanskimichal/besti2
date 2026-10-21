@@ -95,11 +95,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
-            // No owner, no business: remove it again
-            dbContext.Businesses.Remove(business);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            // Nothing is kept: the transaction is never committed
             return new RegisterBusinessResult(false, "Kunne ikke opprette kontoen. Prøv igjen.");
-            
         }
         // 4. Defaults so the business is bookable right away: owner as employee, Mon-Fri 09-17
         dbContext.Employees.Add(new Employee
