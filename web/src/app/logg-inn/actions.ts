@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getMe, login } from "@/lib/api";
 import { TOKEN_COOKIE } from "@/lib/auth";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 
 export async function loginAction(formData: FormData) {
     const email = String(formData.get("email") ?? "");
@@ -28,9 +29,7 @@ export async function loginAction(formData: FormData) {
     });
     // Customers go back to where they were (e.g. the chosen time), businesses to their panel
     const me = await getMe(result.accessToken);
-    const next = String(formData.get("neste") ?? "");
-    // "//evil.com" and "/\evil.com" would send the user to another site
-    const safeNext = next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\") ? next : "/";
+    const safeNext = safeRedirectPath(String(formData.get("neste") ?? ""));
     redirect(me?.isBusiness ? "/panel" : safeNext);
 }
 
