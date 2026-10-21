@@ -48,6 +48,15 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);
+        // Blocked time of this employee or of the whole business counts as busy too
+        var blocked = await dbContext.TimeOffs
+            .AsNoTracking()
+            .Where(t => t.BusinessId == service.BusinessId
+                        && (t.EmployeeId == null || t.EmployeeId == employeeId)
+                        && t.StartUtc < toUtc
+                        && t.EndUtc > fromUtc)
+            .Select(t => new { t.StartUtc, t.EndUtc })
+            .ToListAsync(cancellationToken);
         var hours = await dbContext.OpeningHours
             .AsNoTracking()
             .FirstOrDefaultAsync(h => h.BusinessId == service.BusinessId && h.DayOfWeek == date.DayOfWeek,
@@ -63,7 +72,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             hours.OpensAt,
             hours.ClosesAt,
             service.DurationMinutes,
-            busy.Select(b => (b.StartUtc, b.EndUtc)).ToList(),
+            busy.Select(b => (b.StartUtc, b.EndUtc)).Concat(blocked.Select(t => (t.StartUtc, t.EndUtc))).ToList(),
             DateTime.UtcNow);
     }
 
@@ -184,7 +193,16 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
-
+        // Blocked time (holiday, closed day) cannot be booked, not even by the business itself
+        var blocked = await dbContext.TimeOffs.AnyAsync(t => t.BusinessId == businessId
+                                                             && (t.EmployeeId == null || t.EmployeeId == request.EmployeeId)
+                                                             && t.StartUtc < endUtc && t.EndUtc > startUtc,
+            cancellationToken);
+        if (blocked)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid,
+                Error: "Den ansatte er ikke tilgjengelig da (blokkert tid).");
+        }
         var overlaps = await dbContext.Bookings.AnyAsync(b => b.EmployeeId == request.EmployeeId
                                                               && b.Status != BookingStatus.Avlyst
                                                               && b.StartUtc < endUtc && b.EndUtc > startUtc,

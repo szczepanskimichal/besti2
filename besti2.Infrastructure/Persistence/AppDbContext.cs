@@ -18,7 +18,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<OpeningHours> OpeningHours { get; set; } = null!;
     public DbSet<BusinessImage> BusinessImages { get; set; } = null!;
     public DbSet<Review> Reviews { get; set; } = null!;
-    
+    public DbSet<TimeOff> TimeOffs { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -175,6 +175,22 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.Comment).HasMaxLength(500);
             e.Property(x => x.BusinessReply).HasMaxLength(500);
+        });
+        modelBuilder.Entity<TimeOff>(e =>
+        {
+            e.HasIndex(x => new { x.BusinessId, x.StartUtc });
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Restrict: SQL Server allows only one cascade path (Business -> Employee -> TimeOff would be a second)
+            e.HasOne(x => x.Employee).WithMany()
+                .HasForeignKey(x => x.EmployeeId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.Reason).HasMaxLength(100);
+            e.Property(x => x.StartUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.EndUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         });
     }
         // Seed helpers for OpeningHours
