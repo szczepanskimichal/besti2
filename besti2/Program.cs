@@ -29,7 +29,7 @@ builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
         options.SignIn.RequireConfirmedEmail = true;
         // A long password is much harder to guess than a short one full of symbols
-        options.Password.RequiredLength = 10;
+        options.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<AppDbContext>();
 builder.Services.AddHostedService<BookingAnonymizationJob>();
