@@ -78,7 +78,7 @@ export const getBusiness = cache(async (id: string): Promise<BusinessDetails | n
     }
 
     return res.json();
-};
+});
 
 export async function getCities(): Promise<string[]> {
     const res = await apiFetch("/api/cities");
