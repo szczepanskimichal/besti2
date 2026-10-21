@@ -1,14 +1,18 @@
+import type { Metadata } from "next";
 import NextLink from "next/link";
 import { cookies } from "next/headers";
 import { NEXT_COOKIE } from "@/lib/auth";
 import { confirmEmail } from "@/lib/api";
 import styles from "../logg-inn/page.module.css";
+import { privatePage } from "@/lib/site";
+
+export const metadata: Metadata = { title: "Bekreft e-post", robots: privatePage };
 
 type Props = {
     searchParams: Promise<{ id?: string; kode?: string }>;
 };
 
-    // The link in the confirmation mail opens this page; it confirms the email right away
+// The link in the confirmation mail opens this page; it confirms the email right away
 export default async function ConfirmEmailPage({ searchParams }: Props) {
     const { id, kode } = await searchParams;
     const confirmed = id && kode ? await confirmEmail(id, kode) : false;

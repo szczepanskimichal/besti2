@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+import { privatePage } from "@/lib/site";
 import LoginForm from "./LoginForm";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = { title: "Logg inn", robots: privatePage };
 
 type LoginPageProps = {
     searchParams: Promise<{ registrert?: string, nyttPassord?: string, neste?: string }>;
