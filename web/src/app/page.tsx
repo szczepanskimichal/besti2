@@ -1,7 +1,7 @@
 import BusinessCard from '@/components/BusinessCard/BusinessCard';
 import {getBusinesses, getCities} from '@/lib/api';
 import {categoryOptionGroups} from '@/lib/categories';
-import {todayInOslo} from '@/lib/format';
+import {isIsoDate, isNumber, todayInOslo} from '@/lib/format';
 import {Suspense} from "react";
 import Form from "next/form";
 import Link from "next/link";
@@ -21,8 +21,13 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
 // "Nær meg" radius choices in km (0 = all distances)
 const radiusOptions = [0, 2, 5, 10, 25, 50, 75, 100];
 export default async function Home({searchParams}: HomeProps) {
-    const {category, city, q, date, tid, lat, lng, km} = await searchParams;
-    // The same search without "Nær meg" (for the "Vis alle" link)
+    const query = await searchParams;
+    const {category, city, q, tid} = query;
+    // Broken or edited links (e.g. ?date=abc) must not crash the page: invalid values are ignored
+    const date = isIsoDate(query.date) ? query.date : undefined;
+    const lat = isNumber(query.lat) ? query.lat : undefined;
+    const lng = isNumber(query.lng) ? query.lng : undefined;
+    const km = isNumber(query.km) ? query.km : undefined;    // The same search without "Nær meg" (for the "Vis alle" link)
     const withoutNearMe = new URLSearchParams(
         Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));    // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();

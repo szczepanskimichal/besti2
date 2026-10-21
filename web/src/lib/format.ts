@@ -47,3 +47,12 @@ const osloDate = new Intl.DateTimeFormat("nb-NO", {
 export function formatDate(utc: string): string {
     return osloDate.format(new Date(utc));
 }
+// Values from the address bar can be anything (old, cut-off or edited links): only real values pass
+export function isIsoDate(value: string | undefined): value is string {
+// "2026-02-31" would roll over to March, so the date must come back unchanged
+    return !!value && /^\d{4}-\d{2}-\d{2}$/.test(value)
+        && !Number.isNaN(Date.parse(value)) && new Date(`${value}T12:00:00Z`).toISOString().startsWith(value);
+}
+export function isNumber(value: string | undefined): value is string {
+    return !!value && value.trim() !== "" && Number.isFinite(Number(value));
+}

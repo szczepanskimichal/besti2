@@ -1,26 +1,18 @@
 import Link from "next/link";
-import { loginAction } from "./actions";
-import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import LoginForm from "./LoginForm";
 import styles from "./page.module.css";
 
 type LoginPageProps = {
-    searchParams: Promise<{ feil?: string, registrert?: string, nyttPassord?: string, neste?: string }>;
+    searchParams: Promise<{ registrert?: string, nyttPassord?: string, neste?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-    const { feil, registrert, nyttPassord, neste } = await searchParams;
+    const { registrert, nyttPassord, neste } = await searchParams;
 
     return (
         <main className={styles.main}>
             <h1 className={styles.title}>Logg inn</h1>
             <p className={styles.muted}>For kunder og bedrifter.</p>
-            {feil && (
-                <p className={styles.error} role="alert">
-                    {feil === "for-mange"
-                        ? "For mange forsøk. Prøv igjen om litt."
-                        : "Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først."}
-                </p>
-            )}
             {registrert && (
                 <p className={styles.success} role="status">
                     Bedriften er registrert. Sjekk e-posten din og klikk på lenken for å bekrefte, så kan du logge inn.
@@ -31,22 +23,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     Passordet er endret. Logg inn med det nye passordet.
                 </p>
             )}
-            <form action={loginAction} className={styles.form}>
-                <input type="hidden" name="neste" value={neste ?? ""} />
-                <label className={styles.field}>
-                    E-post
-                    <input name="email" type="email" required autoComplete="email" />
-                </label>
-                <label className={styles.field}>
-                    Passord
-                    <input name="password" type="password" required autoComplete="current-password" />
-                </label>
-                <SubmitButton className={styles.primaryButton} pendingText="Logger inn…">
-                    Logg inn
-                </SubmitButton>
-            </form>
+            <LoginForm neste={neste ?? ""} />
             <p className={styles.signup}>
-                Ny kunde? <Link href="/registrer">Opprett konto</Link>
+                Ny kunde? <Link href={`/registrer?neste=${encodeURIComponent(neste ?? "/")}`}>Opprett konto</Link>
             </p>
             <p className={styles.signup}>
                 Har du bedrift? <Link href="/registrer-bedrift">Registrer bedriften din</Link>

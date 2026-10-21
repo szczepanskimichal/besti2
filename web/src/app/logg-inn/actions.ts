@@ -5,18 +5,21 @@ import { redirect } from "next/navigation";
 import { getMe, login } from "@/lib/api";
 import { TOKEN_COOKIE } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/safeRedirect";
+import { FormState } from "@/lib/formState";
 
-export async function loginAction(formData: FormData) {
+export async function loginAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const email = String(formData.get("email") ?? "");
     const password = String(formData.get("password") ?? "");
 
     const result = await login(email, password);
-
-    if(result === "tooMany") {
-        redirect("/logg-inn?feil=for-mange");
+    if (result === "tooMany") {
+        return { error: "For mange forsøk. Prøv igjen om litt.", values: { email } };
     }
     if (!result) {
-        redirect("/logg-inn?feil=1");
+        return {
+            error: "Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først.",
+            values: { email },
+        };
     }
 
     const cookieStore = await cookies();

@@ -2,19 +2,18 @@ import NextLink from "next/link";
 import {notFound} from "next/navigation";
 import {getAvailability, getBusiness, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {formatDate, formatPrice, formatTime, todayInOslo} from "@/lib/format";
-import {createBookingAction} from "./actions";
-import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import {formatDate, formatPrice, formatTime, isIsoDate, todayInOslo} from "@/lib/format";
+import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; feil?: string }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
     const {id} = await params;
-    const {tjeneste, ansatt, dato, tid, feil} = await searchParams;
+    const {tjeneste, ansatt, dato, tid} = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -23,14 +22,18 @@ export default async function BookingPage({params, searchParams}: Props) {
         notFound();
     }
 
-    const employeeId = ansatt ?? business.employees[0]?.id;
-    const date = dato ?? todayInOslo();
+
+    // Only values that still make sense (old "Bestill igjen" links, edited or cut-off addresses)
+    const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt! : business.employees[0]?.id;
+    const date = isIsoDate(dato) ? dato : todayInOslo();
     const slots = employeeId ? await getAvailability(service.id, employeeId, date) : null;
+    // The chosen time must still be free; otherwise the customer picks a new one
+    const chosenTime = tid && slots?.includes(tid) ? tid : undefined;
 
     // Who is booking: null = not logged in
     const token = await getToken();
     const me = token ? await getMe(token) : null;
-    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(tid ?? "")}`;
+    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(chosenTime ?? "")}`;
     
     return (
         <main className={styles.main}>
@@ -73,7 +76,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         <li key={slot}>
                             <NextLink
                                 href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(slot)}`}
-                                className={slot === tid ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
+                                className={slot === chosenTime ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
                             >
                                 {formatTime(slot)}
                             </NextLink>
@@ -81,53 +84,28 @@ export default async function BookingPage({params, searchParams}: Props) {
                     ))}
                 </ul>
             )}
-            {tid && (
+            {tid && !chosenTime && (
+                <p className={styles.error} role="alert">Den valgte tiden er ikke lenger ledig. Velg en annen tid.</p>
+            )}
+            {chosenTime && (
                 <section>
                     <h2 className={styles.sectionTitle}>Dine opplysninger</h2>
                     <p className={styles.muted}>
-                        Valgt tid: <strong>{formatDate(tid)} kl. {formatTime(tid)}</strong>
+                        {formatDate(chosenTime)} kl. {formatTime(chosenTime)}
                     </p>
-                    {feil && <p className={styles.error} role="alert">{feil}</p>}
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}
                             <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
-                            {" "}eller <NextLink href="/registrer">opprett konto</NextLink>.
-                        </p>
+                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett konto</NextLink>.                        </p>
                     )}
                     {me?.isBusiness && (
                         <p className={styles.muted}>Du er logget inn som bedrift. Logg inn med en kundekonto for å
                             bestille.</p>
                     )}
                     {me && !me.isBusiness && (
-                        <form action={createBookingAction} className={styles.form}>
-                            <p className={styles.muted}>Bestiller som <strong>{me.fullName}</strong> ({me.email})</p>
-                            <input type="hidden" name="businessId" value={business.id}/>
-                            <input type="hidden" name="serviceId" value={service.id}/>
-                            <input type="hidden" name="employeeId" value={employeeId}/>
-                            <input type="hidden" name="startUtc" value={tid}/>
-                            <input type="hidden" name="date" value={date}/>
-                            <label className={styles.field}>
-                                Telefon
-                                <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}
-                                       autoComplete="tel" pattern="\+?[0-9 ]{8,20}" placeholder="912 34 567"
-                                       title="Bare tall, mellomrom og +, minst 8 sifre"/>
-                            </label>
-                            <label className={styles.field}>
-                                Melding til bedriften (valgfritt)
-                                <textarea name="note" maxLength={500} rows={3}
-                                          placeholder="F.eks. «Jeg har langt hår»"/>
-                            </label>
-                            <label className={styles.checkbox}>
-                                <input type="checkbox" name="marketingConsent"/>
-                                Ja, jeg vil motta nyhetsbrev og tilbud på e-post
-                            </label>
-                            <p className={styles.muted}>
-                                Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
-                                bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
-                            </p>
-                            <SubmitButton className={styles.primaryButton} pendingText="Bestiller…">Bekreft bestilling</SubmitButton>
-                        </form>
+                        <BookingForm businessId={business.id} serviceId={service.id} employeeId={employeeId}
+                                     startUtc={chosenTime} date={date} fullName={me.fullName} email={me.email}/>
                     )}
                         </section>
                         )}

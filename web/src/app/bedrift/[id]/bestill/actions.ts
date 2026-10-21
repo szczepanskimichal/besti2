@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 import { createBooking } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import type { FormState } from "@/lib/formState";
 
-export async function createBookingAction(formData: FormData) {
+export async function createBookingAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const businessId = String(formData.get("businessId"));
     const serviceId = String(formData.get("serviceId"));
     const employeeId = String(formData.get("employeeId"));
@@ -31,8 +32,14 @@ export async function createBookingAction(formData: FormData) {
     const basePath = `/bedrift/${businessId}/bestill`;
 
     if (!result.ok) {
-        const params = new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc, feil: result.message });
-        redirect(`${basePath}?${params}`);
+        return {
+            error: result.message,
+            values: {
+                customerPhone: String(formData.get("customerPhone") ?? ""),
+                note: String(formData.get("note") ?? ""),
+                marketingConsent: formData.get("marketingConsent") === "on" ? "on" : "",
+            },
+        };
     }
 
     const params = new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, tid: startUtc });
