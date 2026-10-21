@@ -162,8 +162,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
         var body =
-            "Hei!\n\n" +
-// No business name from the form in the mail: it goes to an address nobody has confirmed yet
+            "Hei!\n\n" + 
+            // No business name from the form in the mail: it goes to an address nobody has confirmed yet
             "Takk for at du registrerte bedriften din hos BESTI.\n" +
             $"Klikk på lenken for å bekrefte e-postadressen, så kan du logge inn:\n{link}\n\n" +
             "Har du ikke registrert en bedrift, kan du se bort fra denne e-posten.\n\n" +

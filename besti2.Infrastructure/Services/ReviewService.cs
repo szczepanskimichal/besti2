@@ -28,7 +28,7 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
             return "Kommentaren kan være maks 500 tegn.";
         }
 
-// Only the customer's own booking; someone else's looks like "not found"
+        // Only the customer's own booking; someone else's looks like "not found"
 
         var booking = await dbContext.Bookings.AsNoTracking()
             .Where(b => b.Id == request.BookingId && b.CustomerUserId == customerUserId)
