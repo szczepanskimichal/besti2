@@ -42,11 +42,17 @@ public static class DependencyInjection
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IGeocodingService>(),
             provider.GetRequiredService<IEmailService>(),
-            configuration["WebBaseUrl"] ?? "http://localhost:3000"));
+            configuration["WebBaseUrl"] ?? "http://localhost:3000",
+            provider.GetRequiredService<IBusinessRegistry>()));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),
             configuration["WebBaseUrl"] ?? "http://localhost:3000"));
+        services.AddHttpClient<IBusinessRegistry, BrregBusinessRegistry>(client =>
+        {
+            client.BaseAddress = new Uri("https://data.brreg.no/enhetsregisteret/api/");
+            client.Timeout = TimeSpan.FromSeconds(5);
+        });
         services.AddHttpClient<IGeocodingService, GeonorgeGeocodingService>(client =>
         {
             client.BaseAddress = new Uri("https://ws.geonorge.no/adresser/v1/");

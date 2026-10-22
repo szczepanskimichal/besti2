@@ -11,9 +11,11 @@ using Microsoft.EntityFrameworkCore;
 namespace besti2.Infrastructure.Services;
 
 // webBaseUrl = address of the Next.js site, used in the confirmation link
+// webBaseUrl = address of the Next.js site, used in the confirmation link;
+// registry = Brønnøysund (null in tests that do not need it)
 public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
-    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl) : IBusinessRegistrationService
-{
+    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl, IBusinessRegistry? registry = null)
+    : IBusinessRegistrationService{
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
         // 1. Check the input
@@ -30,15 +32,34 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
                 return new RegisterBusinessResult(false, "Postnummer må være 4 siffer.");
             }
 
-        if (request.OrgNumber is not { Length: 9 } || !request.OrgNumber.All(char.IsDigit))        {
-            return new RegisterBusinessResult(false, "Organisasjonsnummeret må være 9 siffer.");
-        }
+            if (request.OrgNumber is not { Length: 9 } || !request.OrgNumber.All(char.IsDigit))
+            {
+                return new RegisterBusinessResult(false, "Organisasjonsnummeret må være 9 siffer.");
+            }
+            if (!OrgNumber.IsValid(request.OrgNumber))
+            {
+                return new RegisterBusinessResult(false, "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig.");
+            }
 
         if (!Enum.TryParse<BusinessCategory>(request.Category, out var category) || !Enum.IsDefined(category))
         {
             return new RegisterBusinessResult(false, "Velg en gyldig kategori.");
         }
-        
+        // Only real, active businesses (when the register does not answer, the registration goes on)
+        if (registry is not null)
+        {
+            var lookup = await registry.LookupAsync(request.OrgNumber, cancellationToken);
+            if (lookup.Status == RegistryStatus.NotFound)
+            {
+                return new RegisterBusinessResult(false,
+                    "Fant ikke virksomheten i Enhetsregisteret (Brønnøysund). Sjekk organisasjonsnummeret.");
+            }
+            if (lookup.Status == RegistryStatus.Closed)
+            {
+                return new RegisterBusinessResult(false,
+                    "Virksomheten er slettet, konkurs eller under avvikling i Enhetsregisteret.");
+            }
+        }
         // Check the password first, so a weak one never starts saving anything
         foreach (var validator in userManager.PasswordValidators)
         {
