@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { logoutAction } from "../logg-inn/actions";
 import styles from "./page.module.css";
 
 // The top bar of the panel: title, Kalender / Liste and the settings pages
@@ -16,9 +15,6 @@ export default function PanelNav({ title }: { title: string }) {
                 <Link href="/panel/galleri" className={styles.secondaryButton}>Galleri</Link>
                 <Link href="/panel/vurderinger" className={styles.secondaryButton}>Vurderinger</Link>
                 <Link href="/panel/apningstider" className={styles.secondaryButton}>Åpningstider</Link>
-                <form action={logoutAction}>
-                    <button type="submit" className={styles.secondaryButton}>Logg ut</button>
-                </form>
             </nav>
         </div>
     );
