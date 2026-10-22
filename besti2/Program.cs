@@ -579,5 +579,25 @@ app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, ClaimsPrincipal pri
         ChangeBookingStatusAsync(id, BookingStatus.Avlyst, principal, userManager, bookingService, cancellationToken))
     .RequireAuthorization();
 
+// Move a visit to another time and/or employee
+app.MapPost("/api/panel/bookings/{id:guid}/flytt", async (Guid id, MoveBookingRequest request,
+    ClaimsPrincipal principal, UserManager<AppUser> userManager, IBookingService bookingService,
+    CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user?.BusinessId is not Guid businessId)
+    {
+        return Results.Forbid();
+    }
 
+    var result = await bookingService.MoveAsync(id, businessId, request, cancellationToken);
+    return result.Outcome switch
+    {
+        MoveBookingOutcome.Moved => Results.NoContent(),
+        MoveBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
+        MoveBookingOutcome.SlotTaken => Results.Conflict(
+            new { message = "Den ansatte har allerede en time da. Velg et annet tidspunkt." }),
+        _ => Results.NotFound()
+    };
+}).RequireAuthorization();
 app.Run();

@@ -24,13 +24,15 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     {
         var service = await dbContext.Services
             .AsNoTracking()
-            .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted && !s.Business.IsHidden, cancellationToken);        var employee = await dbContext.Employees
+            .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted && !s.Business.IsHidden, cancellationToken);
+        var employee = await dbContext.Employees
             .AsNoTracking()
             .FirstOrDefaultAsync(e => e.Id == employeeId && !e.IsDeleted, cancellationToken);
         if (service is null || employee is null || service.BusinessId != employee.BusinessId)
         {
             return null;
         }
+
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
         if (date.Year is < 2000 or > 2100)
         {
@@ -160,6 +162,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             CreateBookingOutcome.Created,
             new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
     }
+
 // The business adds a visit itself (phone call, walk-in). Confirmed at once; it may be outside the
     // opening hours, but never on top of another visit of the same employee
     public async Task<CreateBookingResult> CreateByBusinessAsync(Guid businessId, CreateManualBookingRequest request,
@@ -193,9 +196,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
+
         // Blocked time (holiday, closed day) cannot be booked, not even by the business itself
         var blocked = await dbContext.TimeOffs.AnyAsync(t => t.BusinessId == businessId
-                                                             && (t.EmployeeId == null || t.EmployeeId == request.EmployeeId)
+                                                             && (t.EmployeeId == null ||
+                                                                 t.EmployeeId == request.EmployeeId)
                                                              && t.StartUtc < endUtc && t.EndUtc > startUtc,
             cancellationToken);
         if (blocked)
@@ -203,6 +208,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return new CreateBookingResult(CreateBookingOutcome.Invalid,
                 Error: "Den ansatte er ikke tilgjengelig da (blokkert tid).");
         }
+
         var overlaps = await dbContext.Bookings.AnyAsync(b => b.EmployeeId == request.EmployeeId
                                                               && b.Status != BookingStatus.Avlyst
                                                               && b.StartUtc < endUtc && b.EndUtc > startUtc,
@@ -285,7 +291,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.EmployeeId))
             .ToListAsync(cancellationToken);
     }
-    
+
     public async Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
         string customerUserId, CancellationToken cancellationToken = default)
     {
@@ -308,7 +314,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 dbContext.Reviews.Any(r => r.BookingId == b.Id)))
             .ToListAsync(cancellationToken);
     }
-    
+
     public async Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
         Guid bookingId, string customerUserId, CancellationToken cancellationToken = default)
     {
@@ -319,11 +325,13 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return UpdateBookingStatusOutcome.NotFound;
         }
+
         // Already cancelled or already started: too late to cancel
         if (booking.Status == BookingStatus.Avlyst || booking.StartUtc <= DateTime.UtcNow)
         {
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
+
         booking.Status = BookingStatus.Avlyst;
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
@@ -354,6 +362,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
+
         // A visit that has started can still be confirmed, but no longer cancelled
         // (otherwise a business could cancel past visits to block reviews)
         if (newStatus == BookingStatus.Avlyst && booking.StartUtc <= DateTime.UtcNow)
@@ -365,6 +374,102 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendStatusEmailAsync(booking, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
+    }
+
+// "Flytt": another time and/or employee; never on top of another visit or blocked time,
+    // outside the opening hours is allowed (as for visits the business adds itself)
+    public async Task<MoveBookingResult> MoveAsync(Guid bookingId, Guid businessId, MoveBookingRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.Service.BusinessId == businessId, cancellationToken);
+        var employeeExists = await dbContext.Employees.AnyAsync(
+            e => e.Id == request.EmployeeId && e.BusinessId == businessId && !e.IsDeleted, cancellationToken);
+        if (booking is null || !employeeExists)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.NotFound);
+        }
+
+        var nowUtc = DateTime.UtcNow;
+        if (booking.Status == BookingStatus.Avlyst || booking.StartUtc <= nowUtc)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.Invalid,
+                "Timen er avlyst eller har allerede startet, og kan ikke flyttes.");
+        }
+
+        if (request.Date.Year is < 2000 or > 2100)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.Invalid, "Ugyldig dato.");
+        }
+
+        // Same length as before (also when the service was changed since)
+        var startUtc = SlotCalculator.ToUtc(request.Date, request.Time);
+        var endUtc = startUtc + (booking.EndUtc - booking.StartUtc);
+        if (startUtc <= nowUtc)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.Invalid, "Velg et tidspunkt fram i tid.");
+        }
+
+        if (startUtc == booking.StartUtc && request.EmployeeId == booking.EmployeeId)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.Invalid, "Velg en ny tid eller en annen ansatt.");
+        }
+
+        // The same lock as new bookings, for the employee who gets the visit
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null && !await TryLockEmployeeAsync(request.EmployeeId, cancellationToken))
+        {
+            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
+        }
+
+        var blocked = await dbContext.TimeOffs.AnyAsync(t => t.BusinessId == businessId
+                                                             && (t.EmployeeId == null ||
+                                                                 t.EmployeeId == request.EmployeeId)
+                                                             && t.StartUtc < endUtc && t.EndUtc > startUtc,
+            cancellationToken);
+        if (blocked)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.Invalid,
+                "Den ansatte er ikke tilgjengelig da (blokkert tid).");
+        }
+
+        // Another visit of that employee (the moved visit itself does not count: 10:00 -> 10:15 is fine)
+        var overlaps = await dbContext.Bookings.AnyAsync(b => b.Id != booking.Id
+                                                              && b.EmployeeId == request.EmployeeId
+                                                              && b.Status != BookingStatus.Avlyst
+                                                              && b.StartUtc < endUtc && b.EndUtc > startUtc,
+            cancellationToken);
+        if (overlaps)
+        {
+            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
+        }
+
+        var oldStartUtc = booking.StartUtc;
+        booking.EmployeeId = request.EmployeeId;
+        booking.StartUtc = startUtc;
+        booking.EndUtc = endUtc;
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
+        if (request.NotifyCustomer)
+        {
+            await SendMovedEmailAsync(booking, oldStartUtc, cancellationToken);
+        }
+
+        return new MoveBookingResult(MoveBookingOutcome.Moved);
     }
 
     // Validate the booking request
@@ -379,6 +484,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
+
         if (string.IsNullOrWhiteSpace(request.CustomerEmail) || request.CustomerEmail.Length > 250 ||
             !request.CustomerEmail.Contains('@'))
         {
@@ -392,30 +498,36 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         return null;
     }
-private static string? ValidateManual(CreateManualBookingRequest request)
+
+    private static string? ValidateManual(CreateManualBookingRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.CustomerName) || request.CustomerName.Length > 100)
         {
             return "Navn er påkrevd (maks 100 tegn).";
         }
+
         if (!IsValidPhone(request.CustomerPhone))
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
+
         // E-mail is optional here (a walk-in customer may not give one)
         if (!string.IsNullOrWhiteSpace(request.CustomerEmail)
             && (request.CustomerEmail.Length > 250 || !request.CustomerEmail.Contains('@')))
         {
             return "Oppgi en gyldig e-postadresse, eller la feltet stå tomt.";
         }
+
         if (request.Note is { Length: > 500 })
         {
             return "Notatet kan være maks 500 tegn.";
         }
+
         if (request.Date.Year is < 2000 or > 2100)
         {
             return "Ugyldig dato.";
         }
+
         return null;
     }
 
@@ -445,6 +557,7 @@ private static string? ValidateManual(CreateManualBookingRequest request)
             return false;
         }
     }
+
     // Send confirmation email to the customer; a failed email must not fail the booking
     private async Task SendConfirmationEmailAsync(Booking booking, Service service, CancellationToken cancellationToken)
     {
@@ -477,7 +590,45 @@ private static string? ValidateManual(CreateManualBookingRequest request)
         }
     }
 
-    // Notify the customer when the business confirms or cancels; a failed email must not fail the update
+    // The new time after "Flytt"; a failed email must not undo the move
+    private async Task SendMovedEmailAsync(Booking booking, DateTime oldStartUtc, CancellationToken cancellationToken)
+    {
+        if (booking.CustomerEmail.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var employee = await dbContext.Employees.AsNoTracking()
+                .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
+
+            string When(DateTime utc) =>
+                TimeZoneInfo.ConvertTimeFromUtc(utc, Oslo).ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                "Timen din har fått ny tid.\n\n" +
+                $"Ny tid: {When(booking.StartUtc)}\n" +
+                $"Tidligere tid: {When(oldStartUtc)}\n" +
+                $"Tjeneste: {service.Name} hos {employee.Name} {employee.LastName}\n" +
+                $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
+                "Passer ikke den nye tiden? Ta kontakt med bedriften, eller avbestill i Min Besti.\n\n" +
+                "Hilsen BESTI";
+
+            await emailService.SendAsync(booking.CustomerEmail, $"Ny tid for bestillingen: {business.Name}", body,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send moved email for booking {BookingId}", booking.Id);
+        }
+    }
+
     private async Task SendStatusEmailAsync(Booking booking, CancellationToken cancellationToken)
     {
         // A visit added by the business may have no e-mail address
@@ -485,6 +636,7 @@ private static string? ValidateManual(CreateManualBookingRequest request)
         {
             return;
         }
+
         try
         {
             var service = await dbContext.Services.AsNoTracking()
@@ -515,7 +667,7 @@ private static string? ValidateManual(CreateManualBookingRequest request)
             logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
         }
     }
-    
+
     // Tell the business that a customer cancelled; a failed email must not fail the cancellation
     private async Task SendCancelledByCustomerEmailAsync(Booking booking, CancellationToken cancellationToken)
     {
@@ -542,7 +694,7 @@ private static string? ValidateManual(CreateManualBookingRequest request)
             logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
-    
+
     // Local -> UTC; a time without a zone is taken as UTC (that is what the web app sends)
     private static DateTime ToUtc(DateTime value) => value.Kind switch
     {
