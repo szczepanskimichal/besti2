@@ -57,7 +57,16 @@ export default function ProfileForms({ profile }: { profile: MyProfile }) {
                     <SubmitButton className={formStyles.primaryButton} pendingText="Lagrer…">Endre passord</SubmitButton>
                 </form>
             </section>
-
+            <section className={panelStyles.card}>
+                <h2 className={styles.heading}>Mine data</h2>
+                <p className={panelStyles.muted}>
+                    Last ned alt BESTI lagrer om deg: konto, timer, vurderinger og varsler (en JSON-fil).
+                </p>
+                {/* A plain link: the browser saves the file */}
+                <a href="/min-besti/profil/eksport" className={panelStyles.secondaryButton} download>
+                    Last ned mine data
+                </a>
+            </section>
             <section className={`${panelStyles.card} ${styles.danger}`}>
                 <h2 className={styles.heading}>Slett konto</h2>
                 <p>

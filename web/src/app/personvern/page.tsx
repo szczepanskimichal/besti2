@@ -1,60 +1,103 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
     title: "Personvernerklæring",
 };
+
+// Must always describe what the app really does. When personal data, purposes, suppliers or storage periods
+// change: update this page and docs/personvern-oversikt.md in the same pull request
 export default function PrivacyPage() {
     return (
         <main className={styles.main}>
             <h1>Personvernerklæring</h1>
-            <p className={styles.updated}>Sist oppdatert: 19. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 22. oktober 2026</p>
+
+            <p>
+                Her forklarer vi hvilke personopplysninger BESTI behandler, hvorfor, hvor lenge og hvilke rettigheter
+                du har. Behandlingen følger personopplysningsloven og personvernforordningen (GDPR).
+            </p>
+
             <h2>Hvem er ansvarlig?</h2>
             <p>
-                BESTI drives av Michał Szczepański (privatperson). Vi er behandlingsansvarlig for bedriftskontoer.
-                Når du bestiller time, er bedriften du bestiller hos behandlingsansvarlig for
-                opplysningene om bestillingen, og BESTI behandler dem på vegne av bedriften
-                (databehandler). Kontakt: michalszczepanski07@gmail.com.
+                BESTI drives av Michał Szczepański. BESTI er behandlingsansvarlig for brukerkontoer (kunder og bedrifter),
+                vurderinger og varsler i tjenesten. For opplysningene om en bestilling er bedriften du bestiller hos
+                også ansvarlig: bedriften bruker opplysningene for å gi deg timen, og BESTI behandler dem på vegne av
+                bedriften. Kontakt: <a href="mailto:michalszczepanski07@gmail.com">michalszczepanski07@gmail.com</a>.
             </p>
-            <h2>Hvilke opplysninger samler vi inn?</h2>
+
+            <h2>Hvilke opplysninger behandler vi?</h2>
             <ul>
-                <li>Når du bestiller time: navn, telefonnummer, e-post, valgt tjeneste og tidspunkt.</li>
-                <li>Hvis du krysser av for nyhetsbrev: at du har samtykket, og når.</li>
-                <li>For bedrifter: bedriftsnavn, organisasjonsnummer, adresse, telefon, e-post, beskrivelse og bilder (logo).</li>
-                <li>For innlogging: e-post og passord. Passordet lagres kun kryptert (hash).</li>
+                <li><strong>Kundekonto:</strong> navn, e-post, passord (lagres bare kryptert som hash) og, hvis du vil,
+                    telefonnummer.</li>
+                <li><strong>Bestillinger:</strong> navn, telefon, e-post, valgt bedrift, tjeneste, ansatt og tidspunkt,
+                    status (venter, bekreftet, avlyst, ny tid) og en melding til bedriften hvis du skriver en.
+                    Ikke skriv sensitive opplysninger, for eksempel om helse, i meldingsfeltet.</li>
+                <li><strong>Vurderinger:</strong> stjerner, kommentar og fornavnet ditt, som vises på bedriftens side.</li>
+                <li><strong>Varsler i tjenesten</strong> (bjellen): korte meldinger om dine timer.</li>
+                <li><strong>Nyhetsbrev:</strong> bare om du krysser av, og når du gjorde det.</li>
+                <li><strong>Bedrifter:</strong> bedriftsnavn, organisasjonsnummer, adresse, telefon, e-post, beskrivelse,
+                    ansatte (navn), åpningstider, bilder og blokkert tid.</li>
+                <li><strong>Teknisk:</strong> IP-adresse brukes kortvarig for å stoppe misbruk (for mange forsøk på
+                    innlogging eller bestilling) og kan stå i serverlogger.</li>
             </ul>
-            <h2>Hvorfor behandler vi opplysningene?</h2>
+
+            <h2>Hvorfor, og med hvilket grunnlag?</h2>
             <ul>
-                <li>For å gjennomføre bestillingen og sende deg bekreftelse på e-post (avtale, GDPR art. 6 nr. 1 b).</li>
-                <li>Bedriften du bestiller hos ser navn, telefon og e-post, slik at de kan gi deg timen.</li>
-                <li>Nyhetsbrev sendes bare hvis du har samtykket (art. 6 nr. 1 a). Du kan trekke samtykket når som helst.</li>
-                <li>For å vise bedriftens adresse på kart henter vi koordinater fra Kartverket.</li>
-                <li>Bilder som lastes opp, blir forminsket og lagret uten skjulte bildedata (EXIF), som GPS-posisjon.</li>
+                <li>For å opprette kontoen din, gjennomføre bestillinger og sende bekreftelser, endringer og avlysninger
+                    på e-post og i varsler (avtale, GDPR art. 6 nr. 1 b).</li>
+                <li>Bedriften ser navn, telefon, e-post og meldingen din, slik at de kan gi deg timen, bekrefte, flytte
+                    eller avlyse den.</li>
+                <li>Vurderinger hjelper andre kunder å velge, og bedriftene å bli bedre (berettiget interesse, art. 6 nr. 1 f).</li>
+                <li>Sikkerhet og å hindre misbruk (berettiget interesse, art. 6 nr. 1 f).</li>
+                <li>Nyhetsbrev bare med samtykke (art. 6 nr. 1 a). Du kan trekke det tilbake når som helst.</li>
+                <li>Når en bedrift registrerer seg, sjekker vi organisasjonsnummeret i Enhetsregisteret
+                    (Brønnøysundregistrene) for å hindre falske bedrifter.</li>
             </ul>
+
             <h2>Hvem deler vi med?</h2>
-            <p>
-                Vi selger aldri personopplysninger. Vi bruker noen leverandører for å drive tjenesten,
-                for eksempel for e-postutsending og drift av servere. De behandler bare opplysninger
-                på våre vegne og etter våre instrukser.
-            </p>
+            <p>Vi selger aldri personopplysninger og bruker ikke annonsenettverk. Opplysninger deles bare slik:</p>
+            <ul>
+                <li><strong>Bedriften du bestiller hos</strong> ser bestillingen din.</li>
+                <li><strong>Leverandører</strong> som drifter tjenesten for oss: servere og e-postutsending. De behandler
+                    opplysningene bare etter våre instrukser (databehandleravtale), innenfor EU/EØS.</li>
+                <li><strong>Kartverket</strong> får bedriftens adresse for å finne koordinater til kartet, og
+                    <strong> Brønnøysundregistrene</strong> får bedriftens organisasjonsnummer. Ingen opplysninger om
+                    kunder sendes dit.</li>
+            </ul>
+
             <h2>Hvor lenge lagrer vi opplysningene?</h2>
-            <p>
-                Opplysninger om bestillinger lagres i 5 år etter timen, slik at bedriftene har
-                historikk over tidligere bestillinger. Deretter slettes eller anonymiseres de.
-                Bedriftskontoer lagres til kontoen slettes.
-            </p>
+            <ul>
+                <li><strong>Bestillinger:</strong> i 5 år etter timen, slik at bedriften har historikk. Deretter
+                    anonymiseres de automatisk (navn, telefon, e-post og melding fjernes).</li>
+                <li><strong>Varsler:</strong> til du sletter dem, men aldri lenger enn 7 dager for kunder og 14 dager
+                    for bedrifter.</li>
+                <li><strong>Kundekonto:</strong> til du sletter den. Når du sletter kontoen, blir kommende timer
+                    avlyst (bedriften får beskjed), tidligere timer anonymiseres med en gang, varslene slettes, og
+                    vurderingene dine blir stående som «Tidligere kunde» uten navnet ditt.</li>
+                <li><strong>Bedriftskonto:</strong> til bedriften avslutter kontoen.</li>
+                <li><strong>Bilder</strong> blir forminsket og lagret uten skjulte bildedata (EXIF), som GPS-posisjon.</li>
+            </ul>
+
             <h2>Informasjonskapsler (cookies)</h2>
             <p>
-                Vi bruker bare én nødvendig informasjonskapsel, for innlogging i bedriftspanelet.
-                Vi bruker ikke sporing eller reklame-cookies.
+                Vi bruker bare én nødvendig informasjonskapsel, som holder deg innlogget. Vi bruker ikke sporing,
+                analyseverktøy eller reklame-cookies, og trenger derfor ikke samtykke til cookies.
             </p>
+
             <h2>Dine rettigheter</h2>
-            <p>
-                Du har rett til innsyn, retting og sletting av dine opplysninger, og til å trekke
-                tilbake samtykke. Kontakt oss på michalszczepanski07@gmail.com. Gjelder det en bestilling, kan du også
-                kontakte bedriften direkte. Du kan også klage til Datatilsynet
-                (datatilsynet.no).
-            </p>
+            <ul>
+                <li><strong>Innsyn og dataportabilitet:</strong> last ned alt vi lagrer om deg under
+                    {" "}<Link href="/min-besti/profil">Min Besti → Profil → «Last ned mine data»</Link>.</li>
+                <li><strong>Retting:</strong> endre navn og telefon under Profil.</li>
+                <li><strong>Sletting:</strong> slett kontoen under Profil → «Slett konto».</li>
+                <li><strong>Protest og samtykke:</strong> trekk tilbake samtykke til nyhetsbrev, eller protester mot
+                    behandling, ved å kontakte oss.</li>
+                <li>Gjelder det en bestilling, kan du også kontakte bedriften direkte.</li>
+                <li>Du kan klage til Datatilsynet (<a href="https://www.datatilsynet.no">datatilsynet.no</a>).</li>
+            </ul>
+            <p>Vi svarer på henvendelser om personvern innen 30 dager.</p>
         </main>
     );
 }

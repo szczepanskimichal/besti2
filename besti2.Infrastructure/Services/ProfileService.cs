@@ -22,6 +22,38 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             ? null
             : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber);
     }
+    public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await CustomerAsync(userId);
+        if (user is null)
+        {
+            return null;
+        }
+
+        var bookings = await dbContext.Bookings.AsNoTracking()
+            .Where(b => b.CustomerUserId == userId)
+            .OrderBy(b => b.StartUtc)
+            .Select(b => new ExportBooking(b.StartUtc, b.EndUtc, b.Status.ToString(), b.Service.Business.Name,
+                b.Service.Name, b.Employee.Name + " " + b.Employee.LastName, b.CustomerName, b.CustomerPhone,
+                b.CustomerEmail, b.CustomerNote, b.MarketingConsent, b.MarketingConsentUtc))
+            .ToListAsync(cancellationToken);
+        var reviews = await dbContext.Reviews.AsNoTracking()
+            .Where(r => r.CustomerUserId == userId)
+            .OrderBy(r => r.CreatedUtc)
+            .Select(r => new ExportReview(r.CreatedUtc,
+                dbContext.Businesses.Where(x => x.Id == r.BusinessId).Select(x => x.Name).First(),
+                r.Stars, r.Comment, r.BusinessReply))
+            .ToListAsync(cancellationToken);
+        var notifications = await dbContext.Notifications.AsNoTracking()
+            .Where(n => n.UserId == userId)
+            .OrderBy(n => n.CreatedUtc)
+            .Select(n => new ExportNotification(n.CreatedUtc, n.Text, n.ReadUtc != null))
+            .ToListAsync(cancellationToken);
+
+        return new MyDataExport(DateTime.UtcNow,
+            new ExportAccount(user.FullName ?? "", user.Email ?? "", user.PhoneNumber, user.EmailConfirmed),
+            bookings, reviews, notifications);
+    }
 
     public async Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request,
         CancellationToken cancellationToken = default)
