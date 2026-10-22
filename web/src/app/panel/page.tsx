@@ -9,6 +9,7 @@ import { statusLabels } from "@/lib/bookingStatus";
 import type { BusinessDetails, PanelBooking, TimeOff } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { cancelBookingAction, confirmBookingAction, deleteTimeOffAction } from "./actions";
+import MoveBookingForm from "./MoveBookingForm";
 import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
 import TimeOffForm from "./TimeOffForm";
@@ -20,7 +21,7 @@ const PX_PER_MINUTE = 80 / 60;
 
 type CalendarPageProps = {
     searchParams: Promise<{
-        dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; feil?: string;
+        dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; flytt?: string; feil?: string;
         ny?: string; tid?: string; for?: string; blokker?: string; blokkering?: string; varsel?: string;
     }>;
 };
@@ -79,6 +80,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const unit = month ? "måned" : week ? "uke" : "dag";
     // The visit opened in the details window (also a cancelled one, even when those are hidden)
     const selected = allBookings.find((b) => b.id === query.bestilling);
+    const moving = allBookings.find((b) => b.id === query.flytt && allowedActions(b).canMove);
     const here = link({}); // this view without the details window
     // "+ Ny bestilling", or a click on an empty place in the grid (time and employee filled in)
     const newBooking = query.ny === "1";
@@ -184,8 +186,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                        hrefFor={(booking) => link({ bestilling: booking.id })}
                        blockHref={(block) => link({ blokkering: block.id })}/>
 
-            {selected && <BookingDetails booking={selected} closeHref={here}/>}
-            {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
+            {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}/>}
+            {moving && (
+                <MoveBookingForm booking={moving} employees={business.employees} date={osloDate(moving.startUtc)}
+                                 time={formatTime(moving.startUtc)} view={view} closeHref={link({ bestilling: moving.id })}/>
+            )}            {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
             {newTimeOff && (
                 <TimeOffForm employees={business.employees} date={day} employeeId={employeeFilter} view={view}
                              closeHref={here}/>
@@ -376,8 +381,8 @@ function PhoneList({ columns, hrefFor, blockHref }: { columns: Column[]; hrefFor
 }
 
 // The details window for one visit: customer, contact, note and Bekreft / Avlys
-function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHref: string }) {
-    const { canConfirm, canCancel } = allowedActions(booking);
+function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBooking; closeHref: string; moveHref: string }) {
+    const { canConfirm, canCancel, canMove } = allowedActions(booking);
     return (
         <div className={calendar.overlay}>
             <section className={calendar.dialog} role="dialog" aria-modal="true" aria-labelledby="booking-title">
@@ -420,6 +425,9 @@ function BookingDetails({ booking, closeHref }: { booking: PanelBooking; closeHr
                                 <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">Bekreft</SubmitButton>
                             </form>
                         )}
+                        {canMove && (
+                            <Link href={moveHref} scroll={false} className={styles.secondaryButton}>Flytt</Link>
+                        )}
                         {canCancel && (
                             <details>
                                 <summary className={styles.dangerButton}>Avlys</summary>
@@ -459,12 +467,14 @@ function TimeOffDetails({ block, closeHref }: { block: TimeOff; closeHref: strin
     );
 }
 
-// Bekreft while waiting; Avlys only before the visit starts (the API refuses it afterwards)
+// Bekreft while waiting; Avlys and Flytt only before the visit starts (the API refuses them afterwards)
 function allowedActions(booking: PanelBooking) {
     const started = new Date(booking.startUtc).getTime() <= Date.now();
+    const open = booking.status !== "Avlyst" && !started;
     return {
         canConfirm: booking.status === "Venter",
-        canCancel: booking.status !== "Avlyst" && !started,
+        canCancel: open,
+        canMove: open,
     };
 }
 
