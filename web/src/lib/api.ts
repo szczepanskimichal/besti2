@@ -306,6 +306,7 @@ export async function confirmEmail(userId: string, code: string): Promise<boolea
 export type Me = {
     email: string;
     fullName: string | null;
+    phone: string | null; // from "Min profil"; fills in the booking form
     isBusiness: boolean;
 };
 
@@ -423,8 +424,28 @@ export async function deleteNotification(token: string, id: string): Promise<voi
 // so no 8 s timeout; it closes when the browser leaves (signal)
 export async function openNotificationStream(token: string, signal: AbortSignal): Promise<Response> {
     return fetch(`${API_URL}/api/notifications/stream`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {Authorization: `Bearer ${token}`},
         cache: "no-store",
         signal,
     });
+}
+// "Min profil" (customer)
+export type MyProfile = { fullName: string; email: string; phone: string | null };
+
+export async function getMyProfile(token: string): Promise<MyProfile | null> {
+    const res = await apiFetch("/api/me/profile", { token });
+    return res.ok ? res.json() : null;
+}
+
+export async function updateMyProfile(token: string, input: { fullName: string; phone: string | null }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/me/profile", { method: "PUT", token, body: input }));
+}
+
+export async function changeMyPassword(token: string, input: { currentPassword: string; newPassword: string }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/me/password", { method: "POST", token, body: input }));
+}
+
+// "Slett konto"; confirmed with the password
+export async function deleteMyAccount(token: string, password: string): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/me/delete", { method: "POST", token, body: { password } }));
 }

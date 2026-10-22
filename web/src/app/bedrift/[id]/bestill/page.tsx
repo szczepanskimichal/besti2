@@ -107,8 +107,8 @@ export default async function BookingPage({params, searchParams}: Props) {
                     )}
                     {me && !me.isBusiness && (
                         <BookingForm businessId={business.id} serviceId={service.id} employeeId={employeeId}
-                                     startUtc={chosenTime} date={date} fullName={me.fullName} email={me.email}/>
-                    )}
+                                     startUtc={chosenTime} date={date} fullName={me.fullName} email={me.email}
+                                     phone={me.phone}/>                    )}
                         </section>
                         )}
                 </main>
