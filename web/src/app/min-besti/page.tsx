@@ -27,7 +27,7 @@ function splitBookings(bookings: CustomerBooking[]) {
 }
 
 type MyBookingsPageProps = {
-    searchParams: Promise<{ feil?: string; avbestilt?: string; endret?: string }>;
+    searchParams: Promise<{ feil?: string; avbestilt?: string }>;
 };
 export default async function MyBookingsPage({ searchParams }: MyBookingsPageProps) {
     const token = await getToken();
@@ -42,7 +42,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     if (!bookings) {
         redirect("/logg-inn?neste=/min-besti");
     }
-    const { feil, avbestilt, endret } = await searchParams;
+    const { feil, avbestilt } = await searchParams;
     const { upcoming, past } = splitBookings(bookings);
     return (
         <main className={styles.main}>
@@ -54,9 +54,6 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                 </p>
             )}
             {avbestilt && <p className={styles.muted} role="status">Bestillingen er avbestilt.</p>}
-            {endret && (
-                <p className={styles.muted} role="status">Tiden er endret. Bedriften bekrefter den nye tiden.</p>
-            )}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
                 <p className={styles.muted}>
@@ -84,8 +81,6 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             </p>
                             {booking.status !== "Avlyst" && (
                                 <p>
-                                    <Link href={`/min-besti/endre/${booking.id}`}>Endre tid</Link>
-                                    {" · "}
                                     <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
                                 </p>
                             )}

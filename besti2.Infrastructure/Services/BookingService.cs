@@ -477,72 +477,6 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         return new MoveBookingResult(MoveBookingOutcome.Moved);
     }
 
-    // "Endre tid": the customer picks another free time of the same service; the old time is freed in
-    // the same step. The business confirms again, as for a new online booking
-    public async Task<MoveBookingResult> ChangeTimeByCustomerAsync(Guid bookingId, string customerUserId,
-        ChangeTimeRequest request, CancellationToken cancellationToken = default)
-    {
-        // Only the customer's own booking; someone else's id looks like "not found"
-        var booking = await dbContext.Bookings
-            .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
-        if (booking is null)
-        {
-            return new MoveBookingResult(MoveBookingOutcome.NotFound);
-        }
-        if (booking.Status == BookingStatus.Avlyst || booking.StartUtc <= DateTime.UtcNow)
-        {
-            return new MoveBookingResult(MoveBookingOutcome.Invalid,
-                "Timen er avbestilt eller har allerede startet, og kan ikke endres.");
-        }
-
-        var startUtc = ToUtc(request.StartUtc);
-        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(startUtc, Oslo));
-
-        await using var transaction = dbContext.Database.IsRelational()
-            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
-            : null;
-        if (transaction is not null && !await TryLockEmployeeAsync(request.EmployeeId, cancellationToken))
-        {
-            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
-        }
-
-        // The same free times the customer saw (opening hours, other visits, blocked time); null = the
-        // employee does not work for this business
-        var freeSlots = await GetFreeSlotsAsync(booking.ServiceId, request.EmployeeId, date, cancellationToken);
-        if (freeSlots is null)
-        {
-            return new MoveBookingResult(MoveBookingOutcome.NotFound);
-        }
-        if (!freeSlots.Contains(startUtc))
-        {
-            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
-        }
-
-        var duration = await dbContext.Services.Where(s => s.Id == booking.ServiceId)
-            .Select(s => s.DurationMinutes).FirstAsync(cancellationToken);
-        var oldStartUtc = booking.StartUtc;
-        booking.EmployeeId = request.EmployeeId;
-        booking.StartUtc = startUtc;
-        booking.EndUtc = startUtc.AddMinutes(duration);
-        booking.Status = BookingStatus.Venter;
-        try
-        {
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
-        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
-        {
-            return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
-        }
-
-        if (transaction is not null)
-        {
-            await transaction.CommitAsync(cancellationToken);
-        }
-
-        await SendChangedByCustomerEmailAsync(booking, oldStartUtc, cancellationToken);
-        return new MoveBookingResult(MoveBookingOutcome.Moved);
-    }
-
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
     {
@@ -741,38 +675,6 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
     }
 
-    // Tell the business that a customer picked a new time; a failed email must not undo the change
-    private async Task SendChangedByCustomerEmailAsync(Booking booking, DateTime oldStartUtc,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            var service = await dbContext.Services.AsNoTracking()
-                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
-            var business = await dbContext.Businesses.AsNoTracking()
-                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
-            var employee = await dbContext.Employees.AsNoTracking()
-                .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
-
-            string When(DateTime utc) =>
-                TimeZoneInfo.ConvertTimeFromUtc(utc, Oslo).ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
-
-            var body =
-                $"Hei {business.Name}!\n\n" +
-                $"{booking.CustomerName} har endret tid.\n\n" +
-                $"Ny tid: {When(booking.StartUtc)} hos {employee.Name} {employee.LastName}\n" +
-                $"Tidligere tid: {When(oldStartUtc)}\n" +
-                $"Tjeneste: {service.Name}\n\n" +
-                "Den gamle tiden er ledig igjen. Bekreft den nye tiden i kalenderen.\n\n" +
-                "Hilsen BESTI";
-            await emailService.SendAsync(business.Email, $"Endret tid: {service.Name}, {When(booking.StartUtc)}",
-                body, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Could not send changed-time email for booking {BookingId}", booking.Id);
-        }
-    }
     // Tell the business that a customer cancelled; a failed email must not fail the cancellation
     private async Task SendCancelledByCustomerEmailAsync(Booking booking, CancellationToken cancellationToken)
     {
