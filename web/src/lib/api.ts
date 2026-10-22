@@ -165,6 +165,10 @@ export async function getPanelBookings(token: string, from?: string, to?: string
 export async function createManualBooking(token: string, input: object): Promise<ApiResult> {
     return toResult(await apiFetch("/api/panel/bookings", { method: "POST", token, body: input }));
 }
+// "Flytt": another time and/or employee; date and time in Oslo
+export async function moveBooking(token: string, bookingId: string, input: object): Promise<ApiResult> {
+    return toResult(await apiFetch(`/api/panel/bookings/${bookingId}/flytt`, { method: "POST", token, body: input }));
+}
 // Blocked time touching the days from-to ("2026-10-20"); null = not logged in as a business
 export async function getPanelTimeOff(token: string, from: string, to: string): Promise<TimeOff[] | null> {
     const res = await apiFetch(`/api/panel/timeoff?${new URLSearchParams({ from, to })}`, { token });

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { changeBookingStatus, createManualBooking, createTimeOff, deleteTimeOff } from "@/lib/api";
+import { changeBookingStatus, createManualBooking, createTimeOff, deleteTimeOff, moveBooking } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import type { FormState } from "@/lib/formState";
@@ -112,5 +112,31 @@ export async function deleteTimeOffAction(formData: FormData) {
     const back = safeRedirectPath(String(formData.get("tilbake") ?? ""));
     const page = back.startsWith("/panel") ? back : "/panel";
     redirect(ok ? page : `${page}${page.includes("?") ? "&" : "?"}feil=1`);
+}
+const MOVE_FIELDS = ["employeeId", "date", "time", "notifyCustomer"];
+
+// "Flytt": errors come back to the form; on success the calendar shows the day of the new time
+export async function moveBookingAction(_previous: FormState, formData: FormData): Promise<FormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+
+    const values: Record<string, string> = {};
+    for (const field of MOVE_FIELDS) {
+        values[field] = String(formData.get(field) ?? "");
+    }
+
+    const result = await moveBooking(token, String(formData.get("bookingId") ?? ""), {
+        employeeId: values.employeeId,
+        date: values.date,
+        time: values.time,
+        notifyCustomer: values.notifyCustomer === "on",
+    });
+    if (!result.ok) {
+        return { error: result.message, values };
+    }
+
+    redirect(`/panel?dag=${values.date}${viewParam(formData)}`);
 }
 
