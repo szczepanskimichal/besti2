@@ -449,3 +449,9 @@ export async function changeMyPassword(token: string, input: { currentPassword: 
 export async function deleteMyAccount(token: string, password: string): Promise<ApiResult> {
     return toResult(await apiFetch("/api/me/delete", { method: "POST", token, body: { password } }));
 }
+
+// Only the number on the bell (the header on every page); null = the API failed
+export async function getUnreadCount(token: string): Promise<number | null> {
+    const res = await apiFetch("/api/notifications/unread", { token });
+    return res.ok ? (await res.json()).unread : null;
+}

@@ -47,9 +47,12 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         return new NotificationReadDto(notification.Link);
     }
 
-    public Task<int> UnreadCountAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default) =>
-        Mine(userId, businessId).CountAsync(n => n.ReadUtc == null, cancellationToken);
-
+    // Only the number on the bell (header and live stream): one COUNT, expired ones not counted
+    public Task<int> UnreadCountAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default)
+    {
+        var cutoff = DateTime.UtcNow.AddDays(-(businessId is null ? CustomerDays : BusinessDays));
+        return Mine(userId, businessId).CountAsync(n => n.ReadUtc == null && n.CreatedUtc >= cutoff, cancellationToken);
+    }
     public async Task MarkAllReadAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default)
     {
         var unread = await Mine(userId, businessId).Where(n => n.ReadUtc == null).ToListAsync(cancellationToken);

@@ -1,6 +1,6 @@
 import NextLink from "next/link";
 import styles from "@/components/Header/Header.module.css";
-import {getMe, getNotifications} from "@/lib/api";
+import {getMe, getUnreadCount} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {logoutAction} from "@/app/logg-inn/actions";
 import NotificationBell from "@/components/NotificationBell/NotificationBell";
@@ -13,8 +13,7 @@ export default async function Header() {
     const me = token ? await getMe(token).catch(() => null) : null;
     const firstName = me?.fullName?.split(" ")[0];
     // The number on the bell; no bell rather than a broken header when the API fails
-    const notifications = me && token ? await getNotifications(token).catch(() => null) : null;
-
+    const unread = me && token ? await getUnreadCount(token).catch(() => null) : null;
     return (
         <header className={styles.header}>
             <div className={styles.inner}>
@@ -31,8 +30,8 @@ export default async function Header() {
                                         Besti</NextLink>
                                 </>
                             )}
-                            {notifications && (
-                                <NotificationBell key={notifications.unread} initialUnread={notifications.unread}/>
+                            {unread !== null && (
+                                <NotificationBell key={unread} initialUnread={unread}/>
                             )}
                             <form action={logoutAction}>
                                 <button type="submit" className={styles.logoutButton}>Logg ut</button>
