@@ -265,27 +265,7 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
-// Customer: own booking to another free time ("Endre tid" in Min Besti)
-app.MapPost("/api/me/bookings/{id:guid}/endre-tid", async (Guid id, ChangeTimeRequest request,
-    ClaimsPrincipal principal, UserManager<AppUser> userManager, IBookingService bookingService,
-    CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
 
-    var result = await bookingService.ChangeTimeByCustomerAsync(id, userId, request, cancellationToken);
-    return result.Outcome switch
-    {
-        MoveBookingOutcome.Moved => Results.NoContent(),
-        MoveBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
-        MoveBookingOutcome.SlotTaken => Results.Conflict(
-            new { message = "Tiden er ikke lenger ledig. Velg en annen tid." }),
-        _ => Results.NotFound()
-    };
-}).RequireAuthorization();
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
 app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
