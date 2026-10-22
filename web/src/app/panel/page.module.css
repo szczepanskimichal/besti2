@@ -143,25 +143,36 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
-/* Many buttons: they wrap to the next line instead of running off the screen (also on phones) */
+/* Phone: one row of panel links you swipe sideways; from 768px they wrap onto more lines */
 .topActions {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
 }
+
+.topActions::-webkit-scrollbar {
+    display: none;
+}
+
 .secondaryButton {
-
     display: inline-flex;
-
     align-items: center;
-
+    flex-shrink: 0;
+    white-space: nowrap;
     text-decoration: none;
 }
-
 
 @media (min-width: 768px) {
     .main {
         padding-top: 40px;
+    }
+
+    .topActions {
+        flex-wrap: wrap;
+        overflow-x: visible;
     }
 
     .card {

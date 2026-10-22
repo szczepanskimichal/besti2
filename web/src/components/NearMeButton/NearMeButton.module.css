@@ -10,19 +10,19 @@
     min-height: 44px;
     width: 100%;
     padding: 0 20px;
-    border: 2px solid #fff;
+    border: 2px solid var(--color-primary);
     border-radius: 999px;
-    background: transparent;
-    color: #fff;
+    background: var(--color-surface);
+    color: var(--color-primary);
     cursor: pointer;
 }
 
 .button:hover {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--color-primary-soft);
 }
 
 .denied {
     margin: 0;
     font-size: 0.9rem;
-    color: #fff;
+    color: var(--color-muted);
 }
