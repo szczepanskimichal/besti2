@@ -12,12 +12,12 @@ type TimeOffFormProps = {
     employees: Employee[];
     date: string;
     employeeId?: string;
-    week: boolean;
+    view?: string;
     closeHref: string;
 };
 
 // "Blokker tid": holiday, doctor, closed day; for one employee or the whole business
-export default function TimeOffForm({ employees, date, employeeId, week, closeHref }: TimeOffFormProps) {
+export default function TimeOffForm({ employees, date, employeeId, view, closeHref }: TimeOffFormProps){
     const [state, formAction] = useActionState<FormState, FormData>(createTimeOffAction, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
     // A whole day needs no times
@@ -37,7 +37,7 @@ export default function TimeOffForm({ employees, date, employeeId, week, closeHr
                             {state.error}
                         </p>
                     )}
-                    {week && <input type="hidden" name="visning" value="uke"/>}
+                    {view && <input type="hidden" name="visning" value={view}/>}
                     <label className={formStyles.field}>
                         Hvem
                         {/* key: a select only takes a new defaultValue when it is created again */}

@@ -14,12 +14,12 @@ type NewBookingFormProps = {
     date: string;
     time: string;
     employeeId?: string;
-    week: boolean;
+    view?: string; // "uke" or "maned": the calendar opens the same view again after saving
     closeHref: string;
 };
 
 // "+ Ny bestilling": the business adds a visit itself (phone call, walk-in); confirmed at once
-export default function NewBookingForm({ services, employees, date, time, employeeId, week, closeHref }: NewBookingFormProps) {
+export default function NewBookingForm({ services, employees, date, time, employeeId, view, closeHref }: NewBookingFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(createManualBookingAction, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
 
@@ -36,7 +36,7 @@ export default function NewBookingForm({ services, employees, date, time, employ
                             {state.error}
                         </p>
                     )}
-                    {week && <input type="hidden" name="visning" value="uke"/>}
+                    {view && <input type="hidden" name="visning" value={view}/>}
                     <label className={formStyles.field}>
                         Tjeneste
                         {/* key: a select only takes a new defaultValue when it is created again */}

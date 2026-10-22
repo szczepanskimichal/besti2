@@ -39,10 +39,13 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const query = await searchParams;
     const day = isIsoDate(query.dag) ? query.dag : todayInOslo();
     const week = query.visning === "uke";
+    const month = query.visning === "maned";
+    const view = week ? "uke" : month ? "maned" : undefined;
     const showCancelled = query.avlyste === "1";
-    // Week = Monday to Sunday around the chosen day
-    const first = week ? shiftDay(day, -((weekdayOf(day) + 6) % 7)) : day;
-    const last = week ? shiftDay(first, 6) : day;
+    // Week = Monday to Sunday around the chosen day; month = whole weeks from the 1st to the last day
+    const monthStart = `${day.slice(0, 7)}-01`;
+    const first = week ? mondayOf(day) : month ? mondayOf(monthStart) : day;
+    const last = week ? shiftDay(first, 6) : month ? shiftDay(mondayOf(lastDayOfMonth(day)), 6) : day;
 
     const [business, allBookings, allBlocks] = await Promise.all([
         getPanelBusiness(token), getPanelBookings(token, first, last), getPanelTimeOff(token, first, last),
@@ -51,19 +54,19 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         redirect("/logg-inn");
     }
 
-    const employeeFilter = week && business.employees.some((e) => e.id === query.ansatt) ? query.ansatt : undefined;
+    const employeeFilter = (week || month) && business.employees.some((e) => e.id === query.ansatt) ? query.ansatt : undefined;
     const bookings = allBookings
         .filter((b) => showCancelled || b.status !== "Avlyst")
         .filter((b) => !employeeFilter || b.employeeId === employeeFilter);
-    // Week view with one employee: that employee's blocks and the closed days of the whole business
+    // Week or month view with one employee: that employee's blocks and the closed days of the whole business
     const blocks = allBlocks.filter((t) => !employeeFilter || !t.employeeId || t.employeeId === employeeFilter);
-    const columns = week ? dayColumns(first, bookings, blocks) : employeeColumns(business, bookings, blocks, day);
+    const columns = view ? dayColumns(first, last, bookings, blocks) : employeeColumns(business, bookings, blocks, day);
     const range = visibleRange(business, week ? weekDays(first) : [day], bookings);
 
     // The same view with one value changed (keeps the other choices)
     const link = (change: Record<string, string | undefined>) => {
         const params = new URLSearchParams();
-        const values = { dag: day, visning: week ? "uke" : undefined, ansatt: employeeFilter,
+        const values = { dag: day, visning: view, ansatt: employeeFilter,
             avlyste: showCancelled ? "1" : undefined, ...change };
         for (const [key, value] of Object.entries(values)) {
             if (value) params.set(key, value);
@@ -71,6 +74,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         return `/panel?${params}`;
     };
     const step = week ? 7 : 1;
+    const previous = month ? shiftMonth(day, -1) : shiftDay(day, -step);
+    const next = month ? shiftMonth(day, 1) : shiftDay(day, step);
+    const unit = month ? "måned" : week ? "uke" : "dag";
     // The visit opened in the details window (also a cancelled one, even when those are hidden)
     const selected = allBookings.find((b) => b.id === query.bestilling);
     const here = link({}); // this view without the details window
@@ -103,21 +109,21 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <div className={calendar.toolbar}>
                 <div className={calendar.segmented} role="group" aria-label="Visning">
-                    <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={week ? undefined : "page"}>Dag</Link>
+                    <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={view ? undefined : "page"}>Dag</Link>
                     <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
+                    <Link href={link({ visning: "maned" })} aria-current={month ? "page" : undefined}>Måned</Link>
                 </div>
                 <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
                 <Link href={link({ blokker: "1" })} scroll={false} className={styles.secondaryButton}>Blokker tid</Link>
-                <Link href={link({ dag: shiftDay(day, -step) })} className={styles.secondaryButton}
-                      aria-label={week ? "Forrige uke" : "Forrige dag"}>←</Link>
+                <Link href={link({ dag: previous })} className={styles.secondaryButton} aria-label={`Forrige ${unit}`}>←</Link>
                 <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
-                <Link href={link({ dag: shiftDay(day, step) })} className={styles.secondaryButton}
-                      aria-label={week ? "Neste uke" : "Neste dag"}>→</Link>
+                <Link href={link({ dag: next })} className={styles.secondaryButton} aria-label={`Neste ${unit}`}>→</Link>
                 <h2 className={calendar.dayTitle}>
-                    {week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
+                    {month ? monthTitle(day)
+                        : week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
                 </h2>
                 <form method="get" className={calendar.datePicker}>
-                    {week && <input type="hidden" name="visning" value="uke"/>}
+                    {view && <input type="hidden" name="visning" value={view}/>}
                     {employeeFilter && <input type="hidden" name="ansatt" value={employeeFilter}/>}
                     {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
                     <label>
@@ -129,9 +135,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
             </div>
 
             <div className={calendar.filters}>
-                {week && (
+                {view && (
                     <form method="get" className={calendar.employeeFilter}>
-                        <input type="hidden" name="visning" value="uke"/>
+                        <input type="hidden" name="visning" value={view}/>
                         <input type="hidden" name="dag" value={day}/>
                         {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
                         <label>
@@ -151,34 +157,42 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </Link>
             </div>
 
-            {!week && !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(day)) && (
+            {!view && !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(day)) && (
                 <p className={styles.muted}>Stengt denne dagen.</p>
             )}
 
-            <TimeGrid columns={columns} range={range} showEmployee={week}
-                      hrefFor={(booking) => link({ bestilling: booking.id })}
-                      blockHref={(block) => link({ blokkering: block.id })}
-                      newHref={(column, minute) => link({
-                          ny: "1",
-                          tid: clock(minute),
-                          // day view: the column is an employee; week view: the column is a day
-                          ...(week ? { dag: column.id } : { for: column.id }),
-                      })}/>
+            {month ? (
+                <MonthGrid days={columns} month={day.slice(0, 7)} business={business}
+                           dayHref={(date) => link({ dag: date, visning: undefined, ansatt: undefined })}
+                           newHref={(date) => link({ dag: date, ny: "1" })}
+                           hrefFor={(booking) => link({ bestilling: booking.id })}/>
+            ) : (
+                <TimeGrid columns={columns} range={range} showEmployee={week}
+                          hrefFor={(booking) => link({ bestilling: booking.id })}
+                          blockHref={(block) => link({ blokkering: block.id })}
+                          newHref={(column, minute) => link({
+                              ny: "1",
+                              tid: clock(minute),
+                              // day view: the column is an employee; week view: the column is a day
+                              ...(week ? { dag: column.id } : { for: column.id }),
+                          })}/>
+            )}
 
             {/* Phone: the same visits as a simple list (the grid is too narrow there) */}
-            <PhoneList columns={week ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
+            <PhoneList columns={month ? columns.filter((c) => c.day.startsWith(day.slice(0, 7)))
+                : week ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
                        hrefFor={(booking) => link({ bestilling: booking.id })}
                        blockHref={(block) => link({ blokkering: block.id })}/>
 
             {selected && <BookingDetails booking={selected} closeHref={here}/>}
             {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
             {newTimeOff && (
-                <TimeOffForm employees={business.employees} date={day} employeeId={employeeFilter} week={week}
+                <TimeOffForm employees={business.employees} date={day} employeeId={employeeFilter} view={view}
                              closeHref={here}/>
             )}
             {newBooking && (
                 <NewBookingForm services={business.services} employees={business.employees} date={day}
-                                time={newTime} employeeId={newEmployee ?? employeeFilter} week={week} closeHref={here}/>
+                                time={newTime} employeeId={newEmployee ?? employeeFilter} view={view} closeHref={here}/>
             )}
         </main>
     );
@@ -256,6 +270,71 @@ function TimeGrid({ columns, range, showEmployee, hrefFor, blockHref, newHref }:
                         })}
                     </div>
                 ))}
+            </div>
+        </div>
+    );
+}
+
+// Month: a square per day with the number of visits, the first times and closed / blocked days;
+// a click on the day number opens that day
+const MONTH_PREVIEW = 3;
+
+function MonthGrid({ days, month, business, dayHref, newHref, hrefFor }: {
+    days: Column[]; month: string; business: BusinessDetails; dayHref: (date: string) => string;
+    newHref: (date: string) => string; hrefFor: Href;
+}) {
+    const today = todayInOslo();
+    const weeks: Column[][] = [];
+    for (let i = 0; i < days.length; i += 7) {
+        weeks.push(days.slice(i, i + 7));
+    }
+    return (
+        <div className={calendar.scroller}>
+            <div className={calendar.month}>
+                <div className={calendar.corner}/>
+                {["man.", "tir.", "ons.", "tor.", "fre.", "lør.", "søn."].map((name) => (
+                    <div key={name} className={calendar.columnHead}>{name}</div>
+                ))}
+                {weeks.map((weekDays) => [
+                    <div key={`uke-${weekDays[0].day}`} className={calendar.weekNumber}>{isoWeek(weekDays[0].day)}</div>,
+                    ...weekDays.map((column) => {
+                        const visits = [...column.bookings].sort((a, b) => a.startUtc.localeCompare(b.startUtc));
+                        const closedAllDay = column.blocks.some((t) => !t.employeeId && blockHoursOn(t, column.day) === "Hele dagen");
+                        const closed = closedAllDay || !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(column.day));
+                        const classes = [
+                            calendar.monthDay,
+                            column.day.startsWith(month) ? "" : calendar.otherMonth,
+                            closed ? calendar.closedDay : "",
+                            column.day === today ? calendar.today : "",
+                        ].join(" ");
+                        return (
+                            <div key={column.day} className={classes}>
+                                <div className={calendar.monthDayHead}>
+                                    <Link href={dayHref(column.day)} className={calendar.dayNumber}
+                                          aria-label={formatDay(column.day)}>{Number(column.day.slice(8))}</Link>
+                                    <Link href={newHref(column.day)} scroll={false} className={calendar.monthAdd}
+                                          aria-label={`Ny bestilling ${formatDay(column.day)}`}>+</Link>
+                                </div>
+                                {closed && <span className={calendar.closedLabel}>Stengt</span>}
+                                {column.blocks.filter((t) => !closedAllDay || t.employeeId).map((block) => (
+                                    <span key={block.id} className={calendar.monthBlock}>{blockLabel(block, true)}</span>
+                                ))}
+                                {visits.slice(0, MONTH_PREVIEW).map((booking) => (
+                                    <Link key={booking.id} href={hrefFor(booking)} scroll={false}
+                                          className={`${calendar.monthVisit} ${calendar[booking.status] ?? ""}`}
+                                          title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName}`}>
+                                        {formatTime(booking.startUtc)} {booking.customerName}
+                                    </Link>
+                                ))}
+                                {visits.length > MONTH_PREVIEW && (
+                                    <Link href={dayHref(column.day)} className={calendar.monthMore}>
+                                        +{visits.length - MONTH_PREVIEW} til
+                                    </Link>
+                                )}
+                            </div>
+                        );
+                    }),
+                ])}
             </div>
         </div>
     );
@@ -414,9 +493,9 @@ function employeeColumns(business: BusinessDetails, bookings: PanelBooking[], bl
     return columns;
 }
 
-// Week view: Monday to Sunday as columns
-function dayColumns(monday: string, bookings: PanelBooking[], blocks: TimeOff[]): Column[] {
-    return weekDays(monday).map((date) => ({
+// Week view: Monday to Sunday as columns; month view: every day of the shown weeks
+function dayColumns(first: string, last: string, bookings: PanelBooking[], blocks: TimeOff[]): Column[] {
+    return daysBetween(first, last).map((date) => ({
         id: date,
         title: shortDay(date),
         day: date,
@@ -474,6 +553,36 @@ function shortDay(date: string): string {
 
 function weekDays(monday: string): string[] {
     return [0, 1, 2, 3, 4, 5, 6].map((n) => shiftDay(monday, n));
+}
+
+// Every day from first to last, both included
+function daysBetween(first: string, last: string): string[] {
+    const days: string[] = [];
+    for (let date = first; date <= last; date = shiftDay(date, 1)) {
+        days.push(date);
+    }
+    return days;
+}
+
+function mondayOf(date: string): string {
+    return shiftDay(date, -((weekdayOf(date) + 6) % 7));
+}
+
+function lastDayOfMonth(date: string): string {
+    return shiftDay(shiftMonth(date, 1), -1);
+}
+
+// The 1st of the month n months later: ("2026-10-22", 1) -> "2026-11-01"
+function shiftMonth(date: string, n: number): string {
+    const d = new Date(Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)) - 1 + n, 1));
+    return d.toISOString().slice(0, 10);
+}
+
+// "2026-10-22" -> "Oktober 2026"
+function monthTitle(date: string): string {
+    const title = new Intl.DateTimeFormat("nb-NO", { timeZone: "UTC", month: "long", year: "numeric" })
+        .format(new Date(`${date.slice(0, 7)}-15T12:00:00Z`));
+    return title.charAt(0).toUpperCase() + title.slice(1);
 }
 
 // "2026-10-26T08:30:00Z" -> "2026-10-26" (the day in Oslo)

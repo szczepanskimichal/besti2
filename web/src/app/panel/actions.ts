@@ -31,6 +31,12 @@ export async function confirmBookingAction(formData: FormData) {
 export async function cancelBookingAction(formData: FormData) {
     await changeStatus(formData, "avlys");
 }
+// Back to the same view (week or month) after saving
+function viewParam(formData: FormData): string {
+    const view = formData.get("visning");
+    return view === "uke" || view === "maned" ? `&visning=${view}` : "";
+}
+
 const MANUAL_FIELDS = ["serviceId", "employeeId", "date", "time", "customerName", "customerPhone", "customerEmail",
     "note", "sendConfirmation"];
 
@@ -61,9 +67,7 @@ export async function createManualBookingAction(_previous: FormState, formData: 
     if (!result.ok) {
         return { error: result.message, values };
     }
-
-    const week = formData.get("visning") === "uke" ? "&visning=uke" : "";
-    redirect(`/panel?dag=${values.date}${week}`);
+    redirect(`/panel?dag=${values.date}${viewParam(formData)}`);
 }
 const TIME_OFF_FIELDS = ["employeeId", "fromDate", "fromTime", "toDate", "toTime", "allDay", "reason"];
 
@@ -93,10 +97,8 @@ export async function createTimeOffAction(_previous: FormState, formData: FormDa
     if (!result.ok) {
         return { error: result.message, values };
     }
-
-    const week = formData.get("visning") === "uke" ? "&visning=uke" : "";
     const warning = result.overlapping > 0 ? `&varsel=${result.overlapping}` : "";
-    redirect(`/panel?dag=${values.fromDate}${week}${warning}`);
+    redirect(`/panel?dag=${values.fromDate}${viewParam(formData)}${warning}`);
 }
 
 export async function deleteTimeOffAction(formData: FormData) {
