@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { cancelMyBooking, createReview } from "@/lib/api";
+import { answerMyNewTime, cancelMyBooking, createReview } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 export async function cancelMyBookingAction(formData: FormData) {
     const token = await getToken();
@@ -14,6 +14,18 @@ export async function cancelMyBookingAction(formData: FormData) {
         : "/min-besti?feil=1");
 }
 
+// Godta / Passer ikke for a visit the business moved
+export async function answerMyNewTimeAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn?neste=/min-besti");
+    }
+    const accept = formData.get("svar") === "ja";
+    const result = await answerMyNewTime(token, String(formData.get("bookingId") ?? ""), accept);
+    redirect(result.ok
+        ? `/min-besti?svar=${accept ? "godtatt" : "avslatt"}`
+        : "/min-besti?feil=ny-tid");
+}
 export async function createReviewAction(formData: FormData) {
     const token = await getToken();
     if (!token) {

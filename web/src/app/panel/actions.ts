@@ -113,7 +113,7 @@ export async function deleteTimeOffAction(formData: FormData) {
     const page = back.startsWith("/panel") ? back : "/panel";
     redirect(ok ? page : `${page}${page.includes("?") ? "&" : "?"}feil=1`);
 }
-const MOVE_FIELDS = ["employeeId", "date", "time", "notifyCustomer"];
+const MOVE_FIELDS = ["employeeId", "date", "time", "svar"];
 
 // "Flytt": errors come back to the form; on success the calendar shows the day of the new time
 export async function moveBookingAction(_previous: FormState, formData: FormData): Promise<FormState> {
@@ -131,7 +131,9 @@ export async function moveBookingAction(_previous: FormState, formData: FormData
         employeeId: values.employeeId,
         date: values.date,
         time: values.time,
-        notifyCustomer: values.notifyCustomer === "on",
+        // "spor" = the customer must accept (link in the e-mail); "ja" = they already agreed, only tell them
+        askCustomer: values.svar === "spor",
+        notifyCustomer: values.svar === "ja",
     });
     if (!result.ok) {
         return { error: result.message, values };

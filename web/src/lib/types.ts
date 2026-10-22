@@ -88,6 +88,8 @@ export type PanelBooking = {
     customerEmail: string;
     customerNote: string | null;
     employeeId: string; // the calendar puts the booking in this employee's column
+    previousStartUtc: string | null; // set while a moved visit waits for the customer ("VenterKunde")
+
 };
 // Blocked time in the calendar; employeeId null = the whole business is closed
 export type TimeOff = {
@@ -112,6 +114,7 @@ export type CustomerBooking = {
     serviceId: string;
     employeeId: string;
     isReviewed: boolean; // the customer has already reviewed this visit
+    previousStartUtc: string | null; // set while the business waits for the customer to accept a new time
 };
 
 export type Review = {
@@ -135,4 +138,13 @@ export type BusinessPage = {
     page: number;
     pageCount: number;
     totalCount: number;
+};
+// "Ny tid" page: the moved visit behind the link in the e-mail
+export type NewTime = {
+    businessName: string;
+    serviceName: string;
+    employeeName: string;
+    startUtc: string;
+    previousStartUtc: string | null;
+    status: string;
 };
