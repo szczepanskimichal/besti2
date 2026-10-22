@@ -565,7 +565,7 @@ auth.AddEndpointFilter(async (context, next) =>
 auth.MapIdentityApi<AppUser>();
 
 // Shared logic for panel status changes (confirm / cancel)
-async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, ClaimsPrincipal principal,
+async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, string? message, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken)
 {
     var user = await userManager.GetUserAsync(principal);
@@ -574,7 +574,7 @@ async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, C
         return Results.Forbid();
     }
 
-    var outcome = await bookingService.UpdateStatusAsync(id, businessId, newStatus, cancellationToken);
+    var outcome = await bookingService.UpdateStatusAsync(id, businessId, newStatus, message, cancellationToken);
 
     return outcome switch
     {
@@ -589,14 +589,15 @@ async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, C
 // Confirm a booking
 app.MapPost("/api/panel/bookings/{id:guid}/bekreft", (Guid id, ClaimsPrincipal principal,
             UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-        ChangeBookingStatusAsync(id, BookingStatus.Bekreftet, principal, userManager, bookingService,
+        ChangeBookingStatusAsync(id, BookingStatus.Bekreftet, null, principal, userManager, bookingService,
             cancellationToken))
     .RequireAuthorization();
 
-// Cancel a booking
-app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, ClaimsPrincipal principal,
-            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-        ChangeBookingStatusAsync(id, BookingStatus.Avlyst, principal, userManager, bookingService, cancellationToken))
+/// Cancel a booking; the body { message } is optional
+app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, CancelBookingRequest? request, ClaimsPrincipal principal,
+        UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+    ChangeBookingStatusAsync(id, BookingStatus.Avlyst, request?.Message, principal, userManager, bookingService,
+        cancellationToken))
     .RequireAuthorization();
 
 // Move a visit to another time and/or employee

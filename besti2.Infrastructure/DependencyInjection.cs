@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace besti2.Infrastructure;
 
@@ -23,7 +24,17 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
-        services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<IBookingService>(provider =>
+        {
+            if (provider != null)
+                return new BookingService(
+                    provider.GetRequiredService<AppDbContext>(),
+                    provider.GetRequiredService<IEmailService>(),
+                    provider.GetRequiredService<ILogger<BookingService>>(),
+                    configuration["WebBaseUrl"] ?? "http://localhost:3000");
+return null;
+        }
+            );
         services.AddTransient<IEmailService, SmtpEmailService>();
         services.AddScoped<IBusinessRegistrationService>(provider => new BusinessRegistrationService(
             provider.GetRequiredService<AppDbContext>(),

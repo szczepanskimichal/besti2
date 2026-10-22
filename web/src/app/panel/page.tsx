@@ -435,6 +435,13 @@ function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBookin
                                 <form action={cancelBookingAction}>
                                     <input type="hidden" name="bookingId" value={booking.id}/>
                                     <input type="hidden" name="tilbake" value={closeHref}/>
+                                    {booking.customerEmail && (
+                                        <label className={styles.cancelMessage}>
+                                            Melding til kunden (valgfritt)
+                                            <textarea name="melding" maxLength={300} rows={2}
+                                                      placeholder="F.eks. Beklager, Ingrid er syk."/>
+                                        </label>
+                                    )}
                                     <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">Ja, avlys</SubmitButton>
                                 </form>
                             </details>

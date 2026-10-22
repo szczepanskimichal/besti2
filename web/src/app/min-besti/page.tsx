@@ -89,6 +89,14 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
                                 </p>
                             )}
+                            {/* Cancelled by the business: straight back to its booking page */}
+                            {booking.status === "Avlyst" && (
+                                <p>
+                                    <Link href={`/bedrift/${booking.businessId}/bestill?tjeneste=${booking.serviceId}&ansatt=${booking.employeeId}`}>
+                                        Bestill ny tid →
+                                    </Link>
+                                </p>
+                            )}
                             {booking.status !== "Avlyst" && (
                                 <details className={styles.actions}>
                                     <summary>Avbestill</summary>
