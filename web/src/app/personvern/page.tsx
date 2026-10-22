@@ -24,7 +24,7 @@ export default function PrivacyPage() {
                 BESTI drives av Michał Szczepański. BESTI er behandlingsansvarlig for brukerkontoer (kunder og bedrifter),
                 vurderinger og varsler i tjenesten. For opplysningene om en bestilling er bedriften du bestiller hos
                 også ansvarlig: bedriften bruker opplysningene for å gi deg timen, og BESTI behandler dem på vegne av
-                bedriften. Kontakt: <a href="mailto:michalszczepanski07@gmail.com">michalszczepanski07@gmail.com</a>.
+                bedriften. Kontakt: <a href="mailto:personvern@bestiapp.no">personvern@bestiapp.no</a>.
             </p>
 
             <h2>Hvilke opplysninger behandler vi?</h2>

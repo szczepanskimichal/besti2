@@ -10,7 +10,7 @@ Intern protokoll over behandlingsaktiviteter (GDPR art. 30). Én kilde til sannh
 - bruker opplysninger til et nytt formål (f.eks. markedsføring),
 - endrer hvor lenge noe lagres.
 
-Behandlingsansvarlig: Michał Szczepański (BESTI). Kontakt: michalszczepanski07@gmail.com
+Behandlingsansvarlig: Michał Szczepański (BESTI). Kontakt: personvern@bestiapp.no
 Sist gjennomgått: 2026-10-22
 
 ## Behandlinger
