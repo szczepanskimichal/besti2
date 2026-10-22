@@ -152,4 +152,15 @@ public class ReviewServiceTests
 
         Assert.Null(error);
     }
+    // check if a visit older than 30 days can no longer be reviewed
+    [Fact]
+    public async Task CreateAsync_After30Days_Fails()
+    {
+        var (service, db) = await CreateAsync();
+        var booking = await AddBookingAsync(db, hoursFromNow: -24 * 31);
+
+        var error = await service.CreateAsync("kunde-1", new CreateReviewRequest(booking.Id, 5, null));
+
+        Assert.Equal("Du kan gi en vurdering innen 30 dager etter timen.", error);
+    }
 }

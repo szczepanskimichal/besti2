@@ -9,7 +9,8 @@ namespace besti2.Infrastructure.Services;
 public class ReviewService(AppDbContext dbContext) : IReviewService
 {
     private const int MaxLength = 500;
-
+    // A visit can be reviewed for 30 days; after that it disappears from Min Besti
+    public const int ReviewDays = 30;
     public async Task<string?> CreateAsync(string customerUserId, CreateReviewRequest request,
         CancellationToken cancellationToken = default)
 
@@ -46,6 +47,10 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
         if (booking.Status == BookingStatus.Avlyst || booking.EndUtc > DateTime.UtcNow)
         {
             return "Du kan gi en vurdering etter timen.";
+        }
+        if (booking.EndUtc < DateTime.UtcNow.AddDays(-ReviewDays))
+        {
+            return "Du kan gi en vurdering innen 30 dager etter timen.";
         }
 
         if (await dbContext.Reviews.AnyAsync(r => r.BookingId == booking.Id, cancellationToken))
