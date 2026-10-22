@@ -21,8 +21,10 @@ public interface IBookingService
         // from/to = days in Oslo time for the calendar; without them: upcoming bookings and the last 14 days
         Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);
+        // message = optional text for the customer in the "avlyst" e-mail
         Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
-        Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default);
+            Guid bookingId, Guid businessId, BookingStatus newStatus, string? message = null,
+            CancellationToken cancellationToken = default);
     // Customer: own bookings, newest first
     Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
         string customerUserId, CancellationToken cancellationToken = default);

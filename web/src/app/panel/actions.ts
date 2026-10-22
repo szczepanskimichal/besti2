@@ -14,7 +14,7 @@ async function changeStatus(formData: FormData, action: "bekreft" | "avlys") {
     }
 
     const bookingId = String(formData.get("bookingId") ?? "");
-    const result = await changeBookingStatus(token, bookingId, action);
+    const result = await changeBookingStatus(token, bookingId, action, String(formData.get("melding") ?? ""));
 
     // Back to the calendar day or the list the owner came from (only panel pages)
     const back = safeRedirectPath(String(formData.get("tilbake") ?? ""));

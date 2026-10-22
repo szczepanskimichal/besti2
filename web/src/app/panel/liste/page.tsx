@@ -126,6 +126,13 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                         <form action={cancelBookingAction}>
                             <input type="hidden" name="bookingId" value={booking.id} />
                             <input type="hidden" name="tilbake" value="/panel/liste" />
+                            {booking.customerEmail && (
+                                <label className={styles.cancelMessage}>
+                                    Melding til kunden (valgfritt)
+                                    <textarea name="melding" maxLength={300} rows={2}
+                                              placeholder="F.eks. Beklager, Ingrid er syk."/>
+                                </label>
+                            )}
                             <SubmitButton className={styles.dangerButton} pendingText="Avlyser…">
                                 Ja, avlys
                             </SubmitButton>

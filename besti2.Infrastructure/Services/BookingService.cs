@@ -10,8 +10,9 @@ using Microsoft.Extensions.Logging;
 
 namespace besti2.Infrastructure.Services;
 
-public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger)
-    : IBookingService
+// webBaseUrl = address of the Next.js site, used for "Bestill ny tid" in the e-mail after a cancellation
+public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger,
+    string webBaseUrl = "http://localhost:3000") : IBookingService
 {
     // date in norwegian!!!
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
@@ -250,7 +251,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         // Only when the business asked for it and gave an e-mail address
         if (request.SendConfirmation && email.Length > 0)
         {
-            await SendStatusEmailAsync(booking, cancellationToken);
+            await SendStatusEmailAsync(booking, null, cancellationToken);
         }
 
         return new CreateBookingResult(
@@ -340,7 +341,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
     // Update the status of a booking
     public async Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
-        Guid bookingId, Guid businessId, BookingStatus newStatus, CancellationToken cancellationToken = default)
+        Guid bookingId, Guid businessId, BookingStatus newStatus, string? message = null,
+        CancellationToken cancellationToken = default)
     {
         var booking = await dbContext.Bookings
             .FirstOrDefaultAsync(b => b.Id == bookingId && b.Service.BusinessId == businessId, cancellationToken);
@@ -372,8 +374,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         booking.Status = newStatus;
         await dbContext.SaveChangesAsync(cancellationToken);
-        await SendStatusEmailAsync(booking, cancellationToken);
-        return UpdateBookingStatusOutcome.Updated;
+// A short note from the business, only when cancelling (at most 300 characters)
+        var note = newStatus == BookingStatus.Avlyst && !string.IsNullOrWhiteSpace(message)
+            ? message.Trim()[..Math.Min(message.Trim().Length, 300)]
+            : null;
+        await SendStatusEmailAsync(booking, note, cancellationToken);        return UpdateBookingStatusOutcome.Updated;
     }
 
 // "Flytt": another time and/or employee; never on top of another visit or blocked time,
@@ -695,7 +700,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
     }
 
-    private async Task SendStatusEmailAsync(Booking booking, CancellationToken cancellationToken)
+    private async Task SendStatusEmailAsync(Booking booking, string? note, CancellationToken cancellationToken)
     {
         // A visit added by the business may have no e-mail address
         if (booking.CustomerEmail.Length == 0)
@@ -712,12 +717,14 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
             var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
             var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
-
+            
+            // Cancelled: the business's own words (if any) and a link straight to its booking page
             var (subject, message) = booking.Status == BookingStatus.Bekreftet
                 ? ($"Bestillingen er bekreftet: {business.Name}", "Bestillingen din er bekreftet. Velkommen!")
                 : ($"Bestillingen er avlyst: {business.Name}",
-                    "Bestillingen din er dessverre avlyst. Du kan bestille en ny time på BESTI.");
-
+                    "Bestillingen din er dessverre avlyst.\n\n" +
+                    (note is null ? "" : $"Melding fra {business.Name}: {note}\n\n") +
+                    $"Bestill ny tid: {webBaseUrl}/bedrift/{business.Id}");
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
                 $"{message}\n\n" +

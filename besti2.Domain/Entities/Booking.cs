@@ -13,6 +13,8 @@ public class Booking
     public bool MarketingConsent { get; set; }
     public DateTime? MarketingConsentUtc { get; set; }
     public string? CustomerNote { get; set; }
+    // Message from the business when it cancels ("Avlys"), shown to the customer
+    public string? CancelReason { get; set; }
     public BookingStatus Status { get; set; }
     // Id of the customer's account (null for bookings made before customer accounts)
     public string? CustomerUserId { get; set; }
