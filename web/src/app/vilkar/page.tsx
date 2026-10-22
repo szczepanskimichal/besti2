@@ -48,7 +48,7 @@ export default function TermsPage() {
             <h2>Endringer og kontakt</h2>
             <p>
                 Vi kan oppdatere vilkårene. Vesentlige endringer varsles på nettsiden. Spørsmål?
-                Kontakt oss på michalszczepanski07@gmail.com. Norsk lov gjelder.
+                Kontakt oss på post@bestiapp.no. Norsk lov gjelder.
             </p>
         </main>
     );
