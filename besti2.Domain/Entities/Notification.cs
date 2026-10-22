@@ -6,6 +6,8 @@ public class Notification
     public Guid Id { get; set; }
     public string? UserId { get; set; }
     public Guid? BusinessId { get; set; }
+    // The visit it is about (null for e.g. a review); used to clear it once the customer has answered
+    public Guid? BookingId { get; set; }
     public string Text { get; set; } = null!;
     // Where a click leads, e.g. "/min-besti" or "/panel?dag=2026-10-22&bestilling=..."
     public string? Link { get; set; }

@@ -449,6 +449,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("BookingId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("BusinessId")
                         .HasColumnType("uniqueidentifier");
 

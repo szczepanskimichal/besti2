@@ -72,7 +72,8 @@ public class NotificationTests
         Assert.Contains("har bekreftet timen", bell.Items[1].Text);
     }
 
-    // check if a moved visit that waits for an answer asks the customer, and the answer reaches the business
+    // check if a moved visit asks the customer, the answer reaches the business, and the answered question
+    // leaves the customer's bell
     [Fact]
     public async Task MoveAndAnswer_NotifyBothSides()
     {
@@ -81,13 +82,15 @@ public class NotificationTests
         var id = await KariBooksAsync(bookings);
         await bookings.MoveAsync(id, KlippOgStil,
             new MoveBookingRequest(IngridId, FutureMonday, new TimeOnly(13, 0), false, AskCustomer: true));
+        var asked = await new NotificationService(db).GetAsync(Kari, null);
 
         await bookings.AnswerNewTimeByCustomerAsync(id, Kari, accept: true);
 
         var customer = await new NotificationService(db).GetAsync(Kari, null);
         var business = await new NotificationService(db).GetAsync("owner-user", KlippOgStil);
-        Assert.Contains("ønsker å flytte timen", customer.Items[0].Text);
-        Assert.Equal("/min-besti", customer.Items[0].Link);
+        Assert.Contains("ønsker å flytte timen", asked.Items[0].Text);
+        Assert.Equal("/min-besti", asked.Items[0].Link);
+        Assert.Empty(customer.Items);
         Assert.Contains("har godtatt ny tid", business.Items[0].Text);
     }
 
