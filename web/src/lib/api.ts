@@ -1,4 +1,4 @@
-import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -334,6 +334,27 @@ export async function getMyBookings(token: string): Promise<CustomerBooking[] | 
 export async function cancelMyBooking(token: string, bookingId: string): Promise<ApiResult> {
     const res = await apiFetch(`/api/me/bookings/${bookingId}/avbestill`, { method: "POST", token });
     return toResult(res, "Kunne ikke avbestille. Prøv igjen.");
+}
+
+// "Ny tid": the moved visit behind the one-time link (null = wrong or used link)
+export async function getNewTime(token: string): Promise<NewTime | null> {
+    const res = await apiFetch(`/api/ny-tid?${new URLSearchParams({ token })}`, { forwardIp: true });
+    if (res.status === 404) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente den nye tiden (${res.status})`);
+    }
+    return res.json();
+}
+
+// The customer's answer: from the link (token) or from Min Besti (logged in)
+export async function answerNewTime(token: string, accept: boolean): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/ny-tid", { method: "POST", body: { token, accept }, forwardIp: true }));
+}
+
+export async function answerMyNewTime(token: string, bookingId: string, accept: boolean): Promise<ApiResult> {
+    return toResult(await apiFetch(`/api/me/bookings/${bookingId}/ny-tid`, { method: "POST", token, body: { accept } }));
 }
 
 // Customer reviews a past visit; returns the API's message when it fails

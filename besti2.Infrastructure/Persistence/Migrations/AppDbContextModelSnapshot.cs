@@ -195,6 +195,13 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("MarketingConsentUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("NewTimeTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("PreviousStartUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uniqueidentifier");
 
@@ -209,6 +216,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CustomerUserId");
+
+                    b.HasIndex("NewTimeTokenHash");
 
                     b.HasIndex("ServiceId");
 

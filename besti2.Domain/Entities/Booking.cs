@@ -14,6 +14,9 @@ public class Booking
     public DateTime? MarketingConsentUtc { get; set; }
     public string? CustomerNote { get; set; }
     public BookingStatus Status { get; set; }
+    // "Flytt" waiting for the customer: SHA-256 of the one-time link token, and the time before the move
+    public string? NewTimeTokenHash { get; set; }
+    public DateTime? PreviousStartUtc { get; set; }
     // Id of the customer's account (null for bookings made before customer accounts)
     public string? CustomerUserId { get; set; }
     public Guid EmployeeId { get; set; }

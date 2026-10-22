@@ -6,4 +6,5 @@ export const statusLabels: Record<string, string> = {
     Bekreftet: "Bekreftet",
 
     Avlyst: "Avlyst",
+    VenterKunde: "Venter på kunden",
 };

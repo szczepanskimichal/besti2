@@ -218,3 +218,8 @@
     border-radius: 8px;
     resize: vertical;
 }
+/* Status badge for a moved visit waiting for the customer */
+.VenterKunde {
+    background: var(--color-primary-soft);
+    color: var(--color-primary-dark);
+}

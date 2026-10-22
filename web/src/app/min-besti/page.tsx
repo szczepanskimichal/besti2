@@ -6,7 +6,7 @@ import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
-import { cancelMyBookingAction } from "./actions";
+import { answerMyNewTimeAction, cancelMyBookingAction } from "./actions";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 type MyBookingsPageProps = {
-    searchParams: Promise<{ feil?: string; avbestilt?: string }>;
+    searchParams: Promise<{ feil?: string; avbestilt?: string; svar?: string }>;
 };
 
 // Only the coming visits: past and cancelled ones are gone (past visits can still be reviewed for 30 days)
@@ -34,7 +34,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     if (!bookings) {
         redirect("/logg-inn?neste=/min-besti");
     }
-    const { feil, avbestilt } = await searchParams;
+    const { feil, avbestilt, svar } = await searchParams;
     const upcoming = upcomingBookings(bookings);
     const toReview = bookingsToReview(bookings).length;
     return (
@@ -43,8 +43,16 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             <MinBestiTabs/>
             {feil && (
                 <p className={styles.error} role="alert">
-                    Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt eller ha startet.
+                    {feil === "ny-tid"
+                        ? "Svaret kunne ikke lagres. Timen kan allerede være endret eller ha startet."
+                        : "Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt eller ha startet."}
                 </p>
+            )}
+            {svar === "godtatt" && (
+                <p className={styles.muted} role="status">Takk! Bedriften bekrefter den nye tiden.</p>
+            )}
+            {svar === "avslatt" && (
+                <p className={styles.muted} role="status">Timen er avlyst, og bedriften har fått beskjed.</p>
             )}
             {avbestilt && <p className={styles.muted} role="status">Bestillingen er avbestilt.</p>}
             {toReview > 0 && (
@@ -68,7 +76,9 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
                                 </p>
                                 <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
-                                    {statusLabels[booking.status] ?? booking.status}
+                                    {booking.status === "VenterKunde"
+                                        ? "Svar ønskes"
+                                        : statusLabels[booking.status] ?? booking.status}
                                 </span>
                             </div>
                             <p className={styles.service}>
@@ -79,6 +89,29 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 <br/>
                                 {booking.businessAddress}
                             </p>
+                            {/* The business moved the visit: the customer accepts or declines the new time */}
+                            {booking.status === "VenterKunde" && (
+                                <div className={styles.note}>
+                                    <p>
+                                        Bedriften ønsker å flytte timen
+                                        {booking.previousStartUtc &&
+                                            ` fra ${formatDate(booking.previousStartUtc)} kl. ${formatTime(booking.previousStartUtc)}`}.
+                                        Passer den nye tiden?
+                                    </p>
+                                    <div className={styles.actions}>
+                                        <form action={answerMyNewTimeAction}>
+                                            <input type="hidden" name="bookingId" value={booking.id}/>
+                                            <input type="hidden" name="svar" value="ja"/>
+                                            <SubmitButton className={styles.primaryButton} pendingText="Lagrer…">Godta ny tid</SubmitButton>
+                                        </form>
+                                        <form action={answerMyNewTimeAction}>
+                                            <input type="hidden" name="bookingId" value={booking.id}/>
+                                            <input type="hidden" name="svar" value="nei"/>
+                                            <SubmitButton className={styles.dangerButton} pendingText="Lagrer…">Passer ikke</SubmitButton>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
                             <p>
                                 <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
                             </p>

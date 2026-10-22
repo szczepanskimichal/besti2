@@ -551,4 +551,25 @@ a.booking:hover {
     font-size: 0.75rem;
     color: var(--color-primary);
 }
+/* "Flytt": ask the customer or they already agreed */
+.choice {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
 
+.choice legend {
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+/* A moved visit waiting for the customer's answer: blue stripes */
+.booking.VenterKunde,
+.phoneCard.VenterKunde,
+.monthVisit.VenterKunde {
+    border-left-color: #2563eb;
+    background: repeating-linear-gradient(135deg, #e8f0fa 0 8px, #d6e4f7 8px 16px);
+}

@@ -59,11 +59,18 @@ export default function MoveBookingForm({ booking, employees, date, time, view, 
                         </label>
                     </div>
                     {booking.customerEmail ? (
-                        <label className={calendar.checkbox}>
-                            <input type="checkbox" name="notifyCustomer"
-                                   defaultChecked={state.values ? value("notifyCustomer") === "on" : true}/>
-                            Gi kunden beskjed på e-post
-                        </label>
+                        <fieldset className={calendar.choice}>
+                            <legend>Kunden</legend>
+                            <label className={calendar.checkbox}>
+                                <input type="radio" name="svar" value="spor"
+                                       defaultChecked={value("svar", "spor") === "spor"}/>
+                                Be kunden godta den nye tiden (e-post med lenke)
+                            </label>
+                            <label className={calendar.checkbox}>
+                                <input type="radio" name="svar" value="ja" defaultChecked={value("svar") === "ja"}/>
+                                Kunden har allerede sagt ja (f.eks. på telefon)
+                            </label>
+                        </fieldset>
                     ) : (
                         <p className={calendar.dialogHint}>Kunden har ingen e-post – husk å gi beskjed på telefon.</p>
                     )}

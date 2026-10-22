@@ -12,5 +12,6 @@ public record CustomerBookingDto(
     string BusinessAddress,
     Guid ServiceId,
     Guid EmployeeId,
-    bool IsReviewed
+    bool IsReviewed,
+    DateTime? PreviousStartUtc = null // set while a moved visit waits for the customer's answer
 );

@@ -15,6 +15,12 @@ public interface IBookingService
         // Business panel: move a visit to another time and/or employee (same service and length)
         Task<MoveBookingResult> MoveAsync(
         Guid bookingId, Guid businessId, MoveBookingRequest request, CancellationToken cancellationToken = default);
+        // "Ny tid": the moved visit behind a one-time link (null = wrong or used link)
+        Task<NewTimeDto?> GetNewTimeAsync(string token, CancellationToken cancellationToken = default);
+        // The customer accepts or declines the new time, from the e-mail link or from Min Besti
+        Task<NewTimeOutcome> AnswerNewTimeAsync(string token, bool accept, CancellationToken cancellationToken = default);
+        Task<NewTimeOutcome> AnswerNewTimeByCustomerAsync(Guid bookingId, string customerUserId, bool accept,
+            CancellationToken cancellationToken = default);
         // from/to = days in Oslo time for the calendar; without them: upcoming bookings and the last 14 days
         Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);

@@ -397,6 +397,12 @@ function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBookin
                     {statusLabels[booking.status] ?? booking.status}
                 </span>
                 <p className={styles.service}>{booking.serviceName} hos {booking.employeeName}</p>
+                {booking.previousStartUtc && (
+                    <p className={styles.muted}>
+                        Flyttet fra {formatDay(osloDate(booking.previousStartUtc))} kl. {formatTime(booking.previousStartUtc)}.
+                        Kunden har fått en lenke for å godta den nye tiden.
+                    </p>
+                )}
                 <p className={styles.customer}>
                     <a href={`tel:${booking.customerPhone}`}>{booking.customerPhone}</a>
                     {booking.customerEmail && (
