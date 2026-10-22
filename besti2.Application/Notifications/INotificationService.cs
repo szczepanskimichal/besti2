@@ -11,6 +11,8 @@ public interface INotificationService
     // Only the number on the bell (for the live stream)
     Task<int> UnreadCountAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default);
     Task MarkAllReadAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default);
+    // Daily cleanup for everybody (also those who never open the bell): 7 days customer, 14 days business
+    Task<int> DeleteExpiredAsync(DateTime nowUtc, CancellationToken cancellationToken = default);
     // The bin (🗑️) next to one notification; false when it is not this user's
     Task<bool> DeleteAsync(string userId, Guid? businessId, Guid notificationId,
         CancellationToken cancellationToken = default);

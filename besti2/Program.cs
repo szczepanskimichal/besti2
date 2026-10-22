@@ -255,6 +255,14 @@ app.MapGet("/api/me/profile", async (ClaimsPrincipal principal, UserManager<AppU
     var profile = userId is null ? null : await profileService.GetAsync(userId, cancellationToken);
     return profile is null ? Results.NotFound() : Results.Ok(profile);
 }).RequireAuthorization();
+// Customer: "Last ned mine data" – everything BESTI keeps about the customer, as JSON
+app.MapGet("/api/me/export", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IProfileService profileService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    var export = userId is null ? null : await profileService.ExportAsync(userId, cancellationToken);
+    return export is null ? Results.NotFound() : Results.Ok(export);
+}).RequireAuthorization();
 
 app.MapPut("/api/me/profile", async (UpdateMyProfileRequest request, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IProfileService profileService, CancellationToken cancellationToken) =>

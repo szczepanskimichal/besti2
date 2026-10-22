@@ -4,6 +4,8 @@ namespace besti2.Application.Accounts;
 public interface IProfileService
 {
     Task<ProfileDto?> GetAsync(string userId, CancellationToken cancellationToken = default);
+    // "Last ned mine data": null when the account is not a customer
+    Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default);
     Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request, CancellationToken cancellationToken = default);
     Task<string?> ChangePasswordAsync(string userId, ChangePasswordRequest request);
     // "Slett konto": future visits cancelled (the business is told), all visits anonymised, reviews kept as

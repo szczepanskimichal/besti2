@@ -143,4 +143,31 @@ public class ProfileServiceTests
         Assert.Equal("Fant ikke kontoen.", await profile.DeleteAsync(owner.Id, new DeleteAccountRequest(Password)));
         Assert.NotNull(await users.FindByIdAsync(owner.Id));
     }
+    // check if "Last ned mine data" contains the account, the visits, the reviews and the notifications
+    [Fact]
+    public async Task Export_ContainsEverythingAboutTheCustomer()
+    {
+        var (profile, users, db, bookings) = await CreateAsync();
+        var kari = await KariAsync(users);
+        await bookings.CreateAsync(new CreateBookingRequest(HerreklippId, IngridId,
+            SlotCalculator.ToUtc(FutureMonday, new TimeOnly(10, 0)), "Kari Nordmann", "+4790000000",
+            "kari@test.example", true, "Kort på sidene"), kari.Id);
+        db.Reviews.Add(new Review
+        {
+            Id = Guid.NewGuid(), BookingId = Guid.NewGuid(), BusinessId = KlippOgStil, CustomerUserId = kari.Id,
+            CustomerName = "Kari", Stars = 4, Comment = "Bra", CreatedUtc = DateTime.UtcNow
+        });
+        db.Notifications.Add(new Notification { Id = Guid.NewGuid(), UserId = kari.Id, Text = "Hei", CreatedUtc = DateTime.UtcNow });
+        await db.SaveChangesAsync();
+
+        var export = await profile.ExportAsync(kari.Id);
+
+        Assert.Equal("kari@test.example", export!.Account.Email);
+        var booking = Assert.Single(export.Bookings);
+        Assert.Equal("Herreklipp", booking.Service);
+        Assert.Equal("Kort på sidene", booking.Note);
+        Assert.True(booking.MarketingConsent);
+        Assert.Equal("Klipp & Stil Frisør", Assert.Single(export.Reviews).Business);
+        Assert.Equal("Hei", Assert.Single(export.Notifications).Text);
+    }
 }

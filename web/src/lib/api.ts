@@ -465,3 +465,8 @@ export async function lookupBusinessRegistry(orgNumber: string): Promise<{ ok: t
         ? { ok: true, business: body }
         : { ok: false, message: body?.message ?? body?.detail ?? "Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv." };
 }
+// "Last ned mine data": everything BESTI keeps about the logged-in customer (null = not a customer)
+export async function exportMyData(token: string): Promise<unknown | null> {
+    const res = await apiFetch("/api/me/export", { token });
+    return res.ok ? res.json() : null;
+}

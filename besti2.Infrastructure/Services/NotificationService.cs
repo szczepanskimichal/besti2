@@ -63,7 +63,18 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         }
         await dbContext.SaveChangesAsync(cancellationToken);
     }
-
+    public async Task<int> DeleteExpiredAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
+    {
+        var customerCutoff = nowUtc.AddDays(-CustomerDays);
+        var businessCutoff = nowUtc.AddDays(-BusinessDays);
+        var expired = await dbContext.Notifications
+            .Where(n => (n.BusinessId == null && n.CreatedUtc < customerCutoff)
+                        || (n.BusinessId != null && n.CreatedUtc < businessCutoff))
+            .ToListAsync(cancellationToken);
+        dbContext.Notifications.RemoveRange(expired);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return expired.Count;
+    }
     public async Task<bool> DeleteAsync(string userId, Guid? businessId, Guid notificationId,
         CancellationToken cancellationToken = default)
     {

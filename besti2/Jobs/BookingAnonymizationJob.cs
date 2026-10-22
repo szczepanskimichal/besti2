@@ -1,8 +1,10 @@
 using besti2.Application.Bookings;
+using besti2.Application.Notifications;
 
 namespace besti2.Jobs;
 
-// Runs at startup and then once a day: anonymizes bookings older than 5 years (see /personvern)
+// Runs at startup and then once a day: anonymizes bookings older than 5 years and deletes old notifications
+// (7 days customer, 14 days business) – the periods promised on /personvern
 public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<BookingAnonymizationJob> logger)
     : BackgroundService
 {
@@ -20,6 +22,12 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
                 if (count > 0)
                 {
                     logger.LogInformation("Anonymized {Count} old bookings", count);
+                }
+                var notifications = scope.ServiceProvider.GetRequiredService<INotificationService>();
+                var deleted = await notifications.DeleteExpiredAsync(DateTime.UtcNow, stoppingToken);
+                if (deleted > 0)
+                {
+                    logger.LogInformation("Deleted {Count} old notifications", deleted);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

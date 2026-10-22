@@ -207,5 +207,24 @@ public class NotificationTests
         Assert.True(business.Reader.TryRead(out _));
         Assert.False(stranger.Reader.TryRead(out _));
     }
+    // check if the daily cleanup removes old notifications for everybody: 7 days customer, 14 days business
+    [Fact]
+    public async Task DeleteExpired_ForEverybody()
+    {
+        await using var db = await CreateSeededDbAsync();
+        Domain.Entities.Notification Note(int daysAgo, string? userId, Guid? businessId) => new()
+        {
+            Id = Guid.NewGuid(), UserId = userId, BusinessId = businessId, Text = $"{daysAgo}",
+            CreatedUtc = DateTime.UtcNow.AddDays(-daysAgo)
+        };
+        db.Notifications.AddRange(Note(6, Kari, null), Note(8, Kari, null), Note(13, null, KlippOgStil),
+            Note(15, null, KlippOgStil));
+        await db.SaveChangesAsync();
+
+        var deleted = await new NotificationService(db).DeleteExpiredAsync(DateTime.UtcNow);
+
+        Assert.Equal(2, deleted);
+        Assert.Equal(["13", "6"], (await db.Notifications.Select(n => n.Text).ToListAsync()).Order().ToArray());
+    }
     
 }
