@@ -192,7 +192,7 @@ app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> use
     var user = await userManager.GetUserAsync(principal);
     return user is null
         ? Results.Unauthorized()
-        : Results.Ok(new { user.Email, user.FullName, IsBusiness = user.BusinessId is not null });
+        : Results.Ok(new { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
 }).RequireAuthorization();
 
 // Customer: own bookings for "Mine bestillinger"
@@ -247,6 +247,51 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
 
+// Customer: "Min profil" – name, e-mail (read only) and phone
+app.MapGet("/api/me/profile", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    IProfileService profileService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    var profile = userId is null ? null : await profileService.GetAsync(userId, cancellationToken);
+    return profile is null ? Results.NotFound() : Results.Ok(profile);
+}).RequireAuthorization();
+
+app.MapPut("/api/me/profile", async (UpdateMyProfileRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IProfileService profileService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+    var error = await profileService.UpdateAsync(userId, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization();
+
+app.MapPost("/api/me/password", async (ChangePasswordRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IProfileService profileService) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+    var error = await profileService.ChangePasswordAsync(userId, request);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization().RequireRateLimiting("login");
+
+// Customer: "Slett konto" (confirmed with the password)
+app.MapPost("/api/me/delete", async (DeleteAccountRequest request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IProfileService profileService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+    var error = await profileService.DeleteAsync(userId, request, cancellationToken);
+    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+}).RequireAuthorization().RequireRateLimiting("login");
 
 // Customer: cancel own booking before it starts
 app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,

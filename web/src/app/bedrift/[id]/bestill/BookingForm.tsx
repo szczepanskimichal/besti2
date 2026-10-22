@@ -14,11 +14,13 @@ type BookingFormProps = {
     date: string;
     fullName: string | null;
     email: string;
+    phone: string | null; // from "Min profil"
 };
 // The booking form: on an error (e.g. the time was just taken) the phone, note and consent stay
-export default function BookingForm({ businessId, serviceId, employeeId, startUtc, date, fullName, email }: BookingFormProps) {
+export default function BookingForm({ businessId, serviceId, employeeId, startUtc, date, fullName, email, phone }: BookingFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(createBookingAction, {});
-    const value = (field: string) => state.values?.[field] ?? "";
+    const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
+
     return (
         <form action={formAction} className={styles.form}>
             {state.error && (
@@ -36,7 +38,7 @@ export default function BookingForm({ businessId, serviceId, employeeId, startUt
                 Telefon
                 <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}
                        autoComplete="tel" pattern="\+?[0-9 ]{8,20}" placeholder="912 34 567"
-                       title="Bare tall, mellomrom og +, minst 8 sifre" defaultValue={value("customerPhone")}/>
+                       defaultValue={value("customerPhone", phone ?? "")}/>
             </label>
             <label className={styles.field}>
                 Melding til bedriften (valgfritt)

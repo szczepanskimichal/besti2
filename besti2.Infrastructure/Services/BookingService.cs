@@ -576,6 +576,13 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         booking.Status = accept ? BookingStatus.Venter : BookingStatus.Avlyst;
         booking.NewTimeTokenHash = null;
         booking.PreviousStartUtc = null;
+        // The question "Passer den nye tiden?" is answered: it leaves the customer's bell
+        if (booking.CustomerUserId is not null)
+        {
+            dbContext.Notifications.RemoveRange(await dbContext.Notifications
+                .Where(n => n.UserId == booking.CustomerUserId && n.BookingId == booking.Id)
+                .ToListAsync(cancellationToken));
+        }
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendNewTimeAnswerEmailAsync(booking, accept, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
@@ -606,6 +613,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 Id = Guid.NewGuid(),
                 BusinessId = toBusiness ? business.BusinessId : null,
                 UserId = toBusiness ? null : booking.CustomerUserId,
+                BookingId = booking.Id,
                 Text = Shorten(text.Replace("{0}", business.Name)),
                 // Cancelled visits are gone from Min Besti: the customer can book again with the business
                 Link = link ?? $"/bedrift/{business.BusinessId}",

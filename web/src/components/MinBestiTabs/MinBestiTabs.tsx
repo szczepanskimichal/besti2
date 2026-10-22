@@ -6,6 +6,7 @@ import styles from "./MinBestiTabs.module.css";
 const tabs = [
     { href: "/min-besti", label: "Bestillinger" },
     { href: "/min-besti/vurderinger", label: "Vurderinger" },
+    { href: "/min-besti/profil", label: "Profil" },
 ];
 // Tabs at the top of Min Besti; the current page is highlighted
 export default function MinBestiTabs() {
