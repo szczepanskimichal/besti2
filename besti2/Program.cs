@@ -266,6 +266,15 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
+// The bell (🔔): the newest notifications of the logged-in customer or business, and how many are unread
+app.MapGet("/api/notifications", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    INotificationService notificationService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    return user is null
+        ? Results.Unauthorized()
+        : Results.Ok(await notificationService.GetAsync(user.Id, user.BusinessId, cancellationToken));
+}).RequireAuthorization();
 // The bell, live: an open connection (Server-Sent Events) that sends the number of unread notifications
 // at once when it changes, and a small ping every 25 s so proxies keep the connection open
 app.MapGet("/api/notifications/stream", async (HttpContext context, ClaimsPrincipal principal,
