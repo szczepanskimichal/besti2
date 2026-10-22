@@ -38,6 +38,7 @@ export default function BookingForm({ businessId, serviceId, employeeId, startUt
                 Telefon
                 <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}
                        autoComplete="tel" pattern="\+?[0-9 ]{8,20}" placeholder="912 34 567"
+                       title="Bare tall, mellomrom og +, minst 8 sifre"
                        defaultValue={value("customerPhone", phone ?? "")}/>
             </label>
             <label className={styles.field}>
