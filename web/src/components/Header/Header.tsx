@@ -3,6 +3,7 @@ import styles from "@/components/Header/Header.module.css";
 import {getMe, getNotifications} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {logoutAction} from "@/app/logg-inn/actions";
+import NotificationBell from "@/components/NotificationBell/NotificationBell";
 
 
 // Server component: reads the login cookie and shows who is logged in
@@ -31,15 +32,7 @@ export default async function Header() {
                                 </>
                             )}
                             {notifications && (
-                                <NextLink href="/varsler" className={styles.bell}
-                                          aria-label={notifications.unread > 0 ? `Varsler, ${notifications.unread} uleste` : "Varsler"}>
-                                    <span aria-hidden="true">🔔</span>
-                                    {notifications.unread > 0 && (
-                                        <span className={styles.badge} aria-hidden="true">
-                                            {notifications.unread > 9 ? "9+" : notifications.unread}
-                                        </span>
-                                    )}
-                                </NextLink>
+                                <NotificationBell key={notifications.unread} initialUnread={notifications.unread}/>
                             )}
                             <form action={logoutAction}>
                                 <button type="submit" className={styles.logoutButton}>Logg ut</button>

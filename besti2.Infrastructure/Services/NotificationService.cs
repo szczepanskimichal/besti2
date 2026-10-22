@@ -8,13 +8,23 @@ namespace besti2.Infrastructure.Services;
 public class NotificationService(AppDbContext dbContext) : INotificationService
 {
     private const int MaxShown = 30;
+    // Kept until deleted, but never longer than this (so nothing hangs around when nobody deletes)
+    public const int CustomerDays = 7;
+    public const int BusinessDays = 14;
 
     public async Task<NotificationListDto> GetAsync(string userId, Guid? businessId,
         CancellationToken cancellationToken = default)
     {
-        // Only what has not been read: a notification is gone once the list has been opened
-        var mine = Mine(userId, businessId).Where(n => n.ReadUtc == null);
-        var unread = await mine.CountAsync(cancellationToken);
+        var cutoff = DateTime.UtcNow.AddDays(-(businessId is null ? CustomerDays : BusinessDays));
+        var expired = await Mine(userId, businessId).Where(n => n.CreatedUtc < cutoff).ToListAsync(cancellationToken);
+        if (expired.Count > 0)
+        {
+            dbContext.Notifications.RemoveRange(expired);
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        var mine = Mine(userId, businessId);
+        var unread = await mine.CountAsync(n => n.ReadUtc == null, cancellationToken);
         var items = await mine
             .OrderByDescending(n => n.CreatedUtc)
             .Take(MaxShown)
@@ -23,12 +33,46 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         return new NotificationListDto(unread, items);
     }
 
+    public async Task<NotificationReadDto?> MarkReadAsync(string userId, Guid? businessId, Guid notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var notification = await Mine(userId, businessId)
+            .FirstOrDefaultAsync(n => n.Id == notificationId, cancellationToken);
+        if (notification is null)
+        {
+            return null;
+        }
+        notification.ReadUtc ??= DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return new NotificationReadDto(notification.Link);
+    }
+
+    public Task<int> UnreadCountAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default) =>
+        Mine(userId, businessId).CountAsync(n => n.ReadUtc == null, cancellationToken);
+
     public async Task MarkAllReadAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default)
     {
-        // Read = cleared: the notifications are deleted (they are never shown again)
-        var mine = await Mine(userId, businessId).ToListAsync(cancellationToken);
-        dbContext.Notifications.RemoveRange(mine);
+        var unread = await Mine(userId, businessId).Where(n => n.ReadUtc == null).ToListAsync(cancellationToken);
+        var now = DateTime.UtcNow;
+        foreach (var notification in unread)
+        {
+            notification.ReadUtc = now;
+        }
         await dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<bool> DeleteAsync(string userId, Guid? businessId, Guid notificationId,
+        CancellationToken cancellationToken = default)
+    {
+        var notification = await Mine(userId, businessId)
+            .FirstOrDefaultAsync(n => n.Id == notificationId, cancellationToken);
+        if (notification is null)
+        {
+            return false;
+        }
+        dbContext.Notifications.Remove(notification);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return true;
     }
 
     private IQueryable<Notification> Mine(string userId, Guid? businessId) => businessId is Guid id

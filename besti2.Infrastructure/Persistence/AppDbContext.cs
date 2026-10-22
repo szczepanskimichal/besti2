@@ -9,7 +9,22 @@ namespace besti2.Infrastructure.Persistence;
 public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
-
+    // Every saved change to a notification rings that bell at once (see NotificationSignals and
+    // /api/notifications/stream), wherever in the code the notification was written or read
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var bells = ChangeTracker.Entries<Notification>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Select(e => NotificationSignals.Key(e.Entity.UserId, e.Entity.BusinessId))
+            .Distinct()
+            .ToList();
+        var saved = await base.SaveChangesAsync(cancellationToken);
+        foreach (var bell in bells)
+        {
+            NotificationSignals.Changed(bell);
+        }
+        return saved;
+    }
     public DbSet<Business> Businesses { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
     public DbSet<Service> Services { get; set; } = null!;

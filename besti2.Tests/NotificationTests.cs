@@ -107,24 +107,70 @@ public class NotificationTests
         Assert.Empty((await new NotificationService(db).GetAsync("other-owner", FjordBygg)).Items);
     }
     
-    // check if opening the list clears it: the number and the notifications are gone, only for that bell
+    // check if a click reads only that one notification and returns where it leads
     [Fact]
-    public async Task MarkAllRead_ClearsTheList()
+    public async Task MarkRead_OnlyThatOne()
     {
         await using var db = await CreateSeededDbAsync();
         var bookings = Bookings(db);
         var id = await KariBooksAsync(bookings);
-        await bookings.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet); // Kari's bell
+        await bookings.CancelByCustomerAsync(id, Kari); // a second notification for the business
         var notifications = new NotificationService(db);
+        var before = await notifications.GetAsync("owner-user", KlippOgStil);
 
-        await notifications.MarkAllReadAsync("owner-user", KlippOgStil);
+        var read = await notifications.MarkReadAsync("owner-user", KlippOgStil, before.Items[1].Id);
 
-        var business = await notifications.GetAsync("owner-user", KlippOgStil);
-        Assert.Equal(0, business.Unread);
-        Assert.Empty(business.Items);
-        Assert.Equal(1, (await notifications.GetAsync(Kari, null)).Unread);
+        var after = await notifications.GetAsync("owner-user", KlippOgStil);
+        Assert.Equal(before.Items[1].Link, read!.Link);
+        Assert.Equal(1, after.Unread);
+        Assert.Equal(2, after.Items.Count);
+        Assert.False(after.Items[0].IsRead);
+        Assert.True(after.Items[1].IsRead);
     }
 
+    // check if "Merk alle som lest" keeps the notifications, and the bin removes only one, only your own
+    [Fact]
+    public async Task MarkAllAndDelete()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var bookings = Bookings(db);
+        var id = await KariBooksAsync(bookings);
+        await bookings.CancelByCustomerAsync(id, Kari);
+        var notifications = new NotificationService(db);
+        await notifications.MarkAllReadAsync("owner-user", KlippOgStil);
+        var items = (await notifications.GetAsync("owner-user", KlippOgStil)).Items;
+
+        var byOther = await notifications.DeleteAsync("other-owner", FjordBygg, items[0].Id);
+        var byOwner = await notifications.DeleteAsync("owner-user", KlippOgStil, items[0].Id);
+
+        var after = await notifications.GetAsync("owner-user", KlippOgStil);
+        Assert.False(byOther);
+        Assert.True(byOwner);
+        Assert.Equal(0, after.Unread);
+        Assert.Single(after.Items);
+    }
+
+    // check if old notifications disappear by themselves: 7 days for a customer, 14 days for a business
+    [Fact]
+    public async Task OldNotifications_AreRemoved()
+    {
+        await using var db = await CreateSeededDbAsync();
+        Domain.Entities.Notification Note(int daysAgo, string? userId, Guid? businessId) => new()
+        {
+            Id = Guid.NewGuid(), UserId = userId, BusinessId = businessId, Text = $"{daysAgo} dager",
+            CreatedUtc = DateTime.UtcNow.AddDays(-daysAgo)
+        };
+        db.Notifications.AddRange(Note(6, Kari, null), Note(8, Kari, null), Note(13, null, KlippOgStil),
+            Note(15, null, KlippOgStil));
+        await db.SaveChangesAsync();
+        var notifications = new NotificationService(db);
+
+        var customer = await notifications.GetAsync(Kari, null);
+        var business = await notifications.GetAsync("owner-user", KlippOgStil);
+
+        Assert.Equal("6 dager", Assert.Single(customer.Items).Text);
+        Assert.Equal("13 dager", Assert.Single(business.Items).Text);
+    }
     // check if a new review rings the business's bell
     [Fact]
     public async Task NewReview_NotifiesTheBusiness()
@@ -144,6 +190,19 @@ public class NotificationTests
         var bell = await new NotificationService(db).GetAsync("owner-user", KlippOgStil);
         Assert.Equal("Ny vurdering: 5 av 5 stjerner fra Kari", bell.Items.Single().Text);
         Assert.Equal("/panel/vurderinger", bell.Items.Single().Link);
+    }
+    // check if a saved notification rings that bell's live connection at once, and nobody else's
+    [Fact]
+    public async Task NewNotification_SignalsOnlyThatBell()
+    {
+        await using var db = await CreateSeededDbAsync();
+        using var business = NotificationSignals.Subscribe(NotificationSignals.Key(null, KlippOgStil));
+        using var stranger = NotificationSignals.Subscribe(NotificationSignals.Key("nobody-" + Guid.NewGuid(), null));
+
+        await KariBooksAsync(Bookings(db));
+
+        Assert.True(business.Reader.TryRead(out _));
+        Assert.False(stranger.Reader.TryRead(out _));
     }
     
 }
