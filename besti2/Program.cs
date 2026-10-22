@@ -12,6 +12,7 @@ using besti2.Infrastructure.Persistence;
 using besti2.Jobs;
 using Microsoft.Extensions.FileProviders;
 using System.Threading.RateLimiting;
+using besti2.Application.Notifications;
 using besti2.Application.Reviews;
 using Microsoft.AspNetCore.HttpOverrides;
 
@@ -264,6 +265,28 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
             new { message = "Bestillingen kan ikke avbestilles lenger." }),
         _ => Results.NotFound()
     };
+}).RequireAuthorization();
+// The bell (🔔): the newest notifications of the logged-in customer or business, and how many are unread
+app.MapGet("/api/notifications", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    INotificationService notificationService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    return user is null
+        ? Results.Unauthorized()
+        : Results.Ok(await notificationService.GetAsync(user.Id, user.BusinessId, cancellationToken));
+}).RequireAuthorization();
+
+// Opening the list marks everything as read
+app.MapPost("/api/notifications/read", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+    INotificationService notificationService, CancellationToken cancellationToken) =>
+{
+    var user = await userManager.GetUserAsync(principal);
+    if (user is null)
+    {
+        return Results.Unauthorized();
+    }
+    await notificationService.MarkAllReadAsync(user.Id, user.BusinessId, cancellationToken);
+    return Results.NoContent();
 }).RequireAuthorization();
 
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list

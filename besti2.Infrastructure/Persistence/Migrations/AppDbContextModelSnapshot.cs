@@ -443,6 +443,43 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.Notification", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Link")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("ReadUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId", "CreatedUtc");
+
+                    b.HasIndex("UserId", "CreatedUtc");
+
+                    b.ToTable("Notifications");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.OpeningHours", b =>
                 {
                     b.Property<Guid>("Id")
