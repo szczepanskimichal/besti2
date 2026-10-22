@@ -1,4 +1,6 @@
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using besti2.Application.Bookings;
 using besti2.Application.Email;
 using besti2.Domain.Entities;
@@ -289,7 +291,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.CustomerPhone,
                 b.CustomerEmail,
                 b.CustomerNote,
-                b.EmployeeId))
+                b.EmployeeId,
+                b.PreviousStartUtc))
             .ToListAsync(cancellationToken);
     }
 
@@ -312,7 +315,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 b.Service.Business.Address + ", " + b.Service.Business.PostalCode + " " + b.Service.Business.City,
                 b.ServiceId,
                 b.EmployeeId,
-                dbContext.Reviews.Any(r => r.BookingId == b.Id)))
+                dbContext.Reviews.Any(r => r.BookingId == b.Id),
+                b.PreviousStartUtc))
             .ToListAsync(cancellationToken);
     }
 
@@ -334,6 +338,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
 
         booking.Status = BookingStatus.Avlyst;
+        booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
@@ -357,6 +362,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             (BookingStatus.Venter, BookingStatus.Bekreftet) => true,
             (BookingStatus.Venter, BookingStatus.Avlyst) => true,
             (BookingStatus.Bekreftet, BookingStatus.Avlyst) => true,
+            (BookingStatus.VenterKunde, BookingStatus.Avlyst) => true,
             _ => false
         };
 
@@ -373,6 +379,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         }
 
         booking.Status = newStatus;
+        booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
 // A short note from the business, only when cancelling (at most 300 characters)
         var note = newStatus == BookingStatus.Avlyst && !string.IsNullOrWhiteSpace(message)
@@ -451,10 +458,31 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             return new MoveBookingResult(MoveBookingOutcome.SlotTaken);
         }
 
-        var oldStartUtc = booking.StartUtc;
+        // The original time stays the "before" time when a visit is moved twice before the customer answers
+        var oldStartUtc = booking.PreviousStartUtc ?? booking.StartUtc;
         booking.EmployeeId = request.EmployeeId;
         booking.StartUtc = startUtc;
         booking.EndUtc = endUtc;
+
+        // Ask the customer only when they can get the link (a walk-in without e-mail cannot answer)
+        string? token = null;
+        if (request.AskCustomer && booking.CustomerEmail.Length > 0)
+        {
+            token = NewToken();
+            booking.NewTimeTokenHash = Hash(token);
+            booking.PreviousStartUtc = oldStartUtc;
+            booking.Status = BookingStatus.VenterKunde;
+        }
+        else
+        {
+            booking.NewTimeTokenHash = null;
+            booking.PreviousStartUtc = null;
+            if (booking.Status == BookingStatus.VenterKunde)
+            {
+                booking.Status = BookingStatus.Venter;
+            }
+        }
+
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -469,13 +497,78 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             await transaction.CommitAsync(cancellationToken);
         }
 
-        if (request.NotifyCustomer)
+        if (token is not null)
         {
-            await SendMovedEmailAsync(booking, oldStartUtc, cancellationToken);
+            await SendMovedEmailAsync(booking, oldStartUtc, $"{webBaseUrl}/ny-tid?token={token}", cancellationToken);
+        }
+        else if (request.NotifyCustomer)
+        {
+            await SendMovedEmailAsync(booking, oldStartUtc, null, cancellationToken);
         }
 
         return new MoveBookingResult(MoveBookingOutcome.Moved);
     }
+
+    public async Task<NewTimeDto?> GetNewTimeAsync(string token, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return null;
+        }
+        var hash = Hash(token);
+        return await dbContext.Bookings.AsNoTracking()
+            .Where(b => b.NewTimeTokenHash == hash && b.Status == BookingStatus.VenterKunde)
+            .Select(b => new NewTimeDto(b.Service.Business.Name, b.Service.Name,
+                b.Employee.Name + " " + b.Employee.LastName, b.StartUtc, b.PreviousStartUtc, b.Status.ToString()))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<NewTimeOutcome> AnswerNewTimeAsync(string token, bool accept,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return NewTimeOutcome.NotFound;
+        }
+        var hash = Hash(token);
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.NewTimeTokenHash == hash, cancellationToken);
+        return await AnswerAsync(booking, accept, cancellationToken);
+    }
+
+    public async Task<NewTimeOutcome> AnswerNewTimeByCustomerAsync(Guid bookingId, string customerUserId, bool accept,
+        CancellationToken cancellationToken = default)
+    {
+        var booking = await dbContext.Bookings
+            .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
+        return await AnswerAsync(booking, accept, cancellationToken);
+    }
+
+    // Godta = the visit waits for the business to confirm, as a new booking; Passer ikke = cancelled and free again
+    private async Task<NewTimeOutcome> AnswerAsync(Booking? booking, bool accept, CancellationToken cancellationToken)
+    {
+        if (booking is null || booking.Status != BookingStatus.VenterKunde)
+        {
+            return NewTimeOutcome.NotFound;
+        }
+        if (booking.StartUtc <= DateTime.UtcNow)
+        {
+            return NewTimeOutcome.TooLate;
+        }
+
+        booking.Status = accept ? BookingStatus.Venter : BookingStatus.Avlyst;
+        booking.NewTimeTokenHash = null;
+        booking.PreviousStartUtc = null;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await SendNewTimeAnswerEmailAsync(booking, accept, cancellationToken);
+        return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
+    }
+
+    // A one-time link token: 32 random bytes, URL-safe; only its hash is stored
+    private static string NewToken() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
@@ -596,7 +689,9 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     // The new time after "Flytt"; a failed email must not undo the move
-    private async Task SendMovedEmailAsync(Booking booking, DateTime oldStartUtc, CancellationToken cancellationToken)
+    // answerLink = the customer must accept the new time (Godta / Passer ikke on the BESTI page)
+    private async Task SendMovedEmailAsync(Booking booking, DateTime oldStartUtc, string? answerLink,
+        CancellationToken cancellationToken)
     {
         if (booking.CustomerEmail.Length == 0)
         {
@@ -617,16 +712,20 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
-                "Timen din har fått ny tid.\n\n" +
+                (answerLink is null ? "Timen din har fått ny tid.\n\n" : "Bedriften ønsker å flytte timen din.\n\n") +
                 $"Ny tid: {When(booking.StartUtc)}\n" +
                 $"Tidligere tid: {When(oldStartUtc)}\n" +
                 $"Tjeneste: {service.Name} hos {employee.Name} {employee.LastName}\n" +
                 $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
-                "Passer ikke den nye tiden? Ta kontakt med bedriften, eller avbestill i Min Besti.\n\n" +
+                (answerLink is null
+                    ? "Passer ikke den nye tiden? Ta kontakt med bedriften, eller avbestill i Min Besti.\n\n"
+                    : $"Passer den nye tiden? Svar her: {answerLink}\n\n") +
                 "Hilsen BESTI";
 
-            await emailService.SendAsync(booking.CustomerEmail, $"Ny tid for bestillingen: {business.Name}", body,
-                cancellationToken);
+            var subject = answerLink is null
+                ? $"Ny tid for bestillingen: {business.Name}"
+                : $"Passer den nye tiden? {business.Name}";
+            await emailService.SendAsync(booking.CustomerEmail, subject, body, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -672,6 +771,34 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
+        }
+    }
+
+    // Tell the business whether the customer accepted the new time; a failed email must not undo the answer
+    private async Task SendNewTimeAnswerEmailAsync(Booking booking, bool accept, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var when = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo)
+                .ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var body =
+                $"Hei {business.Name}!\n\n" +
+                (accept
+                    ? $"{booking.CustomerName} har godtatt den nye tiden. Bekreft timen i kalenderen.\n\n"
+                    : $"{booking.CustomerName} kan ikke komme på den nye tiden. Timen er avlyst, og tiden er ledig igjen.\n\n") +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n\n" +
+                "Hilsen BESTI";
+            var subject = accept ? $"Ny tid godtatt: {service.Name}, {when}" : $"Ny tid avslått: {service.Name}, {when}";
+            await emailService.SendAsync(business.Email, subject, body, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send new-time answer email for booking {BookingId}", booking.Id);
         }
     }
 

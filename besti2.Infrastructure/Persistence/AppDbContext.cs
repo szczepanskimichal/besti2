@@ -131,6 +131,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.CustomerPhone).IsRequired().HasMaxLength(20);
             e.Property(x => x.CustomerNote).HasMaxLength(500);
+            e.Property(x => x.NewTimeTokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.NewTimeTokenHash);
+            e.Property(x => x.PreviousStartUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             e.Property(x => x.StartUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             e.Property(x => x.EndUtc)

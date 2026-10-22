@@ -267,6 +267,32 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
 }).RequireAuthorization();
 
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
+// "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
+app.MapGet("/api/ny-tid", async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var newTime = await bookingService.GetNewTimeAsync(token ?? "", cancellationToken);
+    return newTime is null ? Results.NotFound() : Results.Ok(newTime);
+}).RequireRateLimiting("booking");
+
+// The customer's answer from the link: Godta (the business confirms next) or Passer ikke (cancelled)
+app.MapPost("/api/ny-tid", async (NewTimeAnswerRequest request, IBookingService bookingService,
+            CancellationToken cancellationToken) =>
+        NewTimeResult(await bookingService.AnswerNewTimeAsync(request.Token, request.Accept, cancellationToken)))
+    .RequireRateLimiting("booking");
+
+// The same answer from Min Besti (logged in)
+app.MapPost("/api/me/bookings/{id:guid}/ny-tid", async (Guid id, NewTimeAnswer request, ClaimsPrincipal principal,
+    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+{
+    var userId = userManager.GetUserId(principal);
+    if (userId is null)
+    {
+        return Results.Unauthorized();
+    }
+
+    return NewTimeResult(
+        await bookingService.AnswerNewTimeByCustomerAsync(id, userId, request.Accept, cancellationToken));
+}).RequireAuthorization();
 app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
 {
@@ -601,4 +627,10 @@ app.MapPost("/api/panel/bookings/{id:guid}/flytt", async (Guid id, MoveBookingRe
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
+static IResult NewTimeResult(NewTimeOutcome outcome) => outcome switch
+{
+    NewTimeOutcome.Accepted or NewTimeOutcome.Declined => Results.Ok(new { outcome = outcome.ToString() }),
+    NewTimeOutcome.TooLate => Results.BadRequest(new { message = "Timen har allerede startet." }),
+    _ => Results.NotFound(new { message = "Lenken er ikke gyldig lenger. Kanskje du allerede har svart?" })
+};
 app.Run();

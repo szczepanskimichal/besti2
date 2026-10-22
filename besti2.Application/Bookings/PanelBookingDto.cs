@@ -11,5 +11,6 @@ public record PanelBookingDto(
     string CustomerPhone,
     string CustomerEmail,
     string? CustomerNote,
-    Guid EmployeeId // the calendar puts the booking in this employee's column
+    Guid EmployeeId, // the calendar puts the booking in this employee's column
+    DateTime? PreviousStartUtc = null // set while a moved visit waits for the customer
     );
