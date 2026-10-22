@@ -455,3 +455,13 @@ export async function getUnreadCount(token: string): Promise<number | null> {
     const res = await apiFetch("/api/notifications/unread", { token });
     return res.ok ? (await res.json()).unread : null;
 }
+// "Hent fra Brønnøysund": name and address of an active business in Enhetsregisteret
+export type RegistryBusiness = { name: string | null; address: string | null; postalCode: string | null; city: string | null };
+
+export async function lookupBusinessRegistry(orgNumber: string): Promise<{ ok: true; business: RegistryBusiness } | { ok: false; message: string }> {
+    const res = await apiFetch(`/api/brreg/${encodeURIComponent(orgNumber)}`, { forwardIp: true });
+    const body = await res.json().catch(() => null);
+    return res.ok
+        ? { ok: true, business: body }
+        : { ok: false, message: body?.message ?? body?.detail ?? "Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv." };
+}

@@ -28,7 +28,7 @@ public class BusinessRegistrationServiceTests
             "http://localhost:3000"), db, users);    }
 
     private static RegisterBusinessRequest TestFrisor() => new(
-        "Test Frisør", "912345678", "Frisor", "eier@testfrisor.example",
+        "Test Frisør", "912345688", "Frisor", "eier@testfrisor.example",
         "+4790000001", "Testveien 1", "0150", "Oslo", "Test123!");
 
     [Fact]
@@ -39,7 +39,7 @@ public class BusinessRegistrationServiceTests
         var result = await service.RegisterAsync(TestFrisor());
 
         Assert.True(result.Success);
-        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345678");
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
         var owner = await users.FindByEmailAsync("eier@testfrisor.example");
         Assert.NotNull(owner);
         Assert.Equal(business.Id, owner.BusinessId);
@@ -70,7 +70,7 @@ public class BusinessRegistrationServiceTests
 
         Assert.False(result.Success);
         Assert.StartsWith("Passordet må ha minst 6 tegn", result.Error);
-        Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345678"));
+        Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345688"));
         Assert.Empty(users.Users);
     }
     
@@ -99,7 +99,7 @@ public class BusinessRegistrationServiceTests
     {
         var (service, db, users) = CreateService();
         await service.RegisterAsync(TestFrisor());
-        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345678");
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
         Assert.True(business.IsHidden);
 
         // Not confirmed yet: stays hidden
@@ -123,7 +123,7 @@ public class BusinessRegistrationServiceTests
         var result = await service.RegisterAsync(TestFrisor());
 
         Assert.True(result.Success);
-        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345678");
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
         var owner = await users.FindByEmailAsync("eier@testfrisor.example");
         Assert.Equal(business.Id, owner!.BusinessId);
         Assert.Null(await users.FindByEmailAsync("fremmed@test.example"));

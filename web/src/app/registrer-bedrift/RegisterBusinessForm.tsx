@@ -1,5 +1,5 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import NextLink from "next/link";
 import { categoryOptionGroups } from "@/lib/categories";
 import { registerAction } from "./actions";
@@ -11,23 +11,61 @@ import styles from "./page.module.css";
 export default function RegisterBusinessForm() {
     const [state, formAction] = useActionState<FormState, FormData>(registerAction, {});
     const value = (field: string) => state.values?.[field] ?? "";
+    const formRef = useRef<HTMLFormElement>(null);
+    const [registry, setRegistry] = useState<{ message: string; ok: boolean } | null>(null);
+    const [looking, setLooking] = useState(false);
+
+    // "Hent fra Brønnøysund": fills in name and address from Enhetsregisteret; everything can still be changed
+    async function fillFromRegistry() {
+        const form = formRef.current;
+        const orgNumber = (form?.elements.namedItem("orgNumber") as HTMLInputElement | null)?.value.trim() ?? "";
+        if (!/^\d{9}$/.test(orgNumber)) {
+            setRegistry({ ok: false, message: "Skriv inn de 9 sifrene i organisasjonsnummeret først." });
+            return;
+        }
+        setLooking(true);
+        try {
+            const res = await fetch(`/registrer-bedrift/brreg?orgnr=${orgNumber}`, { cache: "no-store" });
+            const body = await res.json();
+            if (!res.ok) {
+                setRegistry({ ok: false, message: body.message });
+                return;
+            }
+            for (const [field, text] of [["businessName", body.name], ["address", body.address],
+                ["postalCode", body.postalCode], ["city", body.city]] as const) {
+                const input = form?.elements.namedItem(field) as HTMLInputElement | null;
+                if (input && text) input.value = text;
+            }
+            setRegistry({ ok: true, message: "Hentet fra Brønnøysund. Sjekk og endre om nødvendig (f.eks. adressen til salongen)." });
+        } catch {
+            setRegistry({ ok: false, message: "Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv." });
+        } finally {
+            setLooking(false);
+        }
+    }
 
     return (
-        <form action={formAction} className={styles.form}>
+        <form ref={formRef} action={formAction} className={styles.form}>
             {state.error && (
                 <p className={styles.error} role="alert">
                     {state.error}
                 </p>
             )}
             <label className={styles.field}>
-                Bedriftsnavn
-                <input name="businessName" required maxLength={200} autoComplete="organization"
-                       defaultValue={value("businessName")} />
-            </label>
-            <label className={styles.field}>
                 Organisasjonsnummer (9 siffer)
                 <input name="orgNumber" required inputMode="numeric" pattern="[0-9]{9}" maxLength={9}
                        defaultValue={value("orgNumber")} />
+            </label>
+            <button type="button" className={styles.registryButton} onClick={fillFromRegistry} disabled={looking}>
+                {looking ? "Henter…" : "Hent fra Brønnøysund"}
+            </button>
+            {registry && (
+                <p className={registry.ok ? styles.hint : styles.error} role="status">{registry.message}</p>
+            )}
+            <label className={styles.field}>
+                Bedriftsnavn
+                <input name="businessName" required maxLength={200} autoComplete="organization"
+                       defaultValue={value("businessName")} />
             </label>
             <label className={styles.field}>
                 Kategori
