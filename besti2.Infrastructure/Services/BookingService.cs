@@ -345,7 +345,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
-            $"{booking.CustomerName} har avbestilt timen {When(booking.StartUtc)}", PanelLink(booking) + "&avlyste=1",
+            $"{booking.CustomerName} har avbestilt timen {When(booking.StartUtc)}", PanelLink(booking),
             cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
@@ -582,7 +582,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             accept
                 ? $"{booking.CustomerName} har godtatt ny tid {When(booking.StartUtc)}. Bekreft timen."
                 : $"{booking.CustomerName} kan ikke komme {When(booking.StartUtc)}. Timen er avlyst.",
-            PanelLink(booking) + (accept ? "" : "&avlyste=1"), cancellationToken);
+            PanelLink(booking), cancellationToken);
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
     }
 

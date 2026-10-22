@@ -12,8 +12,9 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
     public async Task<NotificationListDto> GetAsync(string userId, Guid? businessId,
         CancellationToken cancellationToken = default)
     {
-        var mine = Mine(userId, businessId);
-        var unread = await mine.CountAsync(n => n.ReadUtc == null, cancellationToken);
+        // Only what has not been read: a notification is gone once the list has been opened
+        var mine = Mine(userId, businessId).Where(n => n.ReadUtc == null);
+        var unread = await mine.CountAsync(cancellationToken);
         var items = await mine
             .OrderByDescending(n => n.CreatedUtc)
             .Take(MaxShown)
@@ -24,12 +25,9 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
 
     public async Task MarkAllReadAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default)
     {
-        var unread = await Mine(userId, businessId).Where(n => n.ReadUtc == null).ToListAsync(cancellationToken);
-        var now = DateTime.UtcNow;
-        foreach (var notification in unread)
-        {
-            notification.ReadUtc = now;
-        }
+        // Read = cleared: the notifications are deleted (they are never shown again)
+        var mine = await Mine(userId, businessId).ToListAsync(cancellationToken);
+        dbContext.Notifications.RemoveRange(mine);
         await dbContext.SaveChangesAsync(cancellationToken);
     }
 

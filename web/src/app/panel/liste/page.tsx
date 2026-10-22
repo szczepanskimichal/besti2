@@ -25,7 +25,8 @@ export default async function PanelListPage({ searchParams }: PanelPageProps) {
     }
 
     const { feil } = await searchParams;
-    const { upcoming, past } = splitBookings(bookings);
+    // Cancelled visits are not shown at all
+    const { upcoming, past } = splitBookings(bookings.filter((b) => b.status !== "Avlyst"));
 
     return (
         <main className={styles.main}>

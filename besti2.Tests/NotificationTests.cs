@@ -106,20 +106,23 @@ public class NotificationTests
         Assert.Equal(0, await db.Notifications.CountAsync(n => n.UserId != null));
         Assert.Empty((await new NotificationService(db).GetAsync("other-owner", FjordBygg)).Items);
     }
-
-    // check if opening the list marks everything as read
+    
+    // check if opening the list clears it: the number and the notifications are gone, only for that bell
     [Fact]
-    public async Task MarkAllRead_ClearsTheNumber()
+    public async Task MarkAllRead_ClearsTheList()
     {
         await using var db = await CreateSeededDbAsync();
-        await KariBooksAsync(Bookings(db));
+        var bookings = Bookings(db);
+        var id = await KariBooksAsync(bookings);
+        await bookings.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet); // Kari's bell
         var notifications = new NotificationService(db);
 
         await notifications.MarkAllReadAsync("owner-user", KlippOgStil);
 
-        var bell = await notifications.GetAsync("owner-user", KlippOgStil);
-        Assert.Equal(0, bell.Unread);
-        Assert.True(bell.Items.Single().IsRead);
+        var business = await notifications.GetAsync("owner-user", KlippOgStil);
+        Assert.Equal(0, business.Unread);
+        Assert.Empty(business.Items);
+        Assert.Equal(1, (await notifications.GetAsync(Kari, null)).Unread);
     }
 
     // check if a new review rings the business's bell
@@ -142,4 +145,5 @@ public class NotificationTests
         Assert.Equal("Ny vurdering: 5 av 5 stjerner fra Kari", bell.Items.Single().Text);
         Assert.Equal("/panel/vurderinger", bell.Items.Single().Link);
     }
+    
 }

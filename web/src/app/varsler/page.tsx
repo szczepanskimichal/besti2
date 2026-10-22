@@ -14,8 +14,7 @@ export const metadata: Metadata = {
     robots: privatePage,
 };
 
-// The list behind the bell, for customers and businesses. Opening it marks everything as read;
-// the new ones are still highlighted this time
+// The list behind the bell, for customers and businesses. It shows what is new once: opening it clears the list
 export default async function NotificationsPage() {
     const token = await getToken();
     if (!token) {
@@ -33,7 +32,7 @@ export default async function NotificationsPage() {
         <main className={panelStyles.main}>
             <h1 className={panelStyles.title}>Varsler</h1>
             {notifications.items.length === 0 ? (
-                <p className={panelStyles.muted}>Du har ingen varsler ennå.</p>
+                <p className={panelStyles.muted}>Ingen nye varsler.</p>
             ) : (
                 <ul className={panelStyles.list}>
                     {notifications.items.map((item) => (
