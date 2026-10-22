@@ -1,8 +1,9 @@
 import NextLink from "next/link";
 import styles from "@/components/Header/Header.module.css";
-import {getMe} from "@/lib/api";
+import {getMe, getNotifications} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {logoutAction} from "@/app/logg-inn/actions";
+import NotificationBell from "@/components/NotificationBell/NotificationBell";
 
 
 // Server component: reads the login cookie and shows who is logged in
@@ -11,6 +12,8 @@ export default async function Header() {
     // If the token expired or the API is down, show the logged-out header instead of breaking every page
     const me = token ? await getMe(token).catch(() => null) : null;
     const firstName = me?.fullName?.split(" ")[0];
+    // The number on the bell; no bell rather than a broken header when the API fails
+    const notifications = me && token ? await getNotifications(token).catch(() => null) : null;
 
     return (
         <header className={styles.header}>
@@ -27,6 +30,9 @@ export default async function Header() {
                                     <NextLink href="/min-besti" className={styles.navLink}>Min
                                         Besti</NextLink>
                                 </>
+                            )}
+                            {notifications && (
+                                <NotificationBell key={notifications.unread} initialUnread={notifications.unread}/>
                             )}
                             <form action={logoutAction}>
                                 <button type="submit" className={styles.logoutButton}>Logg ut</button>

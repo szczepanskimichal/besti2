@@ -4,6 +4,7 @@ using besti2.Application.Businesses;
 using besti2.Application.Email;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
+using besti2.Application.Notifications;
 using besti2.Application.Reviews;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
@@ -32,7 +33,7 @@ public static class DependencyInjection
                     provider.GetRequiredService<IEmailService>(),
                     provider.GetRequiredService<ILogger<BookingService>>(),
                     configuration["WebBaseUrl"] ?? "http://localhost:3000");
-return null;
+                return null;
         }
             );
         services.AddTransient<IEmailService, SmtpEmailService>();
@@ -56,6 +57,7 @@ return null;
         services.AddScoped<IBookingAnonymizer, BookingAnonymizer>();
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<ITimeOffService, TimeOffService>();
+        services.AddScoped<INotificationService, NotificationService>();
         return services;
     }
 

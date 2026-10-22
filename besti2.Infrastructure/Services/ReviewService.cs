@@ -89,6 +89,17 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
             // Double click on "Send": the first one was saved, the second hit the unique index
             return "Du har allerede vurdert denne timen.";
         }
+
+        // The bell in the business panel
+        dbContext.Notifications.Add(new Notification
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = booking.BusinessId,
+            Text = $"Ny vurdering: {request.Stars} av 5 stjerner fra {booking.CustomerName.Split(' ')[0]}",
+            Link = "/panel/vurderinger",
+            CreatedUtc = DateTime.UtcNow
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
 

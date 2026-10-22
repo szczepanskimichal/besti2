@@ -9,7 +9,22 @@ namespace besti2.Infrastructure.Persistence;
 public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options){}
-
+    // Every saved change to a notification rings that bell at once (see NotificationSignals and
+    // /api/notifications/stream), wherever in the code the notification was written or read
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var bells = ChangeTracker.Entries<Notification>()
+            .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
+            .Select(e => NotificationSignals.Key(e.Entity.UserId, e.Entity.BusinessId))
+            .Distinct()
+            .ToList();
+        var saved = await base.SaveChangesAsync(cancellationToken);
+        foreach (var bell in bells)
+        {
+            NotificationSignals.Changed(bell);
+        }
+        return saved;
+    }
     public DbSet<Business> Businesses { get; set; } = null!;
     public DbSet<Employee> Employees { get; set; } = null!;
     public DbSet<Service> Services { get; set; } = null!;
@@ -19,6 +34,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<BusinessImage> BusinessImages { get; set; } = null!;
     public DbSet<Review> Reviews { get; set; } = null!;
     public DbSet<TimeOff> TimeOffs { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         
@@ -179,6 +196,16 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.Comment).HasMaxLength(500);
             e.Property(x => x.BusinessReply).HasMaxLength(500);
+        });
+        modelBuilder.Entity<Notification>(e =>
+        {
+            e.HasIndex(x => new { x.UserId, x.CreatedUtc });
+            e.HasIndex(x => new { x.BusinessId, x.CreatedUtc });
+            e.Property(x => x.UserId).HasMaxLength(450);
+            e.Property(x => x.Text).IsRequired().HasMaxLength(300);
+            e.Property(x => x.Link).HasMaxLength(300);
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         });
         modelBuilder.Entity<TimeOff>(e =>
         {

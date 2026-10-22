@@ -21,7 +21,7 @@ const PX_PER_MINUTE = 80 / 60;
 
 type CalendarPageProps = {
     searchParams: Promise<{
-        dag?: string; visning?: string; ansatt?: string; avlyste?: string; bestilling?: string; flytt?: string; feil?: string;
+        dag?: string; visning?: string; ansatt?: string; bestilling?: string; flytt?: string; feil?: string;
         ny?: string; tid?: string; for?: string; blokker?: string; blokkering?: string; varsel?: string;
     }>;
 };
@@ -42,7 +42,6 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const week = query.visning === "uke";
     const month = query.visning === "maned";
     const view = week ? "uke" : month ? "maned" : undefined;
-    const showCancelled = query.avlyste === "1";
     // Week = Monday to Sunday around the chosen day; month = whole weeks from the 1st to the last day
     const monthStart = `${day.slice(0, 7)}-01`;
     const first = week ? mondayOf(day) : month ? mondayOf(monthStart) : day;
@@ -57,7 +56,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
     const employeeFilter = (week || month) && business.employees.some((e) => e.id === query.ansatt) ? query.ansatt : undefined;
     const bookings = allBookings
-        .filter((b) => showCancelled || b.status !== "Avlyst")
+        // Cancelled visits are gone from the calendar (a link from a notification can still open one)
+        .filter((b) => b.status !== "Avlyst")
         .filter((b) => !employeeFilter || b.employeeId === employeeFilter);
     // Week or month view with one employee: that employee's blocks and the closed days of the whole business
     const blocks = allBlocks.filter((t) => !employeeFilter || !t.employeeId || t.employeeId === employeeFilter);
@@ -67,8 +67,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     // The same view with one value changed (keeps the other choices)
     const link = (change: Record<string, string | undefined>) => {
         const params = new URLSearchParams();
-        const values = { dag: day, visning: view, ansatt: employeeFilter,
-            avlyste: showCancelled ? "1" : undefined, ...change };
+        const values = { dag: day, visning: view, ansatt: employeeFilter, ...change };
         for (const [key, value] of Object.entries(values)) {
             if (value) params.set(key, value);
         }
@@ -127,7 +126,6 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <form method="get" className={calendar.datePicker}>
                     {view && <input type="hidden" name="visning" value={view}/>}
                     {employeeFilter && <input type="hidden" name="ansatt" value={employeeFilter}/>}
-                    {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
                     <label>
                         <span className={calendar.srOnly}>Velg dato</span>
                         <input type="date" name="dag" defaultValue={day}/>
@@ -136,12 +134,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </form>
             </div>
 
-            <div className={calendar.filters}>
-                {view && (
+            {view && (
+                <div className={calendar.filters}>
                     <form method="get" className={calendar.employeeFilter}>
                         <input type="hidden" name="visning" value={view}/>
                         <input type="hidden" name="dag" value={day}/>
-                        {showCancelled && <input type="hidden" name="avlyste" value="1"/>}
                         <label>
                             Ansatt{" "}
                             <select name="ansatt" defaultValue={employeeFilter ?? ""}>
@@ -153,11 +150,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                         </label>
                         <button type="submit" className={styles.secondaryButton}>Vis</button>
                     </form>
-                )}
-                <Link href={link({ avlyste: showCancelled ? undefined : "1" })} className={calendar.toggle}>
-                    {showCancelled ? "Skjul avlyste" : "Vis avlyste"}
-                </Link>
-            </div>
+                </div>
+            )}
 
             {!view && !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(day)) && (
                 <p className={styles.muted}>Stengt denne dagen.</p>
@@ -654,3 +648,5 @@ function isoWeek(monday: string): number {
     const yearStart = new Date(Date.UTC(thursday.getUTCFullYear(), 0, 1));
     return Math.ceil(((thursday.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
+
+
