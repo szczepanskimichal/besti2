@@ -1,0 +1,23 @@
+/* A notification that was not read before this visit */
+.unread {
+    border-left: 4px solid var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+.when {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 4px;
+    font-size: 0.85rem;
+    color: var(--color-muted);
+}
+
+.newLabel {
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}

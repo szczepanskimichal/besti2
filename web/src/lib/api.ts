@@ -1,4 +1,4 @@
-import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime, NotificationList} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -393,4 +393,13 @@ export async function getPanelReviews(token: string): Promise<BusinessReviews | 
 
 export async function replyToReview(token: string, reviewId: string, reply: string): Promise<ApiResult> {
     return toResult(await apiFetch(`/api/panel/reviews/${reviewId}/reply`, {method: "POST", token, body: {reply}}));
+}
+// The bell (🔔); null = not logged in or the API failed (the header must never break because of it)
+export async function getNotifications(token: string): Promise<NotificationList | null> {
+    const res = await apiFetch("/api/notifications", { token });
+    return res.ok ? res.json() : null;
+}
+
+export async function markNotificationsRead(token: string): Promise<void> {
+    await apiFetch("/api/notifications/read", { method: "POST", token });
 }

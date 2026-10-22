@@ -148,3 +148,16 @@ export type NewTime = {
     previousStartUtc: string | null;
     status: string;
 };
+// The bell (🔔): newest notifications and how many are unread
+export type NotificationItem = {
+    id: string;
+    text: string;
+    link: string | null;
+    createdUtc: string;
+    isRead: boolean;
+};
+
+export type NotificationList = {
+    unread: number;
+    items: NotificationItem[];
+};
