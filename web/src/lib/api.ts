@@ -333,7 +333,15 @@ export async function cancelMyBooking(token: string, bookingId: string): Promise
     const res = await apiFetch(`/api/me/bookings/${bookingId}/avbestill`, { method: "POST", token });
     return toResult(res, "Kunne ikke avbestille. Prøv igjen.");
 }
-
+// "Endre tid": the customer's own booking to another free time
+export async function changeMyBookingTime(
+    token: string,
+    bookingId: string,
+    input: { employeeId: string; startUtc: string },
+): Promise<ApiResult> {
+    const res = await apiFetch(`/api/me/bookings/${bookingId}/endre-tid`, { method: "POST", token, body: input });
+    return toResult(res, "Kunne ikke endre tiden. Prøv igjen.");
+}
 // Customer reviews a past visit; returns the API's message when it fails
 export async function createReview(
     token: string,

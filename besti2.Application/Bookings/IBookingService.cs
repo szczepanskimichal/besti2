@@ -15,6 +15,9 @@ public interface IBookingService
         // Business panel: move a visit to another time and/or employee (same service and length)
         Task<MoveBookingResult> MoveAsync(
         Guid bookingId, Guid businessId, MoveBookingRequest request, CancellationToken cancellationToken = default);
+        // Customer: own booking to another free time (the same rules as a new online booking)
+        Task<MoveBookingResult> ChangeTimeByCustomerAsync(
+            Guid bookingId, string customerUserId, ChangeTimeRequest request, CancellationToken cancellationToken = default);
         // from/to = days in Oslo time for the calendar; without them: upcoming bookings and the last 14 days
         Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);
