@@ -17,8 +17,7 @@ import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
 
 // One hour in the grid is 80 px high (a 30 min visit = 40 px: time and customer fit)
-const PX_PER_MINUTE = 80 / 60;
-
+const PX_PER_MINUTE = 2;
 type CalendarPageProps = {
     searchParams: Promise<{
         dag?: string; visning?: string; ansatt?: string; bestilling?: string; flytt?: string; feil?: string;
