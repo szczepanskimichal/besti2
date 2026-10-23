@@ -73,6 +73,7 @@ jobs:
           push: true
           build-args: |
             SITE_URL=https://bestiapp.no
+            ALLOW_INDEXING=${{ vars.ALLOW_INDEXING || 'false' }}
           tags: |
             ghcr.io/szczepanskimichal/besti2-web:${{ github.sha }}
             ghcr.io/szczepanskimichal/besti2-web:latest

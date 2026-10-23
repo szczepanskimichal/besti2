@@ -43,7 +43,8 @@ public static class DependencyInjection
             provider.GetRequiredService<IGeocodingService>(),
             provider.GetRequiredService<IEmailService>(),
             configuration["WebBaseUrl"] ?? "http://localhost:3000",
-            provider.GetRequiredService<IBusinessRegistry>()));
+            provider.GetRequiredService<IBusinessRegistry>(),
+            configuration["AdminEmail"]));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),

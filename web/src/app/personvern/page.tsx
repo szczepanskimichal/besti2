@@ -53,15 +53,25 @@ export default function PrivacyPage() {
                 <li>Sikkerhet og å hindre misbruk (berettiget interesse, art. 6 nr. 1 f).</li>
                 <li>Nyhetsbrev bare med samtykke (art. 6 nr. 1 a). Du kan trekke det tilbake når som helst.</li>
                 <li>Når en bedrift registrerer seg, sjekker vi organisasjonsnummeret i Enhetsregisteret
-                    (Brønnøysundregistrene) for å hindre falske bedrifter.</li>
+                    (Brønnøysundregistrene) og godkjenner bedriften før kundene ser den, for å hindre falske
+                    bedrifter (berettiget interesse, art. 6 nr. 1 f).</li>
             </ul>
 
             <h2>Hvem deler vi med?</h2>
             <p>Vi selger aldri personopplysninger og bruker ikke annonsenettverk. Opplysninger deles bare slik:</p>
             <ul>
                 <li><strong>Bedriften du bestiller hos</strong> ser bestillingen din.</li>
-                <li><strong>Leverandører</strong> som drifter tjenesten for oss: servere og e-postutsending. De behandler
-                    opplysningene bare etter våre instrukser (databehandleravtale), innenfor EU/EØS.</li>
+                <li><strong>Leverandører</strong> som drifter tjenesten for oss. De behandler opplysningene bare etter
+                    våre instrukser (databehandleravtale):
+                    <ul id="underleverandorer">
+                        <li>Hetzner Online GmbH (Tyskland): servere og database, i datasenter i Finland.</li>
+                        <li>Brevo (Sendinblue SAS, Frankrike): utsending av e-post.</li>
+                        <li>Cloudflare, Inc. (USA): domenenavn, beskyttelse mot angrep og sikker videreformidling av
+                            trafikken til nettsiden. Trafikken, også IP-adressen din, går gjennom Cloudflare.
+                            Overføringen til USA skjer under EU–US Data Privacy Framework og EUs
+                            standardkontraktsbestemmelser.</li>
+                    </ul>
+                </li>
                 <li><strong>Kartverket</strong> får bedriftens adresse for å finne koordinater til kartet, og
                     <strong> Brønnøysundregistrene</strong> får bedriftens organisasjonsnummer. Ingen opplysninger om
                     kunder sendes dit.</li>

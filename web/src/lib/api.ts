@@ -1,4 +1,4 @@
-import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime, NotificationList} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime, NotificationList, BusinessApproval} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -132,7 +132,7 @@ export async function createBooking(input: CreateBookingInput, token: string): P
     return toResult(res);
 }
 
-export async function registerBusiness(input: Record<string, string>): Promise<ApiResult> {
+export async function registerBusiness(input: Record<string, string | boolean>): Promise<ApiResult> {
     return toResult(await apiFetch("/api/businesses/register", { method: "POST", body: input, forwardIp: true }));
 }
 
@@ -347,6 +347,21 @@ export async function getNewTime(token: string): Promise<NewTime | null> {
         throw new Error(`Kunne ikke hente den nye tiden (${res.status})`);
     }
     return res.json();
+}
+// BESTI's approval link for a new business; null when the link is wrong or already used
+export async function getBusinessApproval(token: string): Promise<BusinessApproval | null> {
+    const res = await apiFetch(`/api/godkjenn?${new URLSearchParams({ token })}`, { forwardIp: true });
+    if (res.status === 404) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente bedriften (${res.status})`);
+    }
+    return res.json();
+}
+
+export async function approveBusiness(token: string): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/godkjenn", { method: "POST", body: { token }, forwardIp: true }));
 }
 
 // The customer's answer: from the link (token) or from Min Besti (logged in)

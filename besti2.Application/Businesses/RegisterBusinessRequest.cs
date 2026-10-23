@@ -9,5 +9,6 @@ public record RegisterBusinessRequest(
     string Address,
     string PostalCode,
     string City,
-    string Password
+    string Password,
+    bool AcceptDataProcessing = false
 );

@@ -108,10 +108,15 @@ export default function RegisterBusinessForm() {
                 <input name="password" type="password" required minLength={6} autoComplete="new-password" />
             </label>
             <p className={styles.hint}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
-            <p className={styles.hint}>
-                Ved å registrere bedriften godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
-                bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
-            </p>
+            <label className={styles.checkbox}>
+                <input type="checkbox" name="acceptDataProcessing" required
+                       defaultChecked={value("acceptDataProcessing") === "on"}/>
+                <span>
+                    Jeg godtar <NextLink href="/vilkar">vilkårene</NextLink>, også{" "}
+                    <NextLink href="/vilkar#databehandleravtale">databehandleravtalen</NextLink>, og bekrefter at
+                    jeg har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
+                </span>
+            </label>
             <SubmitButton className={styles.primaryButton} pendingText="Registrerer…">
                 Registrer bedrift
             </SubmitButton>

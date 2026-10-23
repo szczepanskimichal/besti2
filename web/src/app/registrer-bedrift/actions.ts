@@ -12,11 +12,12 @@ export async function registerAction(_previous: FormState, formData: FormData): 
         input[field] = String(formData.get(field) ?? "");
     }
 
-    const result = await registerBusiness(input);
+    const acceptDataProcessing = formData.get("acceptDataProcessing") === "on";
+    const result = await registerBusiness({ ...input, acceptDataProcessing });
 
     if (!result.ok) {
         delete input.password; // never sent back to the browser
-        return { error: result.message, values: input };
+        return { error: result.message, values: { ...input, acceptDataProcessing: acceptDataProcessing ? "on" : "" } };
     }
 
     redirect("/logg-inn?registrert=1");

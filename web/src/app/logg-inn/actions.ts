@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getMe, login } from "@/lib/api";
-import { TOKEN_COOKIE } from "@/lib/auth";
+import { setToken, TOKEN_COOKIE } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import { FormState } from "@/lib/formState";
 
@@ -22,14 +22,7 @@ export async function loginAction(_previous: FormState, formData: FormData): Pro
         };
     }
 
-    const cookieStore = await cookies();
-    cookieStore.set(TOKEN_COOKIE, result.accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: result.expiresIn,
-    });
+    await setToken(result.accessToken, result.expiresIn);
     // Customers go back to where they were (e.g. the chosen time), businesses to their panel
     const me = await getMe(result.accessToken);
     const safeNext = safeRedirectPath(String(formData.get("neste") ?? ""));

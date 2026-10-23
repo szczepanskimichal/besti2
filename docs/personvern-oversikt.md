@@ -25,19 +25,23 @@ Sist gjennomgått: 2026-10-22
 | Nyhetsbrev-samtykke | ja/nei og tidspunkt | kunder | markedsføring (ikke i bruk ennå) | 6.1 a (samtykke) | som bestillingen | `Booking.MarketingConsent` |
 | Bedriftskonto | bedriftsnavn, org.nr, adresse, telefon, e-post, ansattes navn, bilder | bedrifter, ansatte | vise bedriften og ta imot bestillinger | 6.1 b | til bedriften avslutter | `Business`, `Employee`, `BusinessService` |
 | Bedriftssjekk | org.nr | bedrifter | hindre falske bedrifter | 6.1 f | ikke lagret hos Brreg | `BrregBusinessRegistry` |
-| Sikkerhet | IP-adresse | alle | hindre misbruk (rate limiting), feilsøking | 6.1 f | i minnet minutter; serverlogger kort tid | `Program.cs` (rate limiter), logger |
+| Godkjenning av bedrift | bedriftens opplysninger i e-post til BESTI, lenketoken (kun SHA-256), godkjent-tidspunkt | bedrifter | hindre at noen registrerer en annens bedrift | 6.1 f | token til godkjent; tidspunkt så lenge bedriften finnes | `BusinessRegistrationService` (`ApproveAsync`), `Business.ApprovedUtc` |
+| Databehandleravtale | tidspunkt for godkjenning | bedrifter | dokumentere avtalen (art. 28) | 6.1 c / 6.1 b | så lenge bedriften finnes | `Business.DataProcessingAcceptedUtc`, `/vilkar#databehandleravtale` |
+| Sikkerhet | IP-adresse | alle | hindre misbruk (rate limiting), feilsøking | 6.1 f | i minnet minutter; serverlogger maks 5 × 10 MB per tjeneste | `Program.cs` (rate limiter), `deploy/docker-compose.prod.yml` (logging) |
+| Innlogging | innloggingstoken i informasjonskapsel | alle | holde brukeren innlogget | 6.1 b | 14 dager; ugyldig straks passordet endres | `Program.cs` (`BearerTokenExpiration`, security stamp), `lib/auth.ts` |
 
 ## Mottakere og leverandører
 
 | Mottaker | Hva | Hvor | Avtale |
 |---|---|---|---|
 | Bedriften kunden bestiller hos | bestillingen | Norge | — (egen behandlingsansvarlig) |
-| Server/hosting (planlagt: Hetzner) | hele databasen | EU (Tyskland/Finland) | databehandleravtale (DPA) |
-| E-post (planlagt: Brevo) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
+| Hetzner Online GmbH (servere, database, sikkerhetskopier) | hele databasen og bildene | EU (datasenter i Finland) | databehandleravtale (DPA) |
+| Brevo / Sendinblue SAS (e-post) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
+| Cloudflare, Inc. (DNS, beskyttelse, videreformidling av trafikk) | IP-adresse og all trafikk til nettsiden | USA / globalt | DPA, EU–US Data Privacy Framework + standardkontraktsbestemmelser (SCC) |
 | Kartverket (Geonorge) | bedriftens adresse | Norge | offentlig API, ingen kundedata |
 | Brønnøysundregistrene | bedriftens org.nr | Norge | offentlig API, ingen kundedata |
 
-Ingen overføring ut av EU/EØS. Ingen sporing, analyse eller annonsenettverk. Én nødvendig informasjonskapsel (innlogging).
+Overføring ut av EU/EØS: bare Cloudflare (USA), under Data Privacy Framework og SCC. Ingen sporing, analyse eller annonsenettverk. Én nødvendig informasjonskapsel (innlogging).
 
 ## Den registrertes rettigheter – hvor i tjenesten
 
@@ -50,9 +54,9 @@ Ingen overføring ut av EU/EØS. Ingen sporing, analyse eller annonsenettverk. �
 
 - Personopplysninger tas ikke ut av databasen uten behov (ingen eksport til regneark o.l.).
 - Ved sikkerhetsbrudd: vurder og meld til Datatilsynet innen 72 timer (art. 33).
-- Før vi tar i bruk en ny leverandør: sjekk at den har databehandleravtale og lagrer i EU/EØS.
+- Før vi tar i bruk en ny leverandør: sjekk at den har databehandleravtale og lagrer i EU/EØS (eller har gyldig overføringsgrunnlag), og varsle bedriftene før den tas i bruk (databehandleravtalen i vilkårene).
+- Ved sikkerhetsbrudd som gjelder kunder av en bedrift: varsle bedriften innen 48 timer.
 
 ## Åpne punkter
 
-- Databehandleravtale mellom BESTI og bedriftene (som del av vilkårene) – kommer sammen med vilkår og betaling.
 - Bedrifter innen helse (psykolog, fysioterapi): bestillinger kan avsløre helseforhold. Vurder egne regler før slike bedrifter tas inn i større skala.

@@ -58,6 +58,19 @@ export type BusinessDetails = {
     longitude: number | null;
     logoUrl: string | null;
     gallery: GalleryImage[];
+    // Only true in the owner's panel: waiting for BESTI's approval, customers cannot see it yet
+    isHidden: boolean;
+};
+
+export type BusinessApproval = {
+    name: string;
+    orgNumber: string;
+    category: string;
+    address: string;
+    postalCode: string;
+    city: string;
+    email: string;
+    phoneNumber: string;
 };
 
 export type GalleryImage = {

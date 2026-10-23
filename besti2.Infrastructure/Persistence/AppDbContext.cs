@@ -52,6 +52,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.PhoneNumber).IsRequired().HasMaxLength(20);
             e.Property(x => x.City).IsRequired().HasMaxLength(200);
             e.Property(x => x.Description).HasMaxLength(1000);
+            e.Property(x => x.ApprovalTokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.ApprovalTokenHash);
             e.HasData(
                 new Business
                 {

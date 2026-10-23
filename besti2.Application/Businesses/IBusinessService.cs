@@ -7,6 +7,8 @@ public interface IBusinessService
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
         CancellationToken cancellationToken = default);
     Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
+    // The owner's panel: also a business that is still waiting for approval
+    Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IReadOnlyList<string>> GetCitiesAsync(CancellationToken cancellationToken = default);
     // Returns null when saved, otherwise an error message for the owner
     Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
