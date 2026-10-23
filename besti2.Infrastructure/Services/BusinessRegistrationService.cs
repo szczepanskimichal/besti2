@@ -7,14 +7,17 @@ using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace besti2.Infrastructure.Services;
 
-// webBaseUrl = address of the Next.js site, used in the confirmation link
 // webBaseUrl = address of the Next.js site, used in the confirmation link;
-// registry = Brønnøysund (null in tests that do not need it)
+// registry = Brønnøysund (null in tests that do not need it);
+// adminEmail = where BESTI gets the approval link for a new business (no mail when null)
 public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
-    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl, IBusinessRegistry? registry = null)
+    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl, IBusinessRegistry? registry = null,
+    string? adminEmail = null)
     : IBusinessRegistrationService{
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
@@ -44,6 +47,10 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         if (!Enum.TryParse<BusinessCategory>(request.Category, out var category) || !Enum.IsDefined(category))
         {
             return new RegisterBusinessResult(false, "Velg en gyldig kategori.");
+        }
+        if (!request.AcceptDataProcessing)
+        {
+            return new RegisterBusinessResult(false, "Du må godta databehandleravtalen for å registrere bedriften.");
         }
         // Only real, active businesses (when the register does not answer, the registration goes on)
         if (registry is not null)
@@ -108,7 +115,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             City = request.City.Trim(),
             Latitude = location?.Latitude,
             Longitude = location?.Longitude,
-            IsHidden = true // customers see it after the owner confirms the email            
+            IsHidden = true, // customers see it after the owner confirms the email and BESTI approves it
+            DataProcessingAcceptedUtc = DateTime.UtcNow
         };
         dbContext.Businesses.Add(business);
         try
@@ -160,7 +168,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
     }
     
     
-    // After the owner has confirmed the email, the business becomes visible to customers
+    // After the owner has confirmed the email: an approved business becomes visible to customers,
+    // a new one waits and BESTI gets a one-click approval link (anyone can type someone else's org number)
     public async Task ShowBusinessOfOwnerAsync(string userId, CancellationToken cancellationToken = default)
     {
         var owner = await userManager.FindByIdAsync(userId);
@@ -170,12 +179,101 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
 
         var business = await dbContext.Businesses.FindAsync([owner.BusinessId.Value], cancellationToken);
-        if (business is { IsHidden: true })
+        if (business is not { IsHidden: true })
+        {
+            return;
+        }
+
+        if (business.ApprovedUtc is not null)
         {
             business.IsHidden = false;
             await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        var token = NewToken();
+        business.ApprovalTokenHash = Hash(token);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        await TrySendApprovalRequestAsync(business, token, cancellationToken);
+    }
+
+    public async Task<BusinessApprovalDto?> GetApprovalAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var business = await FindByApprovalTokenAsync(token, cancellationToken);
+        return business is null
+            ? null
+            : new BusinessApprovalDto(business.Name, business.OrgNumber, business.Category.ToString(), business.Address,
+                business.PostalCode, business.City, business.Email, business.PhoneNumber);
+    }
+
+    // The business shows up for customers and the owner gets a mail; the link works only once
+    public async Task<bool> ApproveAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var business = await FindByApprovalTokenAsync(token, cancellationToken);
+        if (business is null)
+        {
+            return false;
+        }
+
+        business.ApprovedUtc = DateTime.UtcNow;
+        business.ApprovalTokenHash = null;
+        business.IsHidden = false;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        var body =
+            "Hei!\n\n" +
+            $"{business.Name} er nå godkjent og synlig for kundene på BESTI.\n" +
+            $"Logg inn for å legge til tjenester, ansatte og åpningstider:\n{webBaseUrl}/panel\n\n" +
+            "Hilsen BESTI";
+        try
+        {
+            await emailService.SendAsync(business.Email, "Bedriften din er godkjent hos BESTI", body, cancellationToken);
+        }
+        catch (Exception)
+        {
+            // The approval is saved; the owner also sees it in the panel
+        }
+        return true;
+    }
+
+    private async Task<Business?> FindByApprovalTokenAsync(string token, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.Length > 100)
+        {
+            return null;
+        }
+        var hash = Hash(token);
+        return await dbContext.Businesses.FirstOrDefaultAsync(b => b.ApprovalTokenHash == hash, cancellationToken);
+    }
+
+    // To BESTI: who registered, a link to the business in Brønnøysund and the one-click approval link
+    private async Task TrySendApprovalRequestAsync(Business business, string token, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(adminEmail))
+        {
+            return;
+        }
+        var body =
+            "Ny bedrift venter på godkjenning:\n\n" +
+            $"{business.Name} (org.nr. {business.OrgNumber})\n" +
+            $"{business.Address}, {business.PostalCode} {business.City}\n" +
+            $"E-post: {business.Email}, telefon: {business.PhoneNumber}\n\n" +
+            $"Brønnøysund: https://virksomhet.brreg.no/nb/oppslag/enheter/{business.OrgNumber}\n\n" +
+            $"Godkjenn: {webBaseUrl}/godkjenn?token={token}\n";
+        try
+        {
+            await emailService.SendAsync(adminEmail, $"Ny bedrift venter på godkjenning: {business.Name}", body, cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Mail server down: the business waits; it can be approved in the database
         }
     }
+
+    // A one-time link token: 32 random bytes, URL-safe; only its hash is stored
+    private static string NewToken() =>
+        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
     
     // Mails the confirmation link; a mail error must not undo the registration
     private async Task TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)

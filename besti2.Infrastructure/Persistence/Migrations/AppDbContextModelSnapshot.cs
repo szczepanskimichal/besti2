@@ -238,6 +238,13 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ApprovalTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("ApprovedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -247,6 +254,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("DataProcessingAcceptedUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
@@ -287,6 +297,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(4)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ApprovalTokenHash");
 
                     b.HasIndex("OrgNumber")
                         .IsUnique();

@@ -93,7 +93,12 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
             <PanelNav title="Kalender"/>
-
+            {business.isHidden && (
+                <p className={calendar.notice} role="status">
+                    Bedriften venter på godkjenning – vanligvis innen én arbeidsdag. Du kan allerede legge inn
+                    tjenester, ansatte og åpningstider. Kundene ser bedriften når den er godkjent.
+                </p>
+            )}
             {query.feil && (
                 <p className={styles.error} role="alert">
                     {query.feil === "for-sent"

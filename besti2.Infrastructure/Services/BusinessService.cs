@@ -233,13 +233,19 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     }
     // Services, employees, hours and photos as separate small queries instead of one huge joined one
 
-    public async Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
+        GetDetailsAsync(id, false, cancellationToken);
+
+    public Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default) =>
+        GetDetailsAsync(id, true, cancellationToken);
+
+    private async Task<BusinessDetailsDto?> GetDetailsAsync(Guid id, bool includeHidden, CancellationToken cancellationToken)
     {
         var business = await dbContext.Businesses
             // Services, employees, hours and photos as separate small queries instead of one huge joined one
             .AsSplitQuery()
             .AsNoTracking()
-            .Where(b => b.Id == id && !b.IsHidden)
+            .Where(b => b.Id == id && (includeHidden || !b.IsHidden))
             .Select(b => new BusinessDetailsDto(
                 b.Id,
                 b.Name,
@@ -273,7 +279,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Images.Where(i => i.Kind == ImageKind.Galleri)
                     .OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedUtc)
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
-                    .ToList()
+                    .ToList(),
+                b.IsHidden
                 ))
             .FirstOrDefaultAsync(cancellationToken);
         

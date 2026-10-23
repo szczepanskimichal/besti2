@@ -23,6 +23,12 @@ public class Business
     
     // A new business is hidden from customers until the owner has confirmed the email
     public bool IsHidden { get; set; }
+    // Set when BESTI approves the business; until then it stays hidden even with a confirmed e-mail
+    public DateTime? ApprovedUtc { get; set; }
+    // The one-click approval link sent to BESTI (only the hash is stored)
+    public string? ApprovalTokenHash { get; set; }
+    // When the owner accepted the data processing agreement (databehandleravtale) at sign-up
+    public DateTime? DataProcessingAcceptedUtc { get; set; }
     
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();

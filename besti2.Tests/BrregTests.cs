@@ -28,7 +28,7 @@ public class BrregTests
 
     private static RegisterBusinessRequest Frisor(string orgNumber = "912345688") => new(
         "Test Frisør", orgNumber, "Frisor", "eier@testfrisor.example",
-        "+4790000001", "Testveien 1", "0150", "Oslo", "Test123!");
+        "+4790000001", "Testveien 1", "0150", "Oslo", "Test123!", AcceptDataProcessing: true);
 
     // check if the check digit (modulus 11) catches typos
     [Theory]

@@ -16,5 +16,7 @@ public record BusinessDetailsDto(
     double? Latitude,
     double? Longitude,
     string? LogoUrl,
-    IReadOnlyList<GalleryImageDto> Gallery
-    );
+    IReadOnlyList<GalleryImageDto> Gallery,
+    // Only true in the owner's panel: the business is waiting for approval and customers cannot see it
+    bool IsHidden
+);

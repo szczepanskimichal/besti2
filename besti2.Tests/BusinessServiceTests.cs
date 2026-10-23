@@ -677,6 +677,10 @@ public class BusinessServiceTests
 
         Assert.DoesNotContain(list, b => b.Id == klippId);
         Assert.Null(page);
+        // The owner's panel still opens while the business waits for approval
+        var panel = await service.GetForPanelAsync(klippId);
+        Assert.NotNull(panel);
+        Assert.True(panel.IsHidden);
     }
     
     

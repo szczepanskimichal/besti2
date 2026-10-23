@@ -29,7 +29,7 @@ public class BusinessRegistrationServiceTests
 
     private static RegisterBusinessRequest TestFrisor() => new(
         "Test Frisør", "912345688", "Frisor", "eier@testfrisor.example",
-        "+4790000001", "Testveien 1", "0150", "Oslo", "Test123!");
+        "+4790000001", "Testveien 1", "0150", "Oslo", "Test123!", AcceptDataProcessing: true);
 
     [Fact]
     public async Task RegisterAsync_ValidData_CreatesBusinessWithOwner()
@@ -93,24 +93,63 @@ public class BusinessRegistrationServiceTests
     }
     
     
-    // check if a new business is hidden until the owner confirms the email
+    // check if a new business stays hidden until the owner confirms the email AND BESTI approves it
     [Fact]
-    public async Task NewBusiness_IsHiddenUntilOwnerConfirms()
+    public async Task NewBusiness_IsHiddenUntilConfirmedAndApproved()
     {
-        var (service, db, users) = CreateService();
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email,
+            "http://localhost:3000", adminEmail: "post@bestiapp.no");
         await service.RegisterAsync(TestFrisor());
         var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
         Assert.True(business.IsHidden);
+        Assert.NotNull(business.DataProcessingAcceptedUtc);
 
-        // Not confirmed yet: stays hidden
+        // Not confirmed yet: stays hidden, BESTI gets nothing
         var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
         await service.ShowBusinessOfOwnerAsync(owner.Id);
         Assert.True(business.IsHidden);
+        Assert.DoesNotContain(email.Sent, m => m.To == "post@bestiapp.no");
 
-        // Confirmed: visible
+        // Confirmed: still hidden, BESTI gets the approval link
         await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
         await service.ShowBusinessOfOwnerAsync(owner.Id);
+        Assert.True(business.IsHidden);
+        var request = Assert.Single(email.Sent, m => m.To == "post@bestiapp.no");
+        var token = request.Body.Split("/godkjenn?token=")[1].Trim();
+
+        // Approved: visible, the owner gets a mail, and the link does not work twice
+        Assert.Equal("912345688", (await service.GetApprovalAsync(token))!.OrgNumber);
+        Assert.True(await service.ApproveAsync(token));
         Assert.False(business.IsHidden);
+        Assert.NotNull(business.ApprovedUtc);
+        Assert.Contains(email.Sent, m => m.To == "eier@testfrisor.example" && m.Subject.Contains("godkjent"));
+        Assert.False(await service.ApproveAsync(token));
+        Assert.Null(await service.GetApprovalAsync(token));
+    }
+
+    // check if a wrong approval link does nothing
+    [Fact]
+    public async Task ApproveAsync_WrongToken_DoesNothing()
+    {
+        var (service, _, _) = CreateService();
+
+        Assert.False(await service.ApproveAsync("feil"));
+        Assert.Null(await service.GetApprovalAsync(""));
+    }
+
+    // check if the data processing agreement must be accepted, and nothing is saved without it
+    [Fact]
+    public async Task RegisterAsync_WithoutDataProcessingAgreement_Fails()
+    {
+        var (service, db, _) = CreateService();
+
+        var result = await service.RegisterAsync(TestFrisor() with { AcceptDataProcessing = false });
+
+        Assert.False(result.Success);
+        Assert.Equal("Du må godta databehandleravtalen for å registrere bedriften.", result.Error);
+        Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345688"));
     }
     // check if an unconfirmed registration (lost mail, or someone else using the org number) does not
     // block a new registration: the old hidden business and its owner are replaced

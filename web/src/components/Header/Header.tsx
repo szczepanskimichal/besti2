@@ -17,7 +17,9 @@ export default async function Header() {
     return (
         <header className={styles.header}>
             <div className={styles.inner}>
-                <NextLink href="/" className={styles.logo}>BESTI</NextLink>
+                <NextLink href="/" className={styles.logo}>
+                    BESTI <span className={styles.beta}>Beta</span>
+                </NextLink>
                 <nav className={styles.nav}>
                     {me ? (
                         <>

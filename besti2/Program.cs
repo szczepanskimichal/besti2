@@ -16,6 +16,7 @@ using besti2.Application.Notifications;
 using besti2.Application.Reviews;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -37,6 +38,9 @@ builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
         options.Password.RequiredLength = 6;
     })
     .AddEntityFrameworkStores<AppDbContext>();
+// Logged in for 14 days (a salon has the panel open all day); a password change ends it everywhere (see below)
+builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, options =>
+    options.BearerTokenExpiration = TimeSpan.FromDays(14));
 builder.Services.AddHostedService<BookingAnonymizationJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
@@ -111,14 +115,12 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
         await DemoData.RemoveAsync(dbContext);
     }
 }
+
 // First: the visitor's real IP for everything after (rate limiting)
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 // Uploaded images (development storage), e.g. /uploads/abc.webp
 var uploadsFolder = Path.Combine(app.Environment.ContentRootPath, "uploads");
-// For Docker and the deploy check: 200 when the API and its database answer
-app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
-    await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 Directory.CreateDirectory(uploadsFolder);
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -126,8 +128,26 @@ app.UseStaticFiles(new StaticFileOptions
     RequestPath = "/uploads"
 });
 app.UseAuthentication();
+// A login from before a password change or reset stops working on every device
+// (Identity gives the account a new security stamp then; a deleted account has none)
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var signInManager = context.RequestServices.GetRequiredService<SignInManager<AppUser>>();
+        if (await signInManager.ValidateSecurityStampAsync(context.User) is null)
+        {
+            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            return;
+        }
+    }
+    await next();
+});
 app.UseAuthorization();
 app.UseRateLimiter();
+// For Docker and the deploy check: 200 when the API and its database answer
+app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
+    await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 
 // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
@@ -217,6 +237,20 @@ app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
 }).RequireRateLimiting("signup");
 
+// BESTI approves a new business: the link in the mail to AdminEmail opens a page that shows it first
+app.MapGet("/api/godkjenn", async (string token, IBusinessRegistrationService registrationService,
+    CancellationToken cancellationToken) =>
+{
+    var approval = await registrationService.GetApprovalAsync(token, cancellationToken);
+    return approval is null ? Results.NotFound() : Results.Ok(approval);
+}).RequireRateLimiting("signup");
+
+app.MapPost("/api/godkjenn", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
+    CancellationToken cancellationToken) =>
+    await registrationService.ApproveAsync(request.Token, cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound()).RequireRateLimiting("signup");
+
 // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
 app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
 {
@@ -277,6 +311,7 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
 
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+
 // Business sign-up: "Hent fra Brønnøysund" – name and address of an active business in the register
 app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry registry,
     CancellationToken cancellationToken) =>
@@ -608,7 +643,7 @@ app.MapGet("/api/panel/business", async (ClaimsPrincipal principal, UserManager<
         return Results.Forbid();
     }
 
-    var business = await businessService.GetByIdAsync(businessId, cancellationToken);
+    var business = await businessService.GetForPanelAsync(businessId, cancellationToken);
     return business is null ? Results.NotFound() : Results.Ok(business);
 }).RequireAuthorization();
 
