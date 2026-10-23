@@ -1,24 +1,27 @@
-name: CI
+# Every pull request: tests and build. Every merge to main: the same, then images and deploy to bestiapp.no.
+name: CI/CD
 
 on:
+  pull_request:
   push:
     branches: [main]
-  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   backend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: "10.0.x"
-      - name: Restore
-        run: dotnet restore besti2.sln
-      - name: Build
-        run: dotnet build besti2.sln --no-restore --configuration Release
-      - name: Test
-        run: dotnet test besti2.sln --no-build --configuration Release
+          dotnet-version: 10.0.x
+      - run: dotnet test besti2.sln
 
   frontend:
     runs-on: ubuntu-latest
@@ -26,17 +29,79 @@ jobs:
       run:
         working-directory: web
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: 22
           cache: npm
           cache-dependency-path: web/package-lock.json
-      - name: Install
-        run: npm ci
-      - name: Lint
-        run: npm run lint
-      - name: Type check
-        run: npx tsc --noEmit
-      - name: Build
-        run: npm run build
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm run build
+
+  images:
+    needs: [backend, frontend]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: besti2/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/szczepanskimichal/besti2-api:${{ github.sha }}
+            ghcr.io/szczepanskimichal/besti2-api:latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+      - uses: docker/build-push-action@v6
+        with:
+          context: web
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            SITE_URL=https://bestiapp.no
+          tags: |
+            ghcr.io/szczepanskimichal/besti2-web:${{ github.sha }}
+            ghcr.io/szczepanskimichal/besti2-web:latest
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max
+
+  deploy:
+    needs: images
+    if: vars.DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    # Settings → Environments → production holds the server address and the deploy key
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+      - name: SSH key
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$DEPLOY_SSH_KEY" > ~/.ssh/id_ed25519
+          printf '%s\n' "$DEPLOY_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519
+      - name: Copy server files and deploy
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+        run: |
+          scp deploy/docker-compose.prod.yml deploy/Caddyfile deploy/deploy.sh "deploy@$DEPLOY_HOST:/opt/besti/"
+          ssh "deploy@$DEPLOY_HOST" "bash /opt/besti/deploy.sh ${{ github.sha }}"

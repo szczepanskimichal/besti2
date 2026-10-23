@@ -1,3 +1,4 @@
+# Local development only: SQL Server and Mailpit (the server uses docker-compose.prod.yml)
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -7,7 +8,7 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
     ports:
-      - "1433:1433"
+      - "127.0.0.1:1433:1433"
     volumes:
       - sqldata:/var/opt/mssql
 
@@ -15,8 +16,8 @@ services:
     image: axllent/mailpit:latest
     container_name: besti2-mail
     ports:
-      - "8025:8025" - "127.0.0.1:8025:8025"
-      - "1025:1025" - "127.0.0.1:1025:1025"
-      - "1433:1433" - "127.0.0.1:1433:1433"
+      - "127.0.0.1:8025:8025"
+      - "127.0.0.1:1025:1025"
+
 volumes:
   sqldata:
