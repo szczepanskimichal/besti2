@@ -81,6 +81,8 @@ jobs:
 
   deploy:
     needs: images
+    if: vars.DEPLOY_ENABLED == 'true'
+      runs-on: ubuntu-latest
     runs-on: ubuntu-latest
     # Settings → Environments → production holds the server address and the deploy key
     environment: production
