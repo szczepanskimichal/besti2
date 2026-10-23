@@ -16,7 +16,8 @@ import TimeOffForm from "./TimeOffForm";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
 
-// One hour in the grid is 120 px high (a 30 min visit = 60 px: time, customer and service fit)const PX_PER_MINUTE = 2;
+// One hour in the grid is 120 px high (a 30 min visit = 60 px: time, customer and service fit)
+const PX_PER_MINUTE = 2;
 type CalendarPageProps = {
     
     searchParams: Promise<{
