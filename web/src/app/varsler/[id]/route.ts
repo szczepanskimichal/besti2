@@ -11,7 +11,8 @@ function goTo(path: string) {
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const token = await getToken();
     if (!token) {
-        return goTo("/logg-inn?neste=/varsler");    }
+        return goTo("/logg-inn?neste=/varsler");
+    }
     const { id } = await params;
     const link = await markNotificationRead(token, id);
     return goTo(safeRedirectPath(link ?? "/varsler"));
