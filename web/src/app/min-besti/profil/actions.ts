@@ -1,8 +1,8 @@
 "use server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { changeMyPassword, deleteMyAccount, updateMyProfile } from "@/lib/api";
-import { getToken, TOKEN_COOKIE } from "@/lib/auth";
+import { changeMyPassword, deleteMyAccount, getMe, login, updateMyProfile } from "@/lib/api";
+import { getToken, setToken, TOKEN_COOKIE } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
 // saved = show "Lagret" under the form
@@ -26,18 +26,28 @@ export async function updateProfileAction(_previous: ProfileFormState, formData:
     return result.ok ? { saved: true, values } : { error: result.message, values };
 }
 
-// The passwords are never sent back to the form
+// The passwords are never sent back to the form. A new password logs out every device,
+// so this one logs in again right away with the new password
 export async function changePasswordAction(_previous: ProfileFormState, formData: FormData): Promise<ProfileFormState> {
     const token = await tokenOrLogin();
     const newPassword = String(formData.get("newPassword") ?? "");
     if (newPassword !== String(formData.get("repeatPassword") ?? "")) {
         return { error: "De nye passordene er ikke like." };
     }
+    const me = await getMe(token);
     const result = await changeMyPassword(token, {
         currentPassword: String(formData.get("currentPassword") ?? ""),
         newPassword,
     });
-    return result.ok ? { saved: true } : { error: result.message };
+    if (!result.ok) {
+        return { error: result.message };
+    }
+    const fresh = me ? await login(me.email, newPassword) : null;
+    if (!fresh || fresh === "tooMany") {
+        redirect("/logg-inn?neste=/min-besti/profil");
+    }
+    await setToken(fresh.accessToken, fresh.expiresIn);
+    return { saved: true };
 }
 
 // Deleted: log out and show the goodbye page
