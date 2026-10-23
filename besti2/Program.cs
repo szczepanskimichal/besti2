@@ -15,6 +15,8 @@ using System.Threading.RateLimiting;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,9 +42,25 @@ builder.Services.AddHostedService<BookingAnonymizationJob>();
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
 // The web server tells us the visitor's IP in X-Forwarded-For. Only callers on this machine are trusted
 // (the default), so a visitor who sends the header straight to the API cannot pretend to be someone else.
-// In Docker the web server has its own address: add it to KnownProxies when deploying.
+// In Docker the web server has its own address: the server settings name the Docker network to trust.
 builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor);
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor;
+    var knownNetwork = builder.Configuration["ForwardedHeaders:KnownNetwork"];
+    if (!string.IsNullOrEmpty(knownNetwork))
+    {
+        options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(knownNetwork));
+    }
+});
+// Login tokens and e-mail links are signed with these keys. On the server they are kept on a volume,
+// otherwise every restart would log everyone out and break the links in e-mails already sent
+var keysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrEmpty(keysPath))
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("besti2")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -82,12 +100,25 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     await DevUserSeeder.SeedAsync(app.Services);
 }
-
+// On the server: bring the database up to date and remove the demo businesses (flags in the server settings)
+if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+    if (app.Configuration.GetValue<bool>("Database:RemoveDemoData"))
+    {
+        await DemoData.RemoveAsync(dbContext);
+    }
+}
 // First: the visitor's real IP for everything after (rate limiting)
 app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 // Uploaded images (development storage), e.g. /uploads/abc.webp
 var uploadsFolder = Path.Combine(app.Environment.ContentRootPath, "uploads");
+// For Docker and the deploy check: 200 when the API and its database answer
+app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
+    await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 Directory.CreateDirectory(uploadsFolder);
 app.UseStaticFiles(new StaticFileOptions
 {
@@ -246,6 +277,27 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
 
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
+// Business sign-up: "Hent fra Brønnøysund" – name and address of an active business in the register
+app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry registry,
+    CancellationToken cancellationToken) =>
+{
+    if (!OrgNumber.IsValid(orgNumber))
+    {
+        return Results.BadRequest(new { message = "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig." });
+    }
+    var lookup = await registry.LookupAsync(orgNumber, cancellationToken);
+    return lookup.Status switch
+    {
+        RegistryStatus.Active => Results.Ok(new
+        {
+            lookup.Name, lookup.Address, lookup.PostalCode, lookup.City
+        }),
+        RegistryStatus.NotFound => Results.NotFound(new { message = "Fant ikke virksomheten i Enhetsregisteret." }),
+        RegistryStatus.Closed => Results.Conflict(
+            new { message = "Virksomheten er slettet, konkurs eller under avvikling i Enhetsregisteret." }),
+        _ => Results.Problem("Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv.", statusCode: 503)
+    };
+}).RequireRateLimiting("signup");
 
 // Customer: "Min profil" – name, e-mail (read only) and phone
 app.MapGet("/api/me/profile", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,

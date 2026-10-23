@@ -3,7 +3,8 @@ import type {NextConfig} from "next";
 const nextConfig: NextConfig = {
     // Do not tell visitors which framework we use
     poweredByHeader: false,
-    /* config options here */
+    // The Docker image only gets the files the server needs (see web/Dockerfile)
+    output: "standalone",
     allowedDevOrigins: ["192.168.1.203"],
     experimental: {
         // Room for one shrunk photo; stays under Vercel's 4.5 MB request limit

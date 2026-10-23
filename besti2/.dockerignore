@@ -1,0 +1,12 @@
+**/bin
+**/obj
+**/node_modules
+**/.next
+.git
+.github
+.idea
+web
+docs
+besti2/uploads
+besti2.Tests
+.env
