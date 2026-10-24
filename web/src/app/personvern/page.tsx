@@ -64,7 +64,8 @@ export default function PrivacyPage() {
                 <li><strong>Leverandører</strong> som drifter tjenesten for oss. De behandler opplysningene bare etter
                     våre instrukser (databehandleravtale):
                     <ul id="underleverandorer">
-                        <li>Hetzner Online GmbH (Tyskland): servere og database, i datasenter i Finland.</li>
+                        <li>Hetzner Online GmbH (Tyskland): servere og database i datasenter i Finland, og
+                            sikkerhetskopier i datasenter i Tyskland.</li>
                         <li>Brevo (Sendinblue SAS, Frankrike): utsending av e-post.</li>
                         <li>Cloudflare, Inc. (USA): domenenavn, beskyttelse mot angrep og sikker videreformidling av
                             trafikken til nettsiden. Trafikken, også IP-adressen din, går gjennom Cloudflare.
@@ -88,6 +89,8 @@ export default function PrivacyPage() {
                     vurderingene dine blir stående som «Tidligere kunde» uten navnet ditt.</li>
                 <li><strong>Bedriftskonto:</strong> til bedriften avslutter kontoen.</li>
                 <li><strong>Bilder</strong> blir forminsket og lagret uten skjulte bildedata (EXIF), som GPS-posisjon.</li>
+                <li><strong>Sikkerhetskopier</strong> av databasen og bildene tas hver natt og slettes etter
+                    14 dager. Det du sletter, er derfor helt borte også fra sikkerhetskopiene innen 14 dager.</li>
             </ul>
 
             <h2>Informasjonskapsler (cookies)</h2>
