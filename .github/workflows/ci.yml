@@ -51,7 +51,6 @@ jobs:
       - name: Shell scripts parse
         run: bash -n deploy/*.sh
 
-
   images:
     needs: [backend, frontend, deploy-files]
     if: github.event_name == 'push'

@@ -64,7 +64,6 @@ export default function PrivacyPage() {
                 <li><strong>Leverandører</strong> som drifter tjenesten for oss. De behandler opplysningene bare etter
                     våre instrukser (databehandleravtale):
                     <ul id="underleverandorer">
-                        <li>Hetzner Online GmbH (Tyskland): servere og database, i datasenter i Finland.</li>
                         <li>Hetzner Online GmbH (Tyskland): servere og database i datasenter i Finland, og
                             sikkerhetskopier i datasenter i Tyskland.</li>
                         <li>Brevo (Sendinblue SAS, Frankrike): utsending av e-post.</li>
