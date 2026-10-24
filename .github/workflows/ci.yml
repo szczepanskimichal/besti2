@@ -104,5 +104,5 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          scp deploy/docker-compose.prod.yml deploy/Caddyfile deploy/deploy.sh "deploy@$DEPLOY_HOST:/opt/besti/"
+          scp deploy/docker-compose.prod.yml deploy/Caddyfile deploy/deploy.sh deploy/backup.sh "deploy@$DEPLOY_HOST:/opt/besti/"
           ssh "deploy@$DEPLOY_HOST" "bash /opt/besti/deploy.sh ${{ github.sha }}"
