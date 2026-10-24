@@ -54,11 +54,13 @@ services:
         condition: service_healthy
     networks: [besti]
     logging: *logging
-
-  # No port to the outside. Express edition: free for production use (max 10 GB per database)
-  sqlserver:
+    
+    # No port to the internet. Express edition: free for production use (max 10 GB per database)  sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     restart: unless-stopped
+    # Only on the server itself (127.0.0.1): reachable from Rider through an SSH tunnel
+    ports:
+      - "127.0.0.1:1433:1433"
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Express
