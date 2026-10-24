@@ -11,7 +11,7 @@ Intern protokoll over behandlingsaktiviteter (GDPR art. 30). Én kilde til sannh
 - endrer hvor lenge noe lagres.
 
 Behandlingsansvarlig: Michał Szczepański (BESTI). Kontakt: personvern@bestiapp.no
-Sist gjennomgått: 2026-10-22
+Sist gjennomgått: 2026-10-24
 
 ## Behandlinger
 
@@ -29,13 +29,14 @@ Sist gjennomgått: 2026-10-22
 | Databehandleravtale | tidspunkt for godkjenning | bedrifter | dokumentere avtalen (art. 28) | 6.1 c / 6.1 b | så lenge bedriften finnes | `Business.DataProcessingAcceptedUtc`, `/vilkar#databehandleravtale` |
 | Sikkerhet | IP-adresse | alle | hindre misbruk (rate limiting), feilsøking | 6.1 f | i minnet minutter; serverlogger maks 5 × 10 MB per tjeneste | `Program.cs` (rate limiter), `deploy/docker-compose.prod.yml` (logging) |
 | Innlogging | innloggingstoken i informasjonskapsel | alle | holde brukeren innlogget | 6.1 b | 14 dager; ugyldig straks passordet endres | `Program.cs` (`BearerTokenExpiration`, security stamp), `lib/auth.ts` |
+| Sikkerhetskopi | hele databasen, bilder, innloggingsnøkler | alle | gjenopprette etter feil eller angrep | 6.1 f | 14 dager (på serveren og i Hetzner Storage Box, Tyskland) | `deploy/backup.sh` |
 
 ## Mottakere og leverandører
 
 | Mottaker | Hva | Hvor | Avtale |
 |---|---|---|---|
 | Bedriften kunden bestiller hos | bestillingen | Norge | — (egen behandlingsansvarlig) |
-| Hetzner Online GmbH (servere, database, sikkerhetskopier) | hele databasen og bildene | EU (datasenter i Finland) | databehandleravtale (DPA) |
+| Hetzner Online GmbH (servere, database, sikkerhetskopier) | hele databasen og bildene | EU (servere i Finland, sikkerhetskopier i Tyskland) | databehandleravtale (DPA) |
 | Brevo / Sendinblue SAS (e-post) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
 | Cloudflare, Inc. (DNS, beskyttelse, videreformidling av trafikk) | IP-adresse og all trafikk til nettsiden | USA / globalt | DPA, EU–US Data Privacy Framework + standardkontraktsbestemmelser (SCC) |
 | Kartverket (Geonorge) | bedriftens adresse | Norge | offentlig API, ingen kundedata |

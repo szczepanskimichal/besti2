@@ -9,6 +9,12 @@ DAY=$(date +%F)
 SA_PASSWORD=$(grep '^MSSQL_SA_PASSWORD=' .env | cut -d= -f2-)
 compose() { docker compose -f docker-compose.prod.yml --env-file .env --env-file tag.env "$@"; }
 
+# Healthchecks.io: /start now, the exit code at the end (0 = OK, anything else = mail)
+HC_URL=$(grep '^BACKUP_PING_URL=' .env | cut -d= -f2- || true)
+hc() { [ -z "$HC_URL" ] || curl -fsS -m 10 --retry 3 -o /dev/null "$HC_URL$1" || true; }
+trap 'hc "/$?"' EXIT
+hc /start
+
 # 1. Database: SQL Server (user 10001 in the container) writes the .bak into ./backups
 mkdir -p backups
 chown 10001 backups

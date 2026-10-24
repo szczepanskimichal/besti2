@@ -457,12 +457,12 @@ export async function updateMyProfile(token: string, input: { fullName: string; 
 }
 
 export async function changeMyPassword(token: string, input: { currentPassword: string; newPassword: string }): Promise<ApiResult> {
-    return toResult(await apiFetch("/api/me/password", { method: "POST", token, body: input }));
+    return toResult(await apiFetch("/api/me/password", { method: "POST", token, body: input, forwardIp: true }));
 }
 
 // "Slett konto"; confirmed with the password
 export async function deleteMyAccount(token: string, password: string): Promise<ApiResult> {
-    return toResult(await apiFetch("/api/me/delete", { method: "POST", token, body: { password } }));
+    return toResult(await apiFetch("/api/me/delete", { method: "POST", token, body: { password }, forwardIp: true }));
 }
 
 // Only the number on the bell (the header on every page); null = the API failed
