@@ -54,7 +54,6 @@ services:
         condition: service_healthy
     networks: [besti]
     logging: *logging
-    
     # No port to the internet. Express edition: free for production use (max 10 GB per database)
       sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
