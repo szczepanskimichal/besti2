@@ -37,6 +37,8 @@ public static class DependencyInjection
         }
             );
         services.AddTransient<IEmailService, SmtpEmailService>();
+        // One shared counter for the whole API (see MailLimiter)
+        services.AddSingleton(new MailLimiter());
         services.AddScoped<IBusinessRegistrationService>(provider => new BusinessRegistrationService(
             provider.GetRequiredService<AppDbContext>(),
             provider.GetRequiredService<UserManager<AppUser>>(),
@@ -44,11 +46,13 @@ public static class DependencyInjection
             provider.GetRequiredService<IEmailService>(),
             configuration["WebBaseUrl"] ?? "http://localhost:3000",
             provider.GetRequiredService<IBusinessRegistry>(),
-            configuration["AdminEmail"]));
+            configuration["AdminEmail"],
+            provider.GetRequiredService<MailLimiter>()));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),
-            configuration["WebBaseUrl"] ?? "http://localhost:3000"));
+            configuration["WebBaseUrl"] ?? "http://localhost:3000",
+            provider.GetRequiredService<MailLimiter>()));
         services.AddHttpClient<IBusinessRegistry, BrregBusinessRegistry>(client =>
         {
             client.BaseAddress = new Uri("https://data.brreg.no/enhetsregisteret/api/");
