@@ -1,4 +1,6 @@
 using besti2.Application.Businesses;
+using besti2.Domain.Entities;
+using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
@@ -137,6 +139,67 @@ public class BusinessRegistrationServiceTests
 
         Assert.False(await service.ApproveAsync("feil"));
         Assert.Null(await service.GetApprovalAsync(""));
+    }
+
+    // check if "Avvis" deletes a stranger's registration with what they added in the panel,
+    // mails them, and the real owner can then register the same org number
+    [Fact]
+    public async Task RejectAsync_DeletesRegistrationAndFreesOrgNumber()
+    {
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email,
+            "http://localhost:3000", adminEmail: "post@bestiapp.no");
+        await service.RegisterAsync(TestFrisor() with { Email = "fremmed@test.example" });
+        var stranger = (await users.FindByEmailAsync("fremmed@test.example"))!;
+        await users.ConfirmEmailAsync(stranger, await users.GenerateEmailConfirmationTokenAsync(stranger));
+        await service.ShowBusinessOfOwnerAsync(stranger.Id);
+        var token = email.Sent.Single(m => m.To == "post@bestiapp.no").Body.Split("/godkjenn?token=")[1].Trim();
+
+        // The stranger already made a manual booking in the panel
+        var businessId = stranger.BusinessId!.Value;
+        var haircut = new Service { Id = Guid.NewGuid(), Name = "Klipp", DurationMinutes = 30, BusinessId = businessId };
+        db.Services.Add(haircut);
+        var bookingId = Guid.NewGuid();
+        db.Bookings.Add(new Booking
+        {
+            Id = bookingId, StartUtc = DateTime.UtcNow.AddDays(1), EndUtc = DateTime.UtcNow.AddDays(1).AddMinutes(30),
+            CustomerName = "Kunde", CustomerPhone = "+4790000002", CustomerEmail = "kunde@test.example",
+            Status = BookingStatus.Bekreftet, ServiceId = haircut.Id,
+            EmployeeId = db.Employees.Single(e => e.BusinessId == businessId).Id
+        });
+        await db.SaveChangesAsync();
+
+        Assert.True(await service.RejectAsync(token));
+        Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345688"));
+        Assert.Empty(db.Bookings.Where(b => b.Id == bookingId));
+        Assert.Null(await users.FindByEmailAsync("fremmed@test.example"));
+        Assert.Contains(email.Sent, m => m.To == "fremmed@test.example" && m.Subject.Contains("avvist"));
+        Assert.False(await service.RejectAsync(token));
+
+        var result = await service.RegisterAsync(TestFrisor());
+        Assert.True(result.Success);
+    }
+
+    // check if a wrong link deletes nothing, and an approved business can never be rejected
+    [Fact]
+    public async Task RejectAsync_WrongTokenOrApproved_DoesNothing()
+    {
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email,
+            "http://localhost:3000", adminEmail: "post@bestiapp.no");
+        await service.RegisterAsync(TestFrisor());
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
+        var token = email.Sent.Single(m => m.To == "post@bestiapp.no").Body.Split("/godkjenn?token=")[1].Trim();
+
+        Assert.False(await service.RejectAsync("feil"));
+        Assert.True(await service.ApproveAsync(token));
+        Assert.False(await service.RejectAsync(token));
+        Assert.Single(db.Businesses.Where(b => b.OrgNumber == "912345688"));
+        Assert.NotNull(await users.FindByEmailAsync("eier@testfrisor.example"));
     }
 
     // check if the data processing agreement must be accepted, and nothing is saved without it
