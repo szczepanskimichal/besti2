@@ -85,7 +85,7 @@
     font-size: 1.1rem;
     max-width: 40ch;
     margin: 0 0 24px;
-    color: #eff6ff;
+    color: var(--color-muted);
 }
 
 /* "Nær meg" radius links; the chosen one is bold */
