@@ -248,7 +248,9 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             if (ownerEmail is not null)
             {
                 await emailService.SendAsync(ownerEmail, "Bedriften din er godkjent hos BESTI", body, cancellationToken);
-            }        }
+            }
+            
+        }
         catch (Exception)
         {
             // The approval is saved; the owner also sees it in the panel
