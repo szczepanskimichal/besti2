@@ -81,6 +81,17 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
 
         var email = request.Email.Trim().ToLowerInvariant();
+        // The login e-mail is never shown: with a public one anyone could lock the owner out with wrong passwords
+        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail) ? null : request.ContactEmail.Trim().ToLowerInvariant();
+        if (contactEmail is not null && (!contactEmail.Contains('@') || contactEmail.Length > 250))
+        {
+            return new RegisterBusinessResult(false, "Ugyldig e-post til kunder.");
+        }
+        if (contactEmail == email)
+        {
+            return new RegisterBusinessResult(false,
+                "Bruk en annen e-post til kunder enn den du logger inn med, eller la feltet stå tomt.");
+        }
         // Checked before the old registration is removed below, because that makes the link already sent stop working
         if (!limiter.TryReserve(email))
         {
@@ -115,7 +126,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             Name = request.BusinessName.Trim(),
             OrgNumber = request.OrgNumber,
             Category = category,
-            Email = email,
+            Email = contactEmail,
             PhoneNumber = request.Phone.Trim(),
             Address = request.Address.Trim(),
             PostalCode = request.PostalCode.Trim(),
@@ -201,7 +212,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         var token = NewToken();
         business.ApprovalTokenHash = Hash(token);
         await dbContext.SaveChangesAsync(cancellationToken);
-        await TrySendApprovalRequestAsync(business, token, cancellationToken);
+        await TrySendApprovalRequestAsync(business, owner.Email!, token, cancellationToken);
     }
 
     public async Task<BusinessApprovalDto?> GetApprovalAsync(string token, CancellationToken cancellationToken = default)
@@ -210,8 +221,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         return business is null
             ? null
             : new BusinessApprovalDto(business.Name, business.OrgNumber, business.Category.ToString(), business.Address,
-                business.PostalCode, business.City, business.Email, business.PhoneNumber);
-    }
+                business.PostalCode, business.City, await OwnerEmailAsync(business.Id, cancellationToken) ?? "",
+                business.PhoneNumber);    }
 
     // The business shows up for customers and the owner gets a mail; the link works only once
     public async Task<bool> ApproveAsync(string token, CancellationToken cancellationToken = default)
@@ -233,15 +244,20 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             "Hilsen BESTI";
         try
         {
-            await emailService.SendAsync(business.Email, "Bedriften din er godkjent hos BESTI", body, cancellationToken);
-        }
+            var ownerEmail = await OwnerEmailAsync(business.Id, cancellationToken);
+            if (ownerEmail is not null)
+            {
+                await emailService.SendAsync(ownerEmail, "Bedriften din er godkjent hos BESTI", body, cancellationToken);
+            }        }
         catch (Exception)
         {
             // The approval is saved; the owner also sees it in the panel
         }
         return true;
     }
-
+    // The owner's login e-mail (private), where BESTI's mails to the business go
+    private Task<string?> OwnerEmailAsync(Guid businessId, CancellationToken cancellationToken) =>
+        dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email).FirstOrDefaultAsync(cancellationToken);
     private async Task<Business?> FindByApprovalTokenAsync(string token, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 100)
@@ -253,8 +269,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
     }
 
     // To BESTI: who registered, a link to the business in Brønnøysund and the one-click approval link
-    private async Task TrySendApprovalRequestAsync(Business business, string token, CancellationToken cancellationToken)
-    {
+    private async Task TrySendApprovalRequestAsync(Business business, string ownerEmail, string token,
+        CancellationToken cancellationToken)    {
         if (string.IsNullOrEmpty(adminEmail))
         {
             return;
@@ -263,7 +279,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             "Ny bedrift venter på godkjenning:\n\n" +
             $"{business.Name} (org.nr. {business.OrgNumber})\n" +
             $"{business.Address}, {business.PostalCode} {business.City}\n" +
-            $"E-post: {business.Email}, telefon: {business.PhoneNumber}\n\n" +
+            $"Innlogging: {ownerEmail}, e-post til kunder: {business.Email ?? "ingen"}, telefon: {business.PhoneNumber}\n\n" +
             $"Brønnøysund: https://virksomhet.brreg.no/nb/oppslag/enheter/{business.OrgNumber}\n\n" +
             $"Godkjenn: {webBaseUrl}/godkjenn?token={token}\n";
         try

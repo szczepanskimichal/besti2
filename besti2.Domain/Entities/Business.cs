@@ -10,8 +10,8 @@ public class Business
     public string OrgNumber { get; set; } = null!;
     public BusinessCategory Category { get; set; }
 
-    public string Email { get; set; } = null!;
-    public string PhoneNumber { get; set; } = null!;
+    // Public contact e-mail shown to customers (optional). The owner logs in with another, private address
+    public string? Email { get; set; }    public string PhoneNumber { get; set; } = null!;
     public string Address { get; set; } = null!;
     public string PostalCode { get; set; } = null!;
     public string City { get; set; } = null!;

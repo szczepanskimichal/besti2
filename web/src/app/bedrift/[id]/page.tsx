@@ -79,7 +79,7 @@ export default async function BusinessPage({ params }: Props) {
                         Vis vei 🧭
                     </a>
                     <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
-                    <a href={`mailto:${business.email}`}>{business.email}</a>
+                    {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
                 </address>
             </header>
             {business.gallery.length > 0 && (

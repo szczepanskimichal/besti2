@@ -48,7 +48,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => x.OrgNumber).IsUnique();
             e.Property(x => x.PostalCode).IsRequired().HasMaxLength(4);
             e.Property(x => x.Category).HasConversion<string>().IsRequired().HasMaxLength(100);
-            e.Property(x => x.Email).IsRequired().HasMaxLength(250);
+            e.Property(x => x.Email).HasMaxLength(250);
             e.Property(x => x.PhoneNumber).IsRequired().HasMaxLength(20);
             e.Property(x => x.City).IsRequired().HasMaxLength(200);
             e.Property(x => x.Description).HasMaxLength(1000);

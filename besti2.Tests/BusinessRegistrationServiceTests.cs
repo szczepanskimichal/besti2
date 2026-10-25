@@ -182,4 +182,19 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Denne bedriften er allerede registrert.", result.Error);
     }
+    // check if the login e-mail stays private: no contact e-mail = nothing public, the same one is refused
+    [Fact]
+    public async Task RegisterAsync_LoginEmailIsNeverPublic()
+    {
+        var (service, db, _) = CreateService();
+
+        var same = await service.RegisterAsync(TestFrisor() with { ContactEmail = " Eier@TestFrisor.example " });
+        var empty = await service.RegisterAsync(TestFrisor());
+
+        Assert.False(same.Success);
+        Assert.StartsWith("Bruk en annen e-post til kunder", same.Error);
+        Assert.True(empty.Success);
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
+        Assert.Null(business.Email);
+    }
 }

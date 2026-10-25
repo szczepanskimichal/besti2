@@ -46,6 +46,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                 initial={{
                     description: business.description ?? "",
                     phone: business.phoneNumber,
+                    contactEmail: business.email ?? "",
                     address: business.address,
                     postalCode: business.postalCode,
                     city: business.city,

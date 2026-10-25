@@ -2,6 +2,7 @@ using System.Text.RegularExpressions;
 using besti2.Application.Bookings;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
+using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -73,6 +74,9 @@ public class BookingNewTimeTests
     public async Task Accept_ByLink_WaitsForBusinessAndLinkIsUsed()
     {
         await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil });
+        await db.SaveChangesAsync();
         var email = new FakeEmailService();
         var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
         var id = await ConfirmedVisitAsync(service);
@@ -88,6 +92,7 @@ public class BookingNewTimeTests
         Assert.Equal(BookingStatus.Venter, booking.Status);
         Assert.Null(booking.NewTimeTokenHash);
         Assert.Contains("har godtatt den nye tiden", email.Sent.Last().Body);
+        Assert.Equal("eier@klippogstil.example", email.Sent.Last().To);
     }
 
     // check if Passer ikke cancels the visit, so the time is free for others again
