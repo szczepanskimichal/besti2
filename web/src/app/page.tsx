@@ -7,7 +7,7 @@ import Form from "next/form";
 import Link from "next/link";
 import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
-import AuroraBands from "@/components/AuroraBands/AuroraBands";
+
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string }>;
 };
@@ -35,7 +35,6 @@ export default async function Home({searchParams}: HomeProps) {
     const cities = await getCities();
     return (
         <main className={styles.main}>
-            <AuroraBands />
             <section className={styles.hero}>
                 <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
                 <p className={styles.heroLead}>

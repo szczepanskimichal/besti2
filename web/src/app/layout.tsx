@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
+import Aurora from "../components/Aurora/Aurora";
 
 const nunito = Nunito({
     subsets: ["latin", "latin-ext"],
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="nb" className={nunito.variable}>
         <body>
+        <Aurora />
         <Header />
         {children}
         <Footer/>
