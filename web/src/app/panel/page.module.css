@@ -23,9 +23,9 @@
 }
 
 .error {
-    background: #fdecea;
-    color: #a1271b;
-    border: 1px solid #f5c2bd;
+    background: rgba(255, 155, 133, 0.12);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
     border-radius: 8px;
     padding: 12px 16px;
     margin: 0 0 16px;
@@ -64,18 +64,18 @@
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 999px;
-    background: #fff4d6;
-    color: #7a5200;
+    background: rgba(242, 196, 109, 0.14);
+    color: var(--color-warning);
 }
 
 .Bekreftet {
-    background: #dcf5e4;
-    color: #1d6b3a;
+    background: rgba(143, 214, 160, 0.14);
+    color: var(--color-success);
 }
 
 .Avlyst {
     background: var(--color-border);
-    color: #4b5563;
+    color: var(--color-muted);
 }
 
 .service {
@@ -116,7 +116,7 @@
 .primaryButton {
     border: none;
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
 }
 
 .secondaryButton {
@@ -126,9 +126,9 @@
 }
 
 .dangerButton {
-    border: 1px solid #c0392b;
+    border: 1px solid var(--color-danger);
     background: var(--color-surface);
-    color: #a1271b;
+    color: var(--color-danger);
 }
 
 .primaryButton:hover,

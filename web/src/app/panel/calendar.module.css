@@ -108,21 +108,21 @@
     padding: 4px 8px;
     overflow: hidden;
     border-radius: 6px;
-    border-left: 4px solid #d4a20b;
-    background: #fff4d6;
+    border-left: 4px solid var(--color-warning);
+    background: rgba(242, 196, 109, 0.14);
     font-size: 0.85rem;
     line-height: 1.2;
 }
 
 .Bekreftet {
-    border-left-color: #1d6b3a;
-    background: #dcf5e4;
+    border-left-color: var(--color-success);
+    background: rgba(143, 214, 160, 0.14);
 }
 
 .Avlyst {
-    border-left-color: #9ca3af;
+    border-left-color: var(--color-muted);
     background: var(--color-border);
-    color: #6b7280;
+    color: var(--color-muted);
     text-decoration: line-through;
 }
 
@@ -169,7 +169,7 @@
 
 .segmented a[aria-current="page"] {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
 }
 
 /* Employee filter (week) and "Vis avlyste" */
@@ -193,7 +193,7 @@
     padding: 0 12px;
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
-    background: #fff;
+    background: rgba(20, 28, 24, 0.35);
 }
 
 .toggle {
@@ -233,21 +233,21 @@ a.booking:hover {
     gap: 2px;
     padding: 12px 16px;
     border-radius: 12px;
-    border-left: 4px solid #d4a20b;
-    background: #fff4d6;
+    border-left: 4px solid var(--color-warning);
+    background: rgba(242, 196, 109, 0.14);
     color: inherit;
     text-decoration: none;
 }
 
 .phoneCard.Bekreftet {
-    border-left-color: #1d6b3a;
-    background: #dcf5e4;
+    border-left-color: var(--color-success);
+    background: rgba(143, 214, 160, 0.14);
 }
 
 .phoneCard.Avlyst {
-    border-left-color: #9ca3af;
+    border-left-color: var(--color-muted);
     background: var(--color-border);
-    color: #6b7280;
+    color: var(--color-muted);
     text-decoration: line-through;
 }
 
@@ -398,8 +398,8 @@ a.booking:hover {
     font-size: 0.8rem;
     color: var(--color-muted);
     text-decoration: none;
-    background: repeating-linear-gradient(135deg, #f3f4f6 0 8px, #e5e7eb 8px 16px);
-    border-left: 3px solid #9ca3af;
+    background: repeating-linear-gradient(135deg, rgba(200, 213, 185, 0.06) 0 8px, rgba(200, 213, 185, 0.12) 8px 16px);
+    border-left: 3px solid var(--color-muted);
 }
 
 .blocked:hover,
@@ -409,8 +409,8 @@ a.booking:hover {
 
 .phoneCard.phoneBlocked {
     color: var(--color-muted);
-    background: repeating-linear-gradient(135deg, #f3f4f6 0 8px, #e5e7eb 8px 16px);
-    border-left-color: #9ca3af;
+    background: repeating-linear-gradient(135deg, rgba(200, 213, 185, 0.06) 0 8px, rgba(200, 213, 185, 0.12) 8px 16px);
+    border-left-color: var(--color-muted);
 }
 
 .dialogHint {
@@ -423,8 +423,8 @@ a.booking:hover {
     margin: 0 0 16px;
     padding: 12px 16px;
     border-radius: 12px;
-    border-left: 4px solid #d4a20b;
-    background: #fff4d6;
+    border-left: 4px solid var(--color-warning);
+    background: rgba(242, 196, 109, 0.14);
 }
 .month {
     display: grid;
@@ -474,7 +474,7 @@ a.booking:hover {
 
 .today .dayNumber {
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
 }
 
 /* "+" for a new booking that day: shown when the mouse is over the day (always for the keyboard) */
@@ -503,7 +503,7 @@ a.booking:hover {
 }
 
 .closedDay {
-    background: repeating-linear-gradient(135deg, #f3f4f6 0 8px, #e5e7eb 8px 16px);
+    background: repeating-linear-gradient(135deg, rgba(200, 213, 185, 0.06) 0 8px, rgba(200, 213, 185, 0.12) 8px 16px);
 }
 
 .closedLabel {
@@ -518,7 +518,7 @@ a.booking:hover {
     color: var(--color-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
-    background: #e5e7eb;
+    background: rgba(200, 213, 185, 0.12);
     border-radius: 4px;
 }
 
@@ -531,20 +531,20 @@ a.booking:hover {
     white-space: nowrap;
     text-overflow: ellipsis;
     text-decoration: none;
-    background: #fff4d6;
-    border-left: 3px solid #d4a20b;
+    background: rgba(242, 196, 109, 0.14);
+    border-left: 3px solid var(--color-warning);
     border-radius: 4px;
 }
 
 .monthVisit.Bekreftet {
-    background: #dcf5e4;
-    border-left-color: #1d6b3a;
+    background: rgba(143, 214, 160, 0.14);
+    border-left-color: var(--color-success);
 }
 
 .monthVisit.Avlyst {
     background: var(--color-border);
-    border-left-color: #9ca3af;
-    color: #6b7280;
+    border-left-color: var(--color-muted);
+    color: var(--color-muted);
     text-decoration: line-through;
 }
 
@@ -571,6 +571,6 @@ a.booking:hover {
 .booking.VenterKunde,
 .phoneCard.VenterKunde,
 .monthVisit.VenterKunde {
-    border-left-color: #2563eb;
-    background: repeating-linear-gradient(135deg, #e8f0fa 0 8px, #d6e4f7 8px 16px);
+    border-left-color: #8fb8de;
+    background: repeating-linear-gradient(135deg, rgba(143, 184, 222, 0.08) 0 8px, rgba(143, 184, 222, 0.16) 8px 16px);
 }
