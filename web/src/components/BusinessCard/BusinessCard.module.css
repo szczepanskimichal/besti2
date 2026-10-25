@@ -125,7 +125,7 @@
 
     background: var(--color-primary);
 
-    color: #fff;
+    color: var(--color-on-primary);
 }
 /* "★★★★★ 4,7 · 12 vurderinger" under the city */
 .rating {

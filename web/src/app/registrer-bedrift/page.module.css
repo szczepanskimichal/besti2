@@ -63,7 +63,7 @@
     border: none;
     border-radius: 999px;
     background: var(--color-primary);
-    color: #fff;
+    color: var(--color-on-primary);
     cursor: pointer;
 }
 

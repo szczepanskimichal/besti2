@@ -1,8 +1,17 @@
-import  type { Metadata } from "next";
+import type { Metadata } from "next";
+import { Nunito } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
 import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
+
+const nunito = Nunito({
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "600", "700", "800"],
+    variable: "--font-nunito",
+    display: "swap",
+});
+
 export const metadata: Metadata = {
     // Full addresses for links shared on Facebook, Messenger etc.
     metadataBase: new URL(SITE_URL),
