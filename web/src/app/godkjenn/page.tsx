@@ -4,7 +4,7 @@ import { getBusinessApproval } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { privatePage } from "@/lib/site";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import { approveBusinessAction } from "./actions";
+import { approveBusinessAction, rejectBusinessAction } from "./actions";
 import styles from "../panel/page.module.css";
 
 export const metadata: Metadata = {
@@ -28,7 +28,9 @@ export default async function ApprovalPage({ searchParams }: ApprovalPageProps) 
                 <p role="status">
                     {svar === "godkjent"
                         ? "Bedriften er godkjent og synlig for kundene. Eieren har fått beskjed på e-post."
-                        : "Kunne ikke godkjenne. Lenken kan være brukt allerede."}
+                        : svar === "avvist"
+                            ? "Registreringen er avvist og slettet. Den som registrerte har fått beskjed på e-post."
+                            : "Kunne ikke fullføre. Lenken kan være brukt allerede."}
                 </p>
                 <p><Link href="/">Til forsiden</Link></p>
             </main>
@@ -64,6 +66,13 @@ export default async function ApprovalPage({ searchParams }: ApprovalPageProps) 
                 <form action={approveBusinessAction}>
                     <input type="hidden" name="token" value={token}/>
                     <SubmitButton className={styles.primaryButton} pendingText="Godkjenner…">Godkjenn</SubmitButton>
+                </form>
+                <form action={rejectBusinessAction}>
+                    <input type="hidden" name="token" value={token}/>
+                    <label>
+                        <input type="checkbox" name="bekreft" value="ja" required/> Ja, slett registreringen (kan ikke angres)
+                    </label>
+                    <SubmitButton className={styles.dangerButton} pendingText="Sletter…">Avvis og slett</SubmitButton>
                 </form>
             </div>
         </main>

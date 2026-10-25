@@ -1,4 +1,6 @@
 using besti2.Application.Businesses;
+using besti2.Domain.Entities;
+using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;

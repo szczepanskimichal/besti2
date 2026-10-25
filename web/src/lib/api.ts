@@ -363,7 +363,9 @@ export async function getBusinessApproval(token: string): Promise<BusinessApprov
 export async function approveBusiness(token: string): Promise<ApiResult> {
     return toResult(await apiFetch("/api/godkjenn", { method: "POST", body: { token }, forwardIp: true }));
 }
-
+export async function rejectBusiness(token: string): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/godkjenn/avvis", { method: "POST", body: { token }, forwardIp: true }));
+}
 // The customer's answer: from the link (token) or from Min Besti (logged in)
 export async function answerNewTime(token: string, accept: boolean): Promise<ApiResult> {
     return toResult(await apiFetch("/api/ny-tid", { method: "POST", body: { token, accept }, forwardIp: true }));

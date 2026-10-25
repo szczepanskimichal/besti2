@@ -255,6 +255,37 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
         return true;
     }
+    // Someone registered an org number that is not theirs: the business and the owner account are
+    // deleted, so the real owner can register it, and the person who registered gets a mail
+    public async Task<bool> RejectAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var business = await FindByApprovalTokenAsync(token, cancellationToken);
+        if (business is null)
+        {
+            return false;
+        }
+
+        var ownerEmail = await OwnerEmailAsync(business.Id, cancellationToken);
+        var body =
+            "Hei!\n\n" +
+            $"Registreringen av {business.Name} hos BESTI ble avvist, og kontoen er slettet.\n" +
+            "Vi kunne ikke bekrefte at du representerer bedriften.\n\n" +
+            "Mener du at dette er feil? Kontakt oss på post@bestiapp.no.\n\n" +
+            "Hilsen BESTI";
+        await DeleteBusinessAsync(business, cancellationToken);
+        try
+        {
+            if (ownerEmail is not null)
+            {
+                await emailService.SendAsync(ownerEmail, "Registreringen hos BESTI ble avvist", body, cancellationToken);
+            }
+        }
+        catch (Exception)
+        {
+            // The registration is deleted anyway
+        }
+        return true;
+    }
     // The owner's login e-mail (private), where BESTI's mails to the business go
     private Task<string?> OwnerEmailAsync(Guid businessId, CancellationToken cancellationToken) =>
         dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email).FirstOrDefaultAsync(cancellationToken);
@@ -333,21 +364,33 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             businessIds.Add(ownBusinessId);
         }
-
         foreach (var businessId in businessIds.Distinct())
         {
-            var owners = await dbContext.Users.Where(u => u.BusinessId == businessId).ToListAsync(cancellationToken);
             var business = await dbContext.Businesses.FindAsync([businessId], cancellationToken);
-            if (business is not { IsHidden: true } || owners.Any(u => u.EmailConfirmed))
+            if (business is not { IsHidden: true }
+                || await dbContext.Users.AnyAsync(u => u.BusinessId == businessId && u.EmailConfirmed, cancellationToken))
             {
                 continue;
             }
-            foreach (var owner in owners)
-            {
-                await userManager.DeleteAsync(owner);
-            }
-            dbContext.Businesses.Remove(business);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            await DeleteBusinessAsync(business, cancellationToken);        }
+    }
+    // Deletes a business that was never approved, with its owner and what the owner may already
+    // have added in the panel. Bookings, reviews and time off are removed by hand first, because
+    // the database does not delete them on its own (Restrict)
+    private async Task DeleteBusinessAsync(Business business, CancellationToken cancellationToken)
+    {
+        var bookings = await dbContext.Bookings.Where(b => b.Employee.BusinessId == business.Id).ToListAsync(cancellationToken);
+        dbContext.Reviews.RemoveRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id).ToListAsync(cancellationToken));
+        dbContext.Bookings.RemoveRange(bookings);
+        dbContext.TimeOffs.RemoveRange(await dbContext.TimeOffs.Where(t => t.BusinessId == business.Id).ToListAsync(cancellationToken));
+        dbContext.Notifications.RemoveRange(await dbContext.Notifications.Where(n => n.BusinessId == business.Id).ToListAsync(cancellationToken));
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        foreach (var owner in await dbContext.Users.Where(u => u.BusinessId == business.Id).ToListAsync(cancellationToken))
+        {
+            await userManager.DeleteAsync(owner);
         }
+        dbContext.Businesses.Remove(business);
+        await dbContext.SaveChangesAsync(cancellationToken);
     }
 }
