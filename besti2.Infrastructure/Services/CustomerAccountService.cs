@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Identity;
 namespace besti2.Infrastructure.Services;
 
 // webBaseUrl = address of the Next.js site, used in the confirmation link
-public class CustomerAccountService(UserManager<AppUser> userManager, IEmailService emailService, string webBaseUrl)
+public class CustomerAccountService(UserManager<AppUser> userManager, IEmailService emailService, string webBaseUrl, MailLimiter? mailLimiter = null)
     : ICustomerAccountService
 {
+    private readonly MailLimiter limiter = mailLimiter ?? new MailLimiter();
+
     public async Task<string?> RegisterAsync(RegisterCustomerRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -34,6 +36,11 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
             {
                 return passwordError;
             }
+            // Checked before the password change below, because that change makes the link already sent stop working
+            if (!limiter.TryReserve(email))
+            {
+                return MailLimiter.TryLaterMessage;
+            }
             existing.FullName = request.FullName.Trim();
             await userManager.RemovePasswordAsync(existing);
             await userManager.AddPasswordAsync(existing, request.Password);
@@ -53,7 +60,11 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         {
             return "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.";
         }
-
+        if (!limiter.TryReserve(email))
+        {
+            // Only when today's limit is used up: the account is kept, signing up again later sends the link
+            return MailLimiter.TryLaterMessage;
+        }
         // The account is kept even if the mail fails; signing up again sends a new link
         await TrySendConfirmationAsync(user, cancellationToken);
         return null;

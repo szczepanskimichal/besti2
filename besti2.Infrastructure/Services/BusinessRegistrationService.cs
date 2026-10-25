@@ -17,8 +17,10 @@ namespace besti2.Infrastructure.Services;
 // adminEmail = where BESTI gets the approval link for a new business (no mail when null)
 public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
     IGeocodingService geocoding, IEmailService emailService, string webBaseUrl, IBusinessRegistry? registry = null,
-    string? adminEmail = null)
+    string? adminEmail = null, MailLimiter? mailLimiter = null)
     : IBusinessRegistrationService{
+    private readonly MailLimiter limiter = mailLimiter ?? new MailLimiter();
+
     public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
     {
         // 1. Check the input
@@ -79,6 +81,11 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
 
         var email = request.Email.Trim().ToLowerInvariant();
+        // Checked before the old registration is removed below, because that makes the link already sent stop working
+        if (!limiter.TryReserve(email))
+        {
+            return new RegisterBusinessResult(false, MailLimiter.TryLaterMessage);
+        }
         // An earlier registration that was never confirmed (lost mail, expired link, or someone else
         // using this org number or e-mail) must not block a new one: it is removed first
         await RemoveUnconfirmedRegistrationsAsync(request.OrgNumber, email, cancellationToken);
