@@ -1,6 +1,7 @@
 ﻿using besti2.Application.Businesses;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
+using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -695,5 +696,35 @@ public class BusinessServiceTests
         var result = await service.GetAllAsync(lat: 60.3975, lng: 5.3240, maxKm: 50);
         // Assert
         Assert.Equal(new[] { "Fjord Bygg AS" }, result.Select(b => b.Name));
+    }
+    // check if the owner can set a public contact e-mail, but not the private login e-mail
+    [Fact]
+    public async Task UpdateProfileAsync_ContactEmail_CannotBeTheLoginEmail()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            NormalizedEmail = "EIER@KLIPPOGSTIL.EXAMPLE", BusinessId = klippId
+        });
+        await db.SaveChangesAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "5003", "Bergen");
+
+        // Act
+        var loginError = await service.UpdateProfileAsync(klippId, request with { ContactEmail = "eier@klippogstil.example" });
+        var okError = await service.UpdateProfileAsync(klippId, request with { ContactEmail = "Hei@KlippOgStil.example" });
+
+        // Assert
+        Assert.StartsWith("Bruk en annen e-post til kunder", loginError);
+        Assert.Null(okError);
+        var business = await service.GetByIdAsync(klippId);
+        Assert.Equal("hei@klippogstil.example", business!.Email);
     }
 }

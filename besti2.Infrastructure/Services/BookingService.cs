@@ -871,7 +871,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tid: {when}\n\n" +
                 "Hilsen BESTI";
             var subject = accept ? $"Ny tid godtatt: {service.Name}, {when}" : $"Ny tid avslått: {service.Name}, {when}";
-            await emailService.SendAsync(business.Email, subject, body, cancellationToken);
+            await SendToOwnerAsync(business.Id, subject, body, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -897,15 +897,26 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tid: {when}\n\n" +
                 "Tiden er nå ledig for andre.\n\n" +
                 "Hilsen BESTI";
-            await emailService.SendAsync(business.Email, $"Avbestilling: {service.Name}, {when}", body,
-                cancellationToken);
+            await SendToOwnerAsync(business.Id, $"Avbestilling: {service.Name}, {when}", body, cancellationToken);
         }
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
-
+    // Mails to the business go to the owner's confirmed login e-mail, never to the public contact e-mail
+    // (nobody has confirmed that one, a typo would send customer data to a stranger)
+    private async Task SendToOwnerAsync(Guid businessId, string subject, string body, CancellationToken cancellationToken)
+    {
+        var ownerEmail = await dbContext.Users
+            .Where(u => u.BusinessId == businessId && u.EmailConfirmed)
+            .Select(u => u.Email)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (ownerEmail is not null)
+        {
+            await emailService.SendAsync(ownerEmail, subject, body, cancellationToken);
+        }
+    }
     // Local -> UTC; a time without a zone is taken as UTC (that is what the web app sends)
     private static DateTime ToUtc(DateTime value) => value.Kind switch
     {

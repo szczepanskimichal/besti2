@@ -460,19 +460,30 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Beskrivelsen kan ha maks 1000 tegn.";
         }
-
+        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail) ? null : request.ContactEmail.Trim().ToLowerInvariant();
+        if (contactEmail is not null && (!contactEmail.Contains('@') || contactEmail.Length > 250))
+        {
+            return "Ugyldig e-post til kunder.";
+        }
         var business = await dbContext.Businesses.FirstOrDefaultAsync(b => b.Id == businessId, cancellationToken);
         if (business is null)
         {
             return "Fant ikke bedriften.";
         }
-
+        // The login e-mail must stay private (a public one lets anyone lock the owner out)
+        var normalizedContact = contactEmail?.ToUpperInvariant();
+        if (normalizedContact is not null && await dbContext.Users.AnyAsync(
+                u => u.BusinessId == businessId && u.NormalizedEmail == normalizedContact, cancellationToken))
+        {
+            return "Bruk en annen e-post til kunder enn den du logger inn med, eller la feltet stå tomt.";
+        }
         var addressChanged = business.Address != request.Address.Trim() || business.PostalCode != request.PostalCode;
         business.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         business.PhoneNumber = request.Phone.Trim();
         business.Address = request.Address.Trim();
         business.PostalCode = request.PostalCode;
         business.City = request.City.Trim();
+        business.Email = contactEmail;
         // New address: look up the map position again (null = no map)
         if (addressChanged)
         {

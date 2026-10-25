@@ -99,10 +99,18 @@ export default function RegisterBusinessForm() {
                 <input name="phone" type="tel" required maxLength={20} autoComplete="tel" defaultValue={value("phone")} />
             </label>
             <label className={styles.field}>
-                E-post (brukes til innlogging)
+                E-post til kunder (valgfritt)
+                <input name="contactEmail" type="email" maxLength={250} defaultValue={value("contactEmail")} />
+            </label>
+            <p className={styles.hint}>Vises på siden til bedriften. La feltet stå tomt for å bare vise telefon.</p>
+            <label className={styles.field}>
+                E-post for innlogging
                 <input name="email" type="email" required maxLength={250} autoComplete="email"
                        defaultValue={value("email")} />
             </label>
+            <p className={styles.hint}>
+                Vises aldri for kunder. Bruk en annen adresse enn e-posten til kunder, så kan ingen andre låse kontoen.
+            </p>
             <label className={styles.field}>
                 Passord
                 <input name="password" type="password" required minLength={6} autoComplete="new-password" />

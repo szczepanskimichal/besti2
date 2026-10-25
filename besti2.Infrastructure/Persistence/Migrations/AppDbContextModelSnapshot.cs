@@ -17,7 +17,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -263,7 +263,6 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(1000)");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 

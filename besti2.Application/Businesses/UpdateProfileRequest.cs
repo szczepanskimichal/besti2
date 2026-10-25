@@ -5,5 +5,7 @@ public record UpdateProfileRequest(
     string Phone,
     string Address,
     string PostalCode,
-    string City
+    string City,
+    // Public e-mail for customers; empty removes it
+    string? ContactEmail = null
 );

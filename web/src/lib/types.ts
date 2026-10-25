@@ -46,7 +46,8 @@ export type BusinessDetails = {
     name: string;
     category: string;
     description: string | null;
-    email: string;
+    // Public contact e-mail; null = only the phone is shown
+    email: string | null;
     phoneNumber: string;
     address: string;
     postalCode: string;

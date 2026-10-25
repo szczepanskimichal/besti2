@@ -5,6 +5,7 @@ using besti2.Application.Reviews;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -257,6 +258,9 @@ public class BookingServiceTests
     public async Task CancelByCustomerAsync_OwnFutureBooking_IsCancelled()
     {
         await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil });
+        await db.SaveChangesAsync();
         var email = new FakeEmailService();
         var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
         var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
@@ -266,6 +270,7 @@ public class BookingServiceTests
         // 1st mail = "Bestilling mottatt" to the customer, 2nd = cancellation to the business
         Assert.Equal(2, email.Sent.Count);
         Assert.StartsWith("Avbestilling", email.Sent[^1].Subject);
+        Assert.Equal("eier@klippogstil.example", email.Sent[^1].To);
     }
 
     // check if nobody can cancel someone else's booking

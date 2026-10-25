@@ -31,6 +31,10 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
                 <input name="phone" type="tel" required maxLength={20} defaultValue={value("phone")} />
             </label>
             <label className={styles.field}>
+                E-post til kunder (valgfritt)
+                <input name="contactEmail" type="email" maxLength={250} defaultValue={value("contactEmail")} />
+            </label>
+            <label className={styles.field}>
                 Adresse
                 <input name="address" required defaultValue={value("address")} />
             </label>

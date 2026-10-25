@@ -13,7 +13,7 @@ export async function updateProfileAction(_previous: FormState, formData: FormDa
     }
 
     const values: Record<string, string> = {};
-    for (const field of ["description", "phone", "address", "postalCode", "city"]) {
+    for (const field of ["description", "phone", "contactEmail", "address", "postalCode", "city"]) {
         values[field] = String(formData.get(field) ?? "");
     }
 
@@ -21,6 +21,7 @@ export async function updateProfileAction(_previous: FormState, formData: FormDa
     const result = await updateProfile(token, {
         description: description === "" ? null : description,
         phone: values.phone,
+        contactEmail: values.contactEmail.trim() === "" ? null : values.contactEmail,
         address: values.address,
         postalCode: values.postalCode,
         city: values.city,

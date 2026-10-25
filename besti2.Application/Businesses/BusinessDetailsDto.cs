@@ -5,7 +5,7 @@ public record BusinessDetailsDto(
     string Name,
     string Category,
     string? Description,
-    string Email,
+    string? Email,
     string PhoneNumber,
     string Address,
     string PostalCode,
