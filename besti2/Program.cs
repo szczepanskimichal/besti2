@@ -251,6 +251,12 @@ app.MapPost("/api/godkjenn", async (ApproveBusinessRequest request, IBusinessReg
         ? Results.NoContent()
         : Results.NotFound()).RequireRateLimiting("signup");
 
+app.MapPost("/api/godkjenn/avvis", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
+        CancellationToken cancellationToken) =>
+    await registrationService.RejectAsync(request.Token, cancellationToken)
+        ? Results.NoContent()
+        : Results.NotFound()).RequireRateLimiting("signup");
+
 // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
 app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
 {
