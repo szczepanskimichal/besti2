@@ -26,8 +26,9 @@ html {
 }
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: radial-gradient(130% 90% at 50% 105%, #0f4b57, #082c38 45%, #04141c 85%) fixed;
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;  background: radial-gradient(130% 90% at 50% 105%, #0f4b57, #082c38 45%, #04141c 85%) fixed;
   background-color: var(--color-bg);  color: var(--color-text);
   display: flex;
   flex-direction: column;
