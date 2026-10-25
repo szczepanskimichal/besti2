@@ -48,3 +48,28 @@ button:disabled {
   opacity: 0.6;
   cursor: progress;
 }
+
+h1, h2, h3 {
+  color: var(--color-heading);
+}
+
+/* Users who ask the system for more contrast get solid cards and brighter text */
+@media (prefers-contrast: more) {
+  :root {
+    --color-surface: #0b1d22;
+    --color-border: #c8d5b9;
+    --color-input-border: #c8d5b9;
+    --color-muted: #c8d5b9;
+    --color-heading: #c8d5b9;
+  }
+}
+
+/* Users who turn off animations in the system get none from us either */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
