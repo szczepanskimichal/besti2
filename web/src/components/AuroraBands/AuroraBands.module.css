@@ -1,0 +1,54 @@
+.sky {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.band {
+    position: absolute;
+    left: -20vmax;
+    width: 140vmax;
+    height: 38vmax;
+    border-radius: 50%;
+    filter: blur(60px);
+    mix-blend-mode: screen;
+    opacity: 0.55;
+    will-change: transform;
+}
+
+.b1 {
+    top: 5%;
+    background: linear-gradient(90deg, transparent, #9caf88, #c8d5b9, transparent);
+    animation: drift1 26s ease-in-out infinite alternate;
+}
+
+.b2 {
+    top: 25%;
+    opacity: 0.35;
+    background: linear-gradient(90deg, transparent, #b39bb5, #9caf88, transparent);
+    animation: drift2 34s ease-in-out infinite alternate;
+}
+
+.b3 {
+    top: 45%;
+    opacity: 0.3;
+    background: linear-gradient(90deg, transparent, #9caf88, transparent);
+    animation: drift3 40s ease-in-out infinite alternate;
+}
+
+@keyframes drift1 {
+    from { transform: translateX(-8%) rotate(-8deg) scaleY(0.8); }
+    to { transform: translateX(8%) rotate(4deg) scaleY(1.1); }
+}
+
+@keyframes drift2 {
+    from { transform: translateX(10%) rotate(6deg); }
+    to { transform: translateX(-10%) rotate(-6deg) scaleY(1.2); }
+}
+
+@keyframes drift3 {
+    from { transform: translateX(-5%) rotate(-3deg); }
+    to { transform: translateX(6%) rotate(5deg); }
+}

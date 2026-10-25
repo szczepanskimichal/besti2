@@ -35,6 +35,7 @@ export default async function Home({searchParams}: HomeProps) {
     const cities = await getCities();
     return (
         <main className={styles.main}>
+            <AuroraBands />
             <section className={styles.hero}>
                 <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
                 <p className={styles.heroLead}>
