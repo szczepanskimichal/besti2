@@ -104,7 +104,8 @@ export default function RegisterBusinessForm() {
             </label>
             <p className={styles.hint}>Vises på siden til bedriften. La feltet stå tomt for å bare vise telefon.</p>
             <label className={styles.field}>
-                E-post for innlogging                <input name="email" type="email" required maxLength={250} autoComplete="email"
+                E-post for innlogging
+                <input name="email" type="email" required maxLength={250} autoComplete="email"
                        defaultValue={value("email")} />
             </label>
             <p className={styles.hint}>

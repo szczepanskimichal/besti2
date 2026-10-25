@@ -1,7 +1,7 @@
 // BusinessListItemDTO type definition!!!
 export type BusinessListItem = {
-    // Public contact e-mail; null = only the phone is shown
-    email: string | null;    name: string;
+    id: string;
+    name: string;
     category: string;
     description: string | null;
     city: string;
@@ -47,6 +47,8 @@ export type BusinessDetails = {
     category: string;
     description: string | null;
     email: string;
+    // Public contact e-mail; null = only the phone is shown
+    email: string | null;
     phoneNumber: string;
     address: string;
     postalCode: string;
