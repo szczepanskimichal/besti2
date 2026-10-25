@@ -19,6 +19,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(250)",
                 oldMaxLength: 250);
+            // The login e-mail was public until now: remove it from the business page
+            migrationBuilder.Sql(
+                "UPDATE b SET Email = NULL FROM Businesses b WHERE EXISTS (SELECT 1 FROM AspNetUsers u " +
+                "WHERE u.BusinessId = b.Id AND u.NormalizedEmail = UPPER(b.Email))");
         }
 
         /// <inheritdoc />
@@ -36,10 +40,6 @@ namespace besti2.Infrastructure.Persistence.Migrations
                 oldType: "nvarchar(250)",
                 oldMaxLength: 250,
                 oldNullable: true);
-            // The login e-mail was public until now: remove it from the business page
-            migrationBuilder.Sql(
-                "UPDATE b SET Email = NULL FROM Businesses b WHERE EXISTS (SELECT 1 FROM AspNetUsers u " +
-                "WHERE u.BusinessId = b.Id AND u.NormalizedEmail = UPPER(b.Email))");
         }
     }
 }
