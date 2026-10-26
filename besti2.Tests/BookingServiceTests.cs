@@ -544,5 +544,34 @@ public class BookingServiceTests
         Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
         Assert.Empty(email.Sent);
     }
+// check if the same customer account cannot book two visits at the same time
+    [Fact]
+    public async Task CreateAsync_SameCustomerOverlapping_IsCustomerBusy()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var withSofie = HerreklippHosIngrid() with { EmployeeId = new Guid("b1111111-0000-0000-0000-000000000002") };
+
+        var first = await service.CreateAsync(HerreklippHosIngrid(), "user-ada");
+        var second = await service.CreateAsync(withSofie, "user-ada");
+
+        Assert.Equal(CreateBookingOutcome.Created, first.Outcome);
+        Assert.Equal(CreateBookingOutcome.CustomerBusy, second.Outcome);
+    }
+
+    // check if another customer can still book the same time with another employee
+    [Fact]
+    public async Task CreateAsync_OtherCustomerSameTime_IsCreated()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var withSofie = HerreklippHosIngrid() with { EmployeeId = new Guid("b1111111-0000-0000-0000-000000000002") };
+
+        var first = await service.CreateAsync(HerreklippHosIngrid(), "user-ada");
+        var second = await service.CreateAsync(withSofie, "user-michal");
+
+        Assert.Equal(CreateBookingOutcome.Created, first.Outcome);
+        Assert.Equal(CreateBookingOutcome.Created, second.Outcome);
+    }
 
 }

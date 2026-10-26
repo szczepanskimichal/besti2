@@ -46,6 +46,8 @@ public static class BookingEndpoints
                     CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
                     CreateBookingOutcome.SlotTaken => Results.Conflict(
                         new { message = "Tiden er dessverre ikke lenger ledig." }),
+                    CreateBookingOutcome.CustomerBusy => Results.Conflict(
+                        new { message = "Du har allerede en time på dette tidspunktet." }),
                     _ => Results.NotFound()
                 };
             }).RequireAuthorization().RequireRateLimiting("booking");

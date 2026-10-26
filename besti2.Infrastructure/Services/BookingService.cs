@@ -210,7 +210,21 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
-
+        // The same customer account cannot have two visits at the same time (any business);
+        // booking for someone else comes later with BESTI sammen
+        if (customerUserId is not null)
+        {
+            var endUtc = request.StartUtc.AddMinutes(service.DurationMinutes);
+            var customerBusy = await dbContext.Bookings.AnyAsync(b =>
+                b.CustomerUserId == customerUserId
+                && b.Status != BookingStatus.Avlyst
+                && b.StartUtc < endUtc
+                && b.EndUtc > request.StartUtc, cancellationToken);
+            if (customerBusy)
+            {
+                return new CreateBookingResult(CreateBookingOutcome.CustomerBusy);
+            }
+        }
         var booking = new Booking
         {
             Id = Guid.NewGuid(),
