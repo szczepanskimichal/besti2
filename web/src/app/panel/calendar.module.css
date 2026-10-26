@@ -574,3 +574,50 @@ a.booking:hover {
     border-left-color: #8fb8de;
     background: repeating-linear-gradient(135deg, rgba(143, 184, 222, 0.08) 0 8px, rgba(143, 184, 222, 0.16) 8px 16px);
 }
+/* Not confirmed yet: a dashed frame and a clock label, so it does not look like a confirmed visit */
+.booking.Venter,
+.phoneCard.Venter,
+.monthVisit.Venter {
+    border-top: 1px dashed var(--color-warning);
+    border-right: 1px dashed var(--color-warning);
+    border-bottom: 1px dashed var(--color-warning);
+}
+
+.booking.VenterKunde,
+.phoneCard.VenterKunde,
+.monthVisit.VenterKunde {
+    border-top: 1px dashed #8fb8de;
+    border-right: 1px dashed #8fb8de;
+    border-bottom: 1px dashed #8fb8de;
+}
+
+.pending {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(242, 196, 109, 0.22);
+    color: var(--color-warning);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.pendingIcon {
+    display: inline-flex;
+    margin-right: 4px;
+    color: var(--color-warning);
+    vertical-align: middle;
+}
+
+.VenterKunde .pending {
+    background: rgba(143, 184, 222, 0.22);
+    color: #8fb8de;
+}
+
+.VenterKunde .pendingIcon {
+    color: #8fb8de;
+}

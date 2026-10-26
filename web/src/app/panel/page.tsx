@@ -12,6 +12,7 @@ import { cancelBookingAction, confirmBookingAction, deleteTimeOffAction } from "
 import MoveBookingForm from "./MoveBookingForm";
 import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
+import PendingBadge from "./PendingBadge";
 import TimeOffForm from "./TimeOffForm";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
@@ -264,7 +265,10 @@ function TimeGrid({ columns, range, showEmployee, hrefFor, blockHref, newHref }:
                                     style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
                                     title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName} (${statusLabels[booking.status] ?? booking.status})`}
                                 >
-                                    <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                    <span className={calendar.time}>
+                                        {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
+                                        <PendingBadge status={booking.status}/>
+                                    </span>
                                     <span className={calendar.customer}>{booking.customerName}</span>
                                     <span className={calendar.service}>
                                         {showEmployee ? `${booking.employeeName} · ${booking.serviceName}` : booking.serviceName}
@@ -327,6 +331,7 @@ function MonthGrid({ days, month, business, dayHref, newHref, hrefFor }: {
                                     <Link key={booking.id} href={hrefFor(booking)} scroll={false}
                                           className={`${calendar.monthVisit} ${calendar[booking.status] ?? ""}`}
                                           title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName}`}>
+                                        <PendingBadge status={booking.status} iconOnly/>
                                         {formatTime(booking.startUtc)} {booking.customerName}
                                     </Link>
                                 ))}
@@ -366,7 +371,10 @@ function PhoneList({ columns, hrefFor, blockHref }: { columns: Column[]; hrefFor
                             <li key={booking.id}>
                                 <Link href={hrefFor(booking)} scroll={false}
                                       className={`${calendar.phoneCard} ${calendar[booking.status] ?? ""}`}>
-                                    <span className={calendar.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                    <span className={calendar.time}>
+                                        {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
+                                        <PendingBadge status={booking.status}/>
+                                    </span>
                                     <span>{booking.customerName}</span>
                                     <span className={calendar.service}>{booking.serviceName} hos {booking.employeeName}</span>
                                 </Link>
