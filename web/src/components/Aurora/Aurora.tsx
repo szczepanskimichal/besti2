@@ -9,6 +9,7 @@ const curtains = [
     { y: 0.42, amp: 0.06, len: 0.3, hue: 152, speed: 1.0, phase: 0 },
     { y: 0.3, amp: 0.05, len: 0.24, hue: 165, speed: 0.7, phase: 2 },
     { y: 0.52, amp: 0.04, len: 0.2, hue: 145, speed: 1.3, phase: 4 },
+    { y: 0.24, amp: 0.05, len: 0.16, hue: 290, speed: 0.9, phase: 6 },
 ];
 
 // Smooth "random" wave made of three sine waves
@@ -18,8 +19,8 @@ function wave(x: number) {
 
 export default function Aurora() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    // Moves only on the home page; everywhere else the same sky stands still
-    const moving = usePathname() === "/";
+    // Moves on every page (still with prefers-reduced-motion or a hidden tab)
+    const moving = true;
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -39,8 +40,8 @@ export default function Aurora() {
                     const u = x / w;
                     const base = h * (c.y + c.amp * wave(u * 4 + t * 0.15 * c.speed + c.phase));
                     const ray = Math.max(0, wave(u * 40 + t * 0.6 * c.speed + c.phase) * 0.6 + wave(u * 9 - t * 0.2) * 0.5 + 0.35);
-                    const len = h * c.len * (0.6 + ray * 0.7);
-                    const a = Math.min(1, ray * 0.3);
+                    const len = h * c.len * (0.8 + ray * 0.9);
+                    const len = h * c.len * (0.8 + ray * 0.9);
                     const g = ctx.createLinearGradient(0, base, 0, base - len);
                     g.addColorStop(0, `hsla(${c.hue}, 85%, 62%, ${a})`);
                     g.addColorStop(0.12, `hsla(${c.hue}, 80%, 55%, ${a * 0.8})`);
@@ -54,7 +55,7 @@ export default function Aurora() {
 
         const loop = () => {
             draw();
-            t += 0.007;
+            t += 0.012;
             frame = requestAnimationFrame(loop);
         };
 
