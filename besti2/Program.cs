@@ -15,7 +15,6 @@ using Microsoft.Extensions.FileProviders;
 using System.Threading.RateLimiting;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
-using besti2.Endpoints;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -154,7 +153,6 @@ app.UseRateLimiter();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
-app.MapAccountEndpoints();
 app.MapGodkjennEndpoints();
 app.MapNotificationEndpoints();
 app.MapAccountEndpoints();
@@ -192,16 +190,6 @@ app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
         ? Results.Created()
         : Results.BadRequest(new { message = result.Error });
 }).RequireRateLimiting("signup");
-
-// Customer: own bookings for "Mine bestillinger"
-app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    IBookingService bookingService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    return userId is null
-        ? Results.Unauthorized()
-        : Results.Ok(await bookingService.GetForCustomerAsync(userId, cancellationToken));
-}).RequireAuthorization();
 
 // Public: reviews of a business, newest first, with the average
 app.MapGet("/api/businesses/{id:guid}/reviews", async (Guid id, IReviewService reviewService,
@@ -258,31 +246,6 @@ app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry 
 
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
 // "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
-app.MapGet("/api/ny-tid", async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
-{
-    var newTime = await bookingService.GetNewTimeAsync(token ?? "", cancellationToken);
-    return newTime is null ? Results.NotFound() : Results.Ok(newTime);
-}).RequireRateLimiting("booking");
-
-// The customer's answer from the link: Godta (the business confirms next) or Passer ikke (cancelled)
-app.MapPost("/api/ny-tid", async (NewTimeAnswerRequest request, IBookingService bookingService,
-            CancellationToken cancellationToken) =>
-        NewTimeResult(await bookingService.AnswerNewTimeAsync(request.Token, request.Accept, cancellationToken)))
-    .RequireRateLimiting("booking");
-
-// The same answer from Min Besti (logged in)
-app.MapPost("/api/me/bookings/{id:guid}/ny-tid", async (Guid id, NewTimeAnswer request, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    return NewTimeResult(
-        await bookingService.AnswerNewTimeByCustomerAsync(id, userId, request.Accept, cancellationToken));
-}).RequireAuthorization();
 app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
 {
