@@ -17,16 +17,22 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
     const service = business?.services.find((s) => s.id === tjeneste);
     const employee = business?.employees.find((e) => e.id === ansatt);
 
-
     // A cut-off or edited link (e.g. tid=abc) shows "not found" instead of crashing
-    if (!business || !service || !employee || !tid || Number.isNaN(Date.parse(tid))) {        notFound();
+    if (!business || !service || !employee || !tid || Number.isNaN(Date.parse(tid))) {
+        notFound();
     }
 
     return (
         <main className={styles.main}>
             <div className={styles.card}>
-                <p className={styles.icon}>✓</p>
-                <h1 className={styles.title}>Så var det bestilt!</h1>
+                <div className={styles.badge} aria-hidden="true">
+                    <span className={styles.glow} />
+                    <svg className={styles.check} viewBox="0 0 92 92">
+                        <circle cx="46" cy="46" r="41" />
+                        <path d="M28 47 l12 12 l24 -26" />
+                    </svg>
+                </div>
+                <h1 className={styles.title}>Vips! Så var det bestilt.</h1>
                 <p className={styles.muted}>
                     Klar for kvalitetstid med din besti? 💖 {business.name} bekrefter timen så snart som mulig,
                     og du finner den under Min Besti.

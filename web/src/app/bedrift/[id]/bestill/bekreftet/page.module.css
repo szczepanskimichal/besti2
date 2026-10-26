@@ -1,4 +1,4 @@
-/* Booking confirmation: one centred card with a big check mark */
+/* Booking confirmation: one centred card with an animated check mark */
 .main {
     max-width: 560px;
     margin: 0 auto;
@@ -11,17 +11,77 @@
     border-radius: 16px;
     text-align: center;
 }
-.icon {
-    width: 64px;
-    height: 64px;
+/* Animated badge: a small aurora dances inside the circle, then the ring and check mark draw themselves */
+.badge {
+    position: relative;
+    width: 120px;
+    height: 120px;
     margin: 0 auto 16px;
-    display: grid;
-    place-items: center;
     border-radius: 50%;
-    background: var(--color-primary-soft);
-    color: var(--color-primary);
-    font-size: 2rem;
-    font-weight: 700;
+    overflow: hidden;
+    background: #062430;
+}
+.glow {
+    position: absolute;
+    inset: -15%;
+    background:
+            radial-gradient(50% 35% at 35% 65%, rgba(80, 230, 160, 0.95), transparent 70%),
+            radial-gradient(45% 35% at 65% 40%, rgba(60, 200, 210, 0.85), transparent 70%),
+            radial-gradient(40% 30% at 50% 85%, rgba(179, 155, 181, 0.7), transparent 70%);
+    filter: blur(8px);
+    animation: dance 6s ease-in-out infinite alternate;
+}
+.check {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+.check circle {
+    fill: none;
+    stroke: var(--color-success);
+    stroke-width: 5;
+    stroke-dasharray: 260;
+    stroke-dashoffset: 260;
+    animation: draw 0.7s ease-out forwards;
+}
+.check path {
+    fill: none;
+    stroke: #e3f2c8;
+    stroke-width: 7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6));
+    animation: draw 0.45s 0.6s ease-out forwards;
+}
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes dance {
+    0% {
+        transform: translateX(-12%) rotate(0deg);
+    }
+    50% {
+        transform: translateX(8%) rotate(8deg) scale(1.1);
+    }
+    100% {
+        transform: translateX(12%) rotate(-6deg);
+    }
+}
+/* Phone setting "reduce motion": no dancing, ring and check are shown at once */
+@media (prefers-reduced-motion: reduce) {
+    .glow {
+        animation: none;
+    }
+    .check circle,
+    .check path {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
 }
 .title {
     font-size: clamp(1.5rem, 5vw, 2rem);
