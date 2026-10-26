@@ -66,6 +66,7 @@ export type BusinessDetails = {
     gallery: GalleryImage[];
     // Only true in the owner's panel: waiting for BESTI's approval, customers cannot see it yet
     isHidden: boolean;
+    freeCancelHours: number; // free cancellation until X hours before the visit; 0 = any time
 };
 
 export type BusinessApproval = {
@@ -134,6 +135,8 @@ export type CustomerBooking = {
     serviceId: string;
     employeeId: string;
     isReviewed: boolean; // the customer has already reviewed this visit
+    businessPhone: string;
+    freeCancelHours: number;
     previousStartUtc: string | null; // set while the business waits for the customer to accept a new time
 };
 

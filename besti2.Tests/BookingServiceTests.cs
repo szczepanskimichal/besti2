@@ -327,7 +327,82 @@ public class BookingServiceTests
         var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
     }
-    
+    // A confirmed visit for kunde-1 at Klipp & Stil that starts in the given number of hours
+    private static async Task<Booking> AddConfirmedBookingAsync(AppDbContext db, double startsInHours)
+    {
+        var start = DateTime.UtcNow.AddHours(startsInHours);
+        var booking = new Booking
+        {
+            Id = Guid.NewGuid(),
+            StartUtc = start,
+            EndUtc = start.AddMinutes(30),
+            CustomerName = "Kari Nordmann",
+            CustomerPhone = "+4790000000",
+            CustomerEmail = "kari@test.example",
+            Status = BookingStatus.Bekreftet,
+            CustomerUserId = "kunde-1",
+            ServiceId = HerreklippId,
+            EmployeeId = IngridId
+        };
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+        return booking;
+    }
+
+    // check if a confirmed visit cannot be cancelled online after the deadline (default 24 hours)
+    [Fact]
+    public async Task CancelByCustomerAsync_ConfirmedAfterDeadline_ReturnsTooLate()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var booking = await AddConfirmedBookingAsync(db, 3);
+
+        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
+
+        Assert.Equal(UpdateBookingStatusOutcome.TooLate, outcome);
+        Assert.Equal(BookingStatus.Bekreftet, (await db.Bookings.SingleAsync()).Status);
+    }
+
+    // check if a confirmed visit can be cancelled before the deadline
+    [Fact]
+    public async Task CancelByCustomerAsync_ConfirmedBeforeDeadline_IsCancelled()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var booking = await AddConfirmedBookingAsync(db, 30);
+
+        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+    }
+
+    // check if "Når som helst" (0 hours) lets the customer cancel until the visit starts
+    [Fact]
+    public async Task CancelByCustomerAsync_NoDeadline_IsCancelled()
+    {
+        await using var db = await CreateSeededDbAsync();
+        (await db.Businesses.SingleAsync(b => b.Id == KlippOgStil)).FreeCancelHours = 0;
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var booking = await AddConfirmedBookingAsync(db, 1);
+
+        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+    }
+
+    // check if deleting the account still cancels a visit after the deadline
+    [Fact]
+    public async Task CancelByCustomerAsync_IgnoreDeadline_IsCancelled()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var booking = await AddConfirmedBookingAsync(db, 3);
+
+        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1", ignoreDeadline: true);
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+    }
+
     // check if a phone number with letters is refused
     [Fact]
     public async Task CreateAsync_InvalidPhone_ReturnsInvalid()

@@ -71,11 +71,13 @@ public static class BookingEndpoints
                 return Results.Unauthorized();
             }
 
-            return await bookingService.CancelByCustomerAsync(id, userId, request?.Message, cancellationToken) switch
-            {
+            return await bookingService.CancelByCustomerAsync(id, userId, request?.Message,
+                cancellationToken: cancellationToken) switch            {
                 UpdateBookingStatusOutcome.Updated => Results.NoContent(),
                 UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(
                     new { message = "Bestillingen kan ikke avbestilles lenger." }),
+                UpdateBookingStatusOutcome.TooLate => Results.BadRequest(
+                    new { message = "Fristen for gratis avbestilling er ute. Ring bedriften." }),
                 _ => Results.NotFound()
             };
         }).RequireAuthorization();

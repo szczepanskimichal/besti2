@@ -6,6 +6,7 @@ import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
+import { canCancelOnline } from "@/lib/freeCancel";
 import { answerMyNewTimeAction, cancelMyBookingAction } from "./actions";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
@@ -46,7 +47,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                 <p className={styles.error} role="alert">
                     {feil === "ny-tid"
                         ? "Svaret kunne ikke lagres. Timen kan allerede være endret eller ha startet."
-                        : "Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt eller ha startet."}
+                        : "Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt, ha startet eller fristen for gratis avbestilling er ute."}
                 </p>
             )}
             {svar === "godtatt" && (
@@ -116,29 +117,37 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             <p>
                                 <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
                             </p>
-                            <details className={styles.actions}>
-                                <summary>Avbestill</summary>
-                                <p>
-                                    Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
-                                    Tiden blir ledig for andre.
+                            {/* After the business's free-cancel deadline: only by phone */}
+                            {canCancelOnline(booking) ? (
+                                <details className={styles.actions}>
+                                    <summary>Avbestill</summary>
+                                    <p>
+                                        Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
+                                        Tiden blir ledig for andre.
+                                    </p>
+                                    <form action={cancelMyBookingAction}>
+                                        <input type="hidden" name="bookingId" value={booking.id}/>
+                                        <label className={styles.cancelMessage}>
+                                            Grunn til bedriften (valgfritt)
+                                            <textarea name="melding" maxLength={300} rows={2}
+                                                      placeholder="F.eks. Jeg er dessverre syk."/>
+                                        </label>
+                                        <div className={styles.actions}>
+                                            <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
+                                                Ja, avbestill
+                                            </SubmitButton>
+                                            <CloseDetailsButton className={styles.secondaryButton}>
+                                                Nei, behold timen
+                                            </CloseDetailsButton>
+                                        </div>
+                                    </form>
+                                </details>
+                            ) : (
+                                <p className={styles.muted}>
+                                    Fristen for gratis avbestilling er ute.{" "}
+                                    <a href={`tel:${booking.businessPhone}`}>Ring bedriften</a> hvis du ikke kan komme.
                                 </p>
-                                <form action={cancelMyBookingAction}>
-                                    <input type="hidden" name="bookingId" value={booking.id}/>
-                                    <label className={styles.cancelMessage}>
-                                        Grunn til bedriften (valgfritt)
-                                        <textarea name="melding" maxLength={300} rows={2}
-                                                  placeholder="F.eks. Jeg er dessverre syk."/>
-                                    </label>
-                                    <div className={styles.actions}>
-                                        <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
-                                            Ja, avbestill
-                                        </SubmitButton>
-                                        <CloseDetailsButton className={styles.secondaryButton}>
-                                            Nei, behold timen
-                                        </CloseDetailsButton>
-                                    </div>
-                                </form>
-                            </details>
+                            )}
                         </li>
                     ))}
                 </ul>

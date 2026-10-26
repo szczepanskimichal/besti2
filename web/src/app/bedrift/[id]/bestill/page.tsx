@@ -3,6 +3,7 @@ import {notFound} from "next/navigation";
 import {getBusiness, getFreeDays, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {formatDay, formatLength, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
+import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
@@ -166,6 +167,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         {chosenEmployee && ` hos ${chosenEmployee.name}`}
                         {` · ${formatLength(units * service.durationMinutes)}`}
                     </p>
+                    <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}

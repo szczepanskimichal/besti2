@@ -347,6 +347,29 @@ public class BusinessServiceTests
         Assert.Equal("Ny beskrivelse", business!.Description);
         Assert.Equal("Bergen", business.City);
     }
+    // check if UpdateProfileAsync saves the free-cancel deadline and rejects other values than 0/2/12/24/48
+    [Fact]
+    public async Task UpdateProfileAsync_FreeCancelHours()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "5003", "Bergen", null, 48);
+
+        // Act
+        var saved = await service.UpdateProfileAsync(klippId, request);
+        var refused = await service.UpdateProfileAsync(klippId, request with { FreeCancelHours = 5 });
+
+        // Assert
+        Assert.Null(saved);
+        Assert.Equal("Velg en gyldig frist for gratis avbestilling.", refused);
+        Assert.Equal(48, (await service.GetByIdAsync(klippId))!.FreeCancelHours);
+    }
 
     // check if UpdateProfileAsync rejects an invalid postal code
     [Fact]
