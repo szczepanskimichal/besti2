@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { updateProfileAction } from "./actions";
 import type { FormState } from "@/lib/formState";
+import { FREE_CANCEL_OPTIONS } from "@/lib/freeCancel";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../tjenester/page.module.css";
 
@@ -46,6 +47,16 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
             <label className={styles.field}>
                 By
                 <input name="city" required maxLength={200} defaultValue={value("city")} />
+            </label>
+            <label className={styles.field}>
+                Gratis avbestilling inntil
+                <select name="freeCancelHours" defaultValue={value("freeCancelHours")}>
+                    {FREE_CANCEL_OPTIONS.map((hours) => (
+                        <option key={hours} value={hours}>
+                            {hours === 0 ? "Når som helst før timen" : `${hours} timer før timen`}
+                        </option>
+                    ))}
+                </select>
             </label>
             <SubmitButton className={styles.primaryButton} pendingText="Lagrer…">
                 Lagre profil

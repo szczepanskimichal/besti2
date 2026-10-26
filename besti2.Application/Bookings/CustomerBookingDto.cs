@@ -13,5 +13,7 @@ public record CustomerBookingDto(
     Guid ServiceId,
     Guid EmployeeId,
     bool IsReviewed,
+    string BusinessPhone, // after the free-cancel deadline the customer calls the business
+    int FreeCancelHours,
     DateTime? PreviousStartUtc = null // set while a moved visit waits for the customer's answer
 );

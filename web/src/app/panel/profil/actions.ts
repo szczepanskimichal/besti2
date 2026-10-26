@@ -13,7 +13,7 @@ export async function updateProfileAction(_previous: FormState, formData: FormDa
     }
 
     const values: Record<string, string> = {};
-    for (const field of ["description", "phone", "contactEmail", "address", "postalCode", "city"]) {
+    for (const field of ["description", "phone", "contactEmail", "address", "postalCode", "city", "freeCancelHours"]) {
         values[field] = String(formData.get(field) ?? "");
     }
 
@@ -25,6 +25,7 @@ export async function updateProfileAction(_previous: FormState, formData: FormDa
         address: values.address,
         postalCode: values.postalCode,
         city: values.city,
+        freeCancelHours: Number(values.freeCancelHours || 24),
     });
 
     if (!result.ok) {

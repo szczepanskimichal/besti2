@@ -434,12 +434,16 @@ public class BookingService(
                 b.ServiceId,
                 b.EmployeeId,
                 dbContext.Reviews.Any(r => r.BookingId == b.Id),
+                b.Service.Business.PhoneNumber,
+                b.Service.Business.FreeCancelHours,
                 b.PreviousStartUtc))
             .ToListAsync(cancellationToken);
     }
 
     public async Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
-        Guid bookingId, string customerUserId, string? message = null, CancellationToken cancellationToken = default)    {
+        Guid bookingId, string customerUserId, string? message = null, bool ignoreDeadline = false,
+        CancellationToken cancellationToken = default)
+    {
         // Only the customer's own booking; someone else's id looks like "not found"
         var booking = await dbContext.Bookings
             .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
@@ -453,7 +457,19 @@ public class BookingService(
         {
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
-
+        // A confirmed visit: after the business's free-cancel deadline only by phone
+        // (a visit still waiting for the business can always be withdrawn)
+        if (!ignoreDeadline && booking.Status == BookingStatus.Bekreftet)
+        {
+            var freeCancelHours = await dbContext.Services
+                .Where(s => s.Id == booking.ServiceId)
+                .Select(s => s.Business.FreeCancelHours)
+                .FirstAsync(cancellationToken);
+            if (DateTime.UtcNow > booking.StartUtc.AddHours(-freeCancelHours))
+            {
+                return UpdateBookingStatusOutcome.TooLate;
+            }
+        }
         booking.Status = BookingStatus.Avlyst;
         booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);

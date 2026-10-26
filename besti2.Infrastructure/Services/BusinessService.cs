@@ -303,8 +303,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .OrderBy(i => i.SortOrder).ThenBy(i => i.CreatedUtc)
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
                     .ToList(),
-                b.IsHidden
-            ))
+                b.IsHidden,
+                b.FreeCancelHours            ))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -484,7 +484,10 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Beskrivelsen kan ha maks 1000 tegn.";
         }
-
+        if (!Business.FreeCancelOptions.Contains(request.FreeCancelHours))
+        {
+            return "Velg en gyldig frist for gratis avbestilling.";
+        }
         var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail)
             ? null
             : request.ContactEmail.Trim().ToLowerInvariant();
@@ -514,6 +517,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         business.PostalCode = request.PostalCode;
         business.City = request.City.Trim();
         business.Email = contactEmail;
+        business.FreeCancelHours = request.FreeCancelHours;
         // New address: look up the map position again (null = no map)
         if (addressChanged)
         {

@@ -29,6 +29,10 @@ public class Business
     public string? ApprovalTokenHash { get; set; }
     // When the owner accepted the data processing agreement (databehandleravtale) at sign-up
     public DateTime? DataProcessingAcceptedUtc { get; set; }
+    // Free cancellation until this many hours before a confirmed visit; 0 = any time before it starts
+    public int FreeCancelHours { get; set; } = 24;
+    // The only choices the business can pick in the panel
+    public static readonly int[] FreeCancelOptions = [0, 2, 12, 24, 48];
     
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();

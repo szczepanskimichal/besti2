@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { getBusiness, getBusinessReviews } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
+import { freeCancelText } from "@/lib/freeCancel";
 import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
@@ -81,6 +82,7 @@ export default async function BusinessPage({ params }: Props) {
                     <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
                     {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
                 </address>
+                <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
             </header>
             {business.gallery.length > 0 && (
                 <section>
