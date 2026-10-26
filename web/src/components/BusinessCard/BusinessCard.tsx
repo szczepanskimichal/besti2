@@ -1,7 +1,7 @@
 import NextLink from "next/link";
 import type { BusinessListItem } from "@/lib/types";
 import { getCategoryLabel } from "@/lib/categories";
-import { formatDate, formatTime, osloDay } from "@/lib/format";
+import { formatDate, formatTime, osloDay} from "@/lib/format";
 import styles from "./BusinessCard.module.css";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
