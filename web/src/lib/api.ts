@@ -1,4 +1,4 @@
-import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime, NotificationList, BusinessApproval} from "@/lib/types";
+import type {BusinessPage, BusinessDetails, CreateBookingInput, CustomerBooking, PanelBooking, BusinessReviews, TimeOff, NewTime, NotificationList, BusinessApproval, FreeDay} from "@/lib/types";
 import {headers} from "next/headers";
 import {cache} from "react";
 
@@ -112,9 +112,13 @@ export async function getCities(): Promise<string[]> {
     return res.json();
 }
 
-export async function getAvailability(serviceId: string, employeeId: string, date: string): Promise<string[] | null> {
-    const params = new URLSearchParams({serviceId, employeeId, date});
-    const res = await apiFetch(`/api/availability?${params}`);
+// "Velg dag": 7 days of free times from a date; without employeeId = anyone free (Hvem som helst)
+export async function getFreeDays(serviceId: string, employeeId: string | undefined, from: string): Promise<FreeDay[] | null> {
+    const params = new URLSearchParams({serviceId, from});
+    if (employeeId) {
+        params.set("employeeId", employeeId);
+    }
+    const res = await apiFetch(`/api/availability/days?${params}`);
     if (res.status === 404) {
         return null;
     }

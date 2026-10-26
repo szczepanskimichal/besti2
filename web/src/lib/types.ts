@@ -18,6 +18,11 @@ export type FreeSlot = {
     serviceName: string;
     employeeId: string;
 };
+// One day in the "Velg dag" strip; employeeId = who is free at that time
+export type FreeDay = {
+    date: string;
+    slots: { startUtc: string; employeeId: string }[];
+};
 
 export type Service = {
     id: string;

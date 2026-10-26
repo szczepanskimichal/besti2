@@ -1,19 +1,19 @@
 import NextLink from "next/link";
 import {notFound} from "next/navigation";
-import {getAvailability, getBusiness, getMe} from "@/lib/api";
+import {getBusiness, getFreeDays, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {formatDate, formatPrice, formatTime, isIsoDate, todayInOslo} from "@/lib/format";
+import {formatDay, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
 import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; dato?: string; tid?: string; }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; fra?: string; dato?: string; tid?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
     const {id} = await params;
-    const {tjeneste, ansatt, dato, tid} = await searchParams;
+    const {tjeneste, ansatt, fra, dato, tid} = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -22,20 +22,42 @@ export default async function BookingPage({params, searchParams}: Props) {
         notFound();
     }
 
-
     // Only values that still make sense (old "Bestill igjen" links, edited or cut-off addresses)
-    const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt! : business.employees[0]?.id;
-    const date = isIsoDate(dato) ? dato : todayInOslo();
-    // Free times and who is booking (null = not logged in), both at the same time
+    const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt : undefined; // undefined = Hvem som helst
+    const today = todayInOslo();
+    const chosenDay = isIsoDate(dato) && dato >= today ? dato : undefined;
+    // First day of the 7-day strip
+    const start = isIsoDate(fra) && fra >= today ? fra : chosenDay ?? today;
+    // Free times for 7 days and who is booking (null = not logged in), both at the same time
     const token = await getToken();
-    const [slots, me] = await Promise.all([
-        employeeId ? getAvailability(service.id, employeeId, date) : null,
+    const [days, me] = await Promise.all([
+        getFreeDays(service.id, employeeId, start),
         token ? getMe(token) : null,
     ]);
+    // The chosen day, otherwise the first day with free times
+    const selected = days?.find((d) => d.date === chosenDay) ?? days?.find((d) => d.slots.length > 0) ?? days?.[0];
     // The chosen time must still be free; otherwise the customer picks a new one
-    const chosenTime = tid && slots?.includes(tid) ? tid : undefined;
-    const currentUrl = `/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(chosenTime ?? "")}`;
-    
+    const chosen = tid ? selected?.slots.find((s) => s.startUtc === tid) : undefined;
+    const chosenEmployee = business.employees.find((e) => e.id === chosen?.employeeId);
+    const previous = shiftDay(start, -7) < today ? today : shiftDay(start, -7);
+
+    // Link to this page with another week, day or time (the employee choice stays)
+    function bookingUrl(from: string, day?: string, time?: string) {
+        const query = new URLSearchParams({tjeneste: service!.id, fra: from});
+        if (employeeId) {
+            query.set("ansatt", employeeId);
+        }
+        if (day) {
+            query.set("dato", day);
+        }
+        if (time) {
+            query.set("tid", time);
+        }
+        return `/bedrift/${business!.id}/bestill?${query}`;
+    }
+
+    const currentUrl = bookingUrl(start, selected?.date, chosen?.startUtc);
+
     return (
         <main className={styles.main}>
             <NextLink href={`/bedrift/${business.id}`} className={styles.back}>← Tilbake til {business.name}</NextLink>
@@ -47,10 +69,13 @@ export default async function BookingPage({params, searchParams}: Props) {
 
             <form method="get" className={styles.filters}>
                 <input type="hidden" name="tjeneste" value={service.id}/>
+                <input type="hidden" name="fra" value={start}/>
+                {selected && <input type="hidden" name="dato" value={selected.date}/>}
 
                 <label className={styles.field}>
                     Ansatt
-                    <select name="ansatt" defaultValue={employeeId}>
+                    <select name="ansatt" defaultValue={employeeId ?? ""}>
+                        <option value="">Hvem som helst</option>
                         {business.employees.map((employee) => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name} {employee.lastName}
@@ -59,46 +84,75 @@ export default async function BookingPage({params, searchParams}: Props) {
                     </select>
                 </label>
 
-                <label className={styles.field}>
-                    Dato
-                    <input type="date" name="dato" defaultValue={date} min={todayInOslo()}/>
-                </label>
-
                 <button type="submit" className={styles.secondaryButton}>Vis ledige tider</button>
             </form>
 
-            <h2 className={styles.sectionTitle}>Ledige tider</h2>
+            <h2 className={styles.sectionTitle}>Velg dag</h2>
+            <ul className={styles.days}>
+                {days?.map((day) => (
+                    <li key={day.date}>
+                        {day.slots.length === 0 ? (
+                            <span className={`${styles.day} ${styles.dayEmpty}`}>
+                                <span className={styles.dayName}>{formatWeekdayShort(day.date)}</span>
+                                <strong className={styles.dayNumber}>{Number(day.date.slice(8))}</strong>
+                                <span className={styles.dayCount}>Ingen</span>
+                            </span>
+                        ) : (
+                            <NextLink
+                                href={bookingUrl(start, day.date)}
+                                className={day.date === selected?.date ? `${styles.day} ${styles.daySelected}` : styles.day}
+                                aria-current={day.date === selected?.date ? "date" : undefined}>
+                                <span className={styles.dayName}>{formatWeekdayShort(day.date)}</span>
+                                <strong className={styles.dayNumber}>{Number(day.date.slice(8))}</strong>
+                                <span className={styles.dayCount}>{day.slots.length} ledige</span>
+                            </NextLink>
+                        )}
+                    </li>
+                ))}
+            </ul>
+            <nav className={styles.weekNav} aria-label="Bytt uke">
+                {start > today ? (
+                    <NextLink href={bookingUrl(previous)} className={styles.secondaryButton}>← Forrige</NextLink>
+                ) : <span/>}
+                <NextLink href={bookingUrl(shiftDay(start, 7))} className={styles.secondaryButton}>Neste 7 dager
+                    →</NextLink>
+            </nav>
 
-            {!slots || slots.length === 0 ? (
-                <p className={styles.muted}>Ingen ledige tider denne dagen. Prøv en annen dato.</p>
+            <h2 className={styles.sectionTitle}>Ledige tider {selected ? formatDay(selected.date) : ""}</h2>
+
+            {!selected || selected.slots.length === 0 ? (
+                <p className={styles.muted}>Ingen ledige tider disse dagene. Trykk «Neste 7 dager».</p>
             ) : (
                 <ul className={styles.slots}>
-                    {slots.map((slot) => (
-                        <li key={slot}>
+                    {selected.slots.map((slot) => (
+                        <li key={slot.startUtc}>
                             <NextLink
-                                href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}&ansatt=${employeeId}&dato=${date}&tid=${encodeURIComponent(slot)}`}
-                                className={slot === chosenTime ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
-                                aria-current={slot === chosenTime ? "true" : undefined} >
-                                {formatTime(slot)}
+                                href={bookingUrl(start, selected.date, slot.startUtc)}
+                                className={slot.startUtc === chosen?.startUtc ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
+                                aria-current={slot.startUtc === chosen?.startUtc ? "true" : undefined}>
+                                {formatTime(slot.startUtc)}
                             </NextLink>
                         </li>
                     ))}
                 </ul>
             )}
-            {tid && !chosenTime && (
+            {tid && !chosen && (
                 <p className={styles.error} role="alert">Den valgte tiden er ikke lenger ledig. Velg en annen tid.</p>
             )}
-            {chosenTime && (
+
+            {chosen && selected && (
                 <section>
                     <h2 className={styles.sectionTitle}>Dine opplysninger</h2>
                     <p className={styles.muted}>
-                        {formatDate(chosenTime)} kl. {formatTime(chosenTime)}
+                        {formatDay(selected.date)} kl. {formatTime(chosen.startUtc)}
+                        {chosenEmployee && ` hos ${chosenEmployee.name}`}
                     </p>
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}
                             <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
-                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett konto</NextLink>.
+                            {" "}eller <NextLink href={`/registrer?neste=${encodeURIComponent(currentUrl)}`}>opprett
+                            konto</NextLink>.
                         </p>
                     )}
                     {me?.isBusiness && (
@@ -106,11 +160,11 @@ export default async function BookingPage({params, searchParams}: Props) {
                             bestille.</p>
                     )}
                     {me && !me.isBusiness && (
-                        <BookingForm businessId={business.id} serviceId={service.id} employeeId={employeeId}
-                                     startUtc={chosenTime} date={date} fullName={me.fullName} email={me.email}
-                                     phone={me.phone}/>                    )}
-                        </section>
-                        )}
-                </main>
-            );
+                        <BookingForm businessId={business.id} serviceId={service.id} employeeId={chosen.employeeId}
+                                     startUtc={chosen.startUtc} date={selected.date} fullName={me.fullName}
+                                     email={me.email} phone={me.phone}/>)}
+                </section>
+            )}
+        </main>
+    );
 }

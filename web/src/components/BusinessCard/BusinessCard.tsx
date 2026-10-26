@@ -44,7 +44,7 @@ export default function BusinessCard({ business, date }: Props) {
                     {slots.map((slot) => (
                         <NextLink
                             key={slot.startUtc}
-                            href={`${href}/bestill?tjeneste=${slot.serviceId}&ansatt=${slot.employeeId}&dato=${date}&tid=${encodeURIComponent(slot.startUtc)}`}
+                            href={`${href}/bestill?tjeneste=${slot.serviceId}&dato=${date}&tid=${encodeURIComponent(slot.startUtc)}`}
                             className={styles.slot}
                         >
                             {formatTime(slot.startUtc)}

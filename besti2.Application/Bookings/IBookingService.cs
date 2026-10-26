@@ -6,10 +6,13 @@ public interface IBookingService
 {
     Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default);
+    // "Velg dag": free times for several days in a row; employeeId null = anyone free (Hvem som helst)
+    Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
+        Guid serviceId, Guid? employeeId, DateOnly from, int days, CancellationToken cancellationToken = default);
     // customerUserId = the logged-in customer's account id, saved on the booking
     Task<CreateBookingResult> CreateAsync(
         CreateBookingRequest request, string? customerUserId = null, CancellationToken cancellationToken = default);
-// Business panel: the business adds a visit itself (confirmed at once)
+    // Business panel: the business adds a visit itself (confirmed at once)
     Task<CreateBookingResult> CreateByBusinessAsync(
         Guid businessId, CreateManualBookingRequest request, CancellationToken cancellationToken = default);
         // Business panel: move a visit to another time and/or employee (same service and length)

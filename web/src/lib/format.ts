@@ -103,3 +103,13 @@ const dayHeading = new Intl.DateTimeFormat("nb-NO", {
 export function formatDay(date: string): string {
     return dayHeading.format(new Date(`${date}T12:00:00Z`));
 }
+
+const shortWeekday = new Intl.DateTimeFormat("nb-NO", {
+    timeZone: "UTC",
+    weekday: "short",
+});
+
+// "2026-10-27" -> "tir." (for the day strip)
+export function formatWeekdayShort(date: string): string {
+    return shortWeekday.format(new Date(`${date}T12:00:00Z`));
+}
