@@ -6,9 +6,9 @@ public interface IBookingService
 {
     Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default);
-    // customerUserId = the logged-in customer's account id, saved on the booking
     // "Velg dag": free times for several days in a row; employeeId null = anyone free (Hvem som helst)
     Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
+    // customerUserId = the logged-in customer's account id, saved on the booking
         Guid serviceId, Guid? employeeId, DateOnly from, int days, CancellationToken cancellationToken = default);
     Task<CreateBookingResult> CreateAsync(
         CreateBookingRequest request, string? customerUserId = null, CancellationToken cancellationToken = default);

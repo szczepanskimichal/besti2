@@ -165,6 +165,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         return result;
     }
+        
     public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, string? customerUserId = null,
         CancellationToken cancellationToken = default)
     {
