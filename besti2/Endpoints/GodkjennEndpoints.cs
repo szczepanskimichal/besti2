@@ -27,26 +27,5 @@ public static class GodkjennEndpoints
             await registrationService.RejectAsync(request.Token, cancellationToken)
                 ? Results.NoContent()
                 : Results.NotFound()).RequireRateLimiting("signup");
-        // BESTI approves a new business: the link in the mail to AdminEmail opens a page that shows it first
-        app.MapGet("/api/godkjenn", async (string token, IBusinessRegistrationService registrationService,
-            CancellationToken cancellationToken) =>
-        {
-            var approval = await registrationService.GetApprovalAsync(token, cancellationToken);
-            return approval is null ? Results.NotFound() : Results.Ok(approval);
-        }).RequireRateLimiting("signup");
-
-        app.MapPost("/api/godkjenn", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
-                CancellationToken cancellationToken) =>
-            await registrationService.ApproveAsync(request.Token, cancellationToken)
-                ? Results.NoContent()
-                : Results.NotFound()).RequireRateLimiting("signup");
-
-        app.MapPost("/api/godkjenn/avvis", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
-                CancellationToken cancellationToken) =>
-            await registrationService.RejectAsync(request.Token, cancellationToken)
-                ? Results.NoContent()
-                : Results.NotFound()).RequireRateLimiting("signup");
-
-
-    }
+            }
 }
