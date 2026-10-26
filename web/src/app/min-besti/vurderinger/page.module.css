@@ -48,7 +48,7 @@
     min-height: 44px;
     font-size: 2rem;
     line-height: 1;
-    color: #d1d5db;
+    color: rgba(200, 213, 185, 0.3);
     cursor: pointer;
 }
 
@@ -58,7 +58,7 @@
 }
 
 .stars input:checked + label ~ label {
-    color: #d1d5db;
+    color: rgba(200, 213, 185, 0.3);
 }
 
 /* While hovering: gold up to the star under the mouse (.stars.stars = wins over the chosen star) */
@@ -67,7 +67,7 @@
 }
 
 .stars.stars label:hover ~ label {
-    color: #d1d5db;
+    color: rgba(200, 213, 185, 0.3);
 }
 
 .stars input:focus-visible + label {

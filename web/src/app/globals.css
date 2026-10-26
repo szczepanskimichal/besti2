@@ -1,14 +1,20 @@
 :root {
-  --color-bg: #f7f7f8;
-  --color-surface: #ffffff;
-  --color-text: #1a1a1a;
-  --color-muted: #6b7280;
-  --color-primary: #2563eb;
+  color-scheme: dark;
+  --color-bg: #04141c;
+  --color-surface: rgba(8, 22, 26, 0.68);
+  --color-text: #c8d5b9;
+  --color-heading: #879c79;
+  --color-muted: #9aab8e;
+  --color-primary: #9caf88;
+  --color-on-primary: #04141c;
   --radius: 8px;
-  --color-border: #eef0f3;
-  --color-input-border: #8a929c;
-  --color-primary-soft: #e8f0fa;
-  --color-primary-dark: #1e40af;
+  --color-border: rgba(200, 213, 185, 0.22);
+  --color-input-border: #6b7f5e;
+  --color-primary-soft: rgba(200, 213, 185, 0.12);
+  --color-primary-dark: #c8d5b9;
+  --color-success: #8fd6a0;
+  --color-warning: #f2c46d;
+  --color-danger: #ff9b85;
 }
 
 *, *::before, *::after {
@@ -20,9 +26,10 @@ html {
 }
 body {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: var(--color-bg);
-  color: var(--color-text);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;  background: radial-gradient(130% 90% at 50% 105%, #0f4b57, #082c38 45%, #04141c 85%) fixed;
+  background-color: var(--color-bg);  color: var(--color-text);
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
@@ -40,4 +47,29 @@ body > main {
 button:disabled {
   opacity: 0.6;
   cursor: progress;
+}
+
+h1, h2, h3 {
+  color: var(--color-heading);
+}
+
+/* Users who ask the system for more contrast get solid cards and brighter text */
+@media (prefers-contrast: more) {
+  :root {
+    --color-surface: #0b1d22;
+    --color-border: #c8d5b9;
+    --color-input-border: #c8d5b9;
+    --color-muted: #c8d5b9;
+    --color-heading: #c8d5b9;
+  }
+}
+
+/* Users who turn off animations in the system get none from us either */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

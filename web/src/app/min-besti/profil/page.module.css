@@ -11,13 +11,13 @@
 
 .saved {
     margin: 0;
-    color: #1d6b3a;
+    color: var(--color-success);
     font-weight: 600;
 }
 
 /* "Slett konto" stands out, so nobody clicks it by mistake */
 .danger {
-    border: 1px solid #f3c4c4;
+    border: 1px solid var(--color-danger);
 }
 
 .form {
