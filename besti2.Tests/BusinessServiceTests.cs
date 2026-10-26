@@ -642,7 +642,26 @@ public class BusinessServiceTests
         Assert.All(result.SelectMany(b => b.FreeSlots!), s =>
             Assert.True(TimeZoneInfo.ConvertTimeFromUtc(s.StartUtc, oslo).Hour < 12));
     }
-    
+    // check if "etter 17" without a date finds the soonest day that really has evening times
+    [Fact]
+    public async Task GetAllAsync_TimeOfDayWithoutDate_FindsSoonestDayWithThoseTimes()
+    {
+        // Arrange: only Klipp & Stil is open after 17 (Thursday until 19)
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+        var oslo = TimeZoneInfo.FindSystemTimeZoneById("Europe/Oslo");
+        // Act
+        var result = await service.GetAllAsync(from: new TimeOnly(17, 0));
+        // Assert
+        var business = Assert.Single(result);
+        Assert.Equal("Klipp & Stil Frisør", business.Name);
+        Assert.All(business.FreeSlots!, s =>
+        {
+            var local = TimeZoneInfo.ConvertTimeFromUtc(s.StartUtc, oslo);
+            Assert.True(local.Hour >= 17);
+            Assert.Equal(DayOfWeek.Thursday, local.DayOfWeek);
+        });
+    }
     // check if "Nær meg" puts the nearest business first and fills in the distance
     [Fact]
     public async Task GetAllAsync_WithLocation_SortsByDistance()

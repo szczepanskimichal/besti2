@@ -70,8 +70,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
         }).ToList();
         // Without a date: the list as before. With a date: only businesses with a free time that day
-        var list = date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);
-        // "Nær meg": nearest first instead of by name or soonest time
+            // Only a time of day: the soonest day for each business
+            var list = date is not null
+                ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)
+                : from is not null || to is not null
+                    ? await FindSoonestSlotsAsync(withLogos, q, from, to, cancellationToken)
+                    : withLogos;
         return lat is double userLat && lng is double userLng
             ? await SortByDistanceAsync(list, userLat, userLng, maxKm, cancellationToken)
             : list;
@@ -184,7 +188,24 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         var local = TimeOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(startUtc, Oslo));
         return (from is null || local >= from) && (to is null || local < to);
     }
-
+    // "Tid på dagen" without a date: for each business the soonest day (max 14 days ahead) with a free time in that window
+    private async Task<IReadOnlyList<BusinessListItemDto>> FindSoonestSlotsAsync(
+        List<BusinessListItemDto> businesses, string? q, TimeOnly? from, TimeOnly? to,
+        CancellationToken cancellationToken = default)
+    {
+        const int daysAhead = 14;
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Oslo));
+        var found = new List<BusinessListItemDto>();
+        var left = businesses;
+        for (var day = 0; day < daysAhead && left.Count > 0; day++)
+        {
+            var withSlots = await AddFreeSlotsAsync(left, today.AddDays(day), q, from, to, cancellationToken);
+            found.AddRange(withSlots);
+            left = left.Where(b => withSlots.All(w => w.Id != b.Id)).ToList();
+        }
+        // Earlier days were added first and each day is sorted by time, so the soonest is already first
+        return found;
+    }
     
     // "Nær meg": distance from the customer to each business, nearest first; businesses without a map point go last
     private async Task<IReadOnlyList<BusinessListItemDto>> SortByDistanceAsync(

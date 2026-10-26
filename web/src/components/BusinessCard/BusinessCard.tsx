@@ -1,7 +1,7 @@
 import NextLink from "next/link";
 import type { BusinessListItem } from "@/lib/types";
 import { getCategoryLabel } from "@/lib/categories";
-import { formatTime } from "@/lib/format";
+import { formatDate, formatTime, osloDay } from "@/lib/format";
 import styles from "./BusinessCard.module.css";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
@@ -9,12 +9,11 @@ import Stars from "@/components/Stars/Stars";
 
 type Props = {
     business: BusinessListItem;
-    date?: string; // the searched day, needed for the booking link
 };
 
-export default function BusinessCard({ business, date }: Props) {
+export default function BusinessCard({ business }: Props) {
     const href = `/bedrift/${business.id}`;
-    const slots = date ? business.freeSlots ?? [] : [];
+    const slots = business.freeSlots ?? [];
 
     return (
         <article className={styles.card}>
@@ -39,12 +38,12 @@ export default function BusinessCard({ business, date }: Props) {
             </NextLink>
             {slots.length > 0 && (
                 <div className={styles.slots}>
-                    <p className={styles.slotsLabel}>{slots[0].serviceName} · Ledig:</p>
+                    <p className={styles.slotsLabel}>{slots[0].serviceName} · Ledig {formatDate(slots[0].startUtc)}:</p>
                     {/* One click: the booking page opens with service, employee, day and time chosen */}
                     {slots.map((slot) => (
                         <NextLink
                             key={slot.startUtc}
-                            href={`${href}/bestill?tjeneste=${slot.serviceId}&dato=${date}&tid=${encodeURIComponent(slot.startUtc)}`}
+                            href={`${href}/bestill?tjeneste=${slot.serviceId}&dato=${osloDay(slot.startUtc)}&tid=${encodeURIComponent(slot.startUtc)}`}
                             className={styles.slot}
                         >
                             {formatTime(slot.startUtc)}
