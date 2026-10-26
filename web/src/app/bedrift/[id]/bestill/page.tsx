@@ -3,6 +3,7 @@ import {notFound} from "next/navigation";
 import {getBusiness, getFreeDays, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {formatDay, formatLength, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
+import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
@@ -80,24 +81,24 @@ export default async function BookingPage({params, searchParams}: Props) {
 
                 <label className={styles.field}>
                     Ansatt
-                    <select name="ansatt" defaultValue={employeeId ?? ""}>
+                    <AutoSubmitSelect name="ansatt" defaultValue={employeeId ?? ""}>
                         <option value="">Hvem som helst</option>
                         {business.employees.map((employee) => (
                             <option key={employee.id} value={employee.id}>
                                 {employee.name} {employee.lastName}
                             </option>
                         ))}
-                    </select>
+                    </AutoSubmitSelect>
                 </label>
 
                 {maxUnits > 1 && (
                     <label className={styles.field}>
                         Varighet
-                        <select name="antall" defaultValue={units}>
-                            {Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
+                        AutoSubmitSelect name="antall" defaultValue={units}>
+                        {Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
                                 <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
                             ))}
-                        </select>
+                        </AutoSubmitSelect>
                     </label>
                 )}
 
