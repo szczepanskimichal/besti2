@@ -5,7 +5,8 @@ public enum CreateBookingOutcome
     Created,
     Invalid,
     NotFound,
-    SlotTaken
+    SlotTaken,
+    CustomerBusy
 }
 
 public record BookingCreatedDto(Guid Id, DateTime StartUtc, DateTime EndUtc, string Status);
