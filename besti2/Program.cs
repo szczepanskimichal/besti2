@@ -150,57 +150,14 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.UseRateLimiter();
-// For Docker and the deploy check: 200 when the API and its database answer
-app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
-    await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
-app.MapGodkjennEndpoints();
-app.MapNotificationEndpoints();
-app.MapAccountEndpoints();
-// Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
-app.MapGet("/api/businesses",
-    async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
-        double? lng, double? maxKm, int? page,
-        IBusinessService businessService, CancellationToken cancellationToken) =>
-    {
-        var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm,
-            cancellationToken);
-        // 24 businesses per page (?page=2 ...)
-        return Results.Ok(BusinessPageDto.From(all, page));
-    });
-// Get distinct cities for the filter
-app.MapGet("/api/cities",
-    async (IBusinessService businessService, CancellationToken cancellationToken) =>
-    {
-        return Results.Ok(await businessService.GetCitiesAsync(cancellationToken));
-    });
-// Get business by id
-app.MapGet("/api/businesses/{id:guid}",
-    async (Guid id, IBusinessService businessService, CancellationToken cancellationToken) =>
-    {
-        var business = await businessService.GetByIdAsync(id, cancellationToken);
-        return business is null ? Results.NotFound() : Results.Ok(business);
-    });
 
-// Register a new business with its owner account
-app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
-    IBusinessRegistrationService registrationService, CancellationToken cancellationToken) =>
-{
-    var result = await registrationService.RegisterAsync(request, cancellationToken);
-    return result.Success
-        ? Results.Created()
-        : Results.BadRequest(new { message = result.Error });
-}).RequireRateLimiting("signup");
-
-// Public: reviews of a business, newest first, with the average
-app.MapGet("/api/businesses/{id:guid}/reviews", async (Guid id, IReviewService reviewService,
-        CancellationToken cancellationToken) =>
-    Results.Ok(await reviewService.GetForBusinessAsync(id, cancellationToken)));
 // Business panel: the owner's reviews
 app.MapGet("/api/panel/reviews", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IReviewService reviewService, CancellationToken cancellationToken) =>
 {
     var user = await userManager.GetUserAsync(principal);
-
+    app.MapBookingEndpoints();
+    app.MapBusinessEndpoints();
     return user?.BusinessId is Guid businessId
         ? Results.Ok(await reviewService.GetForBusinessAsync(businessId, cancellationToken))
         : Results.Forbid();
@@ -220,32 +177,7 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
 
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
-
-// Business sign-up: "Hent fra Brønnøysund" – name and address of an active business in the register
-app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry registry,
-    CancellationToken cancellationToken) =>
-{
-    if (!OrgNumber.IsValid(orgNumber))
-    {
-        return Results.BadRequest(new { message = "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig." });
-    }
-
-    var lookup = await registry.LookupAsync(orgNumber, cancellationToken);
-    return lookup.Status switch
-    {
-        RegistryStatus.Active => Results.Ok(new
-        {
-            lookup.Name, lookup.Address, lookup.PostalCode, lookup.City
-        }),
-        RegistryStatus.NotFound => Results.NotFound(new { message = "Fant ikke virksomheten i Enhetsregisteret." }),
-        RegistryStatus.Closed => Results.Conflict(
-            new { message = "Virksomheten er slettet, konkurs eller under avvikling i Enhetsregisteret." }),
-        _ => Results.Problem("Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv.", statusCode: 503)
-    };
-}).RequireRateLimiting("signup");
-
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
-// "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
 app.MapGet("/api/panel/bookings", async (DateOnly? from, DateOnly? to, ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
 {
