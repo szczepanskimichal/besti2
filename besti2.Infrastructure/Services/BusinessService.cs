@@ -9,8 +9,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
-
-
 public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding, IImageStorage imageStorage)
     : IBusinessService
 {
@@ -18,8 +16,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
 
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
-        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
-        CancellationToken cancellationToken = default)    
+        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null, double? maxKm = null,
+        CancellationToken cancellationToken = default)
     {
         // Hidden businesses (owner has not confirmed the email yet) are never shown
         var query = dbContext.Businesses.AsNoTracking().Where(b => !b.IsHidden);
@@ -69,9 +67,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             LogoUrl = ToLogoUrl(b.LogoUrl),
             AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
         }).ToList();
-        // Without a date: the list as before. With a date: only businesses with a free time that day
-        var list = date is null ? withLogos : await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken);
-        // "Nær meg": nearest first instead of by name or soonest time
+        // // Only a time of day: the soonest day for each business
+        var list = date is not null
+            ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)
+            : from is not null || to is not null
+                ? await FindSoonestSlotsAsync(withLogos, q, from, to, cancellationToken)
+                : withLogos;
         return lat is double userLat && lng is double userLng
             ? await SortByDistanceAsync(list, userLat, userLng, maxKm, cancellationToken)
             : list;
@@ -80,7 +81,6 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     // Free times for the whole list with 5 queries, however many businesses there are (no query per business)
 
     private async Task<IReadOnlyList<BusinessListItemDto>> AddFreeSlotsAsync(
-
         List<BusinessListItemDto> businesses, DateOnly date, string? q, TimeOnly? from, TimeOnly? to,
         CancellationToken cancellationToken = default)
     {
@@ -89,6 +89,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return [];
         }
+
         var businessIds = businesses.Select(b => b.Id).ToList();
 
         var services = await dbContext.Services.AsNoTracking()
@@ -162,7 +163,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                             .Concat(timeOffs.Where(t => t.BusinessId == business.Id
                                                         && (t.EmployeeId == null || t.EmployeeId == e.Id))
                                 .Select(t => (t.StartUtc, t.EndUtc)))
-                            .ToList(),                        nowUtc)
+                            .ToList(), nowUtc)
                     .Where(start => IsInTimeWindow(start, from, to))
                     .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
                 .OrderBy(s => s.StartUtc)
@@ -173,11 +174,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             {
                 result.Add(business with { FreeSlots = slots });
             }
-        } 
+        }
+
         // Soonest free time first
         return result.OrderBy(b => b.FreeSlots![0].StartUtc).ToList();
     }
-    
+
     // "Før 12" = to 12:00, "Etter 17" = from 17:00; compared in Oslo time
     private static bool IsInTimeWindow(DateTime startUtc, TimeOnly? from, TimeOnly? to)
     {
@@ -185,10 +187,30 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         return (from is null || local >= from) && (to is null || local < to);
     }
 
-    
+    // "Tid på dagen" without a date: for each business the soonest day (max 14 days ahead) with a free time in that window
+    private async Task<IReadOnlyList<BusinessListItemDto>> FindSoonestSlotsAsync(
+        List<BusinessListItemDto> businesses, string? q, TimeOnly? from, TimeOnly? to,
+        CancellationToken cancellationToken = default)
+    {
+        const int daysAhead = 14;
+        var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Oslo));
+        var found = new List<BusinessListItemDto>();
+        var left = businesses;
+        for (var day = 0; day < daysAhead && left.Count > 0; day++)
+        {
+            var withSlots = await AddFreeSlotsAsync(left, today.AddDays(day), q, from, to, cancellationToken);
+            found.AddRange(withSlots);
+            left = left.Where(b => withSlots.All(w => w.Id != b.Id)).ToList();
+        }
+
+        // Earlier days were added first and each day is sorted by time, so the soonest is already first
+        return found;
+    }
+
     // "Nær meg": distance from the customer to each business, nearest first; businesses without a map point go last
     private async Task<IReadOnlyList<BusinessListItemDto>> SortByDistanceAsync(
-        IReadOnlyList<BusinessListItemDto> businesses, double lat, double lng, double? maxKm, CancellationToken cancellationToken)
+        IReadOnlyList<BusinessListItemDto> businesses, double lat, double lng, double? maxKm,
+        CancellationToken cancellationToken)
     {
         var ids = businesses.Select(b => b.Id).ToList();
         var points = await dbContext.Businesses.AsNoTracking()
@@ -201,7 +223,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 ? b with { DistanceKm = Math.Round(HaversineKm(lat, lng, bLat, bLng), 1) }
                 : b)
             // With a radius: only businesses that close (no map point = unknown distance = left out)
-            .Where(b => maxKm is null || b.DistanceKm <= maxKm)            
+            .Where(b => maxKm is null || b.DistanceKm <= maxKm)
             .OrderBy(b => b.DistanceKm ?? double.MaxValue)
             .ToList();
     }
@@ -217,7 +239,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                                                  * Math.Sin(dLng / 2) * Math.Sin(dLng / 2);
         return earthRadiusKm * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }
-    
+
     // The database keeps only the file name; the storage knows the public address
     private string? ToLogoUrl(string? fileName) => fileName is null ? null : imageStorage.GetUrl(fileName);
 
@@ -239,7 +261,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     public Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default) =>
         GetDetailsAsync(id, true, cancellationToken);
 
-    private async Task<BusinessDetailsDto?> GetDetailsAsync(Guid id, bool includeHidden, CancellationToken cancellationToken)
+    private async Task<BusinessDetailsDto?> GetDetailsAsync(Guid id, bool includeHidden,
+        CancellationToken cancellationToken)
     {
         var business = await dbContext.Businesses
             // Services, employees, hours and photos as separate small queries instead of one huge joined one
@@ -281,15 +304,16 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
                     .ToList(),
                 b.IsHidden
-                ))
+            ))
             .FirstOrDefaultAsync(cancellationToken);
-        
-    return business is null ? null : business with
-        {
-            LogoUrl = ToLogoUrl(business.LogoUrl),
-            Gallery = business.Gallery.Select(g => g with { Url = imageStorage.GetUrl(g.Url) }).ToList()
-        };
-        
+
+        return business is null
+            ? null
+            : business with
+            {
+                LogoUrl = ToLogoUrl(business.LogoUrl),
+                Gallery = business.Gallery.Select(g => g with { Url = imageStorage.GetUrl(g.Url) }).ToList()
+            };
     }
 
     public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
@@ -460,16 +484,21 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Beskrivelsen kan ha maks 1000 tegn.";
         }
-        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail) ? null : request.ContactEmail.Trim().ToLowerInvariant();
+
+        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail)
+            ? null
+            : request.ContactEmail.Trim().ToLowerInvariant();
         if (contactEmail is not null && (!contactEmail.Contains('@') || contactEmail.Length > 250))
         {
             return "Ugyldig e-post til kunder.";
         }
+
         var business = await dbContext.Businesses.FirstOrDefaultAsync(b => b.Id == businessId, cancellationToken);
         if (business is null)
         {
             return "Fant ikke bedriften.";
         }
+
         // The login e-mail must stay private (a public one lets anyone lock the owner out)
         var normalizedContact = contactEmail?.ToUpperInvariant();
         if (normalizedContact is not null && await dbContext.Users.AnyAsync(
@@ -477,6 +506,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Bruk en annen e-post til kunder enn den du logger inn med, eller la feltet stå tomt.";
         }
+
         var addressChanged = business.Address != request.Address.Trim() || business.PostalCode != request.PostalCode;
         business.Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim();
         business.PhoneNumber = request.Phone.Trim();
@@ -503,8 +533,9 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Ugyldige dager.";
         }
+
         if (request.Days.Any(d => !Enum.IsDefined(d.DayOfWeek))
-                     || request.Days.Select(d => d.DayOfWeek).Distinct().Count() != request.Days.Count)
+            || request.Days.Select(d => d.DayOfWeek).Distinct().Count() != request.Days.Count)
         {
             return "Ugyldige dager.";
         }

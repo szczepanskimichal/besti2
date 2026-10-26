@@ -145,17 +145,17 @@ type SearchProps = {
     page?: string;
 };
 
-// The slow part: with a date the API calculates free times for every business
+// The slow part: with a date or a time of day the API calculates free times for every business
 async function Results({category, city, q, date, tid, lat, lng, km, page}: SearchProps) {
     // "Tid på dagen" without a date means today
-    const day = date || (tid ? todayInOslo() : undefined);
-    const timeWindow = day ? timeWindows[tid ?? ""] : undefined;
-    const result = await getBusinesses(category, city, q, day, timeWindow?.from, timeWindow?.to, lat, lng, km, page);
+    // "Tid på dagen" without a date: the API finds the soonest day for each business
+    const timeWindow = timeWindows[tid ?? ""];
+    const result = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng, km, page);
     const businesses = result.items;
     if (businesses.length === 0) {
-        if (day) {
+        if (date) {
 // Same search, one day later
-            const params = new URLSearchParams({date: nextDay(day)});
+            const params = new URLSearchParams({date: nextDay(date)});
             if (category) params.set("category", category);
             if (city) params.set("city", city);
             if (q) params.set("q", q);
@@ -169,6 +169,9 @@ async function Results({category, city, q, date, tid, lat, lng, km, page}: Searc
                     <Link href={`/?${params}`}>Prøv dagen etter →</Link>
                 </p>
             );
+        }
+        if (tid) {
+            return <p className={styles.subtitle}>Ingen ledige tider de neste 14 dagene.</p>;
         }
         return <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>;
     }
@@ -187,7 +190,7 @@ async function Results({category, city, q, date, tid, lat, lng, km, page}: Searc
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>
-                        <BusinessCard business={business} date={day}/>
+                        <BusinessCard business={business}/>
                     </li>
                 ))}
             </ul>

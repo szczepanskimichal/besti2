@@ -36,7 +36,10 @@ export function formatTime(utc: string): string {
 export function todayInOslo(): string {
     return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" }).format(new Date());
 }
-
+// The Oslo day of a time from the API: "2026-10-29T16:00:00Z" -> "2026-10-29"
+export function osloDay(utc: string): string {
+    return new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Oslo" }).format(new Date(utc));
+}
 const osloDate = new Intl.DateTimeFormat("nb-NO", {
     timeZone: "Europe/Oslo",
     weekday: "long",
