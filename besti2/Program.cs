@@ -152,6 +152,7 @@ app.Use(async (context, next) =>
 app.UseAuthorization();
 app.UseRateLimiter();
 app.MapNotificationEndpoints();
+app.MapAccountEndpoints();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
@@ -223,40 +224,6 @@ app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
         : Results.BadRequest(new { message = result.Error });
 }).RequireRateLimiting("signup");
 
-// Customer sign-up: creates the account and sends a confirmation mail
-app.MapPost("/api/account/register", async (RegisterCustomerRequest request,
-    ICustomerAccountService accountService, CancellationToken cancellationToken) =>
-{
-    var error = await accountService.RegisterAsync(request, cancellationToken);
-    return error is null ? Results.Created() : Results.BadRequest(new { message = error });
-}).RequireRateLimiting("signup");
-
-// Customer clicks the link in the mail; the web page sends the id and code here
-app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
-    ICustomerAccountService accountService, IBusinessRegistrationService registrationService) =>
-{
-    var confirmed = await accountService.ConfirmEmailAsync(request);
-    if (confirmed)
-    {
-        // A business owner: the business now shows up for customers
-        await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
-    }
-
-    return confirmed
-        ? Results.NoContent()
-        : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
-}).RequireRateLimiting("signup");
-
-// Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
-app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    return user is null
-        ? Results.Unauthorized()
-        : Results.Ok(new
-            { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
-}).RequireAuthorization();
-
 // Customer: own bookings for "Mine bestillinger"
 app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IBookingService bookingService, CancellationToken cancellationToken) =>
@@ -265,20 +232,6 @@ app.MapGet("/api/me/bookings", async (ClaimsPrincipal principal, UserManager<App
     return userId is null
         ? Results.Unauthorized()
         : Results.Ok(await bookingService.GetForCustomerAsync(userId, cancellationToken));
-}).RequireAuthorization();
-
-// Customer: review a past booking
-app.MapPost("/api/me/reviews", async (CreateReviewRequest request, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    var error = await reviewService.CreateAsync(userId, request, cancellationToken);
-    return error is null ? Results.Created() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
 
 // Public: reviews of a business, newest first, with the average
@@ -333,63 +286,6 @@ app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry 
         _ => Results.Problem("Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv.", statusCode: 503)
     };
 }).RequireRateLimiting("signup");
-
-// Customer: "Min profil" – name, e-mail (read only) and phone
-app.MapGet("/api/me/profile", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    IProfileService profileService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    var profile = userId is null ? null : await profileService.GetAsync(userId, cancellationToken);
-    return profile is null ? Results.NotFound() : Results.Ok(profile);
-}).RequireAuthorization();
-// Customer: "Last ned mine data" – everything BESTI keeps about the customer, as JSON
-app.MapGet("/api/me/export", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    IProfileService profileService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    var export = userId is null ? null : await profileService.ExportAsync(userId, cancellationToken);
-    return export is null ? Results.NotFound() : Results.Ok(export);
-}).RequireAuthorization();
-
-app.MapPut("/api/me/profile", async (UpdateMyProfileRequest request, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IProfileService profileService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    var error = await profileService.UpdateAsync(userId, request, cancellationToken);
-    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
-}).RequireAuthorization();
-
-app.MapPost("/api/me/password", async (ChangePasswordRequest request, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IProfileService profileService) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    var error = await profileService.ChangePasswordAsync(userId, request);
-    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
-}).RequireAuthorization().RequireRateLimiting("login");
-
-// Customer: "Slett konto" (confirmed with the password)
-app.MapPost("/api/me/delete", async (DeleteAccountRequest request, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IProfileService profileService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    var error = await profileService.DeleteAsync(userId, request, cancellationToken);
-    return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
-}).RequireAuthorization().RequireRateLimiting("login");
 
 // Customer: cancel own booking before it starts
 app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
