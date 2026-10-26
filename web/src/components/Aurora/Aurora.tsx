@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
 import styles from "./Aurora.module.css";
 
 // Curtains of thin vertical light rays along a slowly waving line (Ada's approved preview)
@@ -41,7 +40,7 @@ export default function Aurora() {
                     const base = h * (c.y + c.amp * wave(u * 4 + t * 0.15 * c.speed + c.phase));
                     const ray = Math.max(0, wave(u * 40 + t * 0.6 * c.speed + c.phase) * 0.6 + wave(u * 9 - t * 0.2) * 0.5 + 0.35);
                     const len = h * c.len * (0.8 + ray * 0.9);
-                    const len = h * c.len * (0.8 + ray * 0.9);
+                    const a = Math.min(1, ray * 0.5);
                     const g = ctx.createLinearGradient(0, base, 0, base - len);
                     g.addColorStop(0, `hsla(${c.hue}, 85%, 62%, ${a})`);
                     g.addColorStop(0.12, `hsla(${c.hue}, 80%, 55%, ${a * 0.8})`);
