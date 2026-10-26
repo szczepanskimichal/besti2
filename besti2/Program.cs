@@ -151,13 +151,13 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.UseRateLimiter();
-app.MapNotificationEndpoints();
-app.MapAccountEndpoints();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 
 app.MapGodkjennEndpoints();
+app.MapNotificationEndpoints();
+app.MapAccountEndpoints();
 // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
     async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
