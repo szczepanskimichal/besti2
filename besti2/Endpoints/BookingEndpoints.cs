@@ -62,9 +62,8 @@ public static class BookingEndpoints
                 : Results.Ok(await bookingService.GetForCustomerAsync(userId, cancellationToken));
         }).RequireAuthorization();
 
-        // Customer: cancel own booking before it starts
-        group.MapPost("/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
-            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+        // Customer: cancel own booking before it starts; the body { message } is optional
+        group.MapPost("/me/bookings/{id:guid}/avbestill", async (Guid id, CancelBookingRequest? request, ClaimsPrincipal principal,            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
         {
             var userId = userManager.GetUserId(principal);
             if (userId is null)
@@ -72,7 +71,7 @@ public static class BookingEndpoints
                 return Results.Unauthorized();
             }
 
-            return await bookingService.CancelByCustomerAsync(id, userId, cancellationToken) switch
+            return await bookingService.CancelByCustomerAsync(id, userId, request?.Message, cancellationToken) switch
             {
                 UpdateBookingStatusOutcome.Updated => Results.NoContent(),
                 UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(

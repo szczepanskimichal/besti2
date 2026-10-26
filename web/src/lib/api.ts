@@ -335,9 +335,11 @@ export async function getMyBookings(token: string): Promise<CustomerBooking[] | 
     return res.json();
 }
 
-// Customer cancels an own booking; returns the API's message when it fails
-export async function cancelMyBooking(token: string, bookingId: string): Promise<ApiResult> {
-    const res = await apiFetch(`/api/me/bookings/${bookingId}/avbestill`, { method: "POST", token });
+// Customer cancels an own booking; message = optional reason for the business
+// Returns the API's message when it fails
+export async function cancelMyBooking(token: string, bookingId: string, message?: string): Promise<ApiResult> {
+    const body = { message: message?.trim() || null };
+    const res = await apiFetch(`/api/me/bookings/${bookingId}/avbestill`, { method: "POST", token, body });
     return toResult(res, "Kunne ikke avbestille. Prøv igjen.");
 }
 

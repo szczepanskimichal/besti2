@@ -124,8 +124,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             .ToListAsync(cancellationToken);
         foreach (var bookingId in coming)
         {
-            await bookingService.CancelByCustomerAsync(bookingId, userId, cancellationToken);
-        }
+            await bookingService.CancelByCustomerAsync(bookingId, userId, cancellationToken: cancellationToken);        }
 
         // 2. All visits stay for the business's history, but without who it was
         var bookings = await dbContext.Bookings.Where(b => b.CustomerUserId == userId).ToListAsync(cancellationToken);

@@ -8,7 +8,7 @@ export async function cancelMyBookingAction(formData: FormData) {
         redirect("/logg-inn?neste=/min-besti");
     }
     const bookingId = String(formData.get("bookingId") ?? "");
-    const result = await cancelMyBooking(token, bookingId);
+    const result = await cancelMyBooking(token, bookingId, String(formData.get("melding") ?? ""));
     redirect(result.ok
         ? "/min-besti?avbestilt=1"
         : "/min-besti?feil=1");
