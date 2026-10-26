@@ -94,7 +94,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                 {maxUnits > 1 && (
                     <label className={styles.field}>
                         Varighet
-                        AutoSubmitSelect name="antall" defaultValue={units}>
+                        <AutoSubmitSelect name="antall" defaultValue={units}>
                         {Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
                                 <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
                             ))}
