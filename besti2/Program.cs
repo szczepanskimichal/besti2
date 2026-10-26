@@ -1,3 +1,4 @@
+using besti2.Endpoints;
 using System.Security.Claims;
 using besti2.Application.Accounts;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Threading.RateLimiting;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
+using besti2.Endpoints;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Authentication.BearerToken;
@@ -149,6 +151,7 @@ app.UseRateLimiter();
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 
+app.MapGodkjennEndpoints();
 // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
 app.MapGet("/api/businesses",
     async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
@@ -236,26 +239,6 @@ app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
         ? Results.NoContent()
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
 }).RequireRateLimiting("signup");
-
-// BESTI approves a new business: the link in the mail to AdminEmail opens a page that shows it first
-app.MapGet("/api/godkjenn", async (string token, IBusinessRegistrationService registrationService,
-    CancellationToken cancellationToken) =>
-{
-    var approval = await registrationService.GetApprovalAsync(token, cancellationToken);
-    return approval is null ? Results.NotFound() : Results.Ok(approval);
-}).RequireRateLimiting("signup");
-
-app.MapPost("/api/godkjenn", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
-    CancellationToken cancellationToken) =>
-    await registrationService.ApproveAsync(request.Token, cancellationToken)
-        ? Results.NoContent()
-        : Results.NotFound()).RequireRateLimiting("signup");
-
-app.MapPost("/api/godkjenn/avvis", async (ApproveBusinessRequest request, IBusinessRegistrationService registrationService,
-        CancellationToken cancellationToken) =>
-    await registrationService.RejectAsync(request.Token, cancellationToken)
-        ? Results.NoContent()
-        : Results.NotFound()).RequireRateLimiting("signup");
 
 // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
 app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
