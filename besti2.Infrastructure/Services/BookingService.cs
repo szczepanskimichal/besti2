@@ -13,7 +13,10 @@ using Microsoft.Extensions.Logging;
 namespace besti2.Infrastructure.Services;
 
 // webBaseUrl = address of the Next.js site, used for "Bestill ny tid" in the e-mail after a cancellation
-public class BookingService(AppDbContext dbContext, IEmailService emailService, ILogger<BookingService> logger,
+public class BookingService(
+    AppDbContext dbContext,
+    IEmailService emailService,
+    ILogger<BookingService> logger,
     string webBaseUrl = "http://localhost:3000") : IBookingService
 {
     // date in norwegian!!!
@@ -80,8 +83,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             busy.Select(b => (b.StartUtc, b.EndUtc)).Concat(blocked.Select(t => (t.StartUtc, t.EndUtc))).ToList(),
             DateTime.UtcNow);
     }
-    
-        public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
+
+    public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
         Guid serviceId, Guid? employeeId, DateOnly from, int days, CancellationToken cancellationToken = default)
     {
         var service = await dbContext.Services
@@ -103,7 +106,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         var employeeIds = await dbContext.Employees
             .AsNoTracking()
             .Where(e => e.BusinessId == service.BusinessId && !e.IsDeleted
-                        && (employeeId == null || e.Id == employeeId))
+                                                           && (employeeId == null || e.Id == employeeId))
             .Select(e => e.Id)
             .ToListAsync(cancellationToken);
         // A chosen employee from another business (or deleted) = wrong link
@@ -165,7 +168,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
         return result;
     }
-        
+
     public async Task<CreateBookingResult> CreateAsync(CreateBookingRequest request, string? customerUserId = null,
         CancellationToken cancellationToken = default)
     {
@@ -210,6 +213,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
+
         // The same customer account cannot have two visits at the same time (any business);
         // booking for someone else comes later with BESTI sammen
         if (customerUserId is not null)
@@ -225,6 +229,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 return new CreateBookingResult(CreateBookingOutcome.CustomerBusy);
             }
         }
+
         var booking = new Booking
         {
             Id = Guid.NewGuid(),
@@ -423,8 +428,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     public async Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
-        Guid bookingId, string customerUserId, CancellationToken cancellationToken = default)
-    {
+        Guid bookingId, string customerUserId, string? message = null, CancellationToken cancellationToken = default)    {
         // Only the customer's own booking; someone else's id looks like "not found"
         var booking = await dbContext.Bookings
             .FirstOrDefaultAsync(b => b.Id == bookingId && b.CustomerUserId == customerUserId, cancellationToken);
@@ -442,10 +446,12 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         booking.Status = BookingStatus.Avlyst;
         booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
-        await SendCancelledByCustomerEmailAsync(booking, cancellationToken);
+        // The customer's optional reason goes to the business in the e-mail and the bell
+        var note = ShortNote(message);
+        await SendCancelledByCustomerEmailAsync(booking, note, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
-            $"{booking.CustomerName} har avbestilt timen {When(booking.StartUtc)}", PanelLink(booking),
-            cancellationToken);
+            $"{booking.CustomerName} har avbestilt timen {When(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
+            PanelLink(booking), cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
 
@@ -486,10 +492,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         booking.Status = newStatus;
         booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
-// A short note from the business, only when cancelling (at most 300 characters)
-        var note = newStatus == BookingStatus.Avlyst && !string.IsNullOrWhiteSpace(message)
-            ? message.Trim()[..Math.Min(message.Trim().Length, 300)]
-            : null;
+        // A short note from the business, only when cancelling
+        var note = newStatus == BookingStatus.Avlyst ? ShortNote(message) : null;
         await SendStatusEmailAsync(booking, note, cancellationToken);
         await NotifyAsync(booking, toBusiness: false,
             newStatus == BookingStatus.Bekreftet
@@ -631,6 +635,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return null;
         }
+
         var hash = Hash(token);
         return await dbContext.Bookings.AsNoTracking()
             .Where(b => b.NewTimeTokenHash == hash && b.Status == BookingStatus.VenterKunde)
@@ -646,6 +651,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return NewTimeOutcome.NotFound;
         }
+
         var hash = Hash(token);
         var booking = await dbContext.Bookings
             .FirstOrDefaultAsync(b => b.NewTimeTokenHash == hash, cancellationToken);
@@ -667,6 +673,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return NewTimeOutcome.NotFound;
         }
+
         if (booking.StartUtc <= DateTime.UtcNow)
         {
             return NewTimeOutcome.TooLate;
@@ -682,6 +689,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 .Where(n => n.UserId == booking.CustomerUserId && n.BookingId == booking.Id)
                 .ToListAsync(cancellationToken));
         }
+
         await dbContext.SaveChangesAsync(cancellationToken);
         await SendNewTimeAnswerEmailAsync(booking, accept, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
@@ -701,6 +709,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
         {
             return; // a walk-in without an account has no bell
         }
+
         try
         {
             var business = await dbContext.Services.AsNoTracking()
@@ -725,6 +734,10 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             logger.LogWarning(ex, "Could not save notification for booking {BookingId}", booking.Id);
         }
     }
+
+    // An optional message when cancelling: trimmed, empty = none, at most 300 characters
+    private static string? ShortNote(string? message) =>
+        string.IsNullOrWhiteSpace(message) ? null : message.Trim()[..Math.Min(message.Trim().Length, 300)];
 
     // The column holds 300 characters (a long cancellation note is cut)
     private static string Shorten(string text) => text.Length <= 300 ? text : text[..299] + "…";
@@ -926,7 +939,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
 
             var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
             var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
-            
+
             // Cancelled: the business's own words (if any) and a link straight to its booking page
             var (subject, message) = booking.Status == BookingStatus.Bekreftet
                 ? ($"Bestillingen er bekreftet: {business.Name}", "Bestillingen din er bekreftet. Velkommen!")
@@ -969,7 +982,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"Tjeneste: {service.Name}\n" +
                 $"Tid: {when}\n\n" +
                 "Hilsen BESTI";
-            var subject = accept ? $"Ny tid godtatt: {service.Name}, {when}" : $"Ny tid avslått: {service.Name}, {when}";
+            var subject =
+                accept ? $"Ny tid godtatt: {service.Name}, {when}" : $"Ny tid avslått: {service.Name}, {when}";
             await SendToOwnerAsync(business.Id, subject, body, cancellationToken);
         }
         catch (Exception ex)
@@ -979,7 +993,8 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
     }
 
     // Tell the business that a customer cancelled; a failed email must not fail the cancellation
-    private async Task SendCancelledByCustomerEmailAsync(Booking booking, CancellationToken cancellationToken)
+    private async Task SendCancelledByCustomerEmailAsync(Booking booking, string? note,
+        CancellationToken cancellationToken)
     {
         try
         {
@@ -994,6 +1009,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
                 $"{booking.CustomerName} har avbestilt timen.\n\n" +
                 $"Tjeneste: {service.Name}\n" +
                 $"Tid: {when}\n\n" +
+                (note is null ? "" : $"Melding fra kunden: {note}\n\n") +
                 "Tiden er nå ledig for andre.\n\n" +
                 "Hilsen BESTI";
             await SendToOwnerAsync(business.Id, $"Avbestilling: {service.Name}, {when}", body, cancellationToken);
@@ -1003,9 +1019,11 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             logger.LogWarning(ex, "Could not send cancellation email for booking {BookingId}", booking.Id);
         }
     }
+
     // Mails to the business go to the owner's confirmed login e-mail, never to the public contact e-mail
     // (nobody has confirmed that one, a typo would send customer data to a stranger)
-    private async Task SendToOwnerAsync(Guid businessId, string subject, string body, CancellationToken cancellationToken)
+    private async Task SendToOwnerAsync(Guid businessId, string subject, string body,
+        CancellationToken cancellationToken)
     {
         var ownerEmail = await dbContext.Users
             .Where(u => u.BusinessId == businessId && u.EmailConfirmed)
@@ -1016,6 +1034,7 @@ public class BookingService(AppDbContext dbContext, IEmailService emailService, 
             await emailService.SendAsync(ownerEmail, subject, body, cancellationToken);
         }
     }
+
     // Local -> UTC; a time without a zone is taken as UTC (that is what the web app sends)
     private static DateTime ToUtc(DateTime value) => value.Kind switch
     {

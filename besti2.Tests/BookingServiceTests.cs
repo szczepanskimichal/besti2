@@ -272,7 +272,24 @@ public class BookingServiceTests
         Assert.StartsWith("Avbestilling", email.Sent[^1].Subject);
         Assert.Equal("eier@klippogstil.example", email.Sent[^1].To);
     }
+    // check if the customer's reason reaches the business in the e-mail and the bell
+    [Fact]
+    public async Task CancelByCustomerAsync_WithReason_BusinessGetsReason()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil });
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
 
+        await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1", "  Jeg er syk.  ");
+
+        Assert.Contains("Melding fra kunden: Jeg er syk.\n", email.Sent[^1].Body);
+        var bell = await db.Notifications.SingleAsync(n => n.BusinessId == KlippOgStil && n.Text.Contains("avbestilt"));
+        Assert.EndsWith(": Jeg er syk.", bell.Text);
+    }
     // check if nobody can cancel someone else's booking
     [Fact]
     public async Task CancelByCustomerAsync_OtherCustomer_ReturnsNotFound()

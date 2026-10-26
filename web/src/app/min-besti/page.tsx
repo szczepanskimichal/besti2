@@ -9,6 +9,7 @@ import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { answerMyNewTimeAction, cancelMyBookingAction } from "./actions";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CloseDetailsButton from "@/components/CloseDetailsButton/CloseDetailsButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 
@@ -117,12 +118,25 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             </p>
                             <details className={styles.actions}>
                                 <summary>Avbestill</summary>
-                                <p>Er du sikker? Tiden blir ledig for andre.</p>
+                                <p>
+                                    Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
+                                    Tiden blir ledig for andre.
+                                </p>
                                 <form action={cancelMyBookingAction}>
                                     <input type="hidden" name="bookingId" value={booking.id}/>
-                                    <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
-                                        Ja, avbestill
-                                    </SubmitButton>
+                                    <label className={styles.cancelMessage}>
+                                        Grunn til bedriften (valgfritt)
+                                        <textarea name="melding" maxLength={300} rows={2}
+                                                  placeholder="F.eks. Jeg er dessverre syk."/>
+                                    </label>
+                                    <div className={styles.actions}>
+                                        <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
+                                            Ja, avbestill
+                                        </SubmitButton>
+                                        <CloseDetailsButton className={styles.secondaryButton}>
+                                            Nei, behold timen
+                                        </CloseDetailsButton>
+                                    </div>
                                 </form>
                             </details>
                         </li>

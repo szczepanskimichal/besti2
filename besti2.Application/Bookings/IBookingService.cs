@@ -34,7 +34,7 @@ public interface IBookingService
     // Customer: own bookings, newest first
     Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
         string customerUserId, CancellationToken cancellationToken = default);
-    // Customer cancels their own booking before it starts
+    /// Customer cancels their own booking before it starts; message = optional reason for the business
     Task<UpdateBookingStatusOutcome> CancelByCustomerAsync(
-        Guid bookingId, string customerUserId, CancellationToken cancellationToken = default);
+        Guid bookingId, string customerUserId, string? message = null, CancellationToken cancellationToken = default);
 }
