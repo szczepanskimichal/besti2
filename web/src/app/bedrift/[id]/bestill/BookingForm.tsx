@@ -15,9 +15,10 @@ type BookingFormProps = {
     fullName: string | null;
     email: string;
     phone: string | null; // from "Min profil"
+    units: number;
 };
 // The booking form: on an error (e.g. the time was just taken) the phone, note and consent stay
-export default function BookingForm({ businessId, serviceId, employeeId, startUtc, date, fullName, email, phone }: BookingFormProps) {
+export default function BookingForm({ businessId, serviceId, employeeId, startUtc, date, units, fullName, email, phone }: BookingFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(createBookingAction, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
 
@@ -34,6 +35,7 @@ export default function BookingForm({ businessId, serviceId, employeeId, startUt
             <input type="hidden" name="employeeId" value={employeeId}/>
             <input type="hidden" name="startUtc" value={startUtc}/>
             <input type="hidden" name="date" value={date}/>
+            <input type="hidden" name="units" value={units}/>
             <label className={styles.field}>
                 Telefon
                 <input name="customerPhone" type="tel" inputMode="tel" required maxLength={20}

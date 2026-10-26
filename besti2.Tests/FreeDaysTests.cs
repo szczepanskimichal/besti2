@@ -16,7 +16,8 @@ public class FreeDaysTests
     private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
     private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
     private static readonly Guid SofieId = new("b1111111-0000-0000-0000-000000000002");
-
+    private static readonly Guid SnekkerarbeidId = new("a2222222-0000-0000-0000-000000000003"); // Per time, 60 min
+    private static readonly Guid LarsId = new("b2222222-0000-0000-0000-000000000001"); // Fjord Bygg, Monday 7–15
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -71,5 +72,34 @@ public class FreeDaysTests
         var days = await Bookings(db).GetFreeDaysAsync(HerreklippId, Guid.NewGuid(), FutureMonday, 7);
 
         Assert.Null(days);
+    }
+    // check if 3 hours of a "Per time" service are booked in a row and the last start leaves room for them
+    [Fact]
+    public async Task PerTimeService_ThreeHours_BooksThreeHoursInARow()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = Bookings(db);
+
+        var days = await service.GetFreeDaysAsync(SnekkerarbeidId, LarsId, FutureMonday, 1, units: 3);
+        var result = await service.CreateAsync(new CreateBookingRequest(SnekkerarbeidId, LarsId, FutureMondayAt10,
+            "Kari Nordmann", "+4790000000", "kari@test.example", false, Units: 3));
+
+        Assert.Equal(new DateTime(2099, 1, 5, 11, 0, 0, DateTimeKind.Utc), days![0].Slots[^1].StartUtc); // 12:00 in Oslo
+        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
+        Assert.Equal(FutureMondayAt10.AddHours(3), result.Booking!.EndUtc);
+    }
+
+    // check if more hours are refused for a fixed-price service and for more than 8 hours
+    [Theory]
+    [InlineData("a1111111-0000-0000-0000-000000000002", "b1111111-0000-0000-0000-000000000001", 2)] // Herreklipp
+    [InlineData("a2222222-0000-0000-0000-000000000003", "b2222222-0000-0000-0000-000000000001", 9)] // Snekkerarbeid
+    public async Task CreateAsync_WrongNumberOfHours_IsInvalid(string serviceId, string employeeId, int units)
+    {
+        await using var db = await CreateSeededDbAsync();
+
+        var result = await Bookings(db).CreateAsync(new CreateBookingRequest(new Guid(serviceId), new Guid(employeeId),
+            FutureMondayAt10, "Kari Nordmann", "+4790000000", "kari@test.example", false, Units: units));
+
+        Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
     }
 }

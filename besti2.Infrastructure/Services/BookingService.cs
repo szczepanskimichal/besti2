@@ -26,7 +26,7 @@ public class BookingService(
 
     //
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
-        Guid serviceId, Guid employeeId, DateOnly date, CancellationToken cancellationToken = default)
+        Guid serviceId, Guid employeeId, DateOnly date, int units = 1, CancellationToken cancellationToken = default)
     {
         var service = await dbContext.Services
             .AsNoTracking()
@@ -38,7 +38,11 @@ public class BookingService(
         {
             return null;
         }
-
+        // "Per time" services can be booked for several hours in a row
+        if (VisitMinutes(service, units) is not int minutes)
+        {
+            return null;
+        }
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
         if (date.Year is < 2000 or > 2100)
         {
@@ -79,13 +83,14 @@ public class BookingService(
             date,
             hours.OpensAt,
             hours.ClosesAt,
-            service.DurationMinutes,
+            minutes,
             busy.Select(b => (b.StartUtc, b.EndUtc)).Concat(blocked.Select(t => (t.StartUtc, t.EndUtc))).ToList(),
             DateTime.UtcNow);
     }
 
     public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
-        Guid serviceId, Guid? employeeId, DateOnly from, int days, CancellationToken cancellationToken = default)
+        Guid serviceId, Guid? employeeId, DateOnly from, int days, int units = 1,
+        CancellationToken cancellationToken = default)
     {
         var service = await dbContext.Services
             .AsNoTracking()
@@ -94,7 +99,10 @@ public class BookingService(
         {
             return null;
         }
-
+        if (VisitMinutes(service, units) is not int minutes)
+        {
+            return null;
+        }
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
         if (from.Year is < 2000 or > 2100)
         {
@@ -153,7 +161,7 @@ public class BookingService(
 
             var slots = employeeIds
                 .SelectMany(id => SlotCalculator.GetFreeSlots(
-                        date, dayHours.OpensAt, dayHours.ClosesAt, service.DurationMinutes,
+                        date, dayHours.OpensAt, dayHours.ClosesAt, minutes,
                         busy.Where(b => b.EmployeeId == id).Select(b => (b.StartUtc, b.EndUtc))
                             .Concat(blocked.Where(t => t.EmployeeId == null || t.EmployeeId == id)
                                 .Select(t => (t.StartUtc, t.EndUtc)))
@@ -188,7 +196,10 @@ public class BookingService(
         {
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
         }
-
+        if (VisitMinutes(service, request.Units) is not int minutes)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: "Velg en gyldig varighet.");
+        }
         // The day in Oslo, not in UTC (00:30 on Tuesday in Oslo is still Monday in UTC)
         var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(request.StartUtc, Oslo));
 
@@ -203,7 +214,7 @@ public class BookingService(
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
 
-        var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, cancellationToken);
+        var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, request.Units, cancellationToken);
         if (freeSlots is null)
         {
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
@@ -218,7 +229,7 @@ public class BookingService(
         // booking for someone else comes later with BESTI sammen
         if (customerUserId is not null)
         {
-            var endUtc = request.StartUtc.AddMinutes(service.DurationMinutes);
+            var endUtc = request.StartUtc.AddMinutes(minutes);
             var customerBusy = await dbContext.Bookings.AnyAsync(b =>
                 b.CustomerUserId == customerUserId
                 && b.Status != BookingStatus.Avlyst
@@ -236,7 +247,7 @@ public class BookingService(
             ServiceId = request.ServiceId,
             EmployeeId = request.EmployeeId,
             StartUtc = request.StartUtc,
-            EndUtc = request.StartUtc.AddMinutes(service.DurationMinutes),
+            EndUtc = request.StartUtc.AddMinutes(minutes),
             CustomerName = request.CustomerName.Trim(),
             CustomerPhone = request.CustomerPhone.Trim(),
             CustomerEmail = request.CustomerEmail.Trim().ToLowerInvariant(),
@@ -758,7 +769,22 @@ public class BookingService(
         Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+    // How long the visit is: "Per time" services may be booked several times in a row,
+    // up to 8 hours in total (null = not allowed)
+    private static int? VisitMinutes(Service service, int units)
+    {
+        if (units == 1)
+        {
+            return service.DurationMinutes;
+        }
 
+        if (service.PriceType != PriceType.PerTime || units < 1 || service.DurationMinutes * units > 480)
+        {
+            return null;
+        }
+
+        return service.DurationMinutes * units;
+    }
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
     {

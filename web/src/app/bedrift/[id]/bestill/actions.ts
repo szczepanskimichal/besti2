@@ -11,11 +11,11 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
     const employeeId = String(formData.get("employeeId"));
     const startUtc = String(formData.get("startUtc"));
     const date = String(formData.get("date"));
-
+    const units = Number(formData.get("units") ?? 1);
     const token = await getToken();
     if (!token) {
     // Come back to the same time after logging in
-        const back = `/bedrift/${businessId}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc })}`;
+        const back = `/bedrift/${businessId}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc, antall: String(units) })}`;
         redirect(`/logg-inn?neste=${encodeURIComponent(back)}`);
     }
     // Name and email come from the account in the API
@@ -28,6 +28,7 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
         customerEmail: "",
         marketingConsent: formData.get("marketingConsent") === "on",
         note: String(formData.get("note") ?? ""),
+        units,
     }, token);
     const basePath = `/bedrift/${businessId}/bestill`;
 
