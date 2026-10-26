@@ -22,6 +22,12 @@ export function formatPrice(priceNok: number | null, priceType: string): string 
             return amount;
     }
 }
+// Length of a visit: 180 -> "3 t", 90 -> "1 t 30 min", 45 -> "45 min"
+export function formatLength(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const rest = minutes % 60;
+    return [hours > 0 ? `${hours} t` : "", rest > 0 ? `${rest} min` : ""].filter(Boolean).join(" ");
+}
 
 const osloTime = new Intl.DateTimeFormat("nb-NO", {
     timeZone: "Europe/Oslo",

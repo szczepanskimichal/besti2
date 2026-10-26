@@ -93,6 +93,7 @@ export type CreateBookingInput = {
     customerEmail: string;
     marketingConsent: boolean;
     note?: string;
+    units?: number; // "Per time" services: how many hours in a row
 };
 
 export type PanelBooking = {

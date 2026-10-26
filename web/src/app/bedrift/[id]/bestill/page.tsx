@@ -2,18 +2,18 @@ import NextLink from "next/link";
 import {notFound} from "next/navigation";
 import {getBusiness, getFreeDays, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {formatDay, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
+import {formatDay, formatLength, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
 import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; fra?: string; dato?: string; tid?: string; }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; fra?: string; dato?: string; tid?: string; antall?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
     const {id} = await params;
-    const {tjeneste, ansatt, fra, dato, tid} = await searchParams;
+    const {tjeneste, ansatt, fra, dato, tid, antall} = await searchParams;
 
     const business = await getBusiness(id);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -24,6 +24,9 @@ export default async function BookingPage({params, searchParams}: Props) {
 
     // Only values that still make sense (old "Bestill igjen" links, edited or cut-off addresses)
     const employeeId = business.employees.some((e) => e.id === ansatt) ? ansatt : undefined; // undefined = Hvem som helst
+    // "Per time" services: the customer picks how many times the service length in a row, max 8 hours
+    const maxUnits = service.priceType === "PerTime" ? Math.floor(480 / service.durationMinutes) : 1;
+    const units = Math.min(Math.max(Math.floor(Number(antall)) || 1, 1), maxUnits);
     const today = todayInOslo();
     const chosenDay = isIsoDate(dato) && dato >= today ? dato : undefined;
     // First day of the 7-day strip
@@ -31,7 +34,7 @@ export default async function BookingPage({params, searchParams}: Props) {
     // Free times for 7 days and who is booking (null = not logged in), both at the same time
     const token = await getToken();
     const [days, me] = await Promise.all([
-        getFreeDays(service.id, employeeId, start),
+        getFreeDays(service.id, employeeId, start, units),
         token ? getMe(token) : null,
     ]);
     // The chosen day, otherwise the first day with free times
@@ -46,6 +49,9 @@ export default async function BookingPage({params, searchParams}: Props) {
         const query = new URLSearchParams({tjeneste: service!.id, fra: from});
         if (employeeId) {
             query.set("ansatt", employeeId);
+        }
+        if (units > 1) {
+            query.set("antall", String(units));
         }
         if (day) {
             query.set("dato", day);
@@ -64,7 +70,7 @@ export default async function BookingPage({params, searchParams}: Props) {
 
             <h1 className={styles.title}>Bestill {service.name}</h1>
             <p className={styles.muted}>
-                {service.durationMinutes} min · {formatPrice(service.priceNok, service.priceType)}
+                {formatLength(service.durationMinutes)} · {formatPrice(service.priceNok, service.priceType)}
             </p>
 
             <form method="get" className={styles.filters}>
@@ -83,6 +89,17 @@ export default async function BookingPage({params, searchParams}: Props) {
                         ))}
                     </select>
                 </label>
+
+                {maxUnits > 1 && (
+                    <label className={styles.field}>
+                        Varighet
+                        <select name="antall" defaultValue={units}>
+                            {Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
+                                <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
+                            ))}
+                        </select>
+                    </label>
+                )}
 
                 <button type="submit" className={styles.secondaryButton}>Vis ledige tider</button>
             </form>
@@ -146,6 +163,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                     <p className={styles.muted}>
                         {formatDay(selected.date)} kl. {formatTime(chosen.startUtc)}
                         {chosenEmployee && ` hos ${chosenEmployee.name}`}
+                        {` · ${formatLength(units * service.durationMinutes)}`}
                     </p>
                     {!me && (
                         <p className={styles.muted}>
@@ -161,7 +179,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                     )}
                     {me && !me.isBusiness && (
                         <BookingForm businessId={business.id} serviceId={service.id} employeeId={chosen.employeeId}
-                                     startUtc={chosen.startUtc} date={selected.date} fullName={me.fullName}
+                                     startUtc={chosen.startUtc} date={selected.date} units={units} fullName={me.fullName}
                                      email={me.email} phone={me.phone}/>)}
                 </section>
             )}

@@ -13,17 +13,17 @@ public static class BookingEndpoints
 
         // Get availability for a service and employee on a specific date
         group.MapGet("/availability", async (Guid serviceId, Guid employeeId, DateOnly date, IBookingService bookingService,
-            CancellationToken cancellationToken) =>
+            CancellationToken cancellationToken, int units = 1) =>
         {
-            var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
+            var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, units, cancellationToken);
             return slots is null ? Results.NotFound() : Results.Ok(slots);
         });
 
         // "Velg dag": free times for 7 days from a date; without employeeId = anyone free
         group.MapGet("/availability/days", async (Guid serviceId, Guid? employeeId, DateOnly from,
-            IBookingService bookingService, CancellationToken cancellationToken) =>
+            IBookingService bookingService, CancellationToken cancellationToken, int units = 1) =>
         {
-            var days = await bookingService.GetFreeDaysAsync(serviceId, employeeId, from, 7, cancellationToken);
+            var days = await bookingService.GetFreeDaysAsync(serviceId, employeeId, from, 7, units, cancellationToken);
             return days is null ? Results.NotFound() : Results.Ok(days);
         });
         // Create a new booking (customers only; name and email come from the account)
