@@ -154,7 +154,7 @@ app.UseRateLimiter();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
-
+app.MapAccountEndpoints();
 app.MapGodkjennEndpoints();
 app.MapNotificationEndpoints();
 app.MapAccountEndpoints();
@@ -182,37 +182,6 @@ app.MapGet("/api/businesses/{id:guid}",
         var business = await businessService.GetByIdAsync(id, cancellationToken);
         return business is null ? Results.NotFound() : Results.Ok(business);
     });
-// Get availability for a service and employee on a specific date
-app.MapGet("/api/availability", async (Guid serviceId, Guid employeeId, DateOnly date, IBookingService bookingService,
-    CancellationToken cancellationToken) =>
-{
-    var slots = await bookingService.GetFreeSlotsAsync(serviceId, employeeId, date, cancellationToken);
-    return slots is null ? Results.NotFound() : Results.Ok(slots);
-});
-
-// Create a new booking (customers only; name and email come from the account)
-app.MapPost("/api/bookings",
-    async (CreateBookingRequest request, ClaimsPrincipal principal, UserManager<AppUser> userManager,
-        IBookingService bookingService, CancellationToken cancellationToken) =>
-    {
-        var user = await userManager.GetUserAsync(principal);
-        if (user is null || user.BusinessId is not null)
-        {
-            return Results.BadRequest(new { message = "Logg inn med en kundekonto for å bestille." });
-        }
-
-        // Never trust name/email from the form: use the account's
-        var fromAccount = request with { CustomerName = user.FullName ?? "", CustomerEmail = user.Email ?? "" };
-        var result = await bookingService.CreateAsync(fromAccount, user.Id, cancellationToken);
-        return result.Outcome switch
-        {
-            CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
-            CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
-            CreateBookingOutcome.SlotTaken => Results.Conflict(
-                new { message = "Tiden er dessverre ikke lenger ledig." }),
-            _ => Results.NotFound()
-        };
-    }).RequireAuthorization().RequireRateLimiting("booking");
 
 // Register a new business with its owner account
 app.MapPost("/api/businesses/register", async (RegisterBusinessRequest request,
@@ -287,24 +256,6 @@ app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry 
     };
 }).RequireRateLimiting("signup");
 
-// Customer: cancel own booking before it starts
-app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-{
-    var userId = userManager.GetUserId(principal);
-    if (userId is null)
-    {
-        return Results.Unauthorized();
-    }
-
-    return await bookingService.CancelByCustomerAsync(id, userId, cancellationToken) switch
-    {
-        UpdateBookingStatusOutcome.Updated => Results.NoContent(),
-        UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(
-            new { message = "Bestillingen kan ikke avbestilles lenger." }),
-        _ => Results.NotFound()
-    };
-}).RequireAuthorization();
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
 // "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
 app.MapGet("/api/ny-tid", async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
@@ -667,12 +618,5 @@ app.MapPost("/api/panel/bookings/{id:guid}/flytt", async (Guid id, MoveBookingRe
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
-
-static IResult NewTimeResult(NewTimeOutcome outcome) => outcome switch
-{
-    NewTimeOutcome.Accepted or NewTimeOutcome.Declined => Results.Ok(new { outcome = outcome.ToString() }),
-    NewTimeOutcome.TooLate => Results.BadRequest(new { message = "Timen har allerede startet." }),
-    _ => Results.NotFound(new { message = "Lenken er ikke gyldig lenger. Kanskje du allerede har svart?" })
-};
 
 app.Run();
