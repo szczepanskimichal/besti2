@@ -67,6 +67,7 @@ if (!string.IsNullOrEmpty(keysPath))
         .SetApplicationName("besti2")
         .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
 }
+
 builder.Services.AddRateLimiter(options =>
 {
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -87,6 +88,7 @@ builder.Services.AddRateLimiter(options =>
                     QueueLimit = 0
                 }));
     }
+
     // Max 10 image uploads per minute per account (reading a photo is heavy work for the server)
     options.AddPolicy("upload", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
@@ -106,6 +108,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     await DevUserSeeder.SeedAsync(app.Services);
 }
+
 // On the server: bring the database up to date and remove the demo businesses (flags in the server settings)
 if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
@@ -143,10 +146,12 @@ app.Use(async (context, next) =>
             return;
         }
     }
+
     await next();
 });
 app.UseAuthorization();
 app.UseRateLimiter();
+app.MapNotificationEndpoints();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
@@ -158,7 +163,8 @@ app.MapGet("/api/businesses",
         double? lng, double? maxKm, int? page,
         IBusinessService businessService, CancellationToken cancellationToken) =>
     {
-        var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, cancellationToken);
+        var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm,
+            cancellationToken);
         // 24 businesses per page (?page=2 ...)
         return Results.Ok(BusinessPageDto.From(all, page));
     });
@@ -235,6 +241,7 @@ app.MapPost("/api/account/confirm-email", async (ConfirmEmailRequest request,
         // A business owner: the business now shows up for customers
         await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
     }
+
     return confirmed
         ? Results.NoContent()
         : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
@@ -246,7 +253,8 @@ app.MapGet("/api/me", async (ClaimsPrincipal principal, UserManager<AppUser> use
     var user = await userManager.GetUserAsync(principal);
     return user is null
         ? Results.Unauthorized()
-        : Results.Ok(new { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
+        : Results.Ok(new
+            { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
 }).RequireAuthorization();
 
 // Customer: own bookings for "Mine bestillinger"
@@ -268,6 +276,7 @@ app.MapPost("/api/me/reviews", async (CreateReviewRequest request, ClaimsPrincip
     {
         return Results.Unauthorized();
     }
+
     var error = await reviewService.CreateAsync(userId, request, cancellationToken);
     return error is null ? Results.Created() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
@@ -296,6 +305,7 @@ app.MapPost("/api/panel/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewR
     {
         return Results.Forbid();
     }
+
     var error = await reviewService.ReplyAsync(businessId, id, request.Reply, cancellationToken);
 
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
@@ -309,6 +319,7 @@ app.MapGet("/api/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry 
     {
         return Results.BadRequest(new { message = "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig." });
     }
+
     var lookup = await registry.LookupAsync(orgNumber, cancellationToken);
     return lookup.Status switch
     {
@@ -348,6 +359,7 @@ app.MapPut("/api/me/profile", async (UpdateMyProfileRequest request, ClaimsPrinc
     {
         return Results.Unauthorized();
     }
+
     var error = await profileService.UpdateAsync(userId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization();
@@ -360,6 +372,7 @@ app.MapPost("/api/me/password", async (ChangePasswordRequest request, ClaimsPrin
     {
         return Results.Unauthorized();
     }
+
     var error = await profileService.ChangePasswordAsync(userId, request);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization().RequireRateLimiting("login");
@@ -373,6 +386,7 @@ app.MapPost("/api/me/delete", async (DeleteAccountRequest request, ClaimsPrincip
     {
         return Results.Unauthorized();
     }
+
     var error = await profileService.DeleteAsync(userId, request, cancellationToken);
     return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
 }).RequireAuthorization().RequireRateLimiting("login");
@@ -395,114 +409,6 @@ app.MapPost("/api/me/bookings/{id:guid}/avbestill", async (Guid id, ClaimsPrinci
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
-// The bell (🔔): the newest notifications of the logged-in customer or business, and how many are unread
-app.MapGet("/api/notifications", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    INotificationService notificationService, CancellationToken cancellationToken) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    return user is null
-        ? Results.Unauthorized()
-        : Results.Ok(await notificationService.GetAsync(user.Id, user.BusinessId, cancellationToken));
-}).RequireAuthorization();
-// Only the number on the bell, for the header on every page (cheap: one COUNT)
-app.MapGet("/api/notifications/unread", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    INotificationService notificationService, CancellationToken cancellationToken) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    return user is null
-        ? Results.Unauthorized()
-        : Results.Ok(new { unread = await notificationService.UnreadCountAsync(user.Id, user.BusinessId, cancellationToken) });
-}).RequireAuthorization();
-// The bell, live: an open connection (Server-Sent Events) that sends the number of unread notifications
-// at once when it changes, and a small ping every 25 s so proxies keep the connection open
-app.MapGet("/api/notifications/stream", async (HttpContext context, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, INotificationService notificationService) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    if (user is null)
-    {
-        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-        return;
-    }
-
-    context.Response.Headers.ContentType = "text/event-stream";
-    context.Response.Headers.CacheControl = "no-cache";
-    var cancellationToken = context.RequestAborted;
-    using var subscription = NotificationSignals.Subscribe(NotificationSignals.Key(user.Id, user.BusinessId));
-
-    async Task SendCountAsync()
-    {
-        var unread = await notificationService.UnreadCountAsync(user.Id, user.BusinessId, cancellationToken);
-        await context.Response.WriteAsync($"data: {unread}\n\n", cancellationToken);
-        await context.Response.Body.FlushAsync(cancellationToken);
-    }
-
-    try
-    {
-        await SendCountAsync();
-        while (!cancellationToken.IsCancellationRequested)
-        {
-            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeout.CancelAfter(TimeSpan.FromSeconds(25));
-            try
-            {
-                await subscription.Reader.ReadAsync(timeout.Token);
-                await SendCountAsync();
-            }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                await context.Response.WriteAsync(": ping\n\n", cancellationToken);
-                await context.Response.Body.FlushAsync(cancellationToken);
-            }
-        }
-    }
-    catch (OperationCanceledException)
-    {
-        // The browser closed the page: nothing to do
-    }
-}).RequireAuthorization();
-
-// "Merk alle som lest"
-app.MapPost("/api/notifications/read", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-    INotificationService notificationService, CancellationToken cancellationToken) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    if (user is null)
-    {
-        return Results.Unauthorized();
-    }
-    await notificationService.MarkAllReadAsync(user.Id, user.BusinessId, cancellationToken);
-    return Results.NoContent();
-}).RequireAuthorization();
-
-// A click on one notification: read, and where it leads
-app.MapPost("/api/notifications/{id:guid}/read", async (Guid id, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, INotificationService notificationService, CancellationToken cancellationToken) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    if (user is null)
-    {
-        return Results.Unauthorized();
-    }
-    var read = await notificationService.MarkReadAsync(user.Id, user.BusinessId, id, cancellationToken);
-    return read is null ? Results.NotFound() : Results.Ok(read);
-}).RequireAuthorization();
-
-// The bin next to one notification
-app.MapDelete("/api/notifications/{id:guid}", async (Guid id, ClaimsPrincipal principal,
-    UserManager<AppUser> userManager, INotificationService notificationService, CancellationToken cancellationToken) =>
-{
-    var user = await userManager.GetUserAsync(principal);
-    if (user is null)
-    {
-        return Results.Unauthorized();
-    }
-    return await notificationService.DeleteAsync(user.Id, user.BusinessId, id, cancellationToken)
-        ? Results.NoContent()
-        : Results.NotFound();
-}).RequireAuthorization();
-
-
 // ?from=2026-10-20&to=2026-10-26 = the days shown in the calendar (Oslo time); without: the list
 // "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
 app.MapGet("/api/ny-tid", async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
@@ -808,7 +714,8 @@ auth.AddEndpointFilter(async (context, next) =>
 auth.MapIdentityApi<AppUser>();
 
 // Shared logic for panel status changes (confirm / cancel)
-async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, string? message, ClaimsPrincipal principal,
+async Task<IResult> ChangeBookingStatusAsync(Guid id, BookingStatus newStatus, string? message,
+    ClaimsPrincipal principal,
     UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken)
 {
     var user = await userManager.GetUserAsync(principal);
@@ -838,9 +745,9 @@ app.MapPost("/api/panel/bookings/{id:guid}/bekreft", (Guid id, ClaimsPrincipal p
 
 /// Cancel a booking; the body { message } is optional
 app.MapPost("/api/panel/bookings/{id:guid}/avlys", (Guid id, CancelBookingRequest? request, ClaimsPrincipal principal,
-        UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
-    ChangeBookingStatusAsync(id, BookingStatus.Avlyst, request?.Message, principal, userManager, bookingService,
-        cancellationToken))
+            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+        ChangeBookingStatusAsync(id, BookingStatus.Avlyst, request?.Message, principal, userManager, bookingService,
+            cancellationToken))
     .RequireAuthorization();
 
 // Move a visit to another time and/or employee
@@ -864,10 +771,12 @@ app.MapPost("/api/panel/bookings/{id:guid}/flytt", async (Guid id, MoveBookingRe
         _ => Results.NotFound()
     };
 }).RequireAuthorization();
+
 static IResult NewTimeResult(NewTimeOutcome outcome) => outcome switch
 {
     NewTimeOutcome.Accepted or NewTimeOutcome.Declined => Results.Ok(new { outcome = outcome.ToString() }),
     NewTimeOutcome.TooLate => Results.BadRequest(new { message = "Timen har allerede startet." }),
     _ => Results.NotFound(new { message = "Lenken er ikke gyldig lenger. Kanskje du allerede har svart?" })
 };
+
 app.Run();
