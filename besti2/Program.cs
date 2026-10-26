@@ -150,14 +150,20 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.UseRateLimiter();
+// For Docker and the deploy check: 200 when the API and its database answer
+app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
+    await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));
 
+app.MapBusinessEndpoints();
+app.MapBookingEndpoints();
+app.MapAccountEndpoints();
+app.MapGodkjennEndpoints();
+app.MapNotificationEndpoints();
 // Business panel: the owner's reviews
 app.MapGet("/api/panel/reviews", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
     IReviewService reviewService, CancellationToken cancellationToken) =>
 {
     var user = await userManager.GetUserAsync(principal);
-    app.MapBookingEndpoints();
-    app.MapBusinessEndpoints();
     return user?.BusinessId is Guid businessId
         ? Results.Ok(await reviewService.GetForBusinessAsync(businessId, cancellationToken))
         : Results.Forbid();
