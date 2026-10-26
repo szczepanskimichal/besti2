@@ -67,7 +67,6 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             LogoUrl = ToLogoUrl(b.LogoUrl),
             AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
         }).ToList();
-        // No date and no time of day: the list as before. With a date: free times that day.
         // // Only a time of day: the soonest day for each business
         var list = date is not null
             ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)
