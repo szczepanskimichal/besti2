@@ -1,4 +1,5 @@
 using besti2.Application.Businesses;
+using besti2.Application.Common;
 using besti2.Application.Email;
 using besti2.Application.Geocoding;
 using besti2.Domain.Entities;
@@ -7,8 +8,6 @@ using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace besti2.Infrastructure.Services;
 
@@ -209,8 +208,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             return;
         }
 
-        var token = NewToken();
-        business.ApprovalTokenHash = Hash(token);
+        var token = SecureToken.New();
+        business.ApprovalTokenHash = SecureToken.Hash(token);
         await dbContext.SaveChangesAsync(cancellationToken);
         await TrySendApprovalRequestAsync(business, owner.Email!, token, cancellationToken);
     }
@@ -297,7 +296,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             return null;
         }
-        var hash = Hash(token);
+        var hash = SecureToken.Hash(token);
         return await dbContext.Businesses.FirstOrDefaultAsync(b => b.ApprovalTokenHash == hash, cancellationToken);
     }
 
@@ -325,12 +324,6 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         }
     }
 
-    // A one-time link token: 32 random bytes, URL-safe; only its hash is stored
-    private static string NewToken() =>
-        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-    private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
-    
     // Mails the confirmation link; a mail error must not undo the registration
     private async Task TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
     {

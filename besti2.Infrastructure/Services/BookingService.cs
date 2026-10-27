@@ -1,7 +1,5 @@
-using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using besti2.Application.Bookings;
+using besti2.Application.Common;
 using besti2.Application.Email;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
@@ -19,12 +17,8 @@ public class BookingService(
     ILogger<BookingService> logger,
     string webBaseUrl = "http://localhost:3000") : IBookingService
 {
-    // date in norwegian!!!
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
-    private static readonly CultureInfo Norwegian = new("nb-NO");
-
-    //
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, int units = 1, CancellationToken cancellationToken = default)
     {
@@ -284,7 +278,7 @@ public class BookingService(
 
         await SendConfirmationEmailAsync(booking, service, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
-            $"Ny bestilling: {booking.CustomerName}, {service.Name} {When(booking.StartUtc)}", PanelLink(booking),
+            $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}", PanelLink(booking),
             cancellationToken);
 
         return new CreateBookingResult(
@@ -494,7 +488,7 @@ public class BookingService(
         var note = ShortNote(message);
         await SendCancelledByCustomerEmailAsync(booking, note, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
-            $"{booking.CustomerName} har avbestilt timen {When(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
+            $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
             PanelLink(booking), cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
@@ -556,8 +550,8 @@ public class BookingService(
         await SendStatusEmailAsync(booking, note, cancellationToken);
         await NotifyAsync(booking, toBusiness: false,
             newStatus == BookingStatus.Bekreftet
-                ? $"{{0}} har bekreftet timen {When(booking.StartUtc)}"
-                : $"{{0}} har avlyst timen {When(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
+                ? $"{{0}} har bekreftet timen {OsloTime.Format(booking.StartUtc)}"
+                : $"{{0}} har avlyst timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
             newStatus == BookingStatus.Bekreftet ? "/min-besti" : null, cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
@@ -644,8 +638,8 @@ public class BookingService(
         string? token = null;
         if (request.AskCustomer && booking.CustomerEmail.Length > 0)
         {
-            token = NewToken();
-            booking.NewTimeTokenHash = Hash(token);
+            token = SecureToken.New();
+            booking.NewTimeTokenHash = SecureToken.Hash(token);
             booking.PreviousStartUtc = oldStartUtc;
             booking.Status = BookingStatus.VenterKunde;
         }
@@ -677,14 +671,14 @@ public class BookingService(
         {
             await SendMovedEmailAsync(booking, oldStartUtc, $"{webBaseUrl}/ny-tid?token={token}", cancellationToken);
             await NotifyAsync(booking, toBusiness: false,
-                $"{{0}} ønsker å flytte timen til {When(booking.StartUtc)}. Passer det?", "/min-besti",
+                $"{{0}} ønsker å flytte timen til {OsloTime.Format(booking.StartUtc)}. Passer det?", "/min-besti",
                 cancellationToken);
         }
         else if (request.NotifyCustomer)
         {
             await SendMovedEmailAsync(booking, oldStartUtc, null, cancellationToken);
             await NotifyAsync(booking, toBusiness: false,
-                $"{{0}} har flyttet timen til {When(booking.StartUtc)}", "/min-besti", cancellationToken);
+                $"{{0}} har flyttet timen til {OsloTime.Format(booking.StartUtc)}", "/min-besti", cancellationToken);
         }
 
         return new MoveBookingResult(MoveBookingOutcome.Moved);
@@ -697,7 +691,7 @@ public class BookingService(
             return null;
         }
 
-        var hash = Hash(token);
+        var hash = SecureToken.Hash(token);
         return await dbContext.Bookings.AsNoTracking()
             .Where(b => b.NewTimeTokenHash == hash && b.Status == BookingStatus.VenterKunde)
             .Select(b => new NewTimeDto(b.Service.Business.Name, b.Service.Name,
@@ -713,7 +707,7 @@ public class BookingService(
             return NewTimeOutcome.NotFound;
         }
 
-        var hash = Hash(token);
+        var hash = SecureToken.Hash(token);
         var booking = await dbContext.Bookings
             .FirstOrDefaultAsync(b => b.NewTimeTokenHash == hash, cancellationToken);
         return await AnswerAsync(booking, accept, cancellationToken);
@@ -755,8 +749,8 @@ public class BookingService(
         await SendNewTimeAnswerEmailAsync(booking, accept, cancellationToken);
         await NotifyAsync(booking, toBusiness: true,
             accept
-                ? $"{booking.CustomerName} har godtatt ny tid {When(booking.StartUtc)}. Bekreft timen."
-                : $"{booking.CustomerName} kan ikke komme {When(booking.StartUtc)}. Timen er avlyst.",
+                ? $"{booking.CustomerName} har godtatt ny tid {OsloTime.Format(booking.StartUtc)}. Bekreft timen."
+                : $"{booking.CustomerName} kan ikke komme {OsloTime.Format(booking.StartUtc)}. Timen er avlyst.",
             PanelLink(booking), cancellationToken);
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
     }
@@ -808,7 +802,7 @@ public class BookingService(
         {
             await SendNoShowEmailAsync(booking, cancellationToken);
             await NotifyAsync(booking, toBusiness: false,
-                $"{{0}} har registrert at du ikke møtte {When(booking.StartUtc)}. Var du der? Se e-posten.",
+                $"{{0}} har registrert at du ikke møtte {OsloTime.Format(booking.StartUtc)}. Var du der? Se e-posten.",
                 "/min-besti", cancellationToken);
         }
         else if (wasNoShow)
@@ -826,22 +820,12 @@ public class BookingService(
     // The column holds 300 characters (a long cancellation note is cut)
     private static string Shorten(string text) => text.Length <= 300 ? text : text[..299] + "…";
 
-    // "torsdag 22. oktober kl. 10:00"
-    private static string When(DateTime utc) =>
-        TimeZoneInfo.ConvertTimeFromUtc(utc, Oslo).ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
-
     // The visit in the business calendar: its day with the details window open
     private static string PanelLink(Booking booking)
     {
         var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo));
         return $"/panel?dag={day:yyyy-MM-dd}&bestilling={booking.Id}";
     }
-
-    // A one-time link token: 32 random bytes, URL-safe; only its hash is stored
-    private static string NewToken() =>
-        Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-    private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
 
     // How long the visit is: "Per time" services may be booked several times in a row,
     // up to 8 hours in total (null = not allowed)
@@ -868,7 +852,7 @@ public class BookingService(
             return "Navn er påkrevd (maks 100 tegn).";
         }
 
-        if (!IsValidPhone(request.CustomerPhone))
+        if (!PhoneNumber.IsValid(request.CustomerPhone))
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
@@ -894,7 +878,7 @@ public class BookingService(
             return "Navn er påkrevd (maks 100 tegn).";
         }
 
-        if (!IsValidPhone(request.CustomerPhone))
+        if (!PhoneNumber.IsValid(request.CustomerPhone))
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
@@ -917,16 +901,6 @@ public class BookingService(
         }
 
         return null;
-    }
-
-    // Digits, spaces and an optional + only, at least 8 digits (91234567, +47 912 34 567)
-    private static bool IsValidPhone(string? value)
-    {
-        var phone = value?.Trim() ?? "";
-        return phone.Length is > 0 and <= 20
-               && phone.All(c => char.IsDigit(c) || c == ' ' || c == '+')
-               && phone.Count(char.IsDigit) >= 8
-               && phone.LastIndexOf('+') <= 0;
     }
 
     // SQL Server lock per employee inside the open transaction; false when not granted within 10 s
@@ -956,8 +930,7 @@ public class BookingService(
             var business = await dbContext.Businesses.AsNoTracking()
                 .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
 
-            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
-            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var when = OsloTime.Format(booking.StartUtc);
 
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
@@ -997,14 +970,11 @@ public class BookingService(
             var employee = await dbContext.Employees.AsNoTracking()
                 .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
 
-            string When(DateTime utc) =>
-                TimeZoneInfo.ConvertTimeFromUtc(utc, Oslo).ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
-
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
                 (answerLink is null ? "Timen din har fått ny tid.\n\n" : "Bedriften ønsker å flytte timen din.\n\n") +
-                $"Ny tid: {When(booking.StartUtc)}\n" +
-                $"Tidligere tid: {When(oldStartUtc)}\n" +
+                $"Ny tid: {OsloTime.Format(booking.StartUtc)}\n" +
+                $"Tidligere tid: {OsloTime.Format(oldStartUtc)}\n" +
                 $"Tjeneste: {service.Name} hos {employee.Name} {employee.LastName}\n" +
                 $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
                 (answerLink is null
@@ -1038,8 +1008,7 @@ public class BookingService(
             var business = await dbContext.Businesses.AsNoTracking()
                 .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
 
-            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
-            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var when = OsloTime.Format(booking.StartUtc);
 
             // Cancelled: the business's own words (if any) and a link straight to its booking page
             var (subject, message) = booking.Status == BookingStatus.Bekreftet
@@ -1072,8 +1041,7 @@ public class BookingService(
                 .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
             var business = await dbContext.Businesses.AsNoTracking()
                 .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
-            var when = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo)
-                .ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var when = OsloTime.Format(booking.StartUtc);
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
                 $"{business.Name} har registrert at du ikke møtte til timen din.\n\n" +
@@ -1099,8 +1067,7 @@ public class BookingService(
                 .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
             var business = await dbContext.Businesses.AsNoTracking()
                 .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
-            var when = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo)
-                .ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var when = OsloTime.Format(booking.StartUtc);
             var body =
                 $"Hei {business.Name}!\n\n" +
                 (accept
@@ -1129,8 +1096,7 @@ public class BookingService(
                 .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
             var business = await dbContext.Businesses.AsNoTracking()
                 .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
-            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
-            var when = start.ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var when = OsloTime.Format(booking.StartUtc);
             var body =
                 $"Hei {business.Name}!\n\n" +
                 $"{booking.CustomerName} har avbestilt timen.\n\n" +
