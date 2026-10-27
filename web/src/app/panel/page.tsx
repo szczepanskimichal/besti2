@@ -9,6 +9,7 @@ import { statusLabels } from "@/lib/bookingStatus";
 import type { BusinessDetails, PanelBooking, TimeOff } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { cancelBookingAction, confirmBookingAction, deleteTimeOffAction } from "./actions";
+import { NoShowButtons, NoShowCount } from "./NoShow";
 import MoveBookingForm from "./MoveBookingForm";
 import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
@@ -389,7 +390,7 @@ function PhoneList({ columns, hrefFor, blockHref }: { columns: Column[]; hrefFor
 
 // The details window for one visit: customer, contact, note and Bekreft / Avlys
 function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBooking; closeHref: string; moveHref: string }) {
-    const { canConfirm, canCancel, canMove } = allowedActions(booking);
+    const { started, canConfirm, canCancel, canMove } = allowedActions(booking);
     return (
         <div className={calendar.overlay}>
             <section className={calendar.dialog} role="dialog" aria-modal="true" aria-labelledby="booking-title">
@@ -419,6 +420,7 @@ function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBookin
                         </>
                     )}
                 </p>
+                <NoShowCount count={booking.noShowCount}/>
                 {booking.customerNote && (
                     <div className={styles.note}>
                         <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
@@ -461,6 +463,7 @@ function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBookin
                         )}
                     </div>
                 )}
+                {started && <NoShowButtons booking={booking} back={closeHref}/>}
             </section>
         </div>
     );
@@ -492,7 +495,9 @@ function allowedActions(booking: PanelBooking) {
     const started = new Date(booking.startUtc).getTime() <= Date.now();
     const open = booking.status !== "Avlyst" && !started;
     return {
-        canConfirm: booking.status === "Venter",
+        started,
+        // After the start time "Møtte" / "Møtte ikke" take over from "Bekreft"
+        canConfirm: booking.status === "Venter" && !started,
         canCancel: open,
         canMove: open,
     };

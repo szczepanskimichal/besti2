@@ -200,7 +200,7 @@ export async function deleteTimeOff(token: string, id: string): Promise<boolean>
 }
 // "tooLate" = the API refused because the visit has started (409), so the panel can say why
 // message = optional text for the customer when cancelling ("Beklager, Ingrid er syk")
-export async function changeBookingStatus(token: string, bookingId: string, action: "bekreft" | "avlys", message?: string): Promise<"ok" | "tooLate" | "error"> {
+export async function changeBookingStatus(token: string, bookingId: string,     action: "bekreft" | "avlys" | "motte-ikke", message?: string): Promise<"ok" | "tooLate" | "error"> {
     const body = action === "avlys" ? { message: message?.trim() || null } : undefined;
     const res = await apiFetch(`/api/panel/bookings/${bookingId}/${action}`, { method: "POST", token, body });
     if (res.ok) return "ok";

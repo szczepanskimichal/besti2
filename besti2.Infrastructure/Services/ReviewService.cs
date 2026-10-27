@@ -44,6 +44,10 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
 
         // Every customer may review a visit that is over and was not cancelled, also when the business
         // never pressed "Bekreft": the business must not choose who gets to review it
+        if (booking.Status == BookingStatus.MotteIkke)
+        {
+            return "Du kan ikke vurdere en time du ikke møtte til.";
+        }
         if (booking.Status == BookingStatus.Avlyst || booking.EndUtc > DateTime.UtcNow)
         {
             return "Du kan gi en vurdering etter timen.";
@@ -52,7 +56,6 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
         {
             return "Du kan gi en vurdering innen 30 dager etter timen.";
         }
-
         if (await dbContext.Reviews.AnyAsync(r => r.BookingId == booking.Id, cancellationToken))
 
         {

@@ -7,7 +7,7 @@ import { safeRedirectPath } from "@/lib/safeRedirect";
 import type { FormState } from "@/lib/formState";
 
 
-async function changeStatus(formData: FormData, action: "bekreft" | "avlys") {
+async function changeStatus(formData: FormData, action: "bekreft" | "avlys" | "motte-ikke") {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
@@ -31,6 +31,10 @@ export async function confirmBookingAction(formData: FormData) {
 export async function cancelBookingAction(formData: FormData) {
     await changeStatus(formData, "avlys");
 }
+export async function noShowAction(formData: FormData) {
+    await changeStatus(formData, "motte-ikke");
+}
+
 // Back to the same view (week or month) after saving
 function viewParam(formData: FormData): string {
     const view = formData.get("visning");

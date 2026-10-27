@@ -6,6 +6,7 @@ import { formatDate, formatTime } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
 import { cancelBookingAction, confirmBookingAction } from "../actions";
 import PanelNav from "../PanelNav";
+import { NoShowButtons, NoShowCount } from "../NoShow";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../page.module.css";
 
@@ -73,8 +74,14 @@ function splitBookings(bookings: PanelBooking[]) {
     };
 }
 
+// After the start time "Møtte" / "Møtte ikke" take over from "Bekreft" / "Avlys"
+function hasStarted(booking: PanelBooking) {
+    return new Date(booking.startUtc).getTime() <= Date.now();
+}
+
 // One booking: time, status, service, customer, note, and Bekreft / Avlys for upcoming visits
 function BookingCard({ booking, showActions }: { booking: PanelBooking; showActions: boolean }) {
+    const started = hasStarted(booking);
     return (
         <li className={styles.card}>
             <div className={styles.cardHeader}>
@@ -100,6 +107,7 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                         <a href={`mailto:${booking.customerEmail}`}>{booking.customerEmail}</a>
                     </>
                 )}            </p>
+            <NoShowCount count={booking.noShowCount}/>
             {booking.customerNote && (
                 <div className={styles.note}>
                     <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
@@ -110,7 +118,7 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                     )}
                 </div>
             )}
-            {showActions && booking.status !== "Avlyst" && (
+            {showActions && !started && booking.status !== "Avlyst" && (
                 <div className={styles.actions}>
                     {booking.status === "Venter" && (
                         <form action={confirmBookingAction}>
@@ -141,6 +149,7 @@ function BookingCard({ booking, showActions }: { booking: PanelBooking; showActi
                     </details>
                 </div>
             )}
+            {started && <NoShowButtons booking={booking} back="/panel/liste"/>}
         </li>
     );
 }
