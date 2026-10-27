@@ -30,6 +30,12 @@ public class Booking
     // When the reminder e-mail before the visit was sent; null = not yet (a new time after "Flytt" resets it)
     public DateTime? ReminderSentUtc { get; set; }
 
+    // Failed reminder e-mails in a row; after BookingReminder.MaxAttempts it stops trying
+    public int ReminderAttempts { get; set; }
+
+    // When the "Møtte ikke" e-mail was sent; it goes only once, even if the business switches back and forth
+    public DateTime? NoShowEmailSentUtc { get; set; }
+
     // A visit added by the business with "Send bekreftelse på e-post" unchecked: no reminder the day before
     public bool NoReminder { get; set; }
     public Guid EmployeeId { get; set; }

@@ -205,8 +205,14 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<bool>("NoReminder")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("NoShowEmailSentUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("PreviousStartUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("ReminderAttempts")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ReminderSentUtc")
                         .HasColumnType("datetime2");

@@ -485,8 +485,9 @@ public class BookingService(
         booking.StartUtc = startUtc;
         booking.EndUtc = endUtc;
         // A new time gets its own reminder
+        // A new time gets its own reminder
         booking.ReminderSentUtc = null;
-
+        booking.ReminderAttempts = 0;
         // Ask the customer only when they can get the link (a walk-in without e-mail cannot answer)
         string? token = null;
         if (request.AskCustomer && booking.CustomerEmail.Length > 0)
@@ -609,7 +610,7 @@ public class BookingService(
     }
 
     // "Møtte ikke" blocks the review, so a customer with an account is told and can object (e-mail + bell).
-    // "Møtte" after "Møtte ikke" was a mistake: that bell goes away again. Walk-ins cannot review: nothing to tell
+    // "Møtte" after "Møtte ikke" was a mistake: only that bell goes away again. Walk-ins cannot review: nothing to tell
     private async Task NotifyNoShowAsync(Booking booking, bool wasNoShow, CancellationToken cancellationToken)
     {
         if (booking.CustomerUserId is null)
@@ -619,7 +620,14 @@ public class BookingService(
 
         if (booking.Status == BookingStatus.MotteIkke)
         {
-            await emails.SendNoShowAsync(booking, cancellationToken);
+            // The e-mail only the first time (switching Møtte / Møtte ikke back and forth must not flood the customer)
+            if (booking.NoShowEmailSentUtc is null)
+            {
+                booking.NoShowEmailSentUtc = DateTime.UtcNow;
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await emails.SendNoShowAsync(booking, cancellationToken);
+            }
+
             await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} har registrert at du ikke møtte {OsloTime.Format(booking.StartUtc)}. Var du der? Se e-posten.",
                 "/min-besti", cancellationToken);
@@ -627,12 +635,12 @@ public class BookingService(
         else if (wasNoShow)
         {
             dbContext.Notifications.RemoveRange(await dbContext.Notifications
-                .Where(n => n.UserId == booking.CustomerUserId && n.BookingId == booking.Id)
+                .Where(n => n.UserId == booking.CustomerUserId && n.BookingId == booking.Id
+                                                               && n.Text.Contains("ikke møtte"))
                 .ToListAsync(cancellationToken));
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
-
     // An optional message when cancelling: trimmed, empty = none, at most 300 characters
     private static string? ShortNote(string? message) =>
         string.IsNullOrWhiteSpace(message) ? null : message.Trim()[..Math.Min(message.Trim().Length, 300)];

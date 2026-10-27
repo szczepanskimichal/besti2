@@ -22,6 +22,9 @@ public class BookingReminder(
     // Booked less than 12 hours before the visit: the booking e-mail is fresh enough
     public const int MinHoursBooked = 12;
 
+    // A mail server that keeps failing: stop after 3 tries (45 minutes), not every 15 minutes until the visit
+    public const int MaxAttempts = 3;
+
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
     public async Task<int> SendRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
@@ -33,6 +36,7 @@ public class BookingReminder(
             .Include(b => b.Employee)
             .Where(b => b.Status == BookingStatus.Bekreftet
                         && b.ReminderSentUtc == null
+                        && b.ReminderAttempts < MaxAttempts
                         && b.CustomerEmail != ""
                         && !b.NoReminder
                         && b.StartUtc > nowUtc
@@ -54,7 +58,10 @@ public class BookingReminder(
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 // One failed mail must not stop the others; this one is tried again on the next run
-                logger.LogWarning(ex, "Could not send reminder for booking {BookingId}", booking.Id);
+                booking.ReminderAttempts++;
+                logger.LogWarning(ex, "Could not send reminder for booking {BookingId} (attempt {Attempt} of {Max})",
+                    booking.Id, booking.ReminderAttempts, MaxAttempts);
+                await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
 

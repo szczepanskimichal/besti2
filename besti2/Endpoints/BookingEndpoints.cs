@@ -17,7 +17,7 @@ public static class BookingEndpoints
         {
             var slots = await availability.GetFreeSlotsAsync(serviceId, employeeId, date, units, cancellationToken);
             return slots is null ? Results.NotFound() : Results.Ok(slots);
-        });
+        }).RequireRateLimiting("search");
 
         // "Velg dag": free times for 7 days from a date; without employeeId = anyone free
         group.MapGet("/availability/days", async (Guid serviceId, Guid? employeeId, DateOnly from,
@@ -25,7 +25,7 @@ public static class BookingEndpoints
         {
             var days = await availability.GetFreeDaysAsync(serviceId, employeeId, from, 7, units, cancellationToken);
             return days is null ? Results.NotFound() : Results.Ok(days);
-        });
+        }).RequireRateLimiting("search");
         // Create a new booking (customers only; name and email come from the account)
         group.MapPost("/bookings",
             async (CreateBookingRequest request, ClaimsPrincipal principal, UserManager<AppUser> userManager,

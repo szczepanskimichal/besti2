@@ -150,4 +150,25 @@ public class BookingReminderTests
         Assert.Equal(0, await reminder.SendRemindersAsync(Now));
         Assert.Empty(email.Sent);
     }
+    // check if a mail server that keeps failing is tried 3 times and then left alone
+    [Fact]
+    public async Task SendRemindersAsync_StopsAfterThreeFailures()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Bookings.Add(NewBooking(Now.AddHours(23)));
+        await db.SaveChangesAsync();
+        var failing = new BookingReminder(db, new FailingEmailService(), NullLogger<BookingReminder>.Instance);
+
+        for (var run = 0; run < 3; run++)
+        {
+            await failing.SendRemindersAsync(Now.AddMinutes(15 * run));
+        }
+
+        Assert.Equal(3, (await db.Bookings.SingleAsync()).ReminderAttempts);
+        var email = new FakeEmailService();
+        var working = new BookingReminder(db, email, NullLogger<BookingReminder>.Instance);
+        Assert.Equal(0, await working.SendRemindersAsync(Now.AddMinutes(45)));
+        Assert.Empty(email.Sent);
+    }
+
 }
