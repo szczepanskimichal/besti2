@@ -262,7 +262,8 @@ public class BookingService(
             MarketingConsentUtc = request.MarketingConsent ? DateTime.UtcNow : null,
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             CustomerUserId = customerUserId,
-            Status = BookingStatus.Venter
+            Status = BookingStatus.Venter,
+            CreatedUtc = DateTime.UtcNow
         };
 
         dbContext.Bookings.Add(booking);
@@ -358,7 +359,9 @@ public class BookingService(
             CustomerPhone = request.CustomerPhone.Trim(),
             CustomerEmail = email,
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
-            Status = BookingStatus.Bekreftet
+            Status = BookingStatus.Bekreftet,
+            CreatedUtc = DateTime.UtcNow
+            
         };
         dbContext.Bookings.Add(booking);
         try
@@ -630,7 +633,8 @@ public class BookingService(
         booking.EmployeeId = request.EmployeeId;
         booking.StartUtc = startUtc;
         booking.EndUtc = endUtc;
-
+        // A new time gets its own reminder
+        booking.ReminderSentUtc = null;
         // Ask the customer only when they can get the link (a walk-in without e-mail cannot answer)
         string? token = null;
         if (request.AskCustomer && booking.CustomerEmail.Length > 0)

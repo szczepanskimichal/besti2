@@ -161,6 +161,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("CustomerEmail")
                         .IsRequired()
                         .HasMaxLength(250)
@@ -200,6 +203,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<DateTime?>("PreviousStartUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ReminderSentUtc")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("ServiceId")
