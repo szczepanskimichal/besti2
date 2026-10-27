@@ -90,4 +90,35 @@ public class BusinessRatingTests
         Assert.Equal(2, fjord.ReviewCount);
         Assert.Equal(3.7, result.Single(b => b.Id == KlippOgStil).AverageRating);
     }
+
+    // check if the list shows the average stars and the number of reviews for each business
+    [Fact]
+    public async Task GetAllAsync_ShowsAverageRatingAndReviewCount()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        foreach (var stars in new[] { 5, 4, 5 })
+        {
+            db.Reviews.Add(new Review
+            {
+                Id = Guid.NewGuid(), BookingId = Guid.NewGuid(), BusinessId = klippId, CustomerUserId = "kunde",
+                CustomerName = "Kari", Stars = stars, CreatedUtc = DateTime.UtcNow
+            });
+        }
+        await db.SaveChangesAsync();
+        var service = new BusinessSearchService(db, new FakeImageStorage());
+
+        var result = await service.GetAllAsync();
+
+        var klipp = result.Single(b => b.Id == klippId);
+        Assert.Equal(4.7, klipp.AverageRating);
+        Assert.Equal(3, klipp.ReviewCount);
+        var fjord = result.Single(b => b.Name == "Fjord Bygg AS");
+        Assert.Null(fjord.AverageRating);
+        Assert.Equal(0, fjord.ReviewCount);
+    }
 }

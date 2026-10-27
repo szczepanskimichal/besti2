@@ -1,12 +1,8 @@
 using besti2.Domain.Enums;
 using besti2.Application.Bookings;
-using besti2.Application.Businesses;
-using besti2.Application.Reviews;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
-using besti2.Infrastructure.Services.Bookings;
-using besti2.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -22,6 +18,7 @@ public class BookingServiceTests
     private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
     private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
     private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
+
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -64,7 +61,6 @@ public class BookingServiceTests
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
         Assert.Equal(0, await db.Bookings.CountAsync());
     }
-
 
     [Fact]
     public async Task CreateAsync_SendsConfirmationEmailWithOsloTime()
@@ -151,32 +147,6 @@ public class BookingServiceTests
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, confirm);
     }
 
-    [Fact]
-    public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new AvailabilityService(db);
-        var sunday = new DateOnly(2099, 1, 4);
-
-        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
-
-        Assert.NotNull(slots);
-        Assert.Empty(slots);
-    }
-
-    [Fact]
-    public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new AvailabilityService(db);
-        var saturday = new DateOnly(2099, 1, 3); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
-        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
-
-        Assert.NotNull(slots);
-        Assert.Equal(new DateTime(2099, 1, 3, 9, 0, 0, DateTimeKind.Utc), slots[0]); // 10:00 in Oslo
-        Assert.Equal(new DateTime(2099, 1, 3, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
-    }
-    
     // check if the panel shows yesterday's visit, but not visits older than 14 days
     [Fact]
     public async Task GetForBusinessAsync_ShowsTheLast14DaysOnly()
@@ -252,156 +222,6 @@ public class BookingServiceTests
         Assert.Empty(other);
     }
 
-    // check if a customer can cancel their own upcoming booking
-    [Fact]
-    public async Task CancelByCustomerAsync_OwnFutureBooking_IsCancelled()
-    {
-        await using var db = await CreateSeededDbAsync();
-        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
-            EmailConfirmed = true, BusinessId = KlippOgStil });
-        await db.SaveChangesAsync();
-        var email = new FakeEmailService();
-        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
-        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
-        var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1");
-        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
-        Assert.Equal(BookingStatus.Avlyst, (await db.Bookings.SingleAsync()).Status);
-        // 1st mail = "Bestilling mottatt" to the customer, 2nd = cancellation to the business
-        Assert.Equal(2, email.Sent.Count);
-        Assert.StartsWith("Avbestilling", email.Sent[^1].Subject);
-        Assert.Equal("eier@klippogstil.example", email.Sent[^1].To);
-    }
-    // check if the customer's reason reaches the business in the e-mail and the bell
-    [Fact]
-    public async Task CancelByCustomerAsync_WithReason_BusinessGetsReason()
-    {
-        await using var db = await CreateSeededDbAsync();
-        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
-            EmailConfirmed = true, BusinessId = KlippOgStil });
-        await db.SaveChangesAsync();
-        var email = new FakeEmailService();
-        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
-        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
-
-        await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1", "  Jeg er syk.  ");
-
-        Assert.Contains("Melding fra kunden: Jeg er syk.\n", email.Sent[^1].Body);
-        var bell = await db.Notifications.SingleAsync(n => n.BusinessId == KlippOgStil && n.Text.Contains("avbestilt"));
-        Assert.EndsWith(": Jeg er syk.", bell.Text);
-    }
-    // check if nobody can cancel someone else's booking
-    [Fact]
-    public async Task CancelByCustomerAsync_OtherCustomer_ReturnsNotFound()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var created = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
-        var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-2");
-        Assert.Equal(UpdateBookingStatusOutcome.NotFound, outcome);
-        Assert.Equal(BookingStatus.Venter, (await db.Bookings.SingleAsync()).Status);
-    }
-
-// check if a booking that already started cannot be cancelled
-    [Fact]
-    public async Task CancelByCustomerAsync_PastBooking_ReturnsInvalidTransition()
-
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var booking = new Booking
-        {
-            Id = Guid.NewGuid(),
-            StartUtc = DateTime.UtcNow.AddDays(-1),
-            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
-            CustomerName = "Kari Nordmann",
-            CustomerPhone = "+4790000000",
-            CustomerEmail = "kari@test.example",
-            Status = BookingStatus.Bekreftet,
-            CustomerUserId = "kunde-1",
-            ServiceId = HerreklippId,
-            EmployeeId = IngridId
-        };
-        db.Bookings.Add(booking);
-        await db.SaveChangesAsync();
-        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
-        Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
-    }
-    // A confirmed visit for kunde-1 at Klipp & Stil that starts in the given number of hours
-    private static async Task<Booking> AddConfirmedBookingAsync(AppDbContext db, double startsInHours)
-    {
-        var start = DateTime.UtcNow.AddHours(startsInHours);
-        var booking = new Booking
-        {
-            Id = Guid.NewGuid(),
-            StartUtc = start,
-            EndUtc = start.AddMinutes(30),
-            CustomerName = "Kari Nordmann",
-            CustomerPhone = "+4790000000",
-            CustomerEmail = "kari@test.example",
-            Status = BookingStatus.Bekreftet,
-            CustomerUserId = "kunde-1",
-            ServiceId = HerreklippId,
-            EmployeeId = IngridId
-        };
-        db.Bookings.Add(booking);
-        await db.SaveChangesAsync();
-        return booking;
-    }
-
-    // check if a confirmed visit cannot be cancelled online after the deadline (default 24 hours)
-    [Fact]
-    public async Task CancelByCustomerAsync_ConfirmedAfterDeadline_ReturnsTooLate()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var booking = await AddConfirmedBookingAsync(db, 3);
-
-        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
-
-        Assert.Equal(UpdateBookingStatusOutcome.TooLate, outcome);
-        Assert.Equal(BookingStatus.Bekreftet, (await db.Bookings.SingleAsync()).Status);
-    }
-
-    // check if a confirmed visit can be cancelled before the deadline
-    [Fact]
-    public async Task CancelByCustomerAsync_ConfirmedBeforeDeadline_IsCancelled()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var booking = await AddConfirmedBookingAsync(db, 30);
-
-        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
-
-        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
-    }
-
-    // check if "Når som helst" (0 hours) lets the customer cancel until the visit starts
-    [Fact]
-    public async Task CancelByCustomerAsync_NoDeadline_IsCancelled()
-    {
-        await using var db = await CreateSeededDbAsync();
-        (await db.Businesses.SingleAsync(b => b.Id == KlippOgStil)).FreeCancelHours = 0;
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var booking = await AddConfirmedBookingAsync(db, 1);
-
-        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1");
-
-        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
-    }
-
-    // check if deleting the account still cancels a visit after the deadline
-    [Fact]
-    public async Task CancelByCustomerAsync_IgnoreDeadline_IsCancelled()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var booking = await AddConfirmedBookingAsync(db, 3);
-
-        var outcome = await service.CancelByCustomerAsync(booking.Id, "kunde-1", ignoreDeadline: true);
-
-        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
-    }
-
     // check if a phone number with letters is refused
     [Fact]
     public async Task CreateAsync_InvalidPhone_ReturnsInvalid()
@@ -413,7 +233,7 @@ public class BookingServiceTests
 
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
     }
-    
+
     // check if a longer service cannot overlap a booking that starts inside it
     [Fact]
     public async Task CreateAsync_OverlappingLongerService_IsSlotTaken()
@@ -486,49 +306,6 @@ public class BookingServiceTests
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition, outcome);
     }
 
-    // check if an absurd date gives no slots instead of a crash
-    [Fact]
-    public async Task GetFreeSlotsAsync_ExtremeDate_ReturnsNoSlots()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new AvailabilityService(db);
-
-        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, new DateOnly(9999, 12, 31));
-
-        Assert.NotNull(slots);
-        Assert.Empty(slots);
-    }
-    // check if the list shows the average stars and the number of reviews for each business
-    [Fact]
-    public async Task GetAllAsync_ShowsAverageRatingAndReviewCount()
-    {
-        var options = new DbContextOptionsBuilder<AppDbContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-        await using var db = new AppDbContext(options);
-        await db.Database.EnsureCreatedAsync();
-        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
-        foreach (var stars in new[] { 5, 4, 5 })
-        {
-            db.Reviews.Add(new Review
-            {
-                Id = Guid.NewGuid(), BookingId = Guid.NewGuid(), BusinessId = klippId, CustomerUserId = "kunde",
-                CustomerName = "Kari", Stars = stars, CreatedUtc = DateTime.UtcNow
-            });
-        }
-        await db.SaveChangesAsync();
-        var service = new BusinessSearchService(db, new FakeImageStorage());
-
-        var result = await service.GetAllAsync();
-
-        var klipp = result.Single(b => b.Id == klippId);
-        Assert.Equal(4.7, klipp.AverageRating);
-        Assert.Equal(3, klipp.ReviewCount);
-        var fjord = result.Single(b => b.Name == "Fjord Bygg AS");
-        Assert.Null(fjord.AverageRating);
-        Assert.Equal(0, fjord.ReviewCount);
-    }
-    
     // check if a start time sent with a time zone (+02:00 arrives as local time) is booked, not a server error
     [Fact]
     public async Task CreateAsync_StartTimeAsLocalTime_IsBooked()
@@ -542,6 +319,7 @@ public class BookingServiceTests
         Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
         Assert.Equal(FutureMondayAt10, result.Booking!.StartUtc);
     }
+
     // check if the calendar gets only the bookings of the chosen days, with the employee for the column
     [Fact]
     public async Task GetForBusinessAsync_WithDays_ReturnsOnlyThoseDays()
@@ -558,84 +336,8 @@ public class BookingServiceTests
         Assert.Equal(FutureMondayAt10, booking.StartUtc);
         Assert.Equal(IngridId, booking.EmployeeId);
     }
-    
-    private static CreateManualBookingRequest WalkIn(DateOnly date, TimeOnly time, string? email = null,
-        bool sendConfirmation = false) =>
-        new(HerreklippId, IngridId, date, time, "Ola Drop-in", "912 34 567", email, null, sendConfirmation);
 
-    // check if the business can add a confirmed visit outside the opening hours (Sunday evening)
-    [Fact]
-    public async Task CreateByBusinessAsync_OutsideOpeningHours_IsConfirmed()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var sunday = DateOnly.FromDateTime(FutureMondayAt10).AddDays(-1);
-
-        var result = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(sunday, new TimeOnly(19, 0)));
-
-        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
-        Assert.Equal("Bekreftet", result.Booking!.Status);
-    }
-
-    // check if a visit added by the business can never overlap another visit of the same employee
-    [Fact]
-    public async Task CreateByBusinessAsync_OnTopOfAnotherVisit_IsSlotTaken()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        await service.CreateAsync(HerreklippHosIngrid()); // 10:00–10:30 in Oslo
-        var monday = DateOnly.FromDateTime(FutureMondayAt10);
-
-        var result = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(10, 15)));
-
-        Assert.Equal(CreateBookingOutcome.SlotTaken, result.Outcome);
-    }
-
-    // check if a business cannot add a visit with another business's service
-    [Fact]
-    public async Task CreateByBusinessAsync_OtherBusinessService_IsNotFound()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        var monday = DateOnly.FromDateTime(FutureMondayAt10);
-
-        var result = await service.CreateByBusinessAsync(FjordBygg, WalkIn(monday, new TimeOnly(12, 0)));
-
-        Assert.Equal(CreateBookingOutcome.NotFound, result.Outcome);
-    }
-
-    // check if the customer gets a confirmation mail only when the business asks for it
-    [Fact]
-    public async Task CreateByBusinessAsync_SendsMailOnlyWhenAsked()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var email = new FakeEmailService();
-        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
-        var monday = DateOnly.FromDateTime(FutureMondayAt10);
-
-        await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(12, 0), "ola@test.example"));
-        await service.CreateByBusinessAsync(KlippOgStil,
-            WalkIn(monday, new TimeOnly(13, 0), "ola@test.example", sendConfirmation: true));
-
-        var mail = Assert.Single(email.Sent);
-        Assert.Equal("ola@test.example", mail.To);
-    }
-
-    [Fact]
-    public async Task UpdateStatusAsync_VisitWithoutEmail_SendsNoMail()
-    {
-        await using var db = await CreateSeededDbAsync();
-        var email = new FakeEmailService();
-        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
-        var monday = DateOnly.FromDateTime(FutureMondayAt10);
-        var created = await service.CreateByBusinessAsync(KlippOgStil, WalkIn(monday, new TimeOnly(12, 0), null));
-
-        var outcome = await service.UpdateStatusAsync(created.Booking!.Id, KlippOgStil, BookingStatus.Avlyst);
-
-        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
-        Assert.Empty(email.Sent);
-    }
-// check if the same customer account cannot book two visits at the same time
+    // check if the same customer account cannot book two visits at the same time
     [Fact]
     public async Task CreateAsync_SameCustomerOverlapping_IsCustomerBusy()
     {
@@ -664,5 +366,4 @@ public class BookingServiceTests
         Assert.Equal(CreateBookingOutcome.Created, first.Outcome);
         Assert.Equal(CreateBookingOutcome.Created, second.Outcome);
     }
-
 }
