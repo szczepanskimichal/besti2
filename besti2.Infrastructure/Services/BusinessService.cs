@@ -1,4 +1,5 @@
 using besti2.Application.Businesses;
+using besti2.Application.Common;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
 using besti2.Domain.Enums;
@@ -63,7 +64,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
                     .ToList(),
                 b.IsHidden,
-                b.FreeCancelHours))
+                b.FreeCancelHours,
+                b.Website))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -196,26 +198,31 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
 
     public async Task<string?> DeleteEmployeeAsync(Guid businessId, Guid employeeId,
         CancellationToken cancellationToken = default)
-
     {
         var employee = await dbContext.Employees.FirstOrDefaultAsync(
             e => e.Id == employeeId && e.BusinessId == businessId && !e.IsDeleted, cancellationToken);
-
         if (employee is null)
-
         {
             return "Fant ikke den ansatte.";
         }
 
-// Without employees nobody can book, so the last one must stay
-
+        // Without employees nobody can book, so the last one must stay
         var activeCount = await dbContext.Employees
             .CountAsync(e => e.BusinessId == businessId && !e.IsDeleted, cancellationToken);
-
         if (activeCount <= 1)
-
         {
             return "Bedriften må ha minst én ansatt.";
+        }
+
+        // Visits still ahead would disappear from the calendar with the employee: move them first
+        var now = DateTime.UtcNow;
+        var upcoming = await dbContext.Bookings
+            .CountAsync(b => b.EmployeeId == employeeId && b.StartUtc > now
+                             && b.Status != BookingStatus.Avlyst && b.Status != BookingStatus.MotteIkke,
+                cancellationToken);
+        if (upcoming > 0)
+        {
+            return $"{employee.Name} har {upcoming} kommende {(upcoming == 1 ? "time" : "timer")}. Flytt dem først.";
         }
 
         employee.IsDeleted = true;
@@ -229,9 +236,14 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         if (string.IsNullOrWhiteSpace(request.Phone)
             || string.IsNullOrWhiteSpace(request.Address)
             || string.IsNullOrWhiteSpace(request.City)
-            || request.Phone.Length > 20 || request.City.Length > 200)
+            || request.Address.Length > 200 || request.City.Length > 200)
         {
             return "Fyll ut telefon, adresse og by.";
+        }
+
+        if (!PhoneNumber.IsValid(request.Phone))
+        {
+            return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.";
         }
 
         if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
@@ -257,6 +269,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             return "Ugyldig e-post til kunder.";
         }
 
+        var website = ToWebsite(request.Website);
+        if (website is { Length: 0 })
+        {
+            return "Ugyldig nettside. Skriv den f.eks. slik: klippogstil.no";
+        }
+
         var business = await dbContext.Businesses.FirstOrDefaultAsync(b => b.Id == businessId, cancellationToken);
         if (business is null)
         {
@@ -279,6 +297,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         business.City = request.City.Trim();
         business.Email = contactEmail;
         business.FreeCancelHours = request.FreeCancelHours;
+        business.Website = website;
         // New address: look up the map position again (null = no map)
         if (addressChanged)
         {
@@ -362,6 +381,29 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     }
 
     // Shared validation for adding and editing an employee; returns null when valid
+    // null = no website; "" = not a valid address. Only http and https (never javascript: and the like)
+    private static string? ToWebsite(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return null;
+        }
+
+        var text = input.Trim();
+        if (!text.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+            && !text.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            text = "https://" + text;
+        }
+
+        return text.Length <= 200
+               && Uri.TryCreate(text, UriKind.Absolute, out var uri)
+               && uri.Scheme is "http" or "https"
+               && uri.Host.Contains('.')
+            ? text
+            : "";
+    }
+
     private static string? ValidateEmployee(EmployeeRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 200)

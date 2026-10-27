@@ -20,5 +20,7 @@ public record BusinessDetailsDto(
     // Only true in the owner's panel: the business is waiting for approval and customers cannot see it
     bool IsHidden,
     // Free cancellation until X hours before the visit; 0 = any time
-    int FreeCancelHours
+    int FreeCancelHours,
+    // The business's own website (null = none)
+    string? Website
 );

@@ -62,7 +62,17 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Fyll ut alle feltene.", result.Error);
     }
+    // check if a phone number with letters is refused
+    [Fact]
+    public async Task RegisterAsync_InvalidPhone_Fails()
+    {
+        var (service, _, _) = CreateService();
 
+        var result = await service.RegisterAsync(TestFrisor() with { Phone = "ring 1234" });
+
+        Assert.False(result.Success);
+        Assert.Equal("Oppgi et gyldig telefonnummer, f.eks. 912 34 567.", result.Error);
+    }
     // check if a weak password is refused before anything is saved (no half-registered business)
     [Fact]
     public async Task RegisterAsync_WeakPassword_SavesNothing()

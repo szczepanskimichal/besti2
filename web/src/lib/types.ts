@@ -67,6 +67,7 @@ export type BusinessDetails = {
     // Only true in the owner's panel: waiting for BESTI's approval, customers cannot see it yet
     isHidden: boolean;
     freeCancelHours: number; // free cancellation until X hours before the visit; 0 = any time
+    website: string | null; // always starts with http:// or https://
 };
 
 export type BusinessApproval = {

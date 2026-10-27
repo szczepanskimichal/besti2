@@ -36,8 +36,13 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
                 <input name="contactEmail" type="email" maxLength={250} defaultValue={value("contactEmail")} />
             </label>
             <label className={styles.field}>
+                Nettside (valgfritt)
+                <input name="website" type="text" inputMode="url" maxLength={200} placeholder="klippogstil.no"
+                       defaultValue={value("website")} />
+            </label>
+            <label className={styles.field}>
                 Adresse
-                <input name="address" required defaultValue={value("address")} />
+                <input name="address" required maxLength={200} defaultValue={value("address")} />
             </label>
             <label className={styles.field}>
                 Postnummer

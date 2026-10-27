@@ -18,6 +18,9 @@ public class Business
     public string City { get; set; } = null!;
     public string? Description { get; set; }
 
+    // The business's own website (optional), always starting with http:// or https://
+    public string? Website { get; set; }
+
     // Map position (WGS84), filled from the address; null when not found
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
