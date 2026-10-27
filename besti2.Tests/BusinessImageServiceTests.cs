@@ -89,6 +89,24 @@ public class BusinessImageServiceTests
         Assert.Equal(256, bitmap.Height);
     }
 
+    // check if a big JPEG (unpacked at a smaller size first) still ends up exactly 512 wide with its proportions
+    [Fact]
+    public async Task SetLogoAsync_ResizesLargeJpeg()
+    {
+        var (service, db, storage) = await CreateAsync();
+        using var source = new SKBitmap(4000, 3000);
+        source.Erase(SKColors.CornflowerBlue);
+        using var data = SKImage.FromBitmap(source).Encode(SKEncodedImageFormat.Jpeg, 90);
+        var jpg = data.ToArray();
+
+        var error = await service.SetLogoAsync(KlippId, new MemoryStream(jpg), jpg.Length);
+
+        Assert.Null(error);
+        using var bitmap = SKBitmap.Decode(storage.Files[db.BusinessImages.Single().FileName]);
+        Assert.Equal(512, bitmap.Width);
+        Assert.Equal(384, bitmap.Height);
+    }
+
 
     // A tiny file that says it is 8000 x 7000 pixels (56 MP) must be refused before decoding
     [Fact]

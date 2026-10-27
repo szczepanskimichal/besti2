@@ -389,6 +389,88 @@ public class BusinessServiceTests
         Assert.Equal("Bedriften må ha minst én ansatt.", error);
     }
 
+    // check if an employee with a visit ahead cannot be deleted, but a cancelled visit does not count - unhappy path
+    [Fact]
+    public async Task DeleteEmployeeAsync_ReturnsError_WhenEmployeeHasUpcomingVisits()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var sofieId = new Guid("b1111111-0000-0000-0000-000000000002");
+        foreach (var status in new[] { BookingStatus.Bekreftet, BookingStatus.Avlyst })
+        {
+            db.Bookings.Add(new Booking
+            {
+                Id = Guid.NewGuid(), StartUtc = DateTime.UtcNow.AddDays(3),
+                EndUtc = DateTime.UtcNow.AddDays(3).AddMinutes(30),
+                CustomerName = "Ola", CustomerPhone = "+4790000000", CustomerEmail = "ola@test.example",
+                Status = status, EmployeeId = sofieId, ServiceId = new Guid("a1111111-0000-0000-0000-000000000002")
+            });
+        }
+
+        await db.SaveChangesAsync();
+
+        // Act
+        var error = await service.DeleteEmployeeAsync(klippId, sofieId);
+
+        // Assert
+        Assert.Equal("Sofie har 1 kommende time. Flytt dem først.", error);
+        Assert.False((await db.Employees.SingleAsync(e => e.Id == sofieId)).IsDeleted);
+    }
+
+    // check if the business profile refuses a phone number that is not a phone number - unhappy path
+    [Fact]
+    public async Task UpdateProfileAsync_ReturnsError_ForInvalidPhone()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+
+        // Act
+        var error = await service.UpdateProfileAsync(klippId,
+            new UpdateProfileRequest(null, "ring meg", "Nygata 5", "5003", "Bergen"));
+
+        // Assert
+        Assert.Equal("Oppgi et gyldig telefonnummer, f.eks. 912 34 567.", error);
+    }
+
+    // check if the website gets https:// in front, an empty field removes it and javascript: is refused
+    [Theory]
+    [InlineData("klippogstil.no", "https://klippogstil.no", null)]
+    [InlineData("http://klippogstil.no/om-oss", "http://klippogstil.no/om-oss", null)]
+    [InlineData("", null, null)]
+    [InlineData("javascript:alert(1)", null, "Ugyldig nettside. Skriv den f.eks. slik: klippogstil.no")]
+    [InlineData("ikke en side", null, "Ugyldig nettside. Skriv den f.eks. slik: klippogstil.no")]
+    public async Task UpdateProfileAsync_Website(string input, string? saved, string? expectedError)
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+
+        // Act
+        var error = await service.UpdateProfileAsync(klippId,
+            new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "5003", "Bergen", Website: input));
+
+        // Assert
+        Assert.Equal(expectedError, error);
+        Assert.Equal(saved, (await service.GetByIdAsync(klippId))!.Website);
+    }
+
 // check if a business cannot edit another business's employee - unhappy path
 
     [Fact]

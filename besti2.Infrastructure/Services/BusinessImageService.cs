@@ -201,7 +201,23 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
             return null;
         }
 
-        using var decoded = SKBitmap.Decode(codec);
+        // A JPEG can be unpacked straight at 1/2, 1/4 or 1/8 size: a 48 MP photo never fills the memory
+        // (PNG and WebP keep their full size here and are shrunk below)
+        // The smallest step that is still at least maxSize, so the photo stays sharp
+        var size = codec.Info.Size;
+        foreach (var step in new[] { 0.125f, 0.25f, 0.5f })
+        {
+            var scaled = codec.GetScaledDimensions(step);
+            if (Math.Max(scaled.Width, scaled.Height) >= maxSize)
+            {
+                size = scaled;
+                break;
+            }
+        }
+
+        using var decoded = SKBitmap.Decode(codec, codec.Info.WithSize(size.Width, size.Height)
+            .WithColorType(SKImageInfo.PlatformColorType)
+            .WithAlphaType(codec.Info.AlphaType == SKAlphaType.Opaque ? SKAlphaType.Opaque : SKAlphaType.Premul));
         if (decoded is null)
         {
             return null;

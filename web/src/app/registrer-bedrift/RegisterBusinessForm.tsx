@@ -83,7 +83,7 @@ export default function RegisterBusinessForm() {
             </label>
             <label className={styles.field}>
                 Adresse
-                <input name="address" required autoComplete="street-address" defaultValue={value("address")} />
+                <input name="address" required maxLength={200} autoComplete="street-address" defaultValue={value("address")} />
             </label>
             <label className={styles.field}>
                 Postnummer

@@ -485,7 +485,6 @@ public class BookingService(
         booking.StartUtc = startUtc;
         booking.EndUtc = endUtc;
         // A new time gets its own reminder
-        // A new time gets its own reminder
         booking.ReminderSentUtc = null;
         booking.ReminderAttempts = 0;
         // Ask the customer only when they can get the link (a walk-in without e-mail cannot answer)

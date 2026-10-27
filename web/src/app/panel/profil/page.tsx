@@ -51,6 +51,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     postalCode: business.postalCode,
                     city: business.city,
                     freeCancelHours: String(business.freeCancelHours),
+                    website: business.website ?? "",
                 }}
             />
         </main>

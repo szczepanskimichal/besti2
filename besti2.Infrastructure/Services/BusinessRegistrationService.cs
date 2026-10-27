@@ -43,6 +43,10 @@ public class BusinessRegistrationService(
         {
             return new RegisterBusinessResult(false, "Fyll ut alle feltene.");
         }
+        if (!PhoneNumber.IsValid(request.Phone))
+        {
+            return new RegisterBusinessResult(false, "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.");
+        }
 
         if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
         {
