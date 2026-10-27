@@ -156,4 +156,31 @@ public class BookingNoShowTests
 
         Assert.Equal(0, Assert.Single(bookings).NoShowCount);
     }
+    // check if switching "Møtte ikke" -> "Møtte" -> "Møtte ikke" sends only one e-mail and keeps the other bells
+    [Fact]
+    public async Task NoShow_SwitchedBackAndForth_OneEmail_OtherBellsStay()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var id = await VisitAsync(db, service, 10, hoursAgo: 2);
+        var booking = await db.Bookings.SingleAsync(b => b.Id == id);
+        booking.CustomerUserId = "kari-id";
+        db.Notifications.Add(new besti2.Domain.Entities.Notification
+        {
+            Id = Guid.NewGuid(), UserId = "kari-id", BookingId = id,
+            Text = "Klipp & Stil har bekreftet timen", CreatedUtc = DateTime.UtcNow
+        });
+        await db.SaveChangesAsync();
+
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.MotteIkke);
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.MotteIkke);
+
+        Assert.Single(email.Sent);
+        Assert.Equal(2, await db.Notifications.CountAsync(n => n.UserId == "kari-id"));
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
+        var left = Assert.Single(await db.Notifications.Where(n => n.UserId == "kari-id").ToListAsync());
+        Assert.Equal("Klipp & Stil har bekreftet timen", left.Text);
+    }
 }

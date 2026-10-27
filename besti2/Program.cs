@@ -85,6 +85,15 @@ builder.Services.AddRateLimiter(options =>
                     QueueLimit = 0
                 }));
     }
+    // Search and free times: max 60 per minute per visitor (normal clicking never gets close, a script does)
+    options.AddPolicy("search", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter($"search:{httpContext.Connection.RemoteIpAddress}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 60,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
 
     // Max 10 image uploads per minute per account (reading a photo is heavy work for the server)
     options.AddPolicy("upload", httpContext =>

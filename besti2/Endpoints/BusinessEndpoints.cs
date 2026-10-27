@@ -20,7 +20,7 @@ public static class BusinessEndpoints
                     cancellationToken);
                 // 24 businesses per page (?page=2 ...)
                 return Results.Ok(BusinessPageDto.From(all, page));
-            });
+            }).RequireRateLimiting("search");
         // Get distinct cities for the filter
         group.MapGet("/cities",
             async (IBusinessSearchService search, CancellationToken cancellationToken) =>
