@@ -241,7 +241,10 @@ public class BookingServiceTests
         await using var db = await CreateSeededDbAsync();
         var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
         // Herreklipp (30 min) at 10:30, then Dameklipp (60 min) at 10:00 would overlap 10:30–11:00
-        var first = await service.CreateAsync(HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddMinutes(30) });
+        var first = await service.CreateAsync(HerreklippHosIngrid() with
+        {
+            StartUtc = FutureMondayAt10.AddMinutes(30)
+        });
         var dameklipp = HerreklippHosIngrid() with { ServiceId = new Guid("a1111111-0000-0000-0000-000000000001") };
         var second = await service.CreateAsync(dameklipp);
 
@@ -326,8 +329,11 @@ public class BookingServiceTests
     {
         await using var db = await CreateSeededDbAsync();
         var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
-        await service.CreateAsync(HerreklippHosIngrid());                                          // Monday
-        await service.CreateAsync(HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddDays(7) }); // a week later
+        await service.CreateAsync(HerreklippHosIngrid()); // Monday
+        await service.CreateAsync(HerreklippHosIngrid() with
+        {
+            StartUtc = FutureMondayAt10.AddDays(7)
+        }); // a week later
         var monday = DateOnly.FromDateTime(FutureMondayAt10);
 
         var result = await service.GetForBusinessAsync(KlippOgStil, monday, monday);

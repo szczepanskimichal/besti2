@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <ItemGroup>
-      <ProjectReference Include="..\besti2.Domain\besti2.Domain.csproj" />
+        <ProjectReference Include="..\besti2.Domain\besti2.Domain.csproj"/>
     </ItemGroup>
 
     <PropertyGroup>

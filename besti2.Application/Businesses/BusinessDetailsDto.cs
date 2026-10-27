@@ -21,4 +21,4 @@ public record BusinessDetailsDto(
     bool IsHidden,
     // Free cancellation until X hours before the visit; 0 = any time
     int FreeCancelHours
-    );
+);

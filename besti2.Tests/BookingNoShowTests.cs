@@ -37,6 +37,7 @@ public class BookingNoShowTests
             booking.EndUtc = booking.StartUtc.AddMinutes(30);
             await db.SaveChangesAsync();
         }
+
         return id;
     }
 
@@ -83,11 +84,13 @@ public class BookingNoShowTests
         await service.UpdateStatusAsync(first, KlippOgStil, BookingStatus.MotteIkke);
         await service.UpdateStatusAsync(second, KlippOgStil, BookingStatus.MotteIkke);
 
-        var bookings = await service.GetForBusinessAsync(KlippOgStil, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1));
+        var bookings =
+            await service.GetForBusinessAsync(KlippOgStil, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1));
 
         Assert.Equal(3, bookings.Count);
         Assert.All(bookings, b => Assert.Equal(2, b.NoShowCount));
     }
+
     // check if a customer with an account gets an e-mail and a bell about "Møtte ikke", and the bell goes on "Møtte"
     [Fact]
     public async Task NoShow_CustomerWithAccount_GetsEmailAndBell_UndoRemovesBell()
@@ -123,6 +126,7 @@ public class BookingNoShowTests
         {
             b.Status = BookingStatus.VenterKunde;
         }
+
         await db.SaveChangesAsync();
 
         Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition,
@@ -144,9 +148,11 @@ public class BookingNoShowTests
         {
             b.CustomerEmail = BookingAnonymizer.AnonymizedEmail;
         }
+
         await db.SaveChangesAsync();
 
-        var bookings = await service.GetForBusinessAsync(KlippOgStil, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1));
+        var bookings =
+            await service.GetForBusinessAsync(KlippOgStil, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1));
 
         Assert.Equal(0, Assert.Single(bookings).NoShowCount);
     }

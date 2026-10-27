@@ -11,7 +11,8 @@ public class Business
     public BusinessCategory Category { get; set; }
 
     // Public contact e-mail shown to customers (optional). The owner logs in with another, private address
-    public string? Email { get; set; }    public string PhoneNumber { get; set; } = null!;
+    public string? Email { get; set; }
+    public string PhoneNumber { get; set; } = null!;
     public string Address { get; set; } = null!;
     public string PostalCode { get; set; } = null!;
     public string City { get; set; } = null!;
@@ -20,20 +21,25 @@ public class Business
     // Map position (WGS84), filled from the address; null when not found
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
-    
+
     // A new business is hidden from customers until the owner has confirmed the email
     public bool IsHidden { get; set; }
+
     // Set when BESTI approves the business; until then it stays hidden even with a confirmed e-mail
     public DateTime? ApprovedUtc { get; set; }
+
     // The one-click approval link sent to BESTI (only the hash is stored)
     public string? ApprovalTokenHash { get; set; }
+
     // When the owner accepted the data processing agreement (databehandleravtale) at sign-up
     public DateTime? DataProcessingAcceptedUtc { get; set; }
+
     // Free cancellation until this many hours before a confirmed visit; 0 = any time before it starts
     public int FreeCancelHours { get; set; } = 24;
+
     // The only choices the business can pick in the panel
     public static readonly int[] FreeCancelOptions = [0, 2, 12, 24, 48];
-    
+
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();
     public List<OpeningHours> OpeningHours { get; set; } = new();

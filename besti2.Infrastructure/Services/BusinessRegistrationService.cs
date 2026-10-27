@@ -14,45 +14,61 @@ namespace besti2.Infrastructure.Services;
 // webBaseUrl = address of the Next.js site, used in the confirmation link;
 // registry = Brønnøysund (null in tests that do not need it);
 // adminEmail = where BESTI gets the approval link for a new business (no mail when null)
-public class BusinessRegistrationService(AppDbContext dbContext, UserManager<AppUser> userManager,
-    IGeocodingService geocoding, IEmailService emailService, string webBaseUrl, IBusinessRegistry? registry = null,
-    string? adminEmail = null, MailLimiter? mailLimiter = null)
-    : IBusinessRegistrationService{
+public class BusinessRegistrationService(
+    AppDbContext dbContext,
+    UserManager<AppUser> userManager,
+    IGeocodingService geocoding,
+    IEmailService emailService,
+    string webBaseUrl,
+    IBusinessRegistry? registry = null,
+    string? adminEmail = null,
+    MailLimiter? mailLimiter = null)
+    : IBusinessRegistrationService
+{
     private readonly MailLimiter limiter = mailLimiter ?? new MailLimiter();
 
-    public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request, CancellationToken cancellationToken = default)
+    public async Task<RegisterBusinessResult> RegisterAsync(RegisterBusinessRequest request,
+        CancellationToken cancellationToken = default)
     {
         // 1. Check the input
         if (string.IsNullOrWhiteSpace(request.BusinessName) || string.IsNullOrWhiteSpace(request.Address)
-            || string.IsNullOrWhiteSpace(request.PostalCode) || string.IsNullOrWhiteSpace(request.City)
-            || string.IsNullOrWhiteSpace(request.Phone) || string.IsNullOrWhiteSpace(request.Email)
-            || !request.Email.Contains('@') || string.IsNullOrWhiteSpace(request.Password)
-            || request.BusinessName.Length > 200 || request.Phone.Length > 20 || request.Email.Length > 250)
+                                                            || string.IsNullOrWhiteSpace(request.PostalCode) ||
+                                                            string.IsNullOrWhiteSpace(request.City)
+                                                            || string.IsNullOrWhiteSpace(request.Phone) ||
+                                                            string.IsNullOrWhiteSpace(request.Email)
+                                                            || !request.Email.Contains('@') ||
+                                                            string.IsNullOrWhiteSpace(request.Password)
+                                                            || request.BusinessName.Length > 200 ||
+                                                            request.Phone.Length > 20 || request.Email.Length > 250)
         {
             return new RegisterBusinessResult(false, "Fyll ut alle feltene.");
         }
-            if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
-            {
-                return new RegisterBusinessResult(false, "Postnummer må være 4 siffer.");
-            }
 
-            if (request.OrgNumber is not { Length: 9 } || !request.OrgNumber.All(char.IsDigit))
-            {
-                return new RegisterBusinessResult(false, "Organisasjonsnummeret må være 9 siffer.");
-            }
-            if (!OrgNumber.IsValid(request.OrgNumber))
-            {
-                return new RegisterBusinessResult(false, "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig.");
-            }
+        if (request.PostalCode is not { Length: 4 } || !request.PostalCode.All(char.IsDigit))
+        {
+            return new RegisterBusinessResult(false, "Postnummer må være 4 siffer.");
+        }
+
+        if (request.OrgNumber is not { Length: 9 } || !request.OrgNumber.All(char.IsDigit))
+        {
+            return new RegisterBusinessResult(false, "Organisasjonsnummeret må være 9 siffer.");
+        }
+
+        if (!OrgNumber.IsValid(request.OrgNumber))
+        {
+            return new RegisterBusinessResult(false, "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig.");
+        }
 
         if (!Enum.TryParse<BusinessCategory>(request.Category, out var category) || !Enum.IsDefined(category))
         {
             return new RegisterBusinessResult(false, "Velg en gyldig kategori.");
         }
+
         if (!request.AcceptDataProcessing)
         {
             return new RegisterBusinessResult(false, "Du må godta databehandleravtalen for å registrere bedriften.");
         }
+
         // Only real, active businesses (when the register does not answer, the registration goes on)
         if (registry is not null)
         {
@@ -62,12 +78,14 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
                 return new RegisterBusinessResult(false,
                     "Fant ikke virksomheten i Enhetsregisteret (Brønnøysund). Sjekk organisasjonsnummeret.");
             }
+
             if (lookup.Status == RegistryStatus.Closed)
             {
                 return new RegisterBusinessResult(false,
                     "Virksomheten er slettet, konkurs eller under avvikling i Enhetsregisteret.");
             }
         }
+
         // Check the password first, so a weak one never starts saving anything
         foreach (var validator in userManager.PasswordValidators)
         {
@@ -81,21 +99,26 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
 
         var email = request.Email.Trim().ToLowerInvariant();
         // The login e-mail is never shown: with a public one anyone could lock the owner out with wrong passwords
-        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail) ? null : request.ContactEmail.Trim().ToLowerInvariant();
+        var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail)
+            ? null
+            : request.ContactEmail.Trim().ToLowerInvariant();
         if (contactEmail is not null && (!contactEmail.Contains('@') || contactEmail.Length > 250))
         {
             return new RegisterBusinessResult(false, "Ugyldig e-post til kunder.");
         }
+
         if (contactEmail == email)
         {
             return new RegisterBusinessResult(false,
                 "Bruk en annen e-post til kunder enn den du logger inn med, eller la feltet stå tomt.");
         }
+
         // Checked before the old registration is removed below, because that makes the link already sent stop working
         if (!limiter.TryReserve(email))
         {
             return new RegisterBusinessResult(false, MailLimiter.TryLaterMessage);
         }
+
         // An earlier registration that was never confirmed (lost mail, expired link, or someone else
         // using this org number or e-mail) must not block a new one: it is removed first
         await RemoveUnconfirmedRegistrationsAsync(request.OrgNumber, email, cancellationToken);
@@ -109,9 +132,10 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             return new RegisterBusinessResult(false, "E-postadressen er allerede i bruk.");
         }
-        
+
         // Map position from the address; the business is saved without it when not found
-        var location = await geocoding.GeocodeAsync(request.Address.Trim(), request.PostalCode.Trim(), cancellationToken);
+        var location =
+            await geocoding.GeocodeAsync(request.Address.Trim(), request.PostalCode.Trim(), cancellationToken);
         // All or nothing: business, owner account, employee and opening hours are saved together
         // (the in-memory test database has no transactions)
         await using var transaction = dbContext.Database.IsRelational()
@@ -145,15 +169,17 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             // Two registrations with the same org number at the same moment: the second one stops here
             return new RegisterBusinessResult(false, "Denne bedriften er allerede registrert.");
         }
+
         // 3. Create the owner account linked to the business
         // The owner must confirm the email before logging in (link in the mail at the end)
-        var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };       
+        var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
             // Nothing is kept: the transaction is never committed
             return new RegisterBusinessResult(false, "Kunne ikke opprette kontoen. Prøv igjen.");
         }
+
         // 4. Defaults so the business is bookable right away: owner as employee, Mon-Fri 09-17
         dbContext.Employees.Add(new Employee
         {
@@ -163,7 +189,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             BusinessId = business.Id
         });
 
-        foreach (var day in new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })
+        foreach (var day in new[]
+                     { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday })
         {
             dbContext.OpeningHours.Add(new OpeningHours
             {
@@ -180,11 +207,12 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             await transaction.CommitAsync(cancellationToken);
         }
+
         await TrySendConfirmationAsync(user, cancellationToken);
         return new RegisterBusinessResult(true);
     }
-    
-    
+
+
     // After the owner has confirmed the email: an approved business becomes visible to customers,
     // a new one waits and BESTI gets a one-click approval link (anyone can type someone else's org number)
     public async Task ShowBusinessOfOwnerAsync(string userId, CancellationToken cancellationToken = default)
@@ -214,14 +242,16 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         await TrySendApprovalRequestAsync(business, owner.Email!, token, cancellationToken);
     }
 
-    public async Task<BusinessApprovalDto?> GetApprovalAsync(string token, CancellationToken cancellationToken = default)
+    public async Task<BusinessApprovalDto?> GetApprovalAsync(string token,
+        CancellationToken cancellationToken = default)
     {
         var business = await FindByApprovalTokenAsync(token, cancellationToken);
         return business is null
             ? null
             : new BusinessApprovalDto(business.Name, business.OrgNumber, business.Category.ToString(), business.Address,
                 business.PostalCode, business.City, await OwnerEmailAsync(business.Id, cancellationToken) ?? "",
-                business.PhoneNumber);    }
+                business.PhoneNumber);
+    }
 
     // The business shows up for customers and the owner gets a mail; the link works only once
     public async Task<bool> ApproveAsync(string token, CancellationToken cancellationToken = default)
@@ -246,16 +276,18 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             var ownerEmail = await OwnerEmailAsync(business.Id, cancellationToken);
             if (ownerEmail is not null)
             {
-                await emailService.SendAsync(ownerEmail, "Bedriften din er godkjent hos BESTI", body, cancellationToken);
+                await emailService.SendAsync(ownerEmail, "Bedriften din er godkjent hos BESTI", body,
+                    cancellationToken);
             }
-            
         }
         catch (Exception)
         {
             // The approval is saved; the owner also sees it in the panel
         }
+
         return true;
     }
+
     // Someone registered an org number that is not theirs: the business and the owner account are
     // deleted, so the real owner can register it, and the person who registered gets a mail
     public async Task<bool> RejectAsync(string token, CancellationToken cancellationToken = default)
@@ -278,35 +310,43 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             if (ownerEmail is not null)
             {
-                await emailService.SendAsync(ownerEmail, "Registreringen hos BESTI ble avvist", body, cancellationToken);
+                await emailService.SendAsync(ownerEmail, "Registreringen hos BESTI ble avvist", body,
+                    cancellationToken);
             }
         }
         catch (Exception)
         {
             // The registration is deleted anyway
         }
+
         return true;
     }
+
     // The owner's login e-mail (private), where BESTI's mails to the business go
     private Task<string?> OwnerEmailAsync(Guid businessId, CancellationToken cancellationToken) =>
-        dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email).FirstOrDefaultAsync(cancellationToken);
+        dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email)
+            .FirstOrDefaultAsync(cancellationToken);
+
     private async Task<Business?> FindByApprovalTokenAsync(string token, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 100)
         {
             return null;
         }
+
         var hash = SecureToken.Hash(token);
         return await dbContext.Businesses.FirstOrDefaultAsync(b => b.ApprovalTokenHash == hash, cancellationToken);
     }
 
     // To BESTI: who registered, a link to the business in Brønnøysund and the one-click approval link
     private async Task TrySendApprovalRequestAsync(Business business, string ownerEmail, string token,
-        CancellationToken cancellationToken)    {
+        CancellationToken cancellationToken)
+    {
         if (string.IsNullOrEmpty(adminEmail))
         {
             return;
         }
+
         var body =
             "Ny bedrift venter på godkjenning:\n\n" +
             $"{business.Name} (org.nr. {business.OrgNumber})\n" +
@@ -316,7 +356,8 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             $"Godkjenn: {webBaseUrl}/godkjenn?token={token}\n";
         try
         {
-            await emailService.SendAsync(adminEmail, $"Ny bedrift venter på godkjenning: {business.Name}", body, cancellationToken);
+            await emailService.SendAsync(adminEmail, $"Ny bedrift venter på godkjenning: {business.Name}", body,
+                cancellationToken);
         }
         catch (Exception)
         {
@@ -330,7 +371,7 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var link = $"{webBaseUrl}/bekreft-epost?id={Uri.EscapeDataString(user.Id)}&kode={Uri.EscapeDataString(code)}";
         var body =
-            "Hei!\n\n" + 
+            "Hei!\n\n" +
             // No business name from the form in the mail: it goes to an address nobody has confirmed yet
             "Takk for at du registrerte bedriften din hos BESTI.\n" +
             $"Klikk på lenken for å bekrefte e-postadressen, så kan du logge inn:\n{link}\n\n" +
@@ -338,14 +379,15 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
             "Hilsen BESTI";
         try
         {
-            await emailService.SendAsync(user.Email!, "Bekreft e-postadressen til bedriften din hos BESTI", body, cancellationToken);
+            await emailService.SendAsync(user.Email!, "Bekreft e-postadressen til bedriften din hos BESTI", body,
+                cancellationToken);
         }
         catch (Exception)
         {
             // Mail server down: the business is saved, the link can be sent again later
         }
     }
-    
+
     // A hidden business whose owner never confirmed the e-mail, found by org number or by the owner's
     // e-mail, is deleted together with its owner. A confirmed owner is never touched.
     private async Task RemoveUnconfirmedRegistrationsAsync(string orgNumber, string email,
@@ -359,32 +401,43 @@ public class BusinessRegistrationService(AppDbContext dbContext, UserManager<App
         {
             businessIds.Add(ownBusinessId);
         }
+
         foreach (var businessId in businessIds.Distinct())
         {
             var business = await dbContext.Businesses.FindAsync([businessId], cancellationToken);
             if (business is not { IsHidden: true }
-                || await dbContext.Users.AnyAsync(u => u.BusinessId == businessId && u.EmailConfirmed, cancellationToken))
+                || await dbContext.Users.AnyAsync(u => u.BusinessId == businessId && u.EmailConfirmed,
+                    cancellationToken))
             {
                 continue;
             }
-            await DeleteBusinessAsync(business, cancellationToken);        }
+
+            await DeleteBusinessAsync(business, cancellationToken);
+        }
     }
+
     // Deletes a business that was never approved, with its owner and what the owner may already
     // have added in the panel. Bookings, reviews and time off are removed by hand first, because
     // the database does not delete them on its own (Restrict)
     private async Task DeleteBusinessAsync(Business business, CancellationToken cancellationToken)
     {
-        var bookings = await dbContext.Bookings.Where(b => b.Employee.BusinessId == business.Id).ToListAsync(cancellationToken);
-        dbContext.Reviews.RemoveRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id).ToListAsync(cancellationToken));
+        var bookings = await dbContext.Bookings.Where(b => b.Employee.BusinessId == business.Id)
+            .ToListAsync(cancellationToken);
+        dbContext.Reviews.RemoveRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id)
+            .ToListAsync(cancellationToken));
         dbContext.Bookings.RemoveRange(bookings);
-        dbContext.TimeOffs.RemoveRange(await dbContext.TimeOffs.Where(t => t.BusinessId == business.Id).ToListAsync(cancellationToken));
-        dbContext.Notifications.RemoveRange(await dbContext.Notifications.Where(n => n.BusinessId == business.Id).ToListAsync(cancellationToken));
+        dbContext.TimeOffs.RemoveRange(await dbContext.TimeOffs.Where(t => t.BusinessId == business.Id)
+            .ToListAsync(cancellationToken));
+        dbContext.Notifications.RemoveRange(await dbContext.Notifications.Where(n => n.BusinessId == business.Id)
+            .ToListAsync(cancellationToken));
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        foreach (var owner in await dbContext.Users.Where(u => u.BusinessId == business.Id).ToListAsync(cancellationToken))
+        foreach (var owner in await dbContext.Users.Where(u => u.BusinessId == business.Id)
+                     .ToListAsync(cancellationToken))
         {
             await userManager.DeleteAsync(owner);
         }
+
         dbContext.Businesses.Remove(business);
         await dbContext.SaveChangesAsync(cancellationToken);
     }

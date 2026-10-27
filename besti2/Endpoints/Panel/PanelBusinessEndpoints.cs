@@ -49,7 +49,7 @@ public static class PanelBusinessEndpoints
 
         // Business panel: soft delete one of the owner's services
         group.MapDelete("/services/{id:guid}", async (Guid id, PanelBusiness business,
-            IBusinessService businessService, CancellationToken cancellationToken) =>
+                IBusinessService businessService, CancellationToken cancellationToken) =>
             await businessService.DeleteServiceAsync(business.Id, id, cancellationToken)
                 ? Results.NoContent()
                 : Results.NotFound());

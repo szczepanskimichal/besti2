@@ -24,6 +24,7 @@ public class AvailabilityServiceTests
 
     private static readonly Guid SnekkerarbeidId = new("a2222222-0000-0000-0000-000000000003"); // Per time, 60 min
     private static readonly Guid LarsId = new("b2222222-0000-0000-0000-000000000001"); // Fjord Bygg, Monday 7–15
+
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
@@ -87,11 +88,13 @@ public class AvailabilityServiceTests
         await using var db = await CreateSeededDbAsync();
         var service = Bookings(db);
 
-        var days = await new AvailabilityService(db).GetFreeDaysAsync(SnekkerarbeidId, LarsId, FutureMonday, 1, units: 3);
+        var days = await new AvailabilityService(db).GetFreeDaysAsync(SnekkerarbeidId, LarsId, FutureMonday, 1,
+            units: 3);
         var result = await service.CreateAsync(new CreateBookingRequest(SnekkerarbeidId, LarsId, FutureMondayAt10,
             "Kari Nordmann", "+4790000000", "kari@test.example", false, Units: 3));
 
-        Assert.Equal(new DateTime(2099, 1, 5, 11, 0, 0, DateTimeKind.Utc), days![0].Slots[^1].StartUtc); // 12:00 in Oslo
+        Assert.Equal(new DateTime(2099, 1, 5, 11, 0, 0, DateTimeKind.Utc),
+            days![0].Slots[^1].StartUtc); // 12:00 in Oslo
         Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
         Assert.Equal(FutureMondayAt10.AddHours(3), result.Booking!.EndUtc);
     }

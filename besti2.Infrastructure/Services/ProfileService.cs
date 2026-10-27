@@ -23,6 +23,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             ? null
             : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber);
     }
+
     public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await CustomerAsync(userId);
@@ -70,6 +71,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         {
             return "Navn er påkrevd (maks 100 tegn).";
         }
+
         var phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim();
         if (phone is not null && !PhoneNumber.IsValid(phone))
         {
@@ -89,6 +91,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         {
             return "Fant ikke kontoen.";
         }
+
         if (string.IsNullOrEmpty(request.NewPassword) || request.NewPassword.Length < 6)
         {
             return "Det nye passordet må ha minst 6 tegn.";
@@ -99,6 +102,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         {
             return null;
         }
+
         return result.Errors.Any(e => e.Code == "PasswordMismatch")
             ? "Nåværende passord er feil."
             : "Passordet kunne ikke endres. Prøv et annet passord.";
@@ -112,6 +116,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         {
             return "Fant ikke kontoen.";
         }
+
         if (!await userManager.CheckPasswordAsync(user, request.Password ?? ""))
         {
             return "Passordet er feil.";
@@ -125,10 +130,11 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             .ToListAsync(cancellationToken);
         foreach (var bookingId in coming)
         {
-        // Deleting the account cancels every coming visit, also after the free-cancel deadline
+            // Deleting the account cancels every coming visit, also after the free-cancel deadline
             await bookingService.CancelByCustomerAsync(bookingId, userId, ignoreDeadline: true,
                 cancellationToken: cancellationToken);
         }
+
         // 2. All visits stay for the business's history, but without who it was
         var bookings = await dbContext.Bookings.Where(b => b.CustomerUserId == userId).ToListAsync(cancellationToken);
         foreach (var booking in bookings)

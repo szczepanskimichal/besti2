@@ -18,11 +18,13 @@ public class BrregBusinessRegistry(HttpClient http, ILogger<BrregBusinessRegistr
             {
                 return new RegistryLookup(RegistryStatus.NotFound);
             }
+
             // 410 Gone = deleted from the register
             if (response.StatusCode == HttpStatusCode.Gone)
             {
                 return new RegistryLookup(RegistryStatus.Closed);
             }
+
             response.EnsureSuccessStatusCode();
 
             var unit = await response.Content.ReadFromJsonAsync<Unit>(cancellationToken);
@@ -30,6 +32,7 @@ public class BrregBusinessRegistry(HttpClient http, ILogger<BrregBusinessRegistr
             {
                 return new RegistryLookup(RegistryStatus.Unavailable);
             }
+
             if (unit.Slettedato is not null || unit.Konkurs || unit.UnderAvvikling
                 || unit.UnderTvangsavviklingEllerTvangsopplosning)
             {
@@ -53,8 +56,14 @@ public class BrregBusinessRegistry(HttpClient http, ILogger<BrregBusinessRegistr
     private static string ToTitle(string text) =>
         System.Globalization.CultureInfo.GetCultureInfo("nb-NO").TextInfo.ToTitleCase(text.ToLowerInvariant());
 
-    private record Unit(string? Navn, string? Slettedato, bool Konkurs, bool UnderAvvikling,
-        bool UnderTvangsavviklingEllerTvangsopplosning, Address? Forretningsadresse, Address? Postadresse);
+    private record Unit(
+        string? Navn,
+        string? Slettedato,
+        bool Konkurs,
+        bool UnderAvvikling,
+        bool UnderTvangsavviklingEllerTvangsopplosning,
+        Address? Forretningsadresse,
+        Address? Postadresse);
 
     private record Address(List<string>? Adresse, string? Postnummer, string? Poststed);
 }

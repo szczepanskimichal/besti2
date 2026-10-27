@@ -184,6 +184,7 @@ public class BusinessSearchServiceTests
                 ServiceId = dameklippId,
             });
         }
+
         await db.SaveChangesAsync();
 
         // Act

@@ -11,4 +11,7 @@ public enum CreateBookingOutcome
 
 public record BookingCreatedDto(Guid Id, DateTime StartUtc, DateTime EndUtc, string Status);
 
-public record CreateBookingResult(CreateBookingOutcome Outcome, BookingCreatedDto? Booking = null, string? Error = null);
+public record CreateBookingResult(
+    CreateBookingOutcome Outcome,
+    BookingCreatedDto? Booking = null,
+    string? Error = null);

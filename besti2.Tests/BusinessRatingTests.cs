@@ -50,8 +50,8 @@ public class BusinessRatingTests
     public async Task GetAllAsync_SortByRating_UsesBayesianAverage()
     {
         var (service, db) = await CreateAsync();
-        AddReviews(db, FjordBygg, 5);          // 5,0 but only one review
-        AddReviews(db, KlippOgStil, 5, 4, 5);  // 4,7 from three reviews
+        AddReviews(db, FjordBygg, 5); // 5,0 but only one review
+        AddReviews(db, KlippOgStil, 5, 4, 5); // 4,7 from three reviews
         await db.SaveChangesAsync();
 
         var result = await service.GetAllAsync(sort: "rating");
@@ -109,6 +109,7 @@ public class BusinessRatingTests
                 CustomerName = "Kari", Stars = stars, CreatedUtc = DateTime.UtcNow
             });
         }
+
         await db.SaveChangesAsync();
         var service = new BusinessSearchService(db, new FakeImageStorage());
 

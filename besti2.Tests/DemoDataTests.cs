@@ -25,7 +25,8 @@ public class DemoDataTests
         var real = new Business
         {
             Id = Guid.NewGuid(), Name = "Ekte Frisør", OrgNumber = "912345688", Category = BusinessCategory.Frisor,
-            Email = "post@ekte.example", PhoneNumber = "+4791234567", Address = "Gata 1", PostalCode = "0150", City = "Oslo"
+            Email = "post@ekte.example", PhoneNumber = "+4791234567", Address = "Gata 1", PostalCode = "0150",
+            City = "Oslo"
         };
         db.Businesses.Add(real);
         db.Employees.Add(new Employee { Id = Guid.NewGuid(), Name = "Ola", LastName = "Hansen", BusinessId = real.Id });

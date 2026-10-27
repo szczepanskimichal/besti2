@@ -15,174 +15,175 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
     private const int GalleryMaxSize = 1600; // big enough for a sharp photo on any screen
     private const int MaxGalleryImages = 12;
     private const long MaxPixels = 50_000_000; // 50 megapixels: more than any phone camera (48 MP)
+
     public async Task<string?> SetLogoAsync(Guid businessId, Stream content, long length,
         CancellationToken cancellationToken = default)
     {
-    var(resized, error) = await ReadAsWebpAsync(content, length, LogoMaxSize, cancellationToken);
+        var (resized, error) = await ReadAsWebpAsync(content, length, LogoMaxSize, cancellationToken);
         if (resized is null)
-    {
-        return error;
-    }
-    if (!await dbContext.Businesses.AnyAsync(b => b.Id == businessId, cancellationToken))
-    {
-        return "Fant ikke bedriften.";
-    }
-    
-    // Our own random name; the uploaded file name is never used
-    var fileName = $"{Guid.NewGuid()}.webp";
-    await storage.SaveAsync(fileName,  new MemoryStream(resized), cancellationToken);
+        {
+            return error;
+        }
 
-    var oldLogo = await dbContext.BusinessImages
+        if (!await dbContext.Businesses.AnyAsync(b => b.Id == businessId, cancellationToken))
+        {
+            return "Fant ikke bedriften.";
+        }
+
+        // Our own random name; the uploaded file name is never used
+        var fileName = $"{Guid.NewGuid()}.webp";
+        await storage.SaveAsync(fileName, new MemoryStream(resized), cancellationToken);
+
+        var oldLogo = await dbContext.BusinessImages
             .FirstOrDefaultAsync(i => i.BusinessId == businessId && i.Kind == ImageKind.Logo, cancellationToken);
         if (oldLogo is not null)
-    {
-        dbContext.BusinessImages.Remove(oldLogo);
-    }
+        {
+            dbContext.BusinessImages.Remove(oldLogo);
+        }
 
-    dbContext.BusinessImages.Add(new BusinessImage
-    {
-        Id = Guid.NewGuid(),
-        BusinessId = businessId,
-        Kind = ImageKind.Logo,
-        FileName = fileName,
-        CreatedUtc = DateTime.UtcNow
-    });
+        dbContext.BusinessImages.Add(new BusinessImage
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Kind = ImageKind.Logo,
+            FileName = fileName,
+            CreatedUtc = DateTime.UtcNow
+        });
 
-    await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         // Delete the old file only after the database points to the new one
         if (oldLogo is not null)
-    {
-        await storage.DeleteAsync(oldLogo.FileName, cancellationToken);
+        {
+            await storage.DeleteAsync(oldLogo.FileName, cancellationToken);
+        }
+
+        return null;
     }
 
-return null;
+    public async Task<string?> AddGalleryImageAsync(Guid businessId, Stream content, long length,
+        CancellationToken cancellationToken = default)
 
-}
-
-public async Task<string?> AddGalleryImageAsync(Guid businessId, Stream content, long length,
-    CancellationToken cancellationToken = default)
-
-{
-    var count = await dbContext.BusinessImages
-        .CountAsync(i => i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
-
-    if (count >= MaxGalleryImages)
     {
-        return $"Galleriet kan ha maks {MaxGalleryImages} bilder. Slett et bilde først.";
+        var count = await dbContext.BusinessImages
+            .CountAsync(i => i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
+
+        if (count >= MaxGalleryImages)
+        {
+            return $"Galleriet kan ha maks {MaxGalleryImages} bilder. Slett et bilde først.";
+        }
+
+        var (resized, error) = await ReadAsWebpAsync(content, length, GalleryMaxSize, cancellationToken);
+
+        if (resized is null)
+        {
+            return error;
+        }
+
+        if (!await dbContext.Businesses.AnyAsync(b => b.Id == businessId, cancellationToken))
+        {
+            return "Fant ikke bedriften.";
+        }
+
+        var fileName = $"{Guid.NewGuid()}.webp";
+        await storage.SaveAsync(fileName, new MemoryStream(resized), cancellationToken);
+
+        dbContext.BusinessImages.Add(new BusinessImage
+        {
+            Id = Guid.NewGuid(),
+            BusinessId = businessId,
+            Kind = ImageKind.Galleri,
+            FileName = fileName,
+            SortOrder = count, // new photos go last
+            CreatedUtc = DateTime.UtcNow
+        });
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
     }
 
-    var (resized, error) = await ReadAsWebpAsync(content, length, GalleryMaxSize, cancellationToken);
+    public async Task<bool> DeleteGalleryImageAsync(Guid businessId, Guid imageId,
+        CancellationToken cancellationToken = default)
 
-    if (resized is null)
     {
-        return error;
-    }
-
-    if (!await dbContext.Businesses.AnyAsync(b => b.Id == businessId, cancellationToken))
-    {
-        return "Fant ikke bedriften.";
-    }
-
-    var fileName = $"{Guid.NewGuid()}.webp";
-    await storage.SaveAsync(fileName, new MemoryStream(resized), cancellationToken);
-
-    dbContext.BusinessImages.Add(new BusinessImage
-    {
-        Id = Guid.NewGuid(),
-        BusinessId = businessId,
-        Kind = ImageKind.Galleri,
-        FileName = fileName,
-        SortOrder = count, // new photos go last
-        CreatedUtc = DateTime.UtcNow
-    });
-    await dbContext.SaveChangesAsync(cancellationToken);
-    return null;
-}
-
-public async Task<bool> DeleteGalleryImageAsync(Guid businessId, Guid imageId,
-    CancellationToken cancellationToken = default)
-
-{
 // Only this business's gallery images; anything else looks like "not found"
 
-    var image = await dbContext.BusinessImages.FirstOrDefaultAsync(
-        i => i.Id == imageId && i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
+        var image = await dbContext.BusinessImages.FirstOrDefaultAsync(
+            i => i.Id == imageId && i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
 
-    if (image is null)
+        if (image is null)
 
-    {
-        return false;
-    }
+        {
+            return false;
+        }
 
-    dbContext.BusinessImages.Remove(image);
+        dbContext.BusinessImages.Remove(image);
 
-    await dbContext.SaveChangesAsync(cancellationToken);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
 // Delete the file only after the database no longer points to it
 
-    await storage.DeleteAsync(image.FileName, cancellationToken);
+        await storage.DeleteAsync(image.FileName, cancellationToken);
 
-    return true;
-}
+        return true;
+    }
 
 // Shared by logo and gallery: checks size and type, then resizes to WebP
 
-private static async Task<(byte[]? Webp, string? Error)> ReadAsWebpAsync(
-    Stream content, long length, int maxSize, CancellationToken cancellationToken)
+    private static async Task<(byte[]? Webp, string? Error)> ReadAsWebpAsync(
+        Stream content, long length, int maxSize, CancellationToken cancellationToken)
 
-{
+    {
 // Check the size before reading, so a huge upload is never loaded into memory
 
-    if (length == 0)
+        if (length == 0)
 
-    {
-        return (null, "Velg et bilde.");
+        {
+            return (null, "Velg et bilde.");
+        }
+
+        if (length > MaxUploadBytes)
+
+        {
+            return (null, "Bildet kan være maks 10 MB.");
+        }
+
+        using var memory = new MemoryStream();
+
+        await content.CopyToAsync(memory, cancellationToken);
+
+        var data = memory.ToArray();
+
+        if (DetectImageType(data) is null)
+
+        {
+            return (null, "Bare PNG, JPG eller WebP er tillatt.");
+        }
+
+        var resized = ResizeToWebp(data, maxSize);
+
+        return resized is null ? (null, "Kunne ikke lese bildet.") : (resized, null);
     }
-
-    if (length > MaxUploadBytes)
-
-    {
-        return (null, "Bildet kan være maks 10 MB.");
-    }
-
-    using var memory = new MemoryStream();
-
-    await content.CopyToAsync(memory, cancellationToken);
-
-    var data = memory.ToArray();
-
-    if (DetectImageType(data) is null)
-
-    {
-        return (null, "Bare PNG, JPG eller WebP er tillatt.");
-    }
-
-    var resized = ResizeToWebp(data, maxSize);
-
-    return resized is null ? (null, "Kunne ikke lese bildet.") : (resized, null);
-}
 
 // Real file type from the first bytes ("magic numbers"), not from the file name
-private static string? DetectImageType(byte[] data)
-{
-    if (StartsWith(data, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
+    private static string? DetectImageType(byte[] data)
     {
-        return ".png";
-    }
+        if (StartsWith(data, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
+        {
+            return ".png";
+        }
 
-    if (StartsWith(data, [0xFF, 0xD8, 0xFF]))
-    {
-        return ".jpg";
-    }
+        if (StartsWith(data, [0xFF, 0xD8, 0xFF]))
+        {
+            return ".jpg";
+        }
 
-    if (StartsWith(data, "RIFF"u8.ToArray()) && data.Skip(8).Take(4).SequenceEqual("WEBP"u8.ToArray()))
-    {
-        return ".webp";
-    }
+        if (StartsWith(data, "RIFF"u8.ToArray()) && data.Skip(8).Take(4).SequenceEqual("WEBP"u8.ToArray()))
+        {
+            return ".webp";
+        }
 
-    return null;
-}
+        return null;
+    }
 // Fits the image inside maxSize x maxSize(keeps proportions) and saves it as WebP.
 
 // A new file is created, so EXIF data like GPS location is not kept.
@@ -225,26 +226,26 @@ private static string? DetectImageType(byte[] data)
     }
 
 // Returns an upright copy of the bitmap (handles 90, 180 and 270 degree photos)
-private static SKBitmap ApplyOrientation(SKBitmap bitmap, SKEncodedOrigin origin)
-{
-    var degrees = origin switch
+    private static SKBitmap ApplyOrientation(SKBitmap bitmap, SKEncodedOrigin origin)
     {
-        SKEncodedOrigin.BottomRight => 180,
-        SKEncodedOrigin.RightTop => 90,
-        SKEncodedOrigin.LeftBottom => 270,
-        _ => 0
-    };
+        var degrees = origin switch
+        {
+            SKEncodedOrigin.BottomRight => 180,
+            SKEncodedOrigin.RightTop => 90,
+            SKEncodedOrigin.LeftBottom => 270,
+            _ => 0
+        };
 
-    var swap = degrees is 90 or 270;
-    var result = new SKBitmap(swap ? bitmap.Height : bitmap.Width, swap ? bitmap.Width : bitmap.Height);
-    using var canvas = new SKCanvas(result);
-    canvas.Translate(result.Width / 2f, result.Height / 2f);
-    canvas.RotateDegrees(degrees);
-    canvas.Translate(-bitmap.Width / 2f, -bitmap.Height / 2f);
-    canvas.DrawBitmap(bitmap, 0, 0, new SKSamplingOptions(SKFilterMode.Linear));
-    return result;
-}
+        var swap = degrees is 90 or 270;
+        var result = new SKBitmap(swap ? bitmap.Height : bitmap.Width, swap ? bitmap.Width : bitmap.Height);
+        using var canvas = new SKCanvas(result);
+        canvas.Translate(result.Width / 2f, result.Height / 2f);
+        canvas.RotateDegrees(degrees);
+        canvas.Translate(-bitmap.Width / 2f, -bitmap.Height / 2f);
+        canvas.DrawBitmap(bitmap, 0, 0, new SKSamplingOptions(SKFilterMode.Linear));
+        return result;
+    }
 
-private static bool StartsWith(byte[] data, byte[] prefix) =>
-    data.Length >= prefix.Length && data.Take(prefix.Length).SequenceEqual(prefix);
+    private static bool StartsWith(byte[] data, byte[] prefix) =>
+        data.Length >= prefix.Length && data.Take(prefix.Length).SequenceEqual(prefix);
 }

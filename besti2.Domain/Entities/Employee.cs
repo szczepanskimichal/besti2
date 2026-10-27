@@ -4,10 +4,12 @@ public class Employee
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;
+
     public string LastName { get; set; } = null!;
+
     // Soft delete: old bookings still point to this employee
     public bool IsDeleted { get; set; }
-    
+
     public Guid BusinessId { get; set; }
     public Business Business { get; set; } = null!;
 }

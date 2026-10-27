@@ -15,8 +15,12 @@ public enum RegistryStatus
 }
 
 // Name and business address from the register (only when Active)
-public record RegistryLookup(RegistryStatus Status, string? Name = null, string? Address = null,
-    string? PostalCode = null, string? City = null);
+public record RegistryLookup(
+    RegistryStatus Status,
+    string? Name = null,
+    string? Address = null,
+    string? PostalCode = null,
+    string? City = null);
 
 public static class OrgNumber
 {
@@ -29,12 +33,14 @@ public static class OrgNumber
         {
             return false;
         }
+
         var sum = Weights.Select((weight, i) => weight * (orgNumber[i] - '0')).Sum();
         var check = 11 - sum % 11;
         if (check == 11)
         {
             check = 0;
         }
+
         return check != 10 && check == orgNumber[8] - '0';
     }
 }

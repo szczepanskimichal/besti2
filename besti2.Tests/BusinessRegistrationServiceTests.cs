@@ -27,7 +27,8 @@ public class BusinessRegistrationServiceTests
         var db = provider.GetRequiredService<AppDbContext>();
         var users = provider.GetRequiredService<UserManager<AppUser>>();
         return (new BusinessRegistrationService(db, users, new FakeGeocodingService(), new FakeEmailService(),
-            "http://localhost:3000"), db, users);    }
+            "http://localhost:3000"), db, users);
+    }
 
     private static RegisterBusinessRequest TestFrisor() => new(
         "Test Frisør", "912345688", "Frisor", "eier@testfrisor.example",
@@ -50,7 +51,7 @@ public class BusinessRegistrationServiceTests
         Assert.Single(db.Employees.Where(e => e.BusinessId == business.Id));
         Assert.Equal(5, db.OpeningHours.Count(h => h.BusinessId == business.Id));
     }
-    
+
     [Fact]
     public async Task RegisterAsync_EmptyBusinessName_Fails()
     {
@@ -61,7 +62,7 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Fyll ut alle feltene.", result.Error);
     }
-    
+
     // check if a weak password is refused before anything is saved (no half-registered business)
     [Fact]
     public async Task RegisterAsync_WeakPassword_SavesNothing()
@@ -75,14 +76,15 @@ public class BusinessRegistrationServiceTests
         Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345688"));
         Assert.Empty(users.Users);
     }
-    
+
     // check if the owner must confirm the email: the account starts unconfirmed and a link is mailed
     [Fact]
     public async Task RegisterAsync_OwnerGetsConfirmationLink()
     {
         var (_, db, users) = CreateService();
         var email = new FakeEmailService();
-        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email, "http://localhost:3000");
+        var service =
+            new BusinessRegistrationService(db, users, new FakeGeocodingService(), email, "http://localhost:3000");
 
         var result = await service.RegisterAsync(TestFrisor());
 
@@ -93,8 +95,8 @@ public class BusinessRegistrationServiceTests
         Assert.Equal("eier@testfrisor.example", mail.To);
         Assert.Contains("http://localhost:3000/bekreft-epost?id=", mail.Body);
     }
-    
-    
+
+
     // check if a new business stays hidden until the owner confirms the email AND BESTI approves it
     [Fact]
     public async Task NewBusiness_IsHiddenUntilConfirmedAndApproved()
@@ -140,6 +142,7 @@ public class BusinessRegistrationServiceTests
         Assert.False(await service.ApproveAsync("feil"));
         Assert.Null(await service.GetApprovalAsync(""));
     }
+
     // check if "Avvis" deletes a stranger's registration with what they added in the panel,
     // mails them, and the real owner can then register the same org number
     [Fact]
@@ -157,7 +160,8 @@ public class BusinessRegistrationServiceTests
 
         // The stranger already made a manual booking in the panel
         var businessId = stranger.BusinessId!.Value;
-        var haircut = new Service { Id = Guid.NewGuid(), Name = "Klipp", DurationMinutes = 30, BusinessId = businessId };
+        var haircut = new Service
+            { Id = Guid.NewGuid(), Name = "Klipp", DurationMinutes = 30, BusinessId = businessId };
         db.Services.Add(haircut);
         var bookingId = Guid.NewGuid();
         db.Bookings.Add(new Booking
@@ -214,6 +218,7 @@ public class BusinessRegistrationServiceTests
         Assert.Equal("Du må godta databehandleravtalen for å registrere bedriften.", result.Error);
         Assert.Empty(db.Businesses.Where(b => b.OrgNumber == "912345688"));
     }
+
     // check if an unconfirmed registration (lost mail, or someone else using the org number) does not
     // block a new registration: the old hidden business and its owner are replaced
     [Fact]
@@ -245,6 +250,7 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Denne bedriften er allerede registrert.", result.Error);
     }
+
     // check if the login e-mail stays private: no contact e-mail = nothing public, the same one is refused
     [Fact]
     public async Task RegisterAsync_LoginEmailIsNeverPublic()

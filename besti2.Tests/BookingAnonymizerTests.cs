@@ -9,6 +9,7 @@ namespace besti2.Tests;
 public class BookingAnonymizerTests
 {
     private static readonly DateTime Now = new(2030, 1, 7, 9, 0, 0, DateTimeKind.Utc);
+
     private static Booking NewBooking(DateTime startUtc, string name) => new()
     {
         Id = Guid.NewGuid(),

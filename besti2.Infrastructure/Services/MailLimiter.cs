@@ -30,14 +30,17 @@ public class MailLimiter(int dailyLimit = 150, TimeSpan? cooldown = null)
                 sentToday = 0;
                 lastMailUtc.Clear();
             }
+
             if (sentToday >= dailyLimit)
             {
                 return false;
             }
+
             if (lastMailUtc.TryGetValue(key, out var last) && now - last < wait)
             {
                 return false;
             }
+
             lastMailUtc[key] = now;
             sentToday++;
             return true;

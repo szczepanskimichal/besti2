@@ -6,7 +6,11 @@ using Microsoft.AspNetCore.Identity;
 namespace besti2.Infrastructure.Services;
 
 // webBaseUrl = address of the Next.js site, used in the confirmation link
-public class CustomerAccountService(UserManager<AppUser> userManager, IEmailService emailService, string webBaseUrl, MailLimiter? mailLimiter = null)
+public class CustomerAccountService(
+    UserManager<AppUser> userManager,
+    IEmailService emailService,
+    string webBaseUrl,
+    MailLimiter? mailLimiter = null)
     : ICustomerAccountService
 {
     private readonly MailLimiter limiter = mailLimiter ?? new MailLimiter();
@@ -36,11 +40,13 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
             {
                 return passwordError;
             }
+
             // Checked before the password change below, because that change makes the link already sent stop working
             if (!limiter.TryReserve(email))
             {
                 return MailLimiter.TryLaterMessage;
             }
+
             existing.FullName = request.FullName.Trim();
             await userManager.RemovePasswordAsync(existing);
             await userManager.AddPasswordAsync(existing, request.Password);
@@ -50,7 +56,8 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
 
         if (existing is not null)
         {
-            return "E-postadressen er allerede i bruk. Har du en bedriftskonto? Bruk en annen e-post for kundekonto, eller logg inn.";
+            return
+                "E-postadressen er allerede i bruk. Har du en bedriftskonto? Bruk en annen e-post for kundekonto, eller logg inn.";
         }
 
         // Customer = account without BusinessId; must confirm the email before logging in
@@ -60,11 +67,13 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         {
             return "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.";
         }
+
         if (!limiter.TryReserve(email))
         {
             // Only when today's limit is used up: the account is kept, signing up again later sends the link
             return MailLimiter.TryLaterMessage;
         }
+
         // The account is kept even if the mail fails; signing up again sends a new link
         await TrySendConfirmationAsync(user, cancellationToken);
         return null;
@@ -77,6 +86,7 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         {
             return false;
         }
+
         var user = await userManager.FindByIdAsync(request.UserId);
         if (user is null)
         {
@@ -87,7 +97,7 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
         return result.Succeeded;
     }
 
-    
+
     // null when the password follows the rules, otherwise the message for the form
     // Builds the confirmation link and mails it; a mail error must not break sign-up
     private async Task<string?> CheckPasswordAsync(string password)
@@ -99,8 +109,10 @@ public class CustomerAccountService(UserManager<AppUser> userManager, IEmailServ
                 return "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.";
             }
         }
+
         return null;
     }
+
     private async Task<bool> TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
     {
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);

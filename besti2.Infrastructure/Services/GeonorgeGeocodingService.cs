@@ -12,7 +12,8 @@ public class GeonorgeGeocodingService(HttpClient http, ILogger<GeonorgeGeocoding
     public async Task<(double Latitude, double Longitude)?> GeocodeAsync(
         string address, string postalCode, CancellationToken cancellationToken = default)
     {
-        var url = $"sok?sok={Uri.EscapeDataString(address)}&postnummer={Uri.EscapeDataString(postalCode)}&treffPerSide=1&utkoordsys=4258";
+        var url =
+            $"sok?sok={Uri.EscapeDataString(address)}&postnummer={Uri.EscapeDataString(postalCode)}&treffPerSide=1&utkoordsys=4258";
         try
         {
             var result = await http.GetFromJsonAsync<SearchResult>(url, cancellationToken);
@@ -28,6 +29,8 @@ public class GeonorgeGeocodingService(HttpClient http, ILogger<GeonorgeGeocoding
     }
 
     private record SearchResult(List<AddressHit>? Adresser);
+
     private record AddressHit(Point? Representasjonspunkt);
+
     private record Point(double Lat, double Lon);
 }

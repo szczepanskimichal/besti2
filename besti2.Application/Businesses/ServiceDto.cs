@@ -7,4 +7,4 @@ public record ServiceDto(
     int DurationMinutes,
     decimal? PriceNok,
     string PriceType
-    );
+);

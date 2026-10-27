@@ -10,7 +10,6 @@ namespace besti2.Tests;
 
 public class BusinessServiceTests
 {
-
     // check if GetByIdAsync returns the correct business with its services and employees -happyPath
     [Fact]
     public async Task GetByIdAsync_ReturnsBusinessWithServicesAndEmployees()
@@ -267,6 +266,7 @@ public class BusinessServiceTests
         Assert.Equal("Ny beskrivelse", business!.Description);
         Assert.Equal("Bergen", business.City);
     }
+
     // check if UpdateProfileAsync saves the free-cancel deadline and rejects other values than 0/2/12/24/48
     [Fact]
     public async Task UpdateProfileAsync_FreeCancelHours()
@@ -410,7 +410,7 @@ public class BusinessServiceTests
         // Assert
         Assert.Equal("Fant ikke den ansatte.", error);
     }
-    
+
     // check if a hidden business (owner has not confirmed the email) is not listed and has no page
     [Fact]
     public async Task HiddenBusiness_IsNotListedAndHasNoPage()
@@ -435,6 +435,7 @@ public class BusinessServiceTests
         Assert.NotNull(panel);
         Assert.True(panel.IsHidden);
     }
+
     // check if the owner can set a public contact e-mail, but not the private login e-mail
     [Fact]
     public async Task UpdateProfileAsync_ContactEmail_CannotBeTheLoginEmail()
@@ -456,8 +457,10 @@ public class BusinessServiceTests
         var request = new UpdateProfileRequest(null, "+4799999999", "Nygata 5", "5003", "Bergen");
 
         // Act
-        var loginError = await service.UpdateProfileAsync(klippId, request with { ContactEmail = "eier@klippogstil.example" });
-        var okError = await service.UpdateProfileAsync(klippId, request with { ContactEmail = "Hei@KlippOgStil.example" });
+        var loginError =
+            await service.UpdateProfileAsync(klippId, request with { ContactEmail = "eier@klippogstil.example" });
+        var okError =
+            await service.UpdateProfileAsync(klippId, request with { ContactEmail = "Hei@KlippOgStil.example" });
 
         // Assert
         Assert.StartsWith("Bruk en annen e-post til kunder", loginError);

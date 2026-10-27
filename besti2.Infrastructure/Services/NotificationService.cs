@@ -8,6 +8,7 @@ namespace besti2.Infrastructure.Services;
 public class NotificationService(AppDbContext dbContext) : INotificationService
 {
     private const int MaxShown = 30;
+
     // Kept until deleted, but never longer than this (so nothing hangs around when nobody deletes)
     public const int CustomerDays = 7;
     public const int BusinessDays = 14;
@@ -42,6 +43,7 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         {
             return null;
         }
+
         notification.ReadUtc ??= DateTime.UtcNow;
         await dbContext.SaveChangesAsync(cancellationToken);
         return new NotificationReadDto(notification.Link);
@@ -53,6 +55,7 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         var cutoff = DateTime.UtcNow.AddDays(-(businessId is null ? CustomerDays : BusinessDays));
         return Mine(userId, businessId).CountAsync(n => n.ReadUtc == null && n.CreatedUtc >= cutoff, cancellationToken);
     }
+
     public async Task MarkAllReadAsync(string userId, Guid? businessId, CancellationToken cancellationToken = default)
     {
         var unread = await Mine(userId, businessId).Where(n => n.ReadUtc == null).ToListAsync(cancellationToken);
@@ -61,8 +64,10 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         {
             notification.ReadUtc = now;
         }
+
         await dbContext.SaveChangesAsync(cancellationToken);
     }
+
     public async Task<int> DeleteExpiredAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
     {
         var customerCutoff = nowUtc.AddDays(-CustomerDays);
@@ -75,6 +80,7 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         await dbContext.SaveChangesAsync(cancellationToken);
         return expired.Count;
     }
+
     public async Task<bool> DeleteAsync(string userId, Guid? businessId, Guid notificationId,
         CancellationToken cancellationToken = default)
     {
@@ -84,6 +90,7 @@ public class NotificationService(AppDbContext dbContext) : INotificationService
         {
             return false;
         }
+
         dbContext.Notifications.Remove(notification);
         await dbContext.SaveChangesAsync(cancellationToken);
         return true;
