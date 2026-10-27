@@ -421,8 +421,8 @@ public class BookingService(
                 b.EmployeeId,
                 b.PreviousStartUtc,
                 // "Møtte ikke" for this customer at this business only (other businesses never see it)
-                b.CustomerEmail == ""
-                    ? 0
+                // Deleted and anonymized customers all share one address: never add them up
+                b.CustomerEmail == "" || b.CustomerEmail == BookingAnonymizer.AnonymizedEmail                    ? 0
                     : dbContext.Bookings.Count(o => o.Service.BusinessId == businessId
                                                     && o.Status == BookingStatus.MotteIkke
                                                     && o.CustomerEmail == b.CustomerEmail)))
@@ -519,6 +519,8 @@ public class BookingService(
             // "Møtte ikke" only after the start time; "Møtte" (Bekreftet) undoes a mistake
             (BookingStatus.Venter or BookingStatus.Bekreftet, BookingStatus.MotteIkke) => started,
             (BookingStatus.MotteIkke, BookingStatus.Bekreftet) => true,
+            // A moved visit the customer never answered: after the start the business marks whether they came
+            (BookingStatus.VenterKunde, BookingStatus.Bekreftet or BookingStatus.MotteIkke) => started,
             (BookingStatus.Venter, BookingStatus.Avlyst) => true,
             (BookingStatus.Bekreftet, BookingStatus.Avlyst) => true,
             (BookingStatus.VenterKunde, BookingStatus.Avlyst) => true,
@@ -537,12 +539,15 @@ public class BookingService(
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
 
+        var wasNoShow = booking.Status == BookingStatus.MotteIkke;
         booking.Status = newStatus;
         booking.NewTimeTokenHash = null;
+        booking.PreviousStartUtc = null;
         await dbContext.SaveChangesAsync(cancellationToken);
-        // After the start time the business only marks whether the customer came: no e-mail or bell
+        // After the start time the business only marks whether the customer came
         if (started)
         {
+            await NotifyNoShowAsync(booking, wasNoShow, cancellationToken);
             return UpdateBookingStatusOutcome.Updated;
         }
 
@@ -790,7 +795,30 @@ public class BookingService(
             logger.LogWarning(ex, "Could not save notification for booking {BookingId}", booking.Id);
         }
     }
+    // "Møtte ikke" blocks the review, so a customer with an account is told and can object (e-mail + bell).
+    // "Møtte" after "Møtte ikke" was a mistake: that bell goes away again. Walk-ins cannot review: nothing to tell
+    private async Task NotifyNoShowAsync(Booking booking, bool wasNoShow, CancellationToken cancellationToken)
+    {
+        if (booking.CustomerUserId is null)
+        {
+            return;
+        }
 
+        if (booking.Status == BookingStatus.MotteIkke)
+        {
+            await SendNoShowEmailAsync(booking, cancellationToken);
+            await NotifyAsync(booking, toBusiness: false,
+                $"{{0}} har registrert at du ikke møtte {When(booking.StartUtc)}. Var du der? Se e-posten.",
+                "/min-besti", cancellationToken);
+        }
+        else if (wasNoShow)
+        {
+            dbContext.Notifications.RemoveRange(await dbContext.Notifications
+                .Where(n => n.UserId == booking.CustomerUserId && n.BookingId == booking.Id)
+                .ToListAsync(cancellationToken));
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+    }
     // An optional message when cancelling: trimmed, empty = none, at most 300 characters
     private static string? ShortNote(string? message) =>
         string.IsNullOrWhiteSpace(message) ? null : message.Trim()[..Math.Min(message.Trim().Length, 300)];
@@ -1035,7 +1063,33 @@ public class BookingService(
             logger.LogWarning(ex, "Could not send status email for booking {BookingId}", booking.Id);
         }
     }
-
+    // "Møtte ikke": how to object (the business first, then BESTI); a failed e-mail must not undo the status
+    private async Task SendNoShowEmailAsync(Booking booking, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var when = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo)
+                .ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                $"{business.Name} har registrert at du ikke møtte til timen din.\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n\n" +
+                $"Var du der likevel? Kontakt {business.Name} på {business.PhoneNumber}, " +
+                "eller skriv til post@bestiapp.no, så ser vi på det.\n\n" +
+                "Hilsen BESTI";
+            await emailService.SendAsync(booking.CustomerEmail, $"Registrert som ikke møtt: {business.Name}", body,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send no-show email for booking {BookingId}", booking.Id);
+        }
+    }
     // Tell the business whether the customer accepted the new time; a failed email must not undo the answer
     private async Task SendNewTimeAnswerEmailAsync(Booking booking, bool accept, CancellationToken cancellationToken)
     {

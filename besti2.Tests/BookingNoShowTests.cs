@@ -88,4 +88,66 @@ public class BookingNoShowTests
         Assert.Equal(3, bookings.Count);
         Assert.All(bookings, b => Assert.Equal(2, b.NoShowCount));
     }
+    // check if a customer with an account gets an e-mail and a bell about "Møtte ikke", and the bell goes on "Møtte"
+    [Fact]
+    public async Task NoShow_CustomerWithAccount_GetsEmailAndBell_UndoRemovesBell()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+        var id = await VisitAsync(db, service, 10, hoursAgo: 2);
+        var booking = await db.Bookings.SingleAsync(b => b.Id == id);
+        booking.CustomerUserId = "kari-id";
+        await db.SaveChangesAsync();
+
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.MotteIkke);
+
+        Assert.Equal("ola@test.example", Assert.Single(email.Sent).To);
+        Assert.Equal(1, await db.Notifications.CountAsync(n => n.UserId == "kari-id" && n.BookingId == id));
+
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
+
+        Assert.Single(email.Sent);
+        Assert.Equal(0, await db.Notifications.CountAsync(n => n.UserId == "kari-id"));
+    }
+
+    // check if a moved visit the customer never answered can be marked after the start, but not before
+    [Fact]
+    public async Task VenterKunde_CanBeMarkedOnlyAfterStart()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var future = await VisitAsync(db, service, 10);
+        var past = await VisitAsync(db, service, 11, hoursAgo: 2);
+        foreach (var b in await db.Bookings.ToListAsync())
+        {
+            b.Status = BookingStatus.VenterKunde;
+        }
+        await db.SaveChangesAsync();
+
+        Assert.Equal(UpdateBookingStatusOutcome.InvalidTransition,
+            await service.UpdateStatusAsync(future, KlippOgStil, BookingStatus.Bekreftet));
+        Assert.Equal(UpdateBookingStatusOutcome.Updated,
+            await service.UpdateStatusAsync(past, KlippOgStil, BookingStatus.MotteIkke));
+        Assert.Equal(BookingStatus.MotteIkke, (await db.Bookings.SingleAsync(b => b.Id == past)).Status);
+    }
+
+    // check if deleted customers (all with the same anonymized address) do not share one counter
+    [Fact]
+    public async Task PanelBookings_AnonymizedCustomers_CountZero()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var id = await VisitAsync(db, service, 10, hoursAgo: 24);
+        await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.MotteIkke);
+        foreach (var b in await db.Bookings.ToListAsync())
+        {
+            b.CustomerEmail = BookingAnonymizer.AnonymizedEmail;
+        }
+        await db.SaveChangesAsync();
+
+        var bookings = await service.GetForBusinessAsync(KlippOgStil, new DateOnly(2000, 1, 1), new DateOnly(2100, 1, 1));
+
+        Assert.Equal(0, Assert.Single(bookings).NoShowCount);
+    }
 }
