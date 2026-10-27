@@ -64,9 +64,14 @@ export default async function BusinessPage({ params }: Props) {
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
-                {reviews.average !== null && (
+                {/* Average only from 3 reviews (same limit as in the search), before that "Ny på Besti" */}
+                {reviews.average !== null && reviews.count >= 3 ? (
                     <a href="#vurderinger" className={styles.rating}>
-                        <Stars value={reviews.average}/> {reviews.average.toString().replace(".", ",")} · {reviews.count} {reviews.count === 1 ? "vurdering" : "vurderinger"}
+                        <Stars value={reviews.average}/> {reviews.average.toString().replace(".", ",")} · {reviews.count} vurderinger
+                    </a>
+                ) : (
+                    <a href="#vurderinger" className={styles.rating}>
+                        Ny på Besti{reviews.count > 0 && ` · ${reviews.count} ${reviews.count === 1 ? "vurdering" : "vurderinger"}`}
                     </a>
                 )}
                 {business.description && <p className={styles.muted}>{business.description}</p>}

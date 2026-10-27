@@ -9,13 +9,15 @@ public static class BusinessEndpoints
     {
         var group = app.MapGroup("/api");
 
-        // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day)
+        // Get all businesses (optional filters: category, city, text q, date + from/to = free times that day,
+        // sort=rating = "Best vurdert", minRating=4 = "4★ og over")
         group.MapGet("/businesses",
             async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
-                double? lng, double? maxKm, int? page,
+                double? lng, double? maxKm, string? sort, int? minRating, int? page,
                 IBusinessService businessService, CancellationToken cancellationToken) =>
             {
-                var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, cancellationToken);
+                var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, sort, minRating,
+                    cancellationToken);
                 // 24 businesses per page (?page=2 ...)
                 return Results.Ok(BusinessPageDto.From(all, page));
             });

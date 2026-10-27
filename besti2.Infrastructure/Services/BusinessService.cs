@@ -17,7 +17,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null, double? maxKm = null,
-        CancellationToken cancellationToken = default)
+        string? sort = null, int? minRating = null, CancellationToken cancellationToken = default)
     {
         // Hidden businesses (owner has not confirmed the email yet) are never shown
         var query = dbContext.Businesses.AsNoTracking().Where(b => !b.IsHidden);
@@ -67,16 +67,39 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             LogoUrl = ToLogoUrl(b.LogoUrl),
             AverageRating = b.AverageRating is double average ? Math.Round(average, 1) : null
         }).ToList();
+        // "4★ og over": the same rounded average the customer sees on the card;
+        // new businesses (under 3 reviews, no average shown yet) are never left out
+        if (minRating is int min)
+        {
+            withLogos = withLogos.Where(b => b.ReviewCount < MinReviewsForAverage || b.AverageRating >= min).ToList();
+        }
         // // Only a time of day: the soonest day for each business
         var list = date is not null
             ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)
             : from is not null || to is not null
                 ? await FindSoonestSlotsAsync(withLogos, q, from, to, cancellationToken)
                 : withLogos;
-        return lat is double userLat && lng is double userLng
+        var sorted = lat is double userLat && lng is double userLng
             ? await SortByDistanceAsync(list, userLat, userLng, maxKm, cancellationToken)
             : list;
+        // "Best vurdert": highest score first (OrderBy keeps the old order, e.g. distance, for equal scores)
+        var ordered = sort == "rating"
+            ? sorted.OrderByDescending(b => RatingScore(b.AverageRating, b.ReviewCount)).ToList()
+            : sorted;
+        // "Ny på Besti": no average before 3 reviews, so one bad review cannot sink a new business
+        return ordered
+            .Select(b => b.ReviewCount < MinReviewsForAverage ? b with { AverageRating = null } : b)
+            .ToList();
     }
+    // Bayesian average: every business starts with 10 imagined reviews of 4 stars, so one bad review
+    // barely moves a small business, and one 5★ review does not beat forty 4.8★ reviews.
+    // The more real reviews, the closer the score gets to the real average.
+    private const double PriorStars = 4.0;
+    private const int PriorCount = 10;
+    public const int MinReviewsForAverage = 3;
+
+    public static double RatingScore(double? average, int count) =>
+        average is double stars ? (PriorStars * PriorCount + stars * count) / (PriorCount + count) : 0;
 
     // Free times for the whole list with 5 queries, however many businesses there are (no query per business)
 
