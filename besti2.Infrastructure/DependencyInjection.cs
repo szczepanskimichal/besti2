@@ -66,6 +66,11 @@ public static class DependencyInjection
         services.AddSingleton<IImageStorage, LocalImageStorage>();
         services.AddScoped<IBusinessImageService, BusinessImageService>();
         services.AddScoped<IBookingAnonymizer, BookingAnonymizer>();
+        services.AddScoped<IBookingReminder>(provider => new BookingReminder(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<IEmailService>(),
+            provider.GetRequiredService<ILogger<BookingReminder>>(),
+            configuration["WebBaseUrl"] ?? "http://localhost:3000"));
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<ITimeOffService, TimeOffService>();
         services.AddScoped<INotificationService, NotificationService>();

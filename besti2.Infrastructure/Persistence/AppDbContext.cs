@@ -158,6 +158,10 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             e.Property(x => x.EndUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.ReminderSentUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             
         });
         modelBuilder.Entity<OpeningHours>(e =>
