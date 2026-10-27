@@ -2,14 +2,9 @@ namespace besti2.Application.Businesses;
 
 public interface IBusinessService
 {
-    Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
-        string? category = null, string? city = null, string? q = null, DateOnly? date = null,
-        TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null,  double? maxKm = null,
-        string? sort = null, int? minRating = null, CancellationToken cancellationToken = default);
     Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
     // The owner's panel: also a business that is still waiting for approval
     Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default);
-    Task<IReadOnlyList<string>> GetCitiesAsync(CancellationToken cancellationToken = default);
     // Returns null when saved, otherwise an error message for the owner
     Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default);

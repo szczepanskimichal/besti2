@@ -26,6 +26,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
+        services.AddScoped<IBusinessSearchService, BusinessSearchService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService>(provider =>
         {

@@ -14,18 +14,18 @@ public static class BusinessEndpoints
         group.MapGet("/businesses",
             async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
                 double? lng, double? maxKm, string? sort, int? minRating, int? page,
-                IBusinessService businessService, CancellationToken cancellationToken) =>
+                IBusinessSearchService search, CancellationToken cancellationToken) =>
             {
-                var all = await businessService.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, sort, minRating,
+                var all = await search.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, sort, minRating,
                     cancellationToken);
                 // 24 businesses per page (?page=2 ...)
                 return Results.Ok(BusinessPageDto.From(all, page));
             });
         // Get distinct cities for the filter
         group.MapGet("/cities",
-            async (IBusinessService businessService, CancellationToken cancellationToken) =>
+            async (IBusinessSearchService search, CancellationToken cancellationToken) =>
             {
-                return Results.Ok(await businessService.GetCitiesAsync(cancellationToken));
+                return Results.Ok(await search.GetCitiesAsync(cancellationToken));
             });
         // Get business by id
         group.MapGet("/businesses/{id:guid}",
