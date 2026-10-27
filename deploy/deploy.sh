@@ -34,6 +34,12 @@ compose up -d --remove-orphans
 
 if healthy; then
   echo "Deployed $NEW_TAG"
+  # Keep only this version and the previous one (for a rollback): every deploy adds two new images,
+  # and prune -f alone removes only images without a tag. An image still in use is never removed
+  docker images --format '{{.Repository}}:{{.Tag}}' \
+    | grep -E '^ghcr\.io/szczepanskimichal/besti2-(api|web):' \
+    | grep -v -E ":(${NEW_TAG}|${OLD_TAG:-none})$" \
+    | xargs -r docker rmi > /dev/null 2>&1 || true
   docker image prune -f > /dev/null
   exit 0
 fi

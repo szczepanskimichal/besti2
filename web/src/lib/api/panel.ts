@@ -1,6 +1,5 @@
 import type {BusinessDetails, PanelBooking, TimeOff} from "@/lib/types";
-import {API_URL, TIMEOUT_MS, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
-
+import {API_URL, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
 // The business panel: calendar, blocked time, services, employees, profile, photos
 
 // from/to = "2026-10-20" days for the calendar; without them: upcoming bookings and the last 14 days
@@ -103,7 +102,7 @@ export async function uploadLogo(token: string, file: File): Promise<ApiResult> 
         headers: { Authorization: `Bearer ${token}` },
         body,
         cache: "no-store",
-        signal: AbortSignal.timeout(TIMEOUT_MS),
+        signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
     });
     return toResult(res);
 }
