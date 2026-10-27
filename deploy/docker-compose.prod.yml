@@ -56,7 +56,7 @@ services:
     logging: *logging
   # No port to the internet. Express edition: free for production use (max 10 GB per database)
   sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+image: mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04
     restart: unless-stopped
     # Only on the server itself (127.0.0.1): reachable from Rider through an SSH tunnel
     ports:
