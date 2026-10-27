@@ -1,5 +1,7 @@
 using besti2.Endpoints;
+using besti2.Endpoints.Panel;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using besti2.Infrastructure;
 using besti2.Identity;
@@ -21,7 +23,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 // Add authentication and authorization
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+    options.AddPolicy(PanelBusiness.Policy, policy => policy.AddRequirements(new BusinessOwnerRequirement())));
+builder.Services.AddScoped<IAuthorizationHandler, BusinessOwnerHandler>();
 // Login only after the email is confirmed (business owners are confirmed at registration)
 builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
