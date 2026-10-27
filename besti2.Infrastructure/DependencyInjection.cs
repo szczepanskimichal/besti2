@@ -23,22 +23,19 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services, IConfiguration configuration)
     {
+        // Address of the Next.js site, for the links in e-mails
+        var webBaseUrl = configuration["WebBaseUrl"] ?? "http://localhost:3000";
+
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
         services.AddScoped<IBusinessSearchService, BusinessSearchService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
-        services.AddScoped<IBookingService>(provider =>
-        {
-            if (provider != null)
-                return new BookingService(
-                    provider.GetRequiredService<AppDbContext>(),
-                    provider.GetRequiredService<IEmailService>(),
-                    provider.GetRequiredService<ILogger<BookingService>>(),
-                    configuration["WebBaseUrl"] ?? "http://localhost:3000");
-                return null;
-        }
-            );
+        services.AddScoped<IBookingService>(provider => new BookingService(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<IEmailService>(),
+            provider.GetRequiredService<ILogger<BookingService>>(),
+            webBaseUrl));
         services.AddTransient<IEmailService, SmtpEmailService>();
         // One shared counter for the whole API (see MailLimiter)
         services.AddSingleton(new MailLimiter());
@@ -47,14 +44,14 @@ public static class DependencyInjection
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IGeocodingService>(),
             provider.GetRequiredService<IEmailService>(),
-            configuration["WebBaseUrl"] ?? "http://localhost:3000",
+            webBaseUrl,
             provider.GetRequiredService<IBusinessRegistry>(),
             configuration["AdminEmail"],
             provider.GetRequiredService<MailLimiter>()));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),
-            configuration["WebBaseUrl"] ?? "http://localhost:3000",
+            webBaseUrl,
             provider.GetRequiredService<MailLimiter>()));
         services.AddHttpClient<IBusinessRegistry, BrregBusinessRegistry>(client =>
         {
@@ -73,12 +70,11 @@ public static class DependencyInjection
             provider.GetRequiredService<AppDbContext>(),
             provider.GetRequiredService<IEmailService>(),
             provider.GetRequiredService<ILogger<BookingReminder>>(),
-            configuration["WebBaseUrl"] ?? "http://localhost:3000"));
+            webBaseUrl));
         services.AddScoped<IReviewService, ReviewService>();
         services.AddScoped<ITimeOffService, TimeOffService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IProfileService, ProfileService>();
         return services;
     }
-
 }
