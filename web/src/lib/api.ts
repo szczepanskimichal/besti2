@@ -65,9 +65,11 @@ export async function getBusinesses(
     to?: string, 
     lat?: string, 
     lng?: string, 
-    km?: string, 
-    page?: string
-    ): Promise<BusinessPage> {
+    km?: string,
+    page?: string,
+    sort?: string,
+    minRating?: string
+): Promise<BusinessPage> {
     const params = new URLSearchParams();
     if (category) params.set("category", category);
     if (city) params.set("city", city);
@@ -79,7 +81,9 @@ export async function getBusinesses(
     if (lng) params.set("lng", lng);
     if (km) params.set("maxKm", km);
     if (page) params.set("page", page);
-
+    if (sort) params.set("sort", sort);
+    if (minRating) params.set("minRating", minRating);
+    
     const res = await apiFetch(`/api/businesses?${params}`);
     
     if (!res.ok) {

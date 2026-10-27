@@ -9,7 +9,7 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string }>;
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string }>;
 };
 
 // Time of day in the search -> from/to for the API (Oslo time)
@@ -29,9 +29,11 @@ export default async function Home({searchParams}: HomeProps) {
     const lng = isDecimal(query.lng) ? query.lng : undefined;
     const km = isDecimal(query.km) ? query.km : undefined;
     const page = isPageNumber(query.page) ? query.page : undefined;
-    const withoutNearMe = new URLSearchParams(
-        Object.entries({category, city, q, date, tid}).filter((entry): entry is [string, string] => !!entry[1]));
-        // Only the cities here (fast); the businesses load inside Suspense below
+    // "Best vurdert" and "4★ og over": any other value is ignored
+    const sorter = query.sorter === "vurdering" ? query.sorter : undefined;
+    const stjerner = query.stjerner === "4" ? query.stjerner : undefined;
+    const search: SearchProps = {category, city, q, date, tid, lat, lng, km, sorter, stjerner};
+    // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
         <main className={styles.main}>
@@ -99,25 +101,25 @@ export default async function Home({searchParams}: HomeProps) {
                             {km && <input type="hidden" name="km" value={km}/>}
                         </>
                     )}
+                    {sorter && <input type="hidden" name="sorter" value={sorter}/>}
+                    {stjerner && <input type="hidden" name="stjerner" value={stjerner}/>}
                     <NearMeButton/>
                 </Form>
             </section>
             {lat && lng && (
                 <p className={styles.subtitle}>
-                    📍 Sortert etter avstand fra deg · <Link href={`/?${withoutNearMe}`}>Vis alle</Link>
+                    📍 {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}
+                    <Link href={searchHref(search, {lat: undefined, lng: undefined, km: undefined})}>Vis alle</Link>
                 </p>
             )}
             {lat && lng && (
                 <p className={styles.subtitle}>
                     Innen:{" "}
                     {radiusOptions.map((option) => {
-                        const params = new URLSearchParams(withoutNearMe);
-                        params.set("lat", lat);
-                        params.set("lng", lng);
-                        if (option) params.set("km", String(option));
                         const active = String(option) === (km ?? "0");
                         return (
-                            <Link key={option} href={`/?${params}`} className={styles.radius}
+                            <Link key={option} href={searchHref(search, {km: option ? String(option) : undefined})}
+                                  className={styles.radius}
                                   aria-current={active ? "true" : undefined}>
                                 {option ? `${option} km` : "Alle"}
                             </Link>
@@ -125,9 +127,25 @@ export default async function Home({searchParams}: HomeProps) {
                     })}
                 </p>
             )}
+            <p className={styles.subtitle}>
+                Sorter:{" "}
+                <Link href={searchHref(search, {sorter: undefined})} className={styles.radius}
+                      aria-current={!sorter ? "true" : undefined}>
+                    {lat && lng ? "Nærmest" : "A–Å"}
+                </Link>
+                <Link href={searchHref(search, {sorter: "vurdering"})} className={styles.radius}
+                      aria-current={sorter ? "true" : undefined}>
+                    Best vurdert
+                </Link>
+                {/* One click on, one click off */}
+                <Link href={searchHref(search, {stjerner: stjerner ? undefined : "4"})} className={styles.radius}
+                      aria-current={stjerner ? "true" : undefined}>
+                    {stjerner ? "✓ " : ""}4★ og over
+                </Link>
+            </p>
             {/* key: every new search shows the skeleton again */}
-            <Suspense key={JSON.stringify({category, city, q, date, tid, lat, lng, km, page})} fallback={<ResultsSkeleton/>}>
-                <Results category={category} city={city} q={q} date={date} tid={tid} lat={lat} lng={lng} km={km} page={page}/>
+            <Suspense key={JSON.stringify({...search, page})} fallback={<ResultsSkeleton/>}>
+                <Results {...search} page={page}/>
             </Suspense>
         </main>
     )
@@ -143,30 +161,42 @@ type SearchProps = {
     lng?: string;
     km?: string;
     page?: string;
+    sorter?: string;
+    stjerner?: string;
 };
 
+// The same search with some values changed (undefined = removed); a new search always starts on page 1
+function searchHref(search: SearchProps, changes: Partial<SearchProps>): string {
+    const merged: SearchProps = {...search, page: undefined, ...changes};
+    const params = new URLSearchParams(
+        Object.entries(merged).filter((entry): entry is [string, string] => !!entry[1]));
+    return `/?${params}`;
+}
+
 // The slow part: with a date or a time of day the API calculates free times for every business
-async function Results({category, city, q, date, tid, lat, lng, km, page}: SearchProps) {
+async function Results(search: SearchProps) {
+    const {category, city, q, date, tid, lat, lng, km, page, sorter, stjerner} = search;
     // "Tid på dagen" without a date means today
     // "Tid på dagen" without a date: the API finds the soonest day for each business
     const timeWindow = timeWindows[tid ?? ""];
-    const result = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng, km, page);
+    const result = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng, km, page,
+        sorter ? "rating" : undefined, stjerner);
     const businesses = result.items;
     if (businesses.length === 0) {
+        if (stjerner) {
+            return (
+                <p className={styles.subtitle}>
+                    Ingen bedrifter med 4★ og over her.{" "}
+                    <Link href={searchHref(search, {stjerner: undefined})}>Vis alle →</Link>
+                </p>
+            );
+        }
         if (date) {
-// Same search, one day later
-            const params = new URLSearchParams({date: nextDay(date)});
-            if (category) params.set("category", category);
-            if (city) params.set("city", city);
-            if (q) params.set("q", q);
-            if (tid) params.set("tid", tid);
-            if (lat) params.set("lat", lat);
-            if (lng) params.set("lng", lng);
-            if (km) params.set("km", km);
+            // Same search, one day later
             return (
                 <p className={styles.subtitle}>
                     Ingen ledige tider da.{" "}
-                    <Link href={`/?${params}`}>Prøv dagen etter →</Link>
+                    <Link href={searchHref(search, {date: nextDay(date)})}>Prøv dagen etter →</Link>
                 </p>
             );
         }
@@ -177,13 +207,7 @@ async function Results({category, city, q, date, tid, lat, lng, km, page}: Searc
     }
 
     // The same search on another page (all filters stay)
-    const pageHref = (target: number) => {
-        const params = new URLSearchParams(
-            Object.entries({category, city, q, date, tid, lat, lng, km})
-                .filter((entry): entry is [string, string] => !!entry[1]));
-        if (target > 1) params.set("page", String(target));
-        return `/?${params}`;
-    };
+    const pageHref = (target: number) => searchHref(search, {page: target > 1 ? String(target) : undefined});
 
     return (
         <>

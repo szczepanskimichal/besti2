@@ -27,13 +27,18 @@ export default function BusinessCard({ business }: Props) {
                     <span aria-hidden="true">📍</span> {business.city}
                     {business.distanceKm != null && ` · ${formatDistance(business.distanceKm)} unna`}
                 </p>
-                {business.averageRating !== null && (
+                {business.averageRating !== null ? (
                     <p className={styles.rating}>
-                    <Stars value={business.averageRating}/>{" "}
-                    {business.averageRating.toString().replace(".", ",")} · {business.reviewCount}{" "}
-                    {business.reviewCount === 1 ? "vurdering" : "vurderinger"}
-                </p>
-            )}
+                        <Stars value={business.averageRating}/>{" "}
+                        {business.averageRating.toString().replace(".", ",")} · {business.reviewCount}{" "}
+                        {business.reviewCount === 1 ? "vurdering" : "vurderinger"}
+                    </p>
+                ) : (
+                    // The API hides the average before 3 reviews, so one bad review cannot sink a new business
+                    <p className={styles.rating}>
+                        Ny på Besti{business.reviewCount > 0 && ` · ${business.reviewCount} ${business.reviewCount === 1 ? "vurdering" : "vurderinger"}`}
+                    </p>
+                )}
                 {business.description && <p className={styles.description}>{business.description}</p>}
             </NextLink>
             {slots.length > 0 && (
