@@ -35,6 +35,7 @@ public class BookingReminder(
             .Where(b => b.Status == BookingStatus.Bekreftet
                         && b.ReminderSentUtc == null
                         && b.CustomerEmail != ""
+                        && !b.NoReminder
                         && b.StartUtc > nowUtc
                         && b.StartUtc <= until)
             .ToListAsync(cancellationToken);

@@ -23,6 +23,8 @@ public class Booking
     public DateTime CreatedUtc { get; set; }
     // When the reminder e-mail before the visit was sent; null = not yet (a new time after "Flytt" resets it)
     public DateTime? ReminderSentUtc { get; set; }
+    // A visit added by the business with "Send bekreftelse på e-post" unchecked: no reminder the day before
+    public bool NoReminder { get; set; }
     public Guid EmployeeId { get; set; }
     public Employee Employee { get; set; } = null!;
     public Guid ServiceId { get; set; }

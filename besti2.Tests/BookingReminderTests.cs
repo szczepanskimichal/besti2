@@ -134,4 +134,20 @@ public class BookingReminderTests
         var working = new BookingReminder(db, new FakeEmailService(), NullLogger<BookingReminder>.Instance);
         Assert.Equal(1, await working.SendRemindersAsync(Now.AddMinutes(15)));
     }
+    // check if a visit added by the business without "Send bekreftelse" gets no reminder
+    [Fact]
+    public async Task SendRemindersAsync_NoReminder_GetsNothing()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var booking = NewBooking(Now.AddHours(23));
+        booking.NoReminder = true;
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var reminder = new BookingReminder(db, email, NullLogger<BookingReminder>.Instance);
+
+        Assert.Equal(0, await reminder.SendRemindersAsync(Now));
+        Assert.Empty(email.Sent);
+    }
+
 }
