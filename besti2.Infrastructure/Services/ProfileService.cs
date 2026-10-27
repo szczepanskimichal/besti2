@@ -1,5 +1,6 @@
 using besti2.Application.Accounts;
 using besti2.Application.Bookings;
+using besti2.Application.Common;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
@@ -70,7 +71,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             return "Navn er påkrevd (maks 100 tegn).";
         }
         var phone = string.IsNullOrWhiteSpace(request.Phone) ? null : request.Phone.Trim();
-        if (phone is not null && !IsValidPhone(phone))
+        if (phone is not null && !PhoneNumber.IsValid(phone))
         {
             return "Oppgi et gyldig telefonnummer, f.eks. 912 34 567, eller la feltet stå tomt.";
         }
@@ -166,11 +167,4 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         var user = await userManager.FindByIdAsync(userId);
         return user is null || user.BusinessId is not null ? null : user;
     }
-
-    // Digits, spaces and an optional + only, at least 8 digits (as for bookings)
-    private static bool IsValidPhone(string phone) =>
-        phone.Length <= 20
-        && phone.All(c => char.IsDigit(c) || c == ' ' || c == '+')
-        && phone.Count(char.IsDigit) >= 8
-        && phone.LastIndexOf('+') <= 0;
 }

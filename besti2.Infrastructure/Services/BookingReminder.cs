@@ -1,5 +1,5 @@
-using System.Globalization;
 using besti2.Application.Bookings;
+using besti2.Application.Common;
 using besti2.Application.Email;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
@@ -23,7 +23,6 @@ public class BookingReminder(
     public const int MinHoursBooked = 12;
 
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
-    private static readonly CultureInfo Norwegian = new("nb-NO");
 
     public async Task<int> SendRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
     {
@@ -79,7 +78,7 @@ public class BookingReminder(
             $"Husk timen din hos {business.Name}.\n\n" +
             $"Tjeneste: {booking.Service.Name}\n" +
             $"Hos: {booking.Employee.Name} {booking.Employee.LastName}\n" +
-            $"Tid: {When(booking.StartUtc)}\n" +
+            $"Tid: {OsloTime.Format(booking.StartUtc)}\n" +
             $"Adresse: {business.Address}, {business.PostalCode} {business.City}\n\n" +
             $"{CancelRule(booking, business, nowUtc)}\n\n" +
             // Visits added by the business may have no customer account, so no Min Besti for them
@@ -99,12 +98,8 @@ public class BookingReminder(
         var deadline = booking.StartUtc.AddHours(-business.FreeCancelHours);
         return deadline > nowUtc
             ? $"Kan du ikke komme? Gratis avbestilling inntil {business.FreeCancelHours} timer før timen, " +
-              $"altså innen {When(deadline)}."
+              $"altså innen {OsloTime.Format(deadline)}."
             : $"Kan du ikke komme? Fristen for gratis avbestilling har gått ut, så ring {business.Name} " +
               $"på {business.PhoneNumber}.";
     }
-
-    // "torsdag 22. oktober kl. 10:00"
-    private static string When(DateTime utc) =>
-        TimeZoneInfo.ConvertTimeFromUtc(utc, Oslo).ToString("dddd d. MMMM 'kl.' HH:mm", Norwegian);
 }
