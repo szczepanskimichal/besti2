@@ -20,6 +20,7 @@ public class BookingService(
 {
     private readonly BookingEmails emails = new(dbContext, emailService, logger, webBaseUrl);
     private readonly AvailabilityService availability = new(dbContext);
+    private readonly BookingNotifier notifier = new(dbContext, logger);
 
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
@@ -125,8 +126,8 @@ public class BookingService(
         }
 
         await emails.SendConfirmationAsync(booking, service, cancellationToken);
-        await NotifyAsync(booking, toBusiness: true,
-            $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}", PanelLink(booking),
+        await notifier.NotifyAsync(booking, toBusiness: true,
+            $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}", BookingNotifier.PanelLink(booking),
             cancellationToken);
 
         return new CreateBookingResult(
@@ -335,9 +336,9 @@ public class BookingService(
         // The customer's optional reason goes to the business in the e-mail and the bell
         var note = ShortNote(message);
         await emails.SendCancelledByCustomerAsync(booking, note, cancellationToken);
-        await NotifyAsync(booking, toBusiness: true,
+        await notifier.NotifyAsync(booking, toBusiness: true,
             $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
-            PanelLink(booking), cancellationToken);
+            BookingNotifier.PanelLink(booking), cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }
 
@@ -396,7 +397,7 @@ public class BookingService(
         // A short note from the business, only when cancelling
         var note = newStatus == BookingStatus.Avlyst ? ShortNote(message) : null;
         await emails.SendStatusAsync(booking, note, cancellationToken);
-        await NotifyAsync(booking, toBusiness: false,
+        await notifier.NotifyAsync(booking, toBusiness: false,
             newStatus == BookingStatus.Bekreftet
                 ? $"{{0}} har bekreftet timen {OsloTime.Format(booking.StartUtc)}"
                 : $"{{0}} har avlyst timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
@@ -518,14 +519,14 @@ public class BookingService(
         if (token is not null)
         {
             await emails.SendMovedAsync(booking, oldStartUtc, token, cancellationToken);
-            await NotifyAsync(booking, toBusiness: false,
+            await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} ønsker å flytte timen til {OsloTime.Format(booking.StartUtc)}. Passer det?", "/min-besti",
                 cancellationToken);
         }
         else if (request.NotifyCustomer)
         {
             await emails.SendMovedAsync(booking, oldStartUtc, null, cancellationToken);
-            await NotifyAsync(booking, toBusiness: false,
+            await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} har flyttet timen til {OsloTime.Format(booking.StartUtc)}", "/min-besti", cancellationToken);
         }
 
@@ -595,48 +596,14 @@ public class BookingService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await emails.SendNewTimeAnswerAsync(booking, accept, cancellationToken);
-        await NotifyAsync(booking, toBusiness: true,
+        await notifier.NotifyAsync(booking, toBusiness: true,
             accept
                 ? $"{booking.CustomerName} har godtatt ny tid {OsloTime.Format(booking.StartUtc)}. Bekreft timen."
                 : $"{booking.CustomerName} kan ikke komme {OsloTime.Format(booking.StartUtc)}. Timen er avlyst.",
-            PanelLink(booking), cancellationToken);
+            BookingNotifier.PanelLink(booking), cancellationToken);
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
     }
 
-    // A message in the bell. To the business, or to the customer when the booking belongs to an account.
-    // In a text for the customer, {0} is replaced by the business's name. A failure must not fail the booking
-    private async Task NotifyAsync(Booking booking, bool toBusiness, string text, string? link,
-        CancellationToken cancellationToken)
-    {
-        if (!toBusiness && booking.CustomerUserId is null)
-        {
-            return; // a walk-in without an account has no bell
-        }
-
-        try
-        {
-            var business = await dbContext.Services.AsNoTracking()
-                .Where(s => s.Id == booking.ServiceId)
-                .Select(s => new { s.BusinessId, s.Business.Name })
-                .FirstAsync(cancellationToken);
-            dbContext.Notifications.Add(new Notification
-            {
-                Id = Guid.NewGuid(),
-                BusinessId = toBusiness ? business.BusinessId : null,
-                UserId = toBusiness ? null : booking.CustomerUserId,
-                BookingId = booking.Id,
-                Text = Shorten(text.Replace("{0}", business.Name)),
-                // Cancelled visits are gone from Min Besti: the customer can book again with the business
-                Link = link ?? $"/bedrift/{business.BusinessId}",
-                CreatedUtc = DateTime.UtcNow
-            });
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            logger.LogWarning(ex, "Could not save notification for booking {BookingId}", booking.Id);
-        }
-    }
     // "Møtte ikke" blocks the review, so a customer with an account is told and can object (e-mail + bell).
     // "Møtte" after "Møtte ikke" was a mistake: that bell goes away again. Walk-ins cannot review: nothing to tell
     private async Task NotifyNoShowAsync(Booking booking, bool wasNoShow, CancellationToken cancellationToken)
@@ -649,7 +616,7 @@ public class BookingService(
         if (booking.Status == BookingStatus.MotteIkke)
         {
             await emails.SendNoShowAsync(booking, cancellationToken);
-            await NotifyAsync(booking, toBusiness: false,
+            await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} har registrert at du ikke møtte {OsloTime.Format(booking.StartUtc)}. Var du der? Se e-posten.",
                 "/min-besti", cancellationToken);
         }
@@ -661,19 +628,10 @@ public class BookingService(
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
     // An optional message when cancelling: trimmed, empty = none, at most 300 characters
     private static string? ShortNote(string? message) =>
         string.IsNullOrWhiteSpace(message) ? null : message.Trim()[..Math.Min(message.Trim().Length, 300)];
-
-    // The column holds 300 characters (a long cancellation note is cut)
-    private static string Shorten(string text) => text.Length <= 300 ? text : text[..299] + "…";
-
-    // The visit in the business calendar: its day with the details window open
-    private static string PanelLink(Booking booking)
-    {
-        var day = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo));
-        return $"/panel?dag={day:yyyy-MM-dd}&bestilling={booking.Id}";
-    }
 
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
