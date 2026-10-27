@@ -5,6 +5,7 @@ using besti2.Application.Reviews;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Services.Bookings;
 using besti2.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -154,10 +155,8 @@ public class BookingServiceTests
     public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(),
-            NullLogger<BookingService>.Instance);
+        var service = new AvailabilityService(db);
         var sunday = new DateOnly(2099, 1, 4);
-
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
 
@@ -169,7 +168,7 @@ public class BookingServiceTests
     public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var service = new AvailabilityService(db);
         var saturday = new DateOnly(2099, 1, 3); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
 
@@ -492,7 +491,7 @@ public class BookingServiceTests
     public async Task GetFreeSlotsAsync_ExtremeDate_ReturnsNoSlots()
     {
         await using var db = await CreateSeededDbAsync();
-        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var service = new AvailabilityService(db);
 
         var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, new DateOnly(9999, 12, 31));
 

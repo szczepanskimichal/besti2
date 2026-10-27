@@ -1,6 +1,7 @@
 using besti2.Application.Bookings;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Services.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -37,7 +38,7 @@ public class FreeDaysTests
     {
         await using var db = await CreateSeededDbAsync();
 
-        var days = await Bookings(db).GetFreeDaysAsync(HerreklippId, null, FutureSaturday, 7);
+        var days = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, null, FutureSaturday, 7);
 
         Assert.NotNull(days);
         Assert.Equal(7, days.Count);
@@ -55,8 +56,8 @@ public class FreeDaysTests
         await service.CreateAsync(new CreateBookingRequest(HerreklippId, IngridId, FutureMondayAt10,
             "Kari Nordmann", "+4790000000", "kari@test.example", false));
 
-        var anyone = await service.GetFreeDaysAsync(HerreklippId, null, FutureMonday, 1);
-        var onlyIngrid = await service.GetFreeDaysAsync(HerreklippId, IngridId, FutureMonday, 1);
+        var anyone = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, null, FutureMonday, 1);
+        var onlyIngrid = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, IngridId, FutureMonday, 1);
 
         var tenOClock = Assert.Single(anyone![0].Slots, s => s.StartUtc == FutureMondayAt10);
         Assert.Equal(SofieId, tenOClock.EmployeeId);
@@ -69,7 +70,7 @@ public class FreeDaysTests
     {
         await using var db = await CreateSeededDbAsync();
 
-        var days = await Bookings(db).GetFreeDaysAsync(HerreklippId, Guid.NewGuid(), FutureMonday, 7);
+        var days = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, Guid.NewGuid(), FutureMonday, 7);
 
         Assert.Null(days);
     }
@@ -80,7 +81,7 @@ public class FreeDaysTests
         await using var db = await CreateSeededDbAsync();
         var service = Bookings(db);
 
-        var days = await service.GetFreeDaysAsync(SnekkerarbeidId, LarsId, FutureMonday, 1, units: 3);
+        var days = await new AvailabilityService(db).GetFreeDaysAsync(SnekkerarbeidId, LarsId, FutureMonday, 1, units: 3);
         var result = await service.CreateAsync(new CreateBookingRequest(SnekkerarbeidId, LarsId, FutureMondayAt10,
             "Kari Nordmann", "+4790000000", "kari@test.example", false, Units: 3));
 

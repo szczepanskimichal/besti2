@@ -9,6 +9,7 @@ using besti2.Application.Reviews;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Services.Bookings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
+        services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService>(provider =>
         {
             if (provider != null)

@@ -1,6 +1,7 @@
 using besti2.Application.Bookings;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Services.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -43,8 +44,8 @@ public class TimeOffServiceTests
         var timeOff = new TimeOffService(db);
 
         await timeOff.CreateAsync(KlippOgStil, Block(IngridId, 10, 12));
-        var ingrid = await Bookings(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
-        var sofie = await Bookings(db).GetFreeSlotsAsync(HerreklippId, SofieId, FutureMonday);
+        var ingrid = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
+        var sofie = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, SofieId, FutureMonday);
 
         Assert.Contains(Oslo(9), ingrid!);
         Assert.DoesNotContain(Oslo(10), ingrid!);
@@ -62,8 +63,8 @@ public class TimeOffServiceTests
         var closed = new CreateTimeOffRequest(null, FutureMonday, default, FutureMonday, default, true, "Stengt");
 
         await timeOff.CreateAsync(KlippOgStil, closed);
-        var ingrid = await Bookings(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
-        var sofie = await Bookings(db).GetFreeSlotsAsync(HerreklippId, SofieId, FutureMonday);
+        var ingrid = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
+        var sofie = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, SofieId, FutureMonday);
         var search = await new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage())
             .GetAllAsync(date: FutureMonday);
 
