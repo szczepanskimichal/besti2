@@ -11,10 +11,11 @@ export function NoShowCount({ count }: { count: number }) {
     return <p className={styles.noShow}>Møtte ikke: {count} {count === 1 ? "gang" : "ganger"}</p>;
 }
 
-// After the start time: did the customer come? "Møtte" = Bekreftet, "Møtte ikke" = MotteIkke (no e-mail to the customer)
+// After the start time: did the customer come? "Møtte" = Bekreftet, "Møtte ikke" = MotteIkke
+// (a customer with an account gets an e-mail about "Møtte ikke"; "Venter på kunden" can be marked too)
 export function NoShowButtons({ booking, back }: { booking: PanelBooking; back: string }) {
-    const canCome = booking.status === "Venter" || booking.status === "MotteIkke";
-    const canMiss = booking.status === "Venter" || booking.status === "Bekreftet";
+    const canCome = ["Venter", "VenterKunde", "MotteIkke"].includes(booking.status);
+    const canMiss = ["Venter", "VenterKunde", "Bekreftet"].includes(booking.status);
     if (!canCome && !canMiss) {
         return null;
     }
