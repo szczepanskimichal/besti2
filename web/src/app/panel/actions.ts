@@ -7,7 +7,7 @@ import { safeRedirectPath } from "@/lib/safeRedirect";
 import type { FormState } from "@/lib/formState";
 
 
-async function changeStatus(formData: FormData, action: "bekreft" | "avlys") {
+async function changeStatus(formData: FormData, action: "bekreft" | "avlys" | "motte-ikke") {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
