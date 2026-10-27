@@ -13,4 +13,4 @@ public record RegisterBusinessRequest(
     bool AcceptDataProcessing = false,
     // Public e-mail for customers; empty = only the phone is shown
     string? ContactEmail = null
-    );
+);

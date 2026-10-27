@@ -71,6 +71,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         {
             withLogos = withLogos.Where(b => b.ReviewCount < MinReviewsForAverage || b.AverageRating >= min).ToList();
         }
+
         // Only a time of day: the soonest day for each business
         var list = date is not null
             ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)

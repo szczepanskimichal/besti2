@@ -22,7 +22,8 @@ public class ProfileServiceTests
     private const string Password = "Test123!";
 
     // Real UserManager and the same in-memory database for bookings, reviews and notifications
-    private static async Task<(ProfileService Profile, UserManager<AppUser> Users, AppDbContext Db, BookingService Bookings)>
+    private static async Task<(ProfileService Profile, UserManager<AppUser> Users, AppDbContext Db, BookingService
+            Bookings)>
         CreateAsync()
     {
         var dbName = Guid.NewGuid().ToString();
@@ -94,7 +95,8 @@ public class ProfileServiceTests
             "kari@test.example", false), kari.Id);
         var past = new Booking
         {
-            Id = Guid.NewGuid(), StartUtc = DateTime.UtcNow.AddDays(-3), EndUtc = DateTime.UtcNow.AddDays(-3).AddMinutes(30),
+            Id = Guid.NewGuid(), StartUtc = DateTime.UtcNow.AddDays(-3),
+            EndUtc = DateTime.UtcNow.AddDays(-3).AddMinutes(30),
             CustomerName = "Kari Nordmann", CustomerPhone = "90000000", CustomerEmail = "kari@test.example",
             Status = BookingStatus.Bekreftet, CustomerUserId = kari.Id, EmployeeId = IngridId, ServiceId = HerreklippId
         };
@@ -143,6 +145,7 @@ public class ProfileServiceTests
         Assert.Equal("Fant ikke kontoen.", await profile.DeleteAsync(owner.Id, new DeleteAccountRequest(Password)));
         Assert.NotNull(await users.FindByIdAsync(owner.Id));
     }
+
     // check if "Last ned mine data" contains the account, the visits, the reviews and the notifications
     [Fact]
     public async Task Export_ContainsEverythingAboutTheCustomer()
@@ -157,7 +160,8 @@ public class ProfileServiceTests
             Id = Guid.NewGuid(), BookingId = Guid.NewGuid(), BusinessId = KlippOgStil, CustomerUserId = kari.Id,
             CustomerName = "Kari", Stars = 4, Comment = "Bra", CreatedUtc = DateTime.UtcNow
         });
-        db.Notifications.Add(new Notification { Id = Guid.NewGuid(), UserId = kari.Id, Text = "Hei", CreatedUtc = DateTime.UtcNow });
+        db.Notifications.Add(new Notification
+            { Id = Guid.NewGuid(), UserId = kari.Id, Text = "Hei", CreatedUtc = DateTime.UtcNow });
         await db.SaveChangesAsync();
 
         var export = await profile.ExportAsync(kari.Id);

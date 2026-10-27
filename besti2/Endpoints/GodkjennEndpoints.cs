@@ -27,5 +27,5 @@ public static class GodkjennEndpoints
             await registrationService.RejectAsync(request.Token, cancellationToken)
                 ? Results.NoContent()
                 : Results.NotFound()).RequireRateLimiting("signup");
-            }
+    }
 }

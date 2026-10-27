@@ -63,7 +63,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .Select(i => new GalleryImageDto(i.Id, i.FileName))
                     .ToList(),
                 b.IsHidden,
-                b.FreeCancelHours            ))
+                b.FreeCancelHours))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -243,10 +243,12 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         {
             return "Beskrivelsen kan ha maks 1000 tegn.";
         }
+
         if (!Business.FreeCancelOptions.Contains(request.FreeCancelHours))
         {
             return "Velg en gyldig frist for gratis avbestilling.";
         }
+
         var contactEmail = string.IsNullOrWhiteSpace(request.ContactEmail)
             ? null
             : request.ContactEmail.Trim().ToLowerInvariant();

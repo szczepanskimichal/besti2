@@ -54,8 +54,10 @@ public static class BusinessEndpoints
         {
             if (!OrgNumber.IsValid(orgNumber))
             {
-                return Results.BadRequest(new { message = "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig." });
+                return Results.BadRequest(new
+                    { message = "Ugyldig organisasjonsnummer. Sjekk at det er skrevet riktig." });
             }
+
             var lookup = await registry.LookupAsync(orgNumber, cancellationToken);
             return lookup.Status switch
             {
@@ -63,10 +65,12 @@ public static class BusinessEndpoints
                 {
                     lookup.Name, lookup.Address, lookup.PostalCode, lookup.City
                 }),
-                RegistryStatus.NotFound => Results.NotFound(new { message = "Fant ikke virksomheten i Enhetsregisteret." }),
+                RegistryStatus.NotFound => Results.NotFound(new
+                    { message = "Fant ikke virksomheten i Enhetsregisteret." }),
                 RegistryStatus.Closed => Results.Conflict(
                     new { message = "Virksomheten er slettet, konkurs eller under avvikling i Enhetsregisteret." }),
-                _ => Results.Problem("Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv.", statusCode: 503)
+                _ => Results.Problem("Brønnøysundregistrene svarer ikke akkurat nå. Fyll ut feltene selv.",
+                    statusCode: 503)
             };
         }).RequireRateLimiting("signup");
     }

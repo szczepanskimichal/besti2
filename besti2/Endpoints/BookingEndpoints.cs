@@ -42,7 +42,8 @@ public static class BookingEndpoints
                 var result = await bookingService.CreateAsync(fromAccount, user.Id, cancellationToken);
                 return result.Outcome switch
                 {
-                    CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}", result.Booking),
+                    CreateBookingOutcome.Created => Results.Created($"/api/bookings/{result.Booking!.Id}",
+                        result.Booking),
                     CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
                     CreateBookingOutcome.SlotTaken => Results.Conflict(
                         new { message = "Tiden er dessverre ikke lenger ledig." }),
@@ -63,7 +64,9 @@ public static class BookingEndpoints
         }).RequireAuthorization();
 
         // Customer: cancel own booking before it starts; the body { message } is optional
-        group.MapPost("/me/bookings/{id:guid}/avbestill", async (Guid id, CancelBookingRequest? request, ClaimsPrincipal principal,            UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+        group.MapPost("/me/bookings/{id:guid}/avbestill", async (Guid id, CancelBookingRequest? request,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IBookingService bookingService,
+            CancellationToken cancellationToken) =>
         {
             var userId = userManager.GetUserId(principal);
             if (userId is null)
@@ -72,26 +75,29 @@ public static class BookingEndpoints
             }
 
             return await bookingService.CancelByCustomerAsync(id, userId, request?.Message,
-                cancellationToken: cancellationToken) switch            {
-                UpdateBookingStatusOutcome.Updated => Results.NoContent(),
-                UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(
-                    new { message = "Bestillingen kan ikke avbestilles lenger." }),
-                UpdateBookingStatusOutcome.TooLate => Results.BadRequest(
-                    new { message = "Fristen for gratis avbestilling er ute. Ring bedriften." }),
-                _ => Results.NotFound()
-            };
+                    cancellationToken: cancellationToken) switch
+                {
+                    UpdateBookingStatusOutcome.Updated => Results.NoContent(),
+                    UpdateBookingStatusOutcome.InvalidTransition => Results.BadRequest(
+                        new { message = "Bestillingen kan ikke avbestilles lenger." }),
+                    UpdateBookingStatusOutcome.TooLate => Results.BadRequest(
+                        new { message = "Fristen for gratis avbestilling er ute. Ring bedriften." }),
+                    _ => Results.NotFound()
+                };
         }).RequireAuthorization();
         // "Ny tid": the moved visit behind the one-time link in the e-mail (no login, so it works for every customer)
-        group.MapGet("/ny-tid", async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
-        {
-            var newTime = await bookingService.GetNewTimeAsync(token ?? "", cancellationToken);
-            return newTime is null ? Results.NotFound() : Results.Ok(newTime);
-        }).RequireRateLimiting("booking");
+        group.MapGet("/ny-tid",
+            async (string? token, IBookingService bookingService, CancellationToken cancellationToken) =>
+            {
+                var newTime = await bookingService.GetNewTimeAsync(token ?? "", cancellationToken);
+                return newTime is null ? Results.NotFound() : Results.Ok(newTime);
+            }).RequireRateLimiting("booking");
 
         // The customer's answer from the link: Godta (the business confirms next) or Passer ikke (cancelled)
         group.MapPost("/ny-tid", async (NewTimeAnswerRequest request, IBookingService bookingService,
                     CancellationToken cancellationToken) =>
-                NewTimeResult(await bookingService.AnswerNewTimeAsync(request.Token, request.Accept, cancellationToken)))
+                NewTimeResult(
+                    await bookingService.AnswerNewTimeAsync(request.Token, request.Accept, cancellationToken)))
             .RequireRateLimiting("booking");
 
         // The same answer from Min Besti (logged in)

@@ -31,6 +31,7 @@ public static class AccountEndpoints
                 // A business owner: the business now shows up for customers
                 await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
             }
+
             return confirmed
                 ? Results.NoContent()
                 : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
@@ -42,7 +43,8 @@ public static class AccountEndpoints
             var user = await userManager.GetUserAsync(principal);
             return user is null
                 ? Results.Unauthorized()
-                : Results.Ok(new { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
+                : Results.Ok(new
+                    { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
         }).RequireAuthorization();
 
         // Customer: review a past booking
@@ -54,6 +56,7 @@ public static class AccountEndpoints
             {
                 return Results.Unauthorized();
             }
+
             var error = await reviewService.CreateAsync(userId, request, cancellationToken);
             return error is null ? Results.Created() : Results.BadRequest(new { message = error });
         }).RequireAuthorization();
@@ -83,6 +86,7 @@ public static class AccountEndpoints
             {
                 return Results.Unauthorized();
             }
+
             var error = await profileService.UpdateAsync(userId, request, cancellationToken);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         }).RequireAuthorization();
@@ -95,6 +99,7 @@ public static class AccountEndpoints
             {
                 return Results.Unauthorized();
             }
+
             var error = await profileService.ChangePasswordAsync(userId, request);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         }).RequireAuthorization().RequireRateLimiting("login");
@@ -108,6 +113,7 @@ public static class AccountEndpoints
             {
                 return Results.Unauthorized();
             }
+
             var error = await profileService.DeleteAsync(userId, request, cancellationToken);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         }).RequireAuthorization().RequireRateLimiting("login");

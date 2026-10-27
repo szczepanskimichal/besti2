@@ -8,6 +8,6 @@ public record CreateBookingRequest(
     string CustomerPhone,
     string CustomerEmail,
     bool MarketingConsent,
-    string? Note=null,
+    string? Note = null,
     int Units = 1 // "Per time" services: how many hours in a row
-    );
+);

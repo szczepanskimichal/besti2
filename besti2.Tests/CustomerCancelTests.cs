@@ -65,8 +65,11 @@ public class CustomerCancelTests
     public async Task CancelByCustomerAsync_OwnFutureBooking_IsCancelled()
     {
         await using var db = await CreateSeededDbAsync();
-        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
-            EmailConfirmed = true, BusinessId = KlippOgStil });
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil
+        });
         await db.SaveChangesAsync();
         var email = new FakeEmailService();
         var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
@@ -85,8 +88,11 @@ public class CustomerCancelTests
     public async Task CancelByCustomerAsync_WithReason_BusinessGetsReason()
     {
         await using var db = await CreateSeededDbAsync();
-        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
-            EmailConfirmed = true, BusinessId = KlippOgStil });
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil
+        });
         await db.SaveChangesAsync();
         var email = new FakeEmailService();
         var service = new BookingService(db, email, NullLogger<BookingService>.Instance);

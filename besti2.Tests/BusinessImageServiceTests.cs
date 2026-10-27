@@ -10,9 +10,9 @@ public class BusinessImageServiceTests
 {
     private static readonly Guid KlippId = new("11111111-1111-1111-1111-111111111111");
 
-     
+
 // A real PNG in memory, so the service can decode and resize it
-    
+
     private static byte[] RealPng(int width, int height)
     {
         using var bitmap = new SKBitmap(width, height);
@@ -39,9 +39,9 @@ public class BusinessImageServiceTests
         var (service, db, storage) = await CreateAsync();
 
         var png = RealPng(100, 100);
-        
+
         var error = await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
-        
+
         Assert.Null(error);
         var logo = Assert.Single(db.BusinessImages.Where(i => i.BusinessId == KlippId && i.Kind == ImageKind.Logo));
         Assert.EndsWith(".webp", logo.FileName);
@@ -68,7 +68,7 @@ public class BusinessImageServiceTests
         var (service, db, storage) = await CreateAsync();
 
         var png = RealPng(100, 100);
-        
+
         await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
         await service.SetLogoAsync(KlippId, new MemoryStream(png), png.Length);
 
@@ -76,9 +76,8 @@ public class BusinessImageServiceTests
         Assert.Single(storage.Files);
         Assert.True(storage.Files.ContainsKey(logo.FileName));
     }
-    
+
     [Fact]
-    
     public async Task SetLogoAsync_ResizesLargeImage()
     {
         var (service, db, storage) = await CreateAsync();
@@ -89,8 +88,8 @@ public class BusinessImageServiceTests
         Assert.Equal(512, bitmap.Width);
         Assert.Equal(256, bitmap.Height);
     }
-     
-    
+
+
     // A tiny file that says it is 8000 x 7000 pixels (56 MP) must be refused before decoding
     [Fact]
     public async Task SetLogoAsync_RejectsImageOverFiftyMegapixels()
@@ -108,7 +107,7 @@ public class BusinessImageServiceTests
         Assert.Empty(db.BusinessImages);
         Assert.Empty(storage.Files);
     }
-    
+
     // check if a gallery photo is saved as WebP
     [Fact]
     public async Task AddGalleryImageAsync_SavesImage()
@@ -120,7 +119,7 @@ public class BusinessImageServiceTests
         var image = Assert.Single(db.BusinessImages.Where(i => i.Kind == ImageKind.Galleri));
         Assert.True(storage.Files.ContainsKey(image.FileName));
     }
-    
+
     // check if the 13th photo is refused
 
     [Fact]
@@ -132,10 +131,11 @@ public class BusinessImageServiceTests
         {
             await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
         }
+
         var error = await service.AddGalleryImageAsync(KlippId, new MemoryStream(png), png.Length);
         Assert.StartsWith("Galleriet kan ha maks 12 bilder", error);
     }
-    
+
     // check if a business cannot delete another business's photo
 
     [Fact]
@@ -153,5 +153,4 @@ public class BusinessImageServiceTests
         Assert.Empty(db.BusinessImages.Where(i => i.Kind == ImageKind.Galleri));
         Assert.False(storage.Files.ContainsKey(image.FileName));
     }
-   
 }

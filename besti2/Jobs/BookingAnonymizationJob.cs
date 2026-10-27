@@ -23,6 +23,7 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
                 {
                     logger.LogInformation("Anonymized {Count} old bookings", count);
                 }
+
                 var notifications = scope.ServiceProvider.GetRequiredService<INotificationService>();
                 var deleted = await notifications.DeleteExpiredAsync(DateTime.UtcNow, stoppingToken);
                 if (deleted > 0)

@@ -6,17 +6,23 @@ using Microsoft.AspNetCore.Identity;
 namespace besti2.Identity;
 
 // Sends Identity's password reset mail through our own email service, in Norwegian
-public class IdentityEmailSender(IEmailService emailService, IConfiguration configuration,
-    ILogger<IdentityEmailSender> logger, MailLimiter mailLimiter) : IEmailSender<AppUser>
+public class IdentityEmailSender(
+    IEmailService emailService,
+    IConfiguration configuration,
+    ILogger<IdentityEmailSender> logger,
+    MailLimiter mailLimiter) : IEmailSender<AppUser>
 {
     public async Task SendPasswordResetCodeAsync(AppUser user, string email, string resetCode)
     {
         // Same guard as the sign-up mails; the answer to the form stays the same, so nobody learns anything
         if (!mailLimiter.TryReserve(email))
         {
-            logger.LogWarning("Password reset mail to user {UserId} skipped: one was sent less than 5 minutes ago, or today's limit is used up", user.Id);
+            logger.LogWarning(
+                "Password reset mail to user {UserId} skipped: one was sent less than 5 minutes ago, or today's limit is used up",
+                user.Id);
             return;
         }
+
         var webUrl = configuration["WebBaseUrl"] ?? "http://localhost:3000";
         var link =
             $"{webUrl}/glemt-passord/ny?epost={Uri.EscapeDataString(email)}&kode={Uri.EscapeDataString(resetCode)}";

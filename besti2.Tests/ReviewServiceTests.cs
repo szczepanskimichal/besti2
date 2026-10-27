@@ -140,7 +140,7 @@ public class ReviewServiceTests
         Assert.Null(ownError);
         Assert.Equal("Takk for besøket!", db.Reviews.Single().BusinessReply);
     }
-    
+
     // check if a past visit can be reviewed even when the business never confirmed it)
     [Fact]
     public async Task CreateAsync_PastVisitNeverConfirmed_IsAllowed()
@@ -152,6 +152,7 @@ public class ReviewServiceTests
 
         Assert.Null(error);
     }
+
     // check if a visit older than 30 days can no longer be reviewed
     [Fact]
     public async Task CreateAsync_After30Days_Fails()

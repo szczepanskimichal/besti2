@@ -1,4 +1,5 @@
 namespace besti2.Application.Bookings;
+
 // One booking as the customer sees it on "Mine bestillinger"
 public record CustomerBookingDto(
     Guid Id,

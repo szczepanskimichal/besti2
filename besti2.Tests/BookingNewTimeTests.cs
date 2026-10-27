@@ -75,8 +75,11 @@ public class BookingNewTimeTests
     public async Task Accept_ByLink_WaitsForBusinessAndLinkIsUsed()
     {
         await using var db = await CreateSeededDbAsync();
-        db.Users.Add(new AppUser { UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
-            EmailConfirmed = true, BusinessId = KlippOgStil });
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil
+        });
         await db.SaveChangesAsync();
         var email = new FakeEmailService();
         var service = new BookingService(db, email, NullLogger<BookingService>.Instance);

@@ -127,7 +127,8 @@ public class BookingService(
 
         await emails.SendConfirmationAsync(booking, service, cancellationToken);
         await notifier.NotifyAsync(booking, toBusiness: true,
-            $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}", BookingNotifier.PanelLink(booking),
+            $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}",
+            BookingNotifier.PanelLink(booking),
             cancellationToken);
 
         return new CreateBookingResult(
@@ -204,7 +205,8 @@ public class BookingService(
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             Status = BookingStatus.Bekreftet,
             CreatedUtc = DateTime.UtcNow,
-            NoReminder = !request.SendConfirmation        };
+            NoReminder = !request.SendConfirmation
+        };
         dbContext.Bookings.Add(booking);
         try
         {
@@ -265,7 +267,8 @@ public class BookingService(
                 b.PreviousStartUtc,
                 // "Møtte ikke" for this customer at this business only (other businesses never see it)
                 // Deleted and anonymized customers all share one address: never add them up
-                b.CustomerEmail == "" || b.CustomerEmail == BookingAnonymizer.AnonymizedEmail                    ? 0
+                b.CustomerEmail == "" || b.CustomerEmail == BookingAnonymizer.AnonymizedEmail
+                    ? 0
                     : dbContext.Bookings.Count(o => o.Service.BusinessId == businessId
                                                     && o.Status == BookingStatus.MotteIkke
                                                     && o.CustomerEmail == b.CustomerEmail)))
@@ -337,7 +340,8 @@ public class BookingService(
         var note = ShortNote(message);
         await emails.SendCancelledByCustomerAsync(booking, note, cancellationToken);
         await notifier.NotifyAsync(booking, toBusiness: true,
-            $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
+            $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" +
+            (note is null ? "" : $": {note}"),
             BookingNotifier.PanelLink(booking), cancellationToken);
         return UpdateBookingStatusOutcome.Updated;
     }

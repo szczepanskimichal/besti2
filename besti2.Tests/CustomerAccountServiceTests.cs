@@ -11,7 +11,8 @@ namespace besti2.Tests;
 public class CustomerAccountServiceTests
 {
 // Real UserManager on an in-memory database, with a token provider for the confirmation code
-    private static (CustomerAccountService Service, UserManager<AppUser> Users, FakeEmailService Email) CreateService(MailLimiter? mailLimiter = null)
+    private static (CustomerAccountService Service, UserManager<AppUser> Users, FakeEmailService Email) CreateService(
+        MailLimiter? mailLimiter = null)
     {
         var dbName = Guid.NewGuid().ToString();
         var services = new ServiceCollection();
@@ -25,6 +26,7 @@ public class CustomerAccountServiceTests
         var email = new FakeEmailService();
         return (new CustomerAccountService(users, email, "http://localhost:3000", mailLimiter), users, email);
     }
+
     private static RegisterCustomerRequest TestKunde() => new("Kari Nordmann", "Kari@Test.example", "Test123!");
 
 // check if sign-up creates an unconfirmed customer and mails a confirmation link
@@ -55,6 +57,7 @@ public class CustomerAccountServiceTests
         Assert.Equal(2, email.Sent.Count);
         Assert.Single(users.Users);
     }
+
 // check if signing up again within 5 minutes sends no new mail and keeps the first link working
     [Fact]
     public async Task RegisterAsync_SameEmailWithin5Minutes_SendsNoNewMail()
@@ -67,6 +70,7 @@ public class CustomerAccountServiceTests
         var user = (await users.FindByEmailAsync("kari@test.example"))!;
         Assert.True(await users.CheckPasswordAsync(user, "Test123!"));
     }
+
 // check if a confirmed email cannot sign up twice
     [Fact]
     public async Task RegisterAsync_SameEmailTwice_Confirmed_SecondFails()
@@ -119,7 +123,7 @@ public class CustomerAccountServiceTests
         Assert.False(await users.CheckPasswordAsync(user, "Fremmed1!"));
         Assert.Equal("Kari Ekte", user.FullName);
     }
-    
+
 
     // check if a name longer than a booking allows (100) is refused already at sign-up
     [Fact]
@@ -129,6 +133,7 @@ public class CustomerAccountServiceTests
         var error = await service.RegisterAsync(TestKunde() with { FullName = new string('a', 101) });
         Assert.Equal("Fyll ut alle feltene.", error);
     }
+
 // check if a confirmation link without id or code is just "invalid" (no server error)
     [Fact]
     public async Task ConfirmEmailAsync_MissingIdOrCode_ReturnsFalse()

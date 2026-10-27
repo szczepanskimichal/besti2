@@ -38,6 +38,7 @@ public class TimeOffService(AppDbContext dbContext) : ITimeOffService
             {
                 return null;
             }
+
             employeeName = $"{employee.Name} {employee.LastName}";
         }
 
@@ -64,6 +65,7 @@ public class TimeOffService(AppDbContext dbContext) : ITimeOffService
         {
             return new CreateTimeOffResult(null, Error: "Slutt må være etter start.");
         }
+
         if (endUtc - startUtc > TimeSpan.FromDays(MaxDays))
         {
             return new CreateTimeOffResult(null, Error: "Du kan blokkere maks ett år om gangen.");
@@ -83,7 +85,8 @@ public class TimeOffService(AppDbContext dbContext) : ITimeOffService
 
         // Visits already in that time stay; the business decides what to do with them
         var overlapping = await dbContext.Bookings.CountAsync(b => b.Service.BusinessId == businessId
-                                                                   && (request.EmployeeId == null || b.EmployeeId == request.EmployeeId)
+                                                                   && (request.EmployeeId == null ||
+                                                                       b.EmployeeId == request.EmployeeId)
                                                                    && b.Status != BookingStatus.Avlyst
                                                                    && b.StartUtc < endUtc && b.EndUtc > startUtc,
             cancellationToken);

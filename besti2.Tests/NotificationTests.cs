@@ -109,7 +109,7 @@ public class NotificationTests
         Assert.Equal(0, await db.Notifications.CountAsync(n => n.UserId != null));
         Assert.Empty((await new NotificationService(db).GetAsync("other-owner", FjordBygg)).Items);
     }
-    
+
     // check if a click reads only that one notification and returns where it leads
     [Fact]
     public async Task MarkRead_OnlyThatOne()
@@ -158,11 +158,13 @@ public class NotificationTests
     public async Task OldNotifications_AreRemoved()
     {
         await using var db = await CreateSeededDbAsync();
+
         Domain.Entities.Notification Note(int daysAgo, string? userId, Guid? businessId) => new()
         {
             Id = Guid.NewGuid(), UserId = userId, BusinessId = businessId, Text = $"{daysAgo} dager",
             CreatedUtc = DateTime.UtcNow.AddDays(-daysAgo)
         };
+
         db.Notifications.AddRange(Note(6, Kari, null), Note(8, Kari, null), Note(13, null, KlippOgStil),
             Note(15, null, KlippOgStil));
         await db.SaveChangesAsync();
@@ -174,6 +176,7 @@ public class NotificationTests
         Assert.Equal("6 dager", Assert.Single(customer.Items).Text);
         Assert.Equal("13 dager", Assert.Single(business.Items).Text);
     }
+
     // check if a new review rings the business's bell
     [Fact]
     public async Task NewReview_NotifiesTheBusiness()
@@ -181,7 +184,8 @@ public class NotificationTests
         await using var db = await CreateSeededDbAsync();
         var booking = new Domain.Entities.Booking
         {
-            Id = Guid.NewGuid(), StartUtc = DateTime.UtcNow.AddDays(-1), EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
+            Id = Guid.NewGuid(), StartUtc = DateTime.UtcNow.AddDays(-1),
+            EndUtc = DateTime.UtcNow.AddDays(-1).AddMinutes(30),
             CustomerName = "Kari Nordmann", CustomerPhone = "90000000", CustomerEmail = "kari@test.example",
             Status = BookingStatus.Bekreftet, CustomerUserId = Kari, EmployeeId = IngridId, ServiceId = HerreklippId
         };
@@ -194,6 +198,7 @@ public class NotificationTests
         Assert.Equal("Ny vurdering: 5 av 5 stjerner fra Kari", bell.Items.Single().Text);
         Assert.Equal("/panel/vurderinger", bell.Items.Single().Link);
     }
+
     // check if a saved notification rings that bell's live connection at once, and nobody else's
     [Fact]
     public async Task NewNotification_SignalsOnlyThatBell()
@@ -207,16 +212,19 @@ public class NotificationTests
         Assert.True(business.Reader.TryRead(out _));
         Assert.False(stranger.Reader.TryRead(out _));
     }
+
     // check if the daily cleanup removes old notifications for everybody: 7 days customer, 14 days business
     [Fact]
     public async Task DeleteExpired_ForEverybody()
     {
         await using var db = await CreateSeededDbAsync();
+
         Domain.Entities.Notification Note(int daysAgo, string? userId, Guid? businessId) => new()
         {
             Id = Guid.NewGuid(), UserId = userId, BusinessId = businessId, Text = $"{daysAgo}",
             CreatedUtc = DateTime.UtcNow.AddDays(-daysAgo)
         };
+
         db.Notifications.AddRange(Note(6, Kari, null), Note(8, Kari, null), Note(13, null, KlippOgStil),
             Note(15, null, KlippOgStil));
         await db.SaveChangesAsync();
@@ -226,5 +234,4 @@ public class NotificationTests
         Assert.Equal(2, deleted);
         Assert.Equal(["13", "6"], (await db.Notifications.Select(n => n.Text).ToListAsync()).Order().ToArray());
     }
-    
 }

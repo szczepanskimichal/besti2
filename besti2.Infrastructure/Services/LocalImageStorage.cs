@@ -26,6 +26,7 @@ public class LocalImageStorage(IConfiguration configuration) : IImageStorage
         {
             File.Delete(path);
         }
+
         return Task.CompletedTask;
     }
 

@@ -10,9 +10,19 @@ public record MyDataExport(
 
 public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed);
 
-public record ExportBooking(DateTime StartUtc, DateTime EndUtc, string Status, string Business, string Service,
-    string Employee, string CustomerName, string CustomerPhone, string CustomerEmail, string? Note,
-    bool MarketingConsent, DateTime? MarketingConsentUtc);
+public record ExportBooking(
+    DateTime StartUtc,
+    DateTime EndUtc,
+    string Status,
+    string Business,
+    string Service,
+    string Employee,
+    string CustomerName,
+    string CustomerPhone,
+    string CustomerEmail,
+    string? Note,
+    bool MarketingConsent,
+    DateTime? MarketingConsentUtc);
 
 public record ExportReview(DateTime CreatedUtc, string Business, int Stars, string? Comment, string? BusinessReply);
 

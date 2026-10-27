@@ -11,4 +11,4 @@ public record CreateManualBookingRequest(
     string? CustomerEmail,
     string? Note,
     bool SendConfirmation
-    );
+);

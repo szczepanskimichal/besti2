@@ -13,7 +13,8 @@ public static class PanelBookingEndpoints
             IBookingService bookingService, CancellationToken cancellationToken) =>
         {
             // A calendar shows at most about two months at once
-            if (from is DateOnly first && to is DateOnly last && (last < first || last.DayNumber - first.DayNumber > 62))
+            if (from is DateOnly first && to is DateOnly last &&
+                (last < first || last.DayNumber - first.DayNumber > 62))
             {
                 return Results.BadRequest(new { message = "Ugyldig periode." });
             }
@@ -28,7 +29,8 @@ public static class PanelBookingEndpoints
             var result = await bookingService.CreateByBusinessAsync(business.Id, request, cancellationToken);
             return result.Outcome switch
             {
-                CreateBookingOutcome.Created => Results.Created($"/api/panel/bookings/{result.Booking!.Id}", result.Booking),
+                CreateBookingOutcome.Created => Results.Created($"/api/panel/bookings/{result.Booking!.Id}",
+                    result.Booking),
                 CreateBookingOutcome.Invalid => Results.BadRequest(new { message = result.Error }),
                 CreateBookingOutcome.SlotTaken => Results.Conflict(
                     new { message = "Den ansatte har allerede en time da. Velg et annet tidspunkt." }),
@@ -96,7 +98,7 @@ public static class PanelBookingEndpoints
 
         // Business panel: remove blocked time
         group.MapDelete("/timeoff/{id:guid}", async (Guid id, PanelBusiness business,
-            ITimeOffService timeOffService, CancellationToken cancellationToken) =>
+                ITimeOffService timeOffService, CancellationToken cancellationToken) =>
             await timeOffService.DeleteAsync(business.Id, id, cancellationToken)
                 ? Results.NoContent()
                 : Results.NotFound());
