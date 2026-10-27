@@ -7,16 +7,21 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace besti2.Tests;
 
-public class FreeDaysTests
+// Free times: one day for one employee (GetFreeSlotsAsync) and the 7-day strip (GetFreeDaysAsync)
+public class AvailabilityServiceTests
 {
     // Saturday 3 Jan 2099 (Klipp & Stil 10–15, Sunday closed); far in the future, so the test never gets old
     private static readonly DateOnly FutureSaturday = new(2099, 1, 3);
+
     private static readonly DateOnly FutureMonday = new(2099, 1, 5);
+
     private static readonly DateTime FutureMondayAt10 = new(2099, 1, 5, 9, 0, 0, DateTimeKind.Utc); // 10:00 in Oslo
 
     private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
+
     private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
     private static readonly Guid SofieId = new("b1111111-0000-0000-0000-000000000002");
+
     private static readonly Guid SnekkerarbeidId = new("a2222222-0000-0000-0000-000000000003"); // Per time, 60 min
     private static readonly Guid LarsId = new("b2222222-0000-0000-0000-000000000001"); // Fjord Bygg, Monday 7–15
     private static async Task<AppDbContext> CreateSeededDbAsync()
@@ -74,6 +79,7 @@ public class FreeDaysTests
 
         Assert.Null(days);
     }
+
     // check if 3 hours of a "Per time" service are booked in a row and the last start leaves room for them
     [Fact]
     public async Task PerTimeService_ThreeHours_BooksThreeHoursInARow()
@@ -102,5 +108,44 @@ public class FreeDaysTests
             FutureMondayAt10, "Kari Nordmann", "+4790000000", "kari@test.example", false, Units: units));
 
         Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
+    }
+
+    [Fact]
+    public async Task GetFreeSlotsAsync_Sunday_ReturnsNoSlots_WhenClosed()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new AvailabilityService(db);
+        var sunday = new DateOnly(2099, 1, 4);
+
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, sunday);
+
+        Assert.NotNull(slots);
+        Assert.Empty(slots);
+    }
+
+    [Fact]
+    public async Task GetFreeSlotsAsync_Saturday_UsesOpeningHoursFromDatabase()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new AvailabilityService(db);
+        var saturday = new DateOnly(2099, 1, 3); // Klipp & Stil: Saturday 10-15 in Oslo (UTC+1 in winter)
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, saturday);
+
+        Assert.NotNull(slots);
+        Assert.Equal(new DateTime(2099, 1, 3, 9, 0, 0, DateTimeKind.Utc), slots[0]); // 10:00 in Oslo
+        Assert.Equal(new DateTime(2099, 1, 3, 13, 30, 0, DateTimeKind.Utc), slots[^1]); // 14:30 in Oslo
+    }
+
+    // check if an absurd date gives no slots instead of a crash
+    [Fact]
+    public async Task GetFreeSlotsAsync_ExtremeDate_ReturnsNoSlots()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new AvailabilityService(db);
+
+        var slots = await service.GetFreeSlotsAsync(HerreklippId, IngridId, new DateOnly(9999, 12, 31));
+
+        Assert.NotNull(slots);
+        Assert.Empty(slots);
     }
 }
