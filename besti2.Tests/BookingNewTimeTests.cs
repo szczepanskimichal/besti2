@@ -4,6 +4,7 @@ using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Services.Bookings;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -109,7 +110,7 @@ public class BookingNewTimeTests
 
         Assert.Equal(NewTimeOutcome.Declined, outcome);
         Assert.Equal(BookingStatus.Avlyst, (await db.Bookings.SingleAsync(b => b.Id == id)).Status);
-        var free = await service.GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
+        var free = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
         Assert.Contains(Oslo(13), free!);
     }
 

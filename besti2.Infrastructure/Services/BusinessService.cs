@@ -129,7 +129,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             .Where(h => businessIds.Contains(h.BusinessId) && h.DayOfWeek == date.DayOfWeek)
             .ToListAsync(cancellationToken);
 
-        // Same wide UTC window as BookingService.GetFreeSlotsAsync (the whole Oslo day is inside it)
+        // Same wide UTC window as AvailabilityService.GetFreeSlotsAsync (the whole Oslo day is inside it)
 
         var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
 
