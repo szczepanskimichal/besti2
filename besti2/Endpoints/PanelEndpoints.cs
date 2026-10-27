@@ -319,6 +319,12 @@ public static class PanelEndpoints
             .RequireAuthorization();
 
         // Move a visit to another time and/or employee
+        // The customer did not come (only after the start time)
+        group.MapPost("/bookings/{id:guid}/motte-ikke", (Guid id, ClaimsPrincipal principal,
+                    UserManager<AppUser> userManager, IBookingService bookingService, CancellationToken cancellationToken) =>
+                ChangeBookingStatusAsync(id, BookingStatus.MotteIkke, null, principal, userManager, bookingService,
+                    cancellationToken))
+            .RequireAuthorization();
         group.MapPost("/bookings/{id:guid}/flytt", async (Guid id, MoveBookingRequest request,
             ClaimsPrincipal principal, UserManager<AppUser> userManager, IBookingService bookingService,
             CancellationToken cancellationToken) =>

@@ -110,7 +110,7 @@ export type PanelBooking = {
     customerNote: string | null;
     employeeId: string; // the calendar puts the booking in this employee's column
     previousStartUtc: string | null; // set while a moved visit waits for the customer ("VenterKunde")
-
+    noShowCount: number; // "Møtte ikke" for this customer at this business
 };
 // Blocked time in the calendar; employeeId null = the whole business is closed
 export type TimeOff = {

@@ -18,7 +18,7 @@ export function bookingsToReview(bookings: CustomerBooking[]): CustomerBooking[]
     return bookings
         .filter((b) => {
             const end = new Date(b.endUtc).getTime();
-            return b.status !== "Avlyst" && !b.isReviewed && end <= now && end > now - REVIEW_DAYS * DAY_MS;
+            return b.status !== "Avlyst" && b.status !== "MotteIkke" && !b.isReviewed && end <= now && end > now - REVIEW_DAYS * DAY_MS;
         })
         .sort((a, b) => b.startUtc.localeCompare(a.startUtc));
 }

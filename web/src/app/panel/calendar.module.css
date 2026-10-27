@@ -621,3 +621,10 @@ a.booking:hover {
 .VenterKunde .pendingIcon {
     color: #8fb8de;
 }
+/* "Møtte ikke": coral, in the grid, on the phone and in the month view */
+.MotteIkke,
+.phoneCard.MotteIkke,
+.monthVisit.MotteIkke {
+    border-left-color: var(--color-danger);
+    background: rgba(255, 155, 133, 0.14);
+}

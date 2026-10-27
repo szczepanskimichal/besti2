@@ -31,6 +31,10 @@ export async function confirmBookingAction(formData: FormData) {
 export async function cancelBookingAction(formData: FormData) {
     await changeStatus(formData, "avlys");
 }
+export async function noShowAction(formData: FormData) {
+    await changeStatus(formData, "motte-ikke");
+}
+
 // Back to the same view (week or month) after saving
 function viewParam(formData: FormData): string {
     const view = formData.get("visning");

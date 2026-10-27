@@ -38,11 +38,13 @@ public class BookingService(
         {
             return null;
         }
+
         // "Per time" services can be booked for several hours in a row
         if (VisitMinutes(service, units) is not int minutes)
         {
             return null;
         }
+
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
         if (date.Year is < 2000 or > 2100)
         {
@@ -99,10 +101,12 @@ public class BookingService(
         {
             return null;
         }
+
         if (VisitMinutes(service, units) is not int minutes)
         {
             return null;
         }
+
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
         if (from.Year is < 2000 or > 2100)
         {
@@ -196,10 +200,12 @@ public class BookingService(
         {
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
         }
+
         if (VisitMinutes(service, request.Units) is not int minutes)
         {
             return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: "Velg en gyldig varighet.");
         }
+
         // The day in Oslo, not in UTC (00:30 on Tuesday in Oslo is still Monday in UTC)
         var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(request.StartUtc, Oslo));
 
@@ -214,7 +220,8 @@ public class BookingService(
             return new CreateBookingResult(CreateBookingOutcome.SlotTaken);
         }
 
-        var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, request.Units, cancellationToken);
+        var freeSlots = await GetFreeSlotsAsync(request.ServiceId, request.EmployeeId, date, request.Units,
+            cancellationToken);
         if (freeSlots is null)
         {
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
@@ -410,7 +417,13 @@ public class BookingService(
                 b.CustomerEmail,
                 b.CustomerNote,
                 b.EmployeeId,
-                b.PreviousStartUtc))
+                b.PreviousStartUtc,
+                // "Møtte ikke" for this customer at this business only (other businesses never see it)
+                b.CustomerEmail == ""
+                    ? 0
+                    : dbContext.Bookings.Count(o => o.Service.BusinessId == businessId
+                                                    && o.Status == BookingStatus.MotteIkke
+                                                    && o.CustomerEmail == b.CustomerEmail)))
             .ToListAsync(cancellationToken);
     }
 
@@ -457,6 +470,7 @@ public class BookingService(
         {
             return UpdateBookingStatusOutcome.InvalidTransition;
         }
+
         // A confirmed visit: after the business's free-cancel deadline only by phone
         // (a visit still waiting for the business can always be withdrawn)
         if (!ignoreDeadline && booking.Status == BookingStatus.Bekreftet)
@@ -470,6 +484,7 @@ public class BookingService(
                 return UpdateBookingStatusOutcome.TooLate;
             }
         }
+
         booking.Status = BookingStatus.Avlyst;
         booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -495,9 +510,13 @@ public class BookingService(
             return UpdateBookingStatusOutcome.NotFound;
         }
 
+        var started = booking.StartUtc <= DateTime.UtcNow;
         var allowed = (booking.Status, newStatus) switch
         {
             (BookingStatus.Venter, BookingStatus.Bekreftet) => true,
+            // "Møtte ikke" only after the start time; "Møtte" (Bekreftet) undoes a mistake
+            (BookingStatus.Venter or BookingStatus.Bekreftet, BookingStatus.MotteIkke) => started,
+            (BookingStatus.MotteIkke, BookingStatus.Bekreftet) => true,
             (BookingStatus.Venter, BookingStatus.Avlyst) => true,
             (BookingStatus.Bekreftet, BookingStatus.Avlyst) => true,
             (BookingStatus.VenterKunde, BookingStatus.Avlyst) => true,
@@ -519,6 +538,12 @@ public class BookingService(
         booking.Status = newStatus;
         booking.NewTimeTokenHash = null;
         await dbContext.SaveChangesAsync(cancellationToken);
+        // After the start time the business only marks whether the customer came: no e-mail or bell
+        if (started)
+        {
+            return UpdateBookingStatusOutcome.Updated;
+        }
+
         // A short note from the business, only when cancelling
         var note = newStatus == BookingStatus.Avlyst ? ShortNote(message) : null;
         await SendStatusEmailAsync(booking, note, cancellationToken);
@@ -785,6 +810,7 @@ public class BookingService(
         Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
     private static string Hash(string token) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
     // How long the visit is: "Per time" services may be booked several times in a row,
     // up to 8 hours in total (null = not allowed)
     private static int? VisitMinutes(Service service, int units)
@@ -801,6 +827,7 @@ public class BookingService(
 
         return service.DurationMinutes * units;
     }
+
     // Validate the booking request
     private static string? Validate(CreateBookingRequest request)
     {

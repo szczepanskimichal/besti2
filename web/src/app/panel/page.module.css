@@ -234,3 +234,13 @@
     background: var(--color-primary-soft);
     color: var(--color-primary-dark);
 }
+.MotteIkke {
+    background: rgba(255, 155, 133, 0.14);
+    color: var(--color-danger);
+}
+
+.noShow {
+    margin: 4px 0;
+    font-weight: 600;
+    color: var(--color-danger);
+}
