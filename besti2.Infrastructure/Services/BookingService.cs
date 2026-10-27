@@ -360,8 +360,8 @@ public class BookingService(
             CustomerEmail = email,
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             Status = BookingStatus.Bekreftet,
-            CreatedUtc = DateTime.UtcNow
-        };
+            CreatedUtc = DateTime.UtcNow,
+            NoReminder = !request.SendConfirmation        };
         dbContext.Bookings.Add(booking);
         try
         {
