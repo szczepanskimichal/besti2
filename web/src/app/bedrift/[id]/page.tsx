@@ -86,6 +86,11 @@ export default async function BusinessPage({ params }: Props) {
                     </a>
                     <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
                     {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
+                    {business.website && (
+                        <a href={business.website} target="_blank" rel="noopener noreferrer nofollow">
+                            {business.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                        </a>
+                    )}
                 </address>
                 <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
             </header>
