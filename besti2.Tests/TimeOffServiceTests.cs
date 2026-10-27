@@ -65,8 +65,7 @@ public class TimeOffServiceTests
         await timeOff.CreateAsync(KlippOgStil, closed);
         var ingrid = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, IngridId, FutureMonday);
         var sofie = await new AvailabilityService(db).GetFreeSlotsAsync(HerreklippId, SofieId, FutureMonday);
-        var search = await new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage())
-            .GetAllAsync(date: FutureMonday);
+        var search = await new BusinessSearchService(db, new FakeImageStorage()).GetAllAsync(date: FutureMonday);
 
         Assert.Empty(ingrid!);
         Assert.Empty(sofie!);

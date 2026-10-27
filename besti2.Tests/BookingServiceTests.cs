@@ -517,7 +517,7 @@ public class BookingServiceTests
             });
         }
         await db.SaveChangesAsync();
-        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var service = new BusinessSearchService(db, new FakeImageStorage());
 
         var result = await service.GetAllAsync();
 

@@ -12,14 +12,14 @@ public class BusinessRatingTests
     private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
     private static readonly Guid Nordlys = new("33333333-3333-3333-3333-333333333333");
 
-    private static async Task<(BusinessService Service, AppDbContext Db)> CreateAsync()
+    private static async Task<(BusinessSearchService Service, AppDbContext Db)> CreateAsync()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseInMemoryDatabase(Guid.NewGuid().ToString())
             .Options;
         var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        return (new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage()), db);
+        return (new BusinessSearchService(db, new FakeImageStorage()), db);
     }
 
     private static void AddReviews(AppDbContext db, Guid businessId, params int[] stars)
@@ -38,11 +38,11 @@ public class BusinessRatingTests
     [Fact]
     public void RatingScore_OneFiveStarReview_LosesToManyGoodReviews()
     {
-        var oneReview = BusinessService.RatingScore(5.0, 1);
-        var manyReviews = BusinessService.RatingScore(4.6, 20);
+        var oneReview = BusinessSearchService.RatingScore(5.0, 1);
+        var manyReviews = BusinessSearchService.RatingScore(4.6, 20);
 
         Assert.True(manyReviews > oneReview);
-        Assert.Equal(0.0, BusinessService.RatingScore(null, 0));
+        Assert.Equal(0.0, BusinessSearchService.RatingScore(null, 0));
     }
 
     // check if "Best vurdert" puts the most trusted rating first and businesses without reviews last
