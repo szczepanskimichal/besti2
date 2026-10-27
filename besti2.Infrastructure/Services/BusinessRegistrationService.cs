@@ -39,7 +39,7 @@ public class BusinessRegistrationService(
                                                             || !request.Email.Contains('@') ||
                                                             string.IsNullOrWhiteSpace(request.Password)
                                                             || request.BusinessName.Length > 200 ||
-                                                            request.Phone.Length > 20 || request.Email.Length > 250)
+                                                            request.Phone.Length > 200 || request.Email.Length > 250)
         {
             return new RegisterBusinessResult(false, "Fyll ut alle feltene.");
         }

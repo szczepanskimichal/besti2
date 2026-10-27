@@ -7,10 +7,10 @@ import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
-import { answerMyNewTimeAction, cancelMyBookingAction } from "./actions";
+import { answerMyNewTimeAction } from "./actions";
+import CancelBookingForm from "./CancelBookingForm";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import CloseDetailsButton from "@/components/CloseDetailsButton/CloseDetailsButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 
@@ -43,11 +43,9 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
         <main className={styles.main}>
             <h1 className={styles.title}>Min Besti</h1>
             <MinBestiTabs/>
-            {feil && (
+            {feil === "ny-tid" && (
                 <p className={styles.error} role="alert">
-                    {feil === "ny-tid"
-                        ? "Svaret kunne ikke lagres. Timen kan allerede være endret eller ha startet."
-                        : "Bestillingen kunne ikke avbestilles. Den kan allerede være avbestilt, ha startet eller fristen for gratis avbestilling er ute."}
+                    Svaret kunne ikke lagres. Timen kan allerede være endret eller ha startet.
                 </p>
             )}
             {svar === "godtatt" && (
@@ -125,22 +123,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                         Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
                                         Tiden blir ledig for andre.
                                     </p>
-                                    <form action={cancelMyBookingAction}>
-                                        <input type="hidden" name="bookingId" value={booking.id}/>
-                                        <label className={styles.cancelMessage}>
-                                            Grunn til bedriften (valgfritt)
-                                            <textarea name="melding" maxLength={300} rows={2}
-                                                      placeholder="F.eks. Jeg er dessverre syk."/>
-                                        </label>
-                                        <div className={styles.actions}>
-                                            <SubmitButton className={styles.dangerButton} pendingText="Avbestiller…">
-                                                Ja, avbestill
-                                            </SubmitButton>
-                                            <CloseDetailsButton className={styles.secondaryButton}>
-                                                Nei, behold timen
-                                            </CloseDetailsButton>
-                                        </div>
-                                    </form>
+                                    <CancelBookingForm bookingId={booking.id}/>
                                 </details>
                             ) : (
                                 <p className={styles.muted}>
