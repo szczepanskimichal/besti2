@@ -119,6 +119,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
             e.Property((x => x.PriceNok)).HasPrecision(10, 2);
             e.Property(x => x.PriceType).HasConversion<string>().HasMaxLength(30);
+            // The search asks "does it have a service?" and "is it called klipp?" for every business
+            e.HasIndex(x => x.BusinessId).IncludeProperties(x => new { x.IsDeleted, x.Name, x.DurationMinutes });
             e.HasData(
                 new Service
                 {
@@ -201,9 +203,11 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<Booking>(e =>
         {
             // One active booking per employee and start time; cancelled ones do not count
+            // EndUtc is stored in the index too: the free-times search then never has to open the booking rows
             e.HasIndex(x => new { x.EmployeeId, x.StartUtc })
                 .IsUnique()
-                .HasFilter("[Status] <> 'Avlyst'");
+                .HasFilter("[Status] <> 'Avlyst'")
+                .IncludeProperties(x => x.EndUtc);
             e.HasIndex(x => x.CustomerUserId);
             // Reminders and the pending-bookings check every 15 minutes look for a status and a time range
             e.HasIndex(x => new { x.Status, x.StartUtc });
@@ -265,7 +269,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
         modelBuilder.Entity<Review>(e =>
         {
             e.HasIndex(x => x.BookingId).IsUnique(); // one review per booking
-            e.HasIndex(x => x.BusinessId);
+            // Stars in the index: the stars on the search cards are counted without opening the reviews
+            e.HasIndex(x => x.BusinessId).IncludeProperties(x => x.Stars);
             e.HasOne(x => x.Booking).WithMany()
                 .HasForeignKey(x => x.BookingId)
                 .OnDelete(DeleteBehavior.Restrict);

@@ -107,6 +107,10 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 });
+// The same search (e.g. the home page or "Frisør i Gjøvik") is answered from memory for 30 seconds:
+// thousands of visitors then cost the database one query instead of thousands
+builder.Services.AddOutputCache(options =>
+    options.AddPolicy("search", policy => policy.Expire(TimeSpan.FromSeconds(30)).SetVaryByQuery("*")));
 var app = builder.Build();
 //--------------------------------------
 // Configure the HTTP request pipeline.
@@ -157,6 +161,7 @@ app.Use(async (context, next) =>
 });
 app.UseAuthorization();
 app.UseRateLimiter();
+app.UseOutputCache();
 // For Docker and the deploy check: 200 when the API and its database answer
 app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellationToken) =>
     await dbContext.Database.CanConnectAsync(cancellationToken) ? Results.Ok() : Results.StatusCode(503));

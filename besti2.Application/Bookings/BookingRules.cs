@@ -9,6 +9,11 @@ public static class BookingRules
     // One account cannot fill a salon's calendar: at most this many coming visits at one business
     public const int MaxUpcomingPerBusiness = 3;
 
+    // No visit is longer than 8 hours (a service and "Per time" both stop at 480 minutes), so a visit that
+    // touches a time window started at most this long before it. Searches use it as a lower bound,
+    // otherwise the database reads every old booking of the employee
+    public const int MaxVisitMinutes = 480;
+
     // The first time a customer can book
     public static DateTime EarliestStartUtc(DateTime nowUtc) => nowUtc.AddMinutes(MinNoticeMinutes);
 }

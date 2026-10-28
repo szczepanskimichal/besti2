@@ -45,6 +45,16 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                                      || b.Services.Any(s => !s.IsDeleted && s.Name.ToLower().Contains(text)));
         }
 
+        // "Nær meg" with a radius: only businesses inside a box around the customer are read from the database
+        // (the exact distance is checked later); without it every business in Norway would be worked through
+        if (lat is double boxLat && lng is double boxLng && maxKm is double radiusKm && radiusKm > 0)
+        {
+            var latDelta = radiusKm / 111.0;
+            var lngDelta = radiusKm / (111.0 * Math.Max(Math.Cos(boxLat * Math.PI / 180), 0.01));
+            query = query.Where(b => b.Latitude >= boxLat - latDelta && b.Latitude <= boxLat + latDelta
+                                     && b.Longitude >= boxLng - lngDelta && b.Longitude <= boxLng + lngDelta);
+        }
+
         var items = await query
             .OrderBy(b => b.Name)
             .Select(b => new BusinessListItemDto(
@@ -115,6 +125,21 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             return [];
         }
 
+        var data = await LoadSlotDataAsync(businesses, date, date, cancellationToken);
+        return FindSlotsOnDay(businesses, data, date, q, from, to, cancellationToken);
+    }
+
+    // Everything the free times need for a range of days, read in 5 queries and grouped for fast lookups
+    private sealed record SlotData(
+        ILookup<Guid, (Guid Id, string Name, int DurationMinutes)> Services,
+        ILookup<Guid, Guid> Employees,
+        ILookup<(Guid BusinessId, DayOfWeek Day), (TimeOnly OpensAt, TimeOnly ClosesAt)> Hours,
+        ILookup<Guid, (DateTime StartUtc, DateTime EndUtc)> Bookings,
+        ILookup<Guid, (Guid? EmployeeId, DateTime StartUtc, DateTime EndUtc)> TimeOffs);
+
+    private async Task<SlotData> LoadSlotDataAsync(List<BusinessListItemDto> businesses, DateOnly firstDate,
+        DateOnly lastDate, CancellationToken cancellationToken)
+    {
         var businessIds = businesses.Select(b => b.Id).ToList();
 
         var services = await dbContext.Services.AsNoTracking()
@@ -128,13 +153,15 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             .ToListAsync(cancellationToken);
 
         var hours = await dbContext.OpeningHours.AsNoTracking()
-            .Where(h => businessIds.Contains(h.BusinessId) && h.DayOfWeek == date.DayOfWeek)
+            .Where(h => businessIds.Contains(h.BusinessId))
             .ToListAsync(cancellationToken);
 
-        // Same wide UTC window as AvailabilityService.GetFreeSlotsAsync (the whole Oslo day is inside it)
-        var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
+        // Same wide UTC window as AvailabilityService.GetFreeSlotsAsync (every whole Oslo day is inside it)
+        var fromUtc = firstDate.ToDateTime(TimeOnly.MinValue).AddDays(-1);
 
-        var toUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(2);
+        var toUtc = lastDate.ToDateTime(TimeOnly.MinValue).AddDays(2);
+        // Visits are max 8 hours, so older ones cannot reach into the window (keeps the index read short)
+        var startsAfterUtc = fromUtc.AddMinutes(-BookingRules.MaxVisitMinutes);
 
         var employeeIds = employees.Select(e => e.Id).ToList();
 
@@ -142,6 +169,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             .Where(b => employeeIds.Contains(b.EmployeeId)
                         && b.Status != BookingStatus.Avlyst
                         && b.StartUtc < toUtc
+                        && b.StartUtc > startsAfterUtc
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.EmployeeId, b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);
@@ -152,6 +180,21 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                         && t.EndUtc > fromUtc)
             .Select(t => new { t.BusinessId, t.EmployeeId, t.StartUtc, t.EndUtc })
             .ToListAsync(cancellationToken);
+
+        // Grouped once, so each business finds its own rows at once instead of searching the whole list
+        // (with thousands of businesses a search through the lists took minutes)
+        return new SlotData(
+            services.ToLookup(s => s.BusinessId, s => (s.Id, s.Name, s.DurationMinutes)),
+            employees.ToLookup(e => e.BusinessId, e => e.Id),
+            hours.ToLookup(h => (h.BusinessId, h.DayOfWeek), h => (h.OpensAt, h.ClosesAt)),
+            bookings.ToLookup(b => b.EmployeeId, b => (b.StartUtc, b.EndUtc)),
+            timeOffs.ToLookup(t => t.BusinessId, t => (t.EmployeeId, t.StartUtc, t.EndUtc)));
+    }
+
+    // The first 3 free times on one day for each business, soonest first; businesses without any are left out
+    private static List<BusinessListItemDto> FindSlotsOnDay(List<BusinessListItemDto> businesses, SlotData data,
+        DateOnly date, string? q, TimeOnly? from, TimeOnly? to, CancellationToken cancellationToken)
+    {
         // The same earliest time as on the booking page (see BookingRules)
         var earliestUtc = BookingRules.EarliestStartUtc(DateTime.UtcNow);
 
@@ -161,33 +204,34 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
 
         foreach (var business in businesses)
         {
-            var dayHours = hours.FirstOrDefault(h => h.BusinessId == business.Id);
+            cancellationToken.ThrowIfCancellationRequested();
+            var dayHours = data.Hours[(business.Id, date.DayOfWeek)].ToList();
 
-            var businessServices = services.Where(s => s.BusinessId == business.Id).ToList();
+            var businessServices = data.Services[business.Id].OrderBy(s => s.DurationMinutes).ToList();
 
-            // The searched service ("klipp" -> Herreklipp), otherwise the shortest one
-            var service = businessServices
-                              .Where(s => !string.IsNullOrEmpty(text) && s.Name.ToLower().Contains(text))
-                              .OrderBy(s => s.DurationMinutes)
-                              .FirstOrDefault()
-                          ?? businessServices.OrderBy(s => s.DurationMinutes).FirstOrDefault();
-
-            if (dayHours is null || service is null)
+            if (dayHours.Count == 0 || businessServices.Count == 0)
             {
                 continue; // closed that day, or no services
             }
 
-            var slots = employees
-                .Where(e => e.BusinessId == business.Id)
-                .SelectMany(e => SlotCalculator.GetFreeSlots(
-                        date, dayHours.OpensAt, dayHours.ClosesAt, service.DurationMinutes,
-                        bookings.Where(b => b.EmployeeId == e.Id).Select(b => (b.StartUtc, b.EndUtc))
-                            .Concat(timeOffs.Where(t => t.BusinessId == business.Id
-                                                        && (t.EmployeeId == null || t.EmployeeId == e.Id))
+            var open = dayHours[0];
+            // The searched service ("klipp" -> Herreklipp), otherwise the shortest one
+            var matching = businessServices
+                .Where(s => !string.IsNullOrEmpty(text) && s.Name.ToLower().Contains(text))
+                .ToList();
+            var chosen = matching.Count > 0 ? matching[0] : businessServices[0];
+
+            var timeOffs = data.TimeOffs[business.Id].ToList();
+            var slots = data.Employees[business.Id]
+                .SelectMany(employeeId => SlotCalculator.GetFreeSlots(
+                        date, open.OpensAt, open.ClosesAt, chosen.DurationMinutes,
+                        data.Bookings[employeeId]
+                            .Concat(timeOffs
+                                .Where(t => t.EmployeeId == null || t.EmployeeId == employeeId)
                                 .Select(t => (t.StartUtc, t.EndUtc)))
                             .ToList(), earliestUtc)
                     .Where(start => IsInTimeWindow(start, from, to))
-                    .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
+                    .Select(start => new FreeSlotDto(start, chosen.Id, chosen.Name, employeeId)))
                 .OrderBy(s => s.StartUtc)
                 .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button
                 .Take(3)
@@ -216,13 +260,16 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
     {
         const int daysAhead = 14;
         var today = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Oslo));
+        // All 14 days are read at once, then each day is worked out in memory
+        var data = await LoadSlotDataAsync(businesses, today, today.AddDays(daysAhead - 1), cancellationToken);
         var found = new List<BusinessListItemDto>();
         var left = businesses;
         for (var day = 0; day < daysAhead && left.Count > 0; day++)
         {
-            var withSlots = await AddFreeSlotsAsync(left, today.AddDays(day), q, from, to, cancellationToken);
+            var withSlots = FindSlotsOnDay(left, data, today.AddDays(day), q, from, to, cancellationToken);
             found.AddRange(withSlots);
-            left = left.Where(b => withSlots.All(w => w.Id != b.Id)).ToList();
+            var foundIds = withSlots.Select(w => w.Id).ToHashSet();
+            left = left.Where(b => !foundIds.Contains(b.Id)).ToList();
         }
 
         // Earlier days were added first and each day is sorted by time, so the soonest is already first
