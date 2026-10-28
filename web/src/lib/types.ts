@@ -1,6 +1,7 @@
 // BusinessListItemDTO type definition!!!
 export type BusinessListItem = {
     id: string;
+    slug: string; // page address: bestiapp.no/{slug}
     name: string;
     category: string;
     description: string | null;
@@ -48,6 +49,7 @@ export type OpeningHours = {
 
 export type BusinessDetails = {
     id: string;
+    slug: string; // page address: bestiapp.no/{slug}
     name: string;
     category: string;
     description: string | null;
@@ -133,6 +135,7 @@ export type CustomerBooking = {
     employeeName: string;
     businessId: string;
     businessName: string;
+    businessSlug: string; // link to the business page: /{businessSlug}
     businessAddress: string;
     serviceId: string;
     employeeId: string;

@@ -1,19 +1,19 @@
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusiness } from "@/lib/api";
+import { getBusinessBySlug } from "@/lib/api";
 import { formatDate, formatTime } from "@/lib/format";
 import styles from "./page.module.css";
 
 type Props = {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
     searchParams: Promise<{ tjeneste?: string; ansatt?: string; tid?: string }>;
 };
 
 export default async function BookingConfirmedPage({ params, searchParams }: Props) {
-    const { id } = await params;
+    const { slug } = await params;
     const { tjeneste, ansatt, tid } = await searchParams;
 
-    const business = await getBusiness(id);
+    const business = await getBusinessBySlug(slug);
     const service = business?.services.find((s) => s.id === tjeneste);
     const employee = business?.employees.find((e) => e.id === ansatt);
 

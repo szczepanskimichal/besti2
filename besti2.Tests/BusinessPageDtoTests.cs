@@ -6,7 +6,7 @@ public class BusinessPageDtoTests
 {
     private static List<BusinessListItemDto> Businesses(int count) =>
         Enumerable.Range(1, count)
-            .Select(n => new BusinessListItemDto(Guid.NewGuid(), $"Bedrift {n}", "Frisor", null, "Oslo", null, null))
+            .Select(n => new BusinessListItemDto(Guid.NewGuid(), $"bedrift-{n}", $"Bedrift {n}", "Frisor", null, "Oslo", null, null))
             .ToList();
 
     // check if 50 businesses become 3 pages: 24 + 24 + 2, in the same order

@@ -2,6 +2,7 @@ namespace besti2.Application.Businesses;
 
 public record BusinessListItemDto(
     Guid Id,
+    string Slug, // the page address: bestiapp.no/{Slug}
     string Name,
     string Category,
     string? Description,

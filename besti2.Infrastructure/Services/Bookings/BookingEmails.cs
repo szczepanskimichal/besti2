@@ -153,7 +153,7 @@ public class BookingEmails(
                 : ($"Bestillingen er avlyst: {business.Name}",
                     "Bestillingen din er dessverre avlyst.\n\n" +
                     (note is null ? "" : $"Melding fra {business.Name}: {note}\n\n") +
-                    $"Bestill ny tid: {webBaseUrl}/bedrift/{business.Id}");
+                    $"Bestill ny tid: {webBaseUrl}/{business.Slug}");
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
                 $"{message}\n\n" +

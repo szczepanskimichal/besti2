@@ -322,6 +322,11 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
 
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<string>("Website")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
@@ -331,6 +336,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasIndex("ApprovalTokenHash");
 
                     b.HasIndex("OrgNumber")
+                        .IsUnique();
+
+                    b.HasIndex("Slug")
                         .IsUnique();
 
                     b.ToTable("Businesses");
@@ -352,7 +360,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Name = "Klipp & Stil Frisør",
                             OrgNumber = "999000001",
                             PhoneNumber = "+4722000001",
-                            PostalCode = "0154"
+                            PostalCode = "0154",
+                            Slug = "klipp-og-stil-frisor-oslo"
                         },
                         new
                         {
@@ -370,7 +379,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Name = "Fjord Bygg AS",
                             OrgNumber = "999000002",
                             PhoneNumber = "+4755000002",
-                            PostalCode = "5003"
+                            PostalCode = "5003",
+                            Slug = "fjord-bygg-as-bergen"
                         },
                         new
                         {
@@ -388,7 +398,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Name = "Nordlys Psykologsenter",
                             OrgNumber = "999000003",
                             PhoneNumber = "+4773000003",
-                            PostalCode = "7011"
+                            PostalCode = "7011",
+                            Slug = "nordlys-psykologsenter-trondheim"
                         });
                 });
 

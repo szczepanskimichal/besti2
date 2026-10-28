@@ -45,7 +45,7 @@ public class BookingCancelMessageTests
 
         var mail = Assert.Single(email.Sent);
         Assert.Contains("Melding fra Klipp & Stil Frisør: Beklager, Ingrid er syk.", mail.Body);
-        Assert.Contains($"Bestill ny tid: https://bestiapp.no/bedrift/{KlippOgStil}", mail.Body);
+        Assert.Contains("Bestill ny tid: https://bestiapp.no/klipp-og-stil-frisor-oslo", mail.Body);
     }
 
     // check if a message is never sent with a confirmation, and a long message is cut to 300 characters

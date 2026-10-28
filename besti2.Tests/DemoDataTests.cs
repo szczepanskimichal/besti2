@@ -24,7 +24,7 @@ public class DemoDataTests
         await using var db = await CreateSeededDbAsync();
         var real = new Business
         {
-            Id = Guid.NewGuid(), Name = "Ekte Frisør", OrgNumber = "912345688", Category = BusinessCategory.Frisor,
+            Id = Guid.NewGuid(), Name = "Ekte Frisør", Slug = "ekte-frisor-oslo", OrgNumber = "912345688", Category = BusinessCategory.Frisor,
             Email = "post@ekte.example", PhoneNumber = "+4791234567", Address = "Gata 1", PostalCode = "0150",
             City = "Oslo"
         };

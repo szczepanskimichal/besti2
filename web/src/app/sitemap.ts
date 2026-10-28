@@ -19,7 +19,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             const result = await getBusinesses(undefined, undefined, undefined, undefined, undefined, undefined,
                 undefined, undefined, undefined, String(page));
             for (const business of result.items) {
-                pages.push({ url: `${SITE_URL}/bedrift/${business.id}`, changeFrequency: "weekly" });
+                pages.push({ url: `${SITE_URL}/${business.slug}`, changeFrequency: "weekly" });
             }
             pageCount = result.pageCount;
             page++;

@@ -1,6 +1,6 @@
 import NextLink from "next/link";
 import {notFound} from "next/navigation";
-import {getBusiness, getFreeDays, getMe} from "@/lib/api";
+import {getBusinessBySlug, getFreeDays, getMe} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {formatDay, formatLength, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
 import {freeCancelText} from "@/lib/freeCancel";
@@ -9,15 +9,15 @@ import BookingForm from "./BookingForm";
 import styles from "./page.module.css";
 
 type Props = {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
     searchParams: Promise<{ tjeneste?: string; ansatt?: string; fra?: string; dato?: string; tid?: string; antall?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
-    const {id} = await params;
+    const {slug} = await params;
     const {tjeneste, ansatt, fra, dato, tid, antall} = await searchParams;
 
-    const business = await getBusiness(id);
+    const business = await getBusinessBySlug(slug);
     const service = business?.services.find((s) => s.id === tjeneste);
 
     if (!business || !service) {
@@ -61,14 +61,14 @@ export default async function BookingPage({params, searchParams}: Props) {
         if (time) {
             query.set("tid", time);
         }
-        return `/bedrift/${business!.id}/bestill?${query}`;
+        return `/${business!.slug}/bestill?${query}`;
     }
 
     const currentUrl = bookingUrl(start, selected?.date, chosen?.startUtc);
 
     return (
         <main className={styles.main}>
-            <NextLink href={`/bedrift/${business.id}`} className={styles.back}>← Tilbake til {business.name}</NextLink>
+            <NextLink href={`/${business.slug}`} className={styles.back}>← Tilbake til {business.name}</NextLink>
 
             <h1 className={styles.title}>Bestill {service.name}</h1>
             <p className={styles.muted}>
@@ -181,7 +181,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                             bestille.</p>
                     )}
                     {me && !me.isBusiness && (
-                        <BookingForm businessId={business.id} serviceId={service.id} employeeId={chosen.employeeId}
+                        <BookingForm businessSlug={business.slug} serviceId={service.id} employeeId={chosen.employeeId}
                                      startUtc={chosen.startUtc} date={selected.date} units={units} fullName={me.fullName}
                                      email={me.email} phone={me.phone}/>)}
                 </section>

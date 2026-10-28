@@ -10,6 +10,7 @@ public record CustomerBookingDto(
     string EmployeeName,
     Guid BusinessId,
     string BusinessName,
+    string BusinessSlug, // link to the business page: /{BusinessSlug}
     string BusinessAddress,
     Guid ServiceId,
     Guid EmployeeId,

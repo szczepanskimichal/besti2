@@ -85,7 +85,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 {booking.serviceName} hos {booking.employeeName}
                             </p>
                             <p className={styles.customer}>
-                                <Link href={`/bedrift/${booking.businessId}`}>{booking.businessName}</Link>
+                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
                                 <br/>
                                 {booking.businessAddress}
                             </p>

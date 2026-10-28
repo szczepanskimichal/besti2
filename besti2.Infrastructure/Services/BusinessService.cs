@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using besti2.Application.Businesses;
 using besti2.Application.Common;
 using besti2.Application.Geocoding;
@@ -16,21 +17,28 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
     private string? ToLogoUrl(string? fileName) => fileName is null ? null : imageStorage.GetUrl(fileName);
 
     public Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
-        GetDetailsAsync(id, false, cancellationToken);
+        GetDetailsAsync(b => b.Id == id, false, cancellationToken);
+
+    public Task<BusinessDetailsDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
+        BusinessSlug.IsValid(slug)
+            ? GetDetailsAsync(b => b.Slug == slug, false, cancellationToken)
+            : Task.FromResult<BusinessDetailsDto?>(null);
 
     public Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default) =>
-        GetDetailsAsync(id, true, cancellationToken);
+        GetDetailsAsync(b => b.Id == id, true, cancellationToken);
 
-    private async Task<BusinessDetailsDto?> GetDetailsAsync(Guid id, bool includeHidden,
+    private async Task<BusinessDetailsDto?> GetDetailsAsync(Expression<Func<Business, bool>> match, bool includeHidden,
         CancellationToken cancellationToken)
     {
         var business = await dbContext.Businesses
             // Services, employees, hours and photos as separate small queries instead of one huge joined one
             .AsSplitQuery()
             .AsNoTracking()
-            .Where(b => b.Id == id && (includeHidden || !b.IsHidden))
+            .Where(match)
+            .Where(b => includeHidden || !b.IsHidden)
             .Select(b => new BusinessDetailsDto(
                 b.Id,
+                b.Slug,
                 b.Name,
                 b.Category.ToString(),
                 b.Description,
