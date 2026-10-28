@@ -289,4 +289,23 @@ public class BusinessSearchServiceTests
         // Assert
         Assert.Equal(new[] { "Fjord Bygg AS" }, result.Select(b => b.Name));
     }
+
+    // check if "Meg + en venn" shows only businesses with two employees free at the same time, with those times
+    [Fact]
+    public async Task GetAllAsync_TwoPersons_OnlyBusinessesThatTakeTwo()
+    {
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+
+        var alone = await service.GetAllAsync(date: Next(DayOfWeek.Monday));
+        var together = await service.GetAllAsync(date: Next(DayOfWeek.Monday), persons: 2);
+        var soonest = await service.GetAllAsync(persons: 2);
+
+        Assert.Contains(alone, b => b.Name == "Fjord Bygg AS");
+        var klipp = Assert.Single(together);
+        Assert.Equal("Klipp & Stil Frisør", klipp.Name);
+        Assert.NotEmpty(klipp.FreeSlots!);
+        Assert.DoesNotContain(soonest, b => b.Name == "Fjord Bygg AS");
+        Assert.Contains(soonest, b => b.Name == "Klipp & Stil Frisør" && b.FreeSlots!.Count > 0);
+    }
 }

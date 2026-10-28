@@ -9,7 +9,7 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import styles from "./page.module.css";
 
 type HomeProps = {
-    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string }>;
+    searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string; personer?: string }>;
 };
 
 // Time of day in the search -> from/to for the API (Oslo time)
@@ -32,7 +32,9 @@ export default async function Home({searchParams}: HomeProps) {
     // "Best vurdert" and "4★ og over": any other value is ignored
     const sorter = query.sorter === "vurdering" ? query.sorter : undefined;
     const stjerner = query.stjerner === "4" ? query.stjerner : undefined;
-    const search: SearchProps = {category, city, q, date, tid, lat, lng, km, sorter, stjerner};
+    // "For hvem?": BESTI sammen shows only times when that many employees are free together (2-8)
+    const personer = query.personer && /^[2-8]$/.test(query.personer) ? query.personer : undefined;
+    const search: SearchProps = {category, city, q, date, tid, lat, lng, km, sorter, stjerner, personer};
     // Only the cities here (fast); the businesses load inside Suspense below
     const cities = await getCities();
     return (
@@ -51,6 +53,16 @@ export default async function Home({searchParams}: HomeProps) {
                             defaultValue={q ?? ""}
                             placeholder="F.eks. herreklipp eller fliser"
                         />
+                    </label>
+                    <label className={styles.field}>
+                        For hvem?
+                        <select name="personer" defaultValue={personer ?? ""}>
+                            <option value="">Bare meg</option>
+                            <option value="2">Meg + en venn 👯</option>
+                            {[3, 4, 5, 6, 7, 8].map((count) => (
+                                <option key={count} value={count}>{count} personer 👯</option>
+                            ))}
+                        </select>
                     </label>
                     <label className={styles.field}>
                         Kategori
@@ -163,6 +175,7 @@ type SearchProps = {
     page?: string;
     sorter?: string;
     stjerner?: string;
+    personer?: string;
 };
 
 // The same search with some values changed (undefined = removed); a new search always starts on page 1
@@ -175,12 +188,12 @@ function searchHref(search: SearchProps, changes: Partial<SearchProps>): string 
 
 // The slow part: with a date or a time of day the API calculates free times for every business
 async function Results(search: SearchProps) {
-    const {category, city, q, date, tid, lat, lng, km, page, sorter, stjerner} = search;
+    const {category, city, q, date, tid, lat, lng, km, page, sorter, stjerner, personer} = search;
     // "Tid på dagen" without a date means today
     // "Tid på dagen" without a date: the API finds the soonest day for each business
     const timeWindow = timeWindows[tid ?? ""];
     const result = await getBusinesses(category, city, q, date, timeWindow?.from, timeWindow?.to, lat, lng, km, page,
-        sorter ? "rating" : undefined, stjerner);
+        sorter ? "rating" : undefined, stjerner, personer);
     const businesses = result.items;
     if (businesses.length === 0) {
         if (stjerner) {
@@ -200,8 +213,8 @@ async function Results(search: SearchProps) {
                 </p>
             );
         }
-        if (tid) {
-            return <p className={styles.subtitle}>Ingen ledige tider de neste 14 dagene.</p>;
+        if (tid || personer) {
+            return <p className={styles.subtitle}>Ingen ledige tider{personer ? ` for ${personer === "2" ? "to" : `${personer} samtidig`}` : ""} de neste 14 dagene.</p>;
         }
         return <p className={styles.subtitle}>Ingen bedrifter funnet. Prøv et annet søk.</p>;
     }
@@ -214,7 +227,7 @@ async function Results(search: SearchProps) {
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>
-                        <BusinessCard business={business}/>
+                        <BusinessCard business={business} persons={personer ? Number(personer) : 1}/>
                     </li>
                 ))}
             </ul>

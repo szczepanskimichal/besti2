@@ -10,9 +10,11 @@ import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 
 type Props = {
     business: BusinessListItem;
+    persons?: number; // BESTI sammen: the times are for this many at once, and the booking page opens for them
 };
 
-export default function BusinessCard({ business }: Props) {
+export default function BusinessCard({ business, persons = 1 }: Props) {
+    const together = persons > 1;
     const href = `/${business.slug}`;
     const slots = business.freeSlots ?? [];
 
@@ -47,12 +49,14 @@ export default function BusinessCard({ business }: Props) {
             </NextLink>
             {slots.length > 0 && (
                 <div className={styles.slots}>
-                    <p className={styles.slotsLabel}>{slots[0].serviceName} · Ledig {formatDate(slots[0].startUtc)}:</p>
+                    <p className={styles.slotsLabel}>
+                        {slots[0].serviceName} · Ledig{together && ` for ${persons === 2 ? "to" : persons} 👯`} {formatDate(slots[0].startUtc)}:
+                    </p>
                     {/* One click: the booking page opens with service, employee, day and time chosen */}
                     {slots.map((slot) => (
                         <NextLink
                             key={slot.startUtc}
-                            href={`${href}/bestill?tjeneste=${slot.serviceId}&dato=${osloDay(slot.startUtc)}&tid=${encodeURIComponent(slot.startUtc)}`}
+                            href={`${href}/bestill?tjeneste=${slot.serviceId}&dato=${osloDay(slot.startUtc)}&tid=${encodeURIComponent(slot.startUtc)}${together ? `&sammen=${persons}` : ""}`}
                             className={styles.slot}
                         >
                             {formatTime(slot.startUtc)}
