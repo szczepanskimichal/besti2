@@ -18,6 +18,7 @@ import TimeGrid from "./calendar/TimeGrid";
 import MonthGrid from "./calendar/MonthGrid";
 import PhoneList from "./calendar/PhoneList";
 import BookingDetails, { allowedActions } from "./calendar/BookingDetails";
+import { GroupStrip } from "./calendar/GroupSummary";
 import TimeOffDetails from "./calendar/TimeOffDetails";
 
 type CalendarPageProps = {
@@ -77,6 +78,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     // The visit opened in the details window (also a cancelled one, even when those are hidden)
     const selected = allBookings.find((b) => b.id === query.bestilling);
     const moving = allBookings.find((b) => b.id === query.flytt && allowedActions(b).canMove);
+    // BESTI sammen: every visit of the same group, shown and linked in the details window
+    const members = selected?.inviteId
+        ? allBookings.filter((b) => b.inviteId === selected.inviteId && b.status !== "Avlyst")
+            .map((b) => ({ booking: b, href: link({ bestilling: b.id }) }))
+        : [];
     const here = link({}); // this view without the details window
     // "+ Ny bestilling", or a click on an empty place in the grid (time and employee filled in)
     const newBooking = query.ny === "1";
@@ -161,6 +167,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <p className={styles.muted}>Stengt denne dagen.</p>
             )}
 
+            <GroupStrip bookings={bookings} hrefFor={(booking) => link({ bestilling: booking.id })}/>
+
             {month ? (
                 <MonthGrid days={columns} month={day.slice(0, 7)} business={business}
                            dayHref={(date) => link({ dag: date, visning: undefined, ansatt: undefined })}
@@ -184,7 +192,8 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                        hrefFor={(booking) => link({ bestilling: booking.id })}
                        blockHref={(block) => link({ blokkering: block.id })}/>
 
-            {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}/>}
+            {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}
+                                         members={members}/>}
             {moving && (
                 <MoveBookingForm booking={moving} employees={business.employees} date={osloDay(moving.startUtc)}
                                  time={formatTime(moving.startUtc)} view={view} closeHref={link({ bestilling: moving.id })}/>

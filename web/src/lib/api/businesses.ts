@@ -16,7 +16,8 @@ export async function getBusinesses(
     km?: string,
     page?: string,
     sort?: string,
-    minRating?: string
+    minRating?: string,
+    persons?: string // "2"-"8" = BESTI sammen
 ): Promise<BusinessPage> {
     const params = new URLSearchParams();
     if (category) params.set("category", category);
@@ -31,6 +32,7 @@ export async function getBusinesses(
     if (page) params.set("page", page);
     if (sort) params.set("sort", sort);
     if (minRating) params.set("minRating", minRating);
+    if (persons) params.set("persons", persons);
 
     // forwardIp: the API limits searches per visitor, not for the whole site at once
     const res = await apiFetch(`/api/businesses?${params}`, { forwardIp: true });
@@ -84,8 +86,9 @@ export async function getCities(): Promise<string[]> {
 }
 
 // "Velg dag": 7 days of free times from a date; without employeeId = anyone free (Hvem som helst)
-export async function getFreeDays(serviceId: string, employeeId: string | undefined, from: string, units = 1): Promise<FreeDay[] | null> {
-    const params = new URLSearchParams({serviceId, from, units: String(units)});
+// persons 2-8: BESTI sammen, only times when that many employees are free together
+export async function getFreeDays(serviceId: string, employeeId: string | undefined, from: string, units = 1, persons = 1): Promise<FreeDay[] | null> {
+    const params = new URLSearchParams({serviceId, from, units: String(units), persons: String(persons)});
     if (employeeId) {
         params.set("employeeId", employeeId);
     }

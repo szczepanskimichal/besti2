@@ -5,11 +5,15 @@ import type { PanelBooking } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { cancelBookingAction, confirmBookingAction } from "../actions";
 import { NoShowButtons, NoShowCount } from "../NoShow";
+import GroupSummary from "./GroupSummary";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
 
 // The details window for one visit: customer, contact, note and Bekreft / Avlys
-export default function BookingDetails({ booking, closeHref, moveHref }: { booking: PanelBooking; closeHref: string; moveHref: string }) {
+// members = all visits of the same BESTI sammen group (same time, other employees), each with its link
+export default function BookingDetails({ booking, members = [], closeHref, moveHref }: {
+    booking: PanelBooking; members?: { booking: PanelBooking; href: string }[]; closeHref: string; moveHref: string
+}) {
     const { started, canConfirm, canCancel, canMove } = allowedActions(booking);
     return (
         <div className={calendar.overlay}>
@@ -25,6 +29,7 @@ export default function BookingDetails({ booking, closeHref, moveHref }: { booki
                     {statusLabels[booking.status] ?? booking.status}
                 </span>
                 <p className={styles.service}>{booking.serviceName} hos {booking.employeeName}</p>
+                {booking.group && <GroupSummary group={booking.group} members={members} current={booking.id}/>}
                 {booking.previousStartUtc && (
                     <p className={styles.muted}>
                         Flyttet fra {formatDay(osloDay(booking.previousStartUtc))} kl. {formatTime(booking.previousStartUtc)}.

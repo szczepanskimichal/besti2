@@ -5,7 +5,7 @@ import { SITE_URL, UMAMI_SCRIPT_URL, UMAMI_WEBSITE_ID } from "@/lib/site";
 // the utm_ tags are kept (never booking ids, times or e-mail links)
 const filter = `
 window.bestiBeforeSend = function (type, payload) {
-  var privatePages = /^\\/(panel|min-besti|varsler|ny-tid|godkjenn|glemt-passord|bekreft-epost|konto-slettet)(\\/|$)/;
+  var privatePages = /^\\/(panel|min-besti|varsler|ny-tid|godkjenn|glemt-passord|bekreft-epost|konto-slettet|invitasjon)(\\/|$)/;
   function clean(value) {
     if (!value) return value;
     var url = new URL(value, location.origin);

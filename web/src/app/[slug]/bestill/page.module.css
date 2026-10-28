@@ -229,3 +229,92 @@
         flex: 1;
     }
 }
+/* BESTI sammen: "Bare meg" / "Meg + en venn" as two halves of one pill */
+.together {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 20px;
+    padding: 4px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+}
+
+.togetherOption {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    text-align: center;
+}
+
+.togetherOption:hover {
+    color: var(--color-primary);
+}
+
+.togetherSelected,
+.togetherSelected:hover {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.together + .muted {
+    margin-top: 12px;
+}
+
+/* "Hvem betaler?" and "Svarfrist": radio buttons that look like chips */
+.choices {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.choices legend {
+    font-weight: 600;
+    margin-bottom: 6px;
+    padding: 0;
+}
+
+.choice {
+    position: relative;
+}
+
+.choice input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.choice span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: rgba(20, 28, 24, 0.35);
+    font-weight: 600;
+}
+
+.choice input:checked + span {
+    background: var(--color-primary-soft);
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.choice input:focus-visible + span {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
