@@ -129,7 +129,7 @@ is not healthy.
 ## Privacy
 
 BESTI is built for GDPR from the start: customer accounts are required for booking, old bookings are
-anonymized after 5 years, users can export and delete their data, and visit statistics are cookie-free.
+anonymized after 3 years, users can export and delete their data, and visit statistics are cookie-free.
 The processing overview is in [docs/personvern-oversikt.md](docs/personvern-oversikt.md) and the public
 privacy policy is at [bestiapp.no/personvern](https://bestiapp.no/personvern).
 
