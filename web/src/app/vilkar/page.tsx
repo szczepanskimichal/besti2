@@ -10,7 +10,7 @@ export default function TermsPage() {
     return (
         <main className={styles.main}>
             <h1>Vilkår for bruk</h1>
-            <p className={styles.updated}>Sist oppdatert: 22. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 28. oktober 2026</p>
             <h2>Om tjenesten</h2>
             <p>
                 BESTI er en tjeneste for å finne bedrifter og bestille time på nett. Avtalen om selve
@@ -21,8 +21,31 @@ export default function TermsPage() {
             <ul>
                 <li>Oppgi riktig navn, telefon og e-post når du bestiller.</li>
                 <li>Bedriften kan bekrefte eller avlyse bestillingen. Du får beskjed på e-post.</li>
-                <li>Ønsker du å endre eller avbestille, kontakt bedriften så tidlig som mulig.</li>
+                <li>
+                    <strong>Avbestilling:</strong> du kan avbestille gratis i Min Besti fram til fristen bedriften har
+                    satt (for eksempel 24 timer før timen). Fristen står når du bestiller og i Min Besti. Etter
+                    fristen må du ringe bedriften. BESTI tar ikke gebyr for avbestilling.
+                </li>
+                <li>Ønsker du å endre tiden, kontakt bedriften så tidlig som mulig.</li>
+                <li>
+                    <strong>«Møtte ikke»:</strong> kommer du ikke til timen uten å avbestille, kan bedriften registrere
+                    det. Du får beskjed på e-post, og du kan ikke gi vurdering av den timen. Bare den bedriften ser
+                    det. Var du der likevel, kontakt bedriften eller skriv til{" "}
+                    <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>, så ser vi på det.
+                </li>
                 <li>Pris og betaling avtales med bedriften. BESTI tar ikke imot betaling.</li>
+            </ul>
+            <h2 id="vurderinger">Vurderinger</h2>
+            <ul>
+                <li>Du kan gi én vurdering for hver time du har hatt, og bare etter at timen er over.</li>
+                <li>Skriv om din egen opplevelse, ærlig og saklig. Ikke skriv personangrep, trusler, hatefulle eller
+                    ulovlige ytringer, reklame eller opplysninger om andre personer, for eksempel ansattes helse.</li>
+                <li>Vurderingen vises med fornavnet ditt. 5 år etter timen, eller når du sletter kontoen, vises den som
+                    «Tidligere kunde».</li>
+                <li>Bedriften kan svare offentlig, men kan ikke slette, endre eller velge bort vurderinger. Snittet
+                    regnes av alle vurderinger.</li>
+                <li>BESTI kan fjerne vurderinger som bryter disse reglene. Mener du at en vurdering bryter reglene,
+                    skriv til <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>.</li>
             </ul>
             <h2>For bedrifter</h2>
             <ul>
@@ -30,12 +53,19 @@ export default function TermsPage() {
                 <li>Du er ansvarlig for tjenestene du tilbyr og for å følge lover og regler for din bransje.</li>
                 <li>Du kan bare laste opp bilder du har rettigheter til. Personer på bildene må ha gitt samtykke.</li>
                 <li>Kundeopplysninger du får gjennom BESTI kan bare brukes til å gi kunden timen.</li>
+                <li>Du setter selv fristen for gratis avbestilling, og den gjelder for alle timer bestilt via BESTI.</li>
+                <li>Registrer «Møtte ikke» bare når kunden faktisk ikke kom. Feil registrering skal rettes med en gang
+                    («Møtte»).</li>
+                <li>Legger du inn en time for en kunde selv, sender du bare bekreftelse og påminnelse på e-post når
+                    kunden har bedt om det.</li>
                 <li>
                     Når kunder bestiller time hos deg, er du behandlingsansvarlig for kundenes opplysninger,
                     og BESTI er databehandler. Se <a href="#databehandleravtale">databehandleravtalen</a> under.
                 </li>
                 <li>Nye bedrifter blir sjekket og godkjent av BESTI før kundene ser dem.</li>
                 <li>BESTI kan fjerne innhold som er ulovlig eller bryter vilkårene, og stenge kontoer ved misbruk.</li>
+                <li>Du kan slette bedriften når som helst i panelet (Bedriftsprofil → «Slett bedrift»). Kommende timer
+                    må avlyses først, slik at kundene får beskjed.</li>
             </ul>
             <h2 id="databehandleravtale">Databehandleravtale</h2>
             <p>
@@ -45,10 +75,12 @@ export default function TermsPage() {
             </p>
             <ul>
                 <li><strong>Hva behandles:</strong> opplysninger om bedriftens kunder i forbindelse med bestillinger
-                    (navn, telefon, e-post, tjeneste, ansatt, tidspunkt, status og kundens melding) og navn på
-                    bedriftens ansatte.</li>
-                <li><strong>Formål:</strong> å ta imot, vise, flytte og avlyse bestillinger og sende bekreftelser og
-                    varsler på vegne av bedriften. BESTI bruker ikke opplysningene til egne formål, som markedsføring.</li>
+                    (navn, telefon, e-post, tjeneste, ansatt, tidspunkt, status inkludert «møtte ikke», kundens
+                    melding og grunn for avbestilling) og navn på bedriftens ansatte.</li>
+                <li><strong>Hvor lenge:</strong> bestillinger anonymiseres automatisk 5 år etter timen. Sikkerhetskopier
+                    slettes etter 14 dager.</li>
+                <li><strong>Formål:</strong> å ta imot, vise, flytte og avlyse bestillinger og sende bekreftelser,
+                    påminnelser og varsler på vegne av bedriften. BESTI bruker ikke opplysningene til egne formål, som markedsføring.</li>
                 <li><strong>Instrukser:</strong> BESTI behandler opplysningene bare etter bedriftens instrukser, slik de
                     følger av denne avtalen og av det bedriften gjør i tjenesten.</li>
                 <li><strong>Taushetsplikt og sikkerhet:</strong> bare personer som trenger det for å drifte tjenesten,
@@ -64,9 +96,9 @@ export default function TermsPage() {
                     hvis et brudd på personopplysningssikkerheten gjelder bedriftens kunder.</li>
                 <li><strong>Kontroll:</strong> BESTI gir bedriften informasjonen som trengs for å vise at avtalen
                     følges.</li>
-                <li><strong>Når avtalen slutter:</strong> når bedriften avslutter kontoen, sletter eller anonymiserer
-                    BESTI kundeopplysningene, med mindre loven krever at de lagres lenger. Bedriften kan først be om en
-                    kopi.</li>
+                <li><strong>Når avtalen slutter:</strong> når bedriften sletter kontoen («Slett bedrift»), sletter
+                    BESTI kundeopplysningene med en gang, og de er borte fra sikkerhetskopiene innen 14 dager. Bedriften
+                    kan først be om en kopi på <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>.</li>
             </ul>
             <h2>Ansvar</h2>
             <p>
