@@ -63,7 +63,6 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
 
     public async Task<string?> AddGalleryImageAsync(Guid businessId, Stream content, long length,
         CancellationToken cancellationToken = default)
-
     {
         var count = await dbContext.BusinessImages
             .CountAsync(i => i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
@@ -103,15 +102,12 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
 
     public async Task<bool> DeleteGalleryImageAsync(Guid businessId, Guid imageId,
         CancellationToken cancellationToken = default)
-
     {
-// Only this business's gallery images; anything else looks like "not found"
-
+        // Only this business's gallery images; anything else looks like "not found"
         var image = await dbContext.BusinessImages.FirstOrDefaultAsync(
             i => i.Id == imageId && i.BusinessId == businessId && i.Kind == ImageKind.Galleri, cancellationToken);
 
         if (image is null)
-
         {
             return false;
         }
@@ -120,29 +116,23 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-// Delete the file only after the database no longer points to it
-
+        // Delete the file only after the database no longer points to it
         await storage.DeleteAsync(image.FileName, cancellationToken);
 
         return true;
     }
 
-// Shared by logo and gallery: checks size and type, then resizes to WebP
-
+    // Shared by logo and gallery: checks size and type, then resizes to WebP
     private static async Task<(byte[]? Webp, string? Error)> ReadAsWebpAsync(
         Stream content, long length, int maxSize, CancellationToken cancellationToken)
-
     {
-// Check the size before reading, so a huge upload is never loaded into memory
-
+        // Check the size before reading, so a huge upload is never loaded into memory
         if (length == 0)
-
         {
             return (null, "Velg et bilde.");
         }
 
         if (length > MaxUploadBytes)
-
         {
             return (null, "Bildet kan være maks 10 MB.");
         }
@@ -154,7 +144,6 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
         var data = memory.ToArray();
 
         if (DetectImageType(data) is null)
-
         {
             return (null, "Bare PNG, JPG eller WebP er tillatt.");
         }
@@ -164,7 +153,7 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
         return resized is null ? (null, "Kunne ikke lese bildet.") : (resized, null);
     }
 
-// Real file type from the first bytes ("magic numbers"), not from the file name
+    // Real file type from the first bytes ("magic numbers"), not from the file name
     private static string? DetectImageType(byte[] data)
     {
         if (StartsWith(data, [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]))
@@ -184,9 +173,9 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
 
         return null;
     }
-// Fits the image inside maxSize x maxSize(keeps proportions) and saves it as WebP.
 
-// A new file is created, so EXIF data like GPS location is not kept.
+    // Fits the image inside maxSize x maxSize(keeps proportions) and saves it as WebP.
+    // A new file is created, so EXIF data like GPS location is not kept.
     private static byte[]? ResizeToWebp(byte[] data, int maxSize)
     {
         using var codec = SKCodec.Create(new MemoryStream(data));
@@ -241,7 +230,7 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
         return encoded?.ToArray();
     }
 
-// Returns an upright copy of the bitmap (handles 90, 180 and 270 degree photos)
+    // Returns an upright copy of the bitmap (handles 90, 180 and 270 degree photos)
     private static SKBitmap ApplyOrientation(SKBitmap bitmap, SKEncodedOrigin origin)
     {
         var degrees = origin switch

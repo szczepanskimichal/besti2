@@ -15,7 +15,7 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
         {
             try
             {
-// A background job lives for the whole app, so it needs its own scope for the DbContext
+                // A background job lives for the whole app, so it needs its own scope for the DbContext
                 using var scope = scopeFactory.CreateScope();
                 var anonymizer = scope.ServiceProvider.GetRequiredService<IBookingAnonymizer>();
                 var count = await anonymizer.AnonymizeOldBookingsAsync(DateTime.UtcNow, stoppingToken);
@@ -34,7 +34,7 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-// Never crash the API because of the cleanup; try again tomorrow
+                // Never crash the API because of the cleanup; try again tomorrow
                 logger.LogError(ex, "Anonymizing old bookings failed");
             }
         } while (await timer.WaitForNextTickAsync(stoppingToken));

@@ -76,7 +76,7 @@ export async function changePasswordAction(_previous: AccountFormState, formData
         return { error: result.message };
     }
     const fresh = me ? await login(me.email, newPassword) : null;
-    if (!fresh || fresh === "tooMany") {
+    if (!fresh || typeof fresh === "string") {
         redirect("/logg-inn?neste=/panel/profil");
     }
     await setToken(fresh.accessToken, fresh.expiresIn);

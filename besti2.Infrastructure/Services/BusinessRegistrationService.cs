@@ -34,18 +34,21 @@ public class BusinessRegistrationService(
         CancellationToken cancellationToken = default)
     {
         // 1. Check the input
-        if (string.IsNullOrWhiteSpace(request.BusinessName) || string.IsNullOrWhiteSpace(request.Address)
-                                                            || string.IsNullOrWhiteSpace(request.PostalCode) ||
-                                                            string.IsNullOrWhiteSpace(request.City)
-                                                            || string.IsNullOrWhiteSpace(request.Phone) ||
-                                                            string.IsNullOrWhiteSpace(request.Email)
-                                                            || !request.Email.Contains('@') ||
-                                                            string.IsNullOrWhiteSpace(request.Password)
-                                                            || request.BusinessName.Length > 200 ||
-                                                            request.Address.Length > 200 || request.Email.Length > 250)
+        if (string.IsNullOrWhiteSpace(request.BusinessName)
+            || string.IsNullOrWhiteSpace(request.Address)
+            || string.IsNullOrWhiteSpace(request.PostalCode)
+            || string.IsNullOrWhiteSpace(request.City)
+            || string.IsNullOrWhiteSpace(request.Phone)
+            || string.IsNullOrWhiteSpace(request.Email)
+            || !request.Email.Contains('@')
+            || string.IsNullOrWhiteSpace(request.Password)
+            || request.BusinessName.Length > 200
+            || request.Address.Length > 200
+            || request.Email.Length > 250)
         {
             return new RegisterBusinessResult(false, "Fyll ut alle feltene.");
         }
+
         if (!PhoneNumber.IsValid(request.Phone))
         {
             return new RegisterBusinessResult(false, "Oppgi et gyldig telefonnummer, f.eks. 912 34 567.");
@@ -219,7 +222,6 @@ public class BusinessRegistrationService(
         return new RegisterBusinessResult(true);
     }
 
-
     // After the owner has confirmed the email: an approved business becomes visible to customers,
     // a new one waits and BESTI gets a one-click approval link (anyone can type someone else's org number)
     public async Task ShowBusinessOfOwnerAsync(string userId, CancellationToken cancellationToken = default)
@@ -240,6 +242,12 @@ public class BusinessRegistrationService(
         {
             business.IsHidden = false;
             await dbContext.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        // Already waiting for BESTI (the owner clicked the link again): the first approval link stays valid
+        if (business.ApprovalTokenHash is not null)
+        {
             return;
         }
 

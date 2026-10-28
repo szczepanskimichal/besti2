@@ -12,7 +12,7 @@ public static class NotificationEndpoints
     {
         var group = app.MapGroup("/api/notifications");
 
-// The bell (🔔): the newest notifications of the logged-in customer or business, and how many are unread
+        // The bell (🔔): the newest notifications of the logged-in customer or business, and how many are unread
         group.MapGet("", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
             INotificationService notificationService, CancellationToken cancellationToken) =>
         {
@@ -21,7 +21,7 @@ public static class NotificationEndpoints
                 ? Results.Unauthorized()
                 : Results.Ok(await notificationService.GetAsync(user.Id, user.BusinessId, cancellationToken));
         }).RequireAuthorization();
-// Only the number on the bell, for the header on every page (cheap: one COUNT)
+        // Only the number on the bell, for the header on every page (cheap: one COUNT)
         group.MapGet("/unread", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
             INotificationService notificationService, CancellationToken cancellationToken) =>
         {
@@ -33,8 +33,8 @@ public static class NotificationEndpoints
                     unread = await notificationService.UnreadCountAsync(user.Id, user.BusinessId, cancellationToken)
                 });
         }).RequireAuthorization();
-// The bell, live: an open connection (Server-Sent Events) that sends the number of unread notifications
-// at once when it changes, and a small ping every 25 s so proxies keep the connection open
+        // The bell, live: an open connection (Server-Sent Events) that sends the number of unread notifications
+        // at once when it changes, and a small ping every 25 s so proxies keep the connection open
         group.MapGet("/stream", async (HttpContext context, ClaimsPrincipal principal,
             UserManager<AppUser> userManager, INotificationService notificationService) =>
         {
@@ -82,7 +82,7 @@ public static class NotificationEndpoints
             }
         }).RequireAuthorization();
 
-// "Merk alle som lest"
+        // "Merk alle som lest"
         group.MapPost("/read", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
             INotificationService notificationService, CancellationToken cancellationToken) =>
         {
@@ -96,7 +96,7 @@ public static class NotificationEndpoints
             return Results.NoContent();
         }).RequireAuthorization();
 
-// A click on one notification: read, and where it leads
+        // A click on one notification: read, and where it leads
         group.MapPost("/{id:guid}/read", async (Guid id, ClaimsPrincipal principal,
             UserManager<AppUser> userManager, INotificationService notificationService,
             CancellationToken cancellationToken) =>
@@ -111,7 +111,7 @@ public static class NotificationEndpoints
             return read is null ? Results.NotFound() : Results.Ok(read);
         }).RequireAuthorization();
 
-// The bin next to one notification
+        // The bin next to one notification
         group.MapDelete("/{id:guid}", async (Guid id, ClaimsPrincipal principal,
             UserManager<AppUser> userManager, INotificationService notificationService,
             CancellationToken cancellationToken) =>

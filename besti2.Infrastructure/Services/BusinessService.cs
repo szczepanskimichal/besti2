@@ -78,6 +78,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             };
     }
 
+    private const decimal MaxPriceNok = 1_000_000m;
+
     public async Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -169,12 +171,10 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
 
     public async Task<string?> UpdateEmployeeAsync(Guid businessId, Guid employeeId, EmployeeRequest request,
         CancellationToken cancellationToken = default)
-
     {
         var error = ValidateEmployee(request);
 
         if (error is not null)
-
         {
             return error;
         }
@@ -183,7 +183,6 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             e => e.Id == employeeId && e.BusinessId == businessId && !e.IsDeleted, cancellationToken);
 
         if (employee is null)
-
         {
             return "Fant ikke den ansatte.";
         }
@@ -379,10 +378,15 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             return "Prisen kan ikke være negativ.";
         }
 
+        // The database column holds at most 99 999 999,99; no real service costs a million
+        if (request.PriceNok is > MaxPriceNok)
+        {
+            return "Prisen kan være maks 1 000 000 kr.";
+        }
+
         return null;
     }
 
-    // Shared validation for adding and editing an employee; returns null when valid
     // null = no website; "" = not a valid address. Only http and https (never javascript: and the like)
     private static string? ToWebsite(string? input)
     {
@@ -406,6 +410,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             : "";
     }
 
+    // Shared validation for adding and editing an employee; returns null when valid
     private static string? ValidateEmployee(EmployeeRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Name) || request.Name.Length > 200)

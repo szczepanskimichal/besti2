@@ -165,7 +165,7 @@ public class BookingService(
             new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
     }
 
-// The business adds a visit itself (phone call, walk-in). Confirmed at once; it may be outside the
+    // The business adds a visit itself (phone call, walk-in). Confirmed at once; it may be outside the
     // opening hours, but never on top of another visit of the same employee
     public async Task<CreateBookingResult> CreateByBusinessAsync(Guid businessId, CreateManualBookingRequest request,
         CancellationToken cancellationToken = default)
@@ -438,7 +438,7 @@ public class BookingService(
         return UpdateBookingStatusOutcome.Updated;
     }
 
-// "Flytt": another time and/or employee; never on top of another visit or blocked time,
+    // "Flytt": another time and/or employee; never on top of another visit or blocked time,
     // outside the opening hours is allowed (as for visits the business adds itself)
     public async Task<MoveBookingResult> MoveAsync(Guid bookingId, Guid businessId, MoveBookingRequest request,
         CancellationToken cancellationToken = default)
@@ -679,6 +679,7 @@ public class BookingService(
             await dbContext.SaveChangesAsync(cancellationToken);
         }
     }
+
     // An optional message when cancelling: trimmed, empty = none, at most 300 characters
     private static string? ShortNote(string? message) =>
         string.IsNullOrWhiteSpace(message) ? null : message.Trim()[..Math.Min(message.Trim().Length, 300)];
