@@ -25,6 +25,12 @@
     color: var(--color-primary);
     text-decoration: none;
 }
+/* Logo A: aurora icon + "besti" (public/logo/besti-logo.svg) */
+.logoImage {
+    display: block;
+    height: 36px;
+    width: auto;
+}
 /* Small "Beta" badge next to the logo while the first businesses test BESTI */
 .beta {
     padding: 2px 6px;
@@ -49,6 +55,7 @@
     padding: 0 8px;
     color: var(--color-muted);
     text-decoration: none;
+    white-space: nowrap;
 }
 
 .navLink:hover {
@@ -107,6 +114,10 @@
     .greeting {
         display: none;
     }
+
+    .logoImage {
+        height: 30px;
+    }
 }
 /* The bell with the number of unread notifications */
 .bell {
@@ -134,4 +145,11 @@
     font-weight: 700;
     line-height: 18px;
     text-align: center;
+}
+
+/* Narrow phones: logo and both buttons must fit in one row */
+@media (max-width: 400px) {
+    .beta {
+        display: none;
+    }
 }
