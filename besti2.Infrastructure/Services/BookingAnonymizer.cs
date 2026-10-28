@@ -15,36 +15,69 @@ public class BookingAnonymizer(AppDbContext dbContext) : IBookingAnonymizer
     // A review no longer points to a person (CustomerUserId is required, so it gets this instead)
     public const string AnonymizedUserId = "anonymisert";
 
+    // Old data is changed in small portions, so a big first run never holds thousands of rows in memory
+    public const int BatchSize = 1000;
+
     public async Task<int> AnonymizeOldBookingsAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
     {
-        var cutoff = nowUtc.AddYears(-RetentionYears);
-        var oldBookings = await dbContext.Bookings
-            .Where(b => b.EndUtc < cutoff && b.CustomerEmail != AnonymizedEmail)
-            .ToListAsync(cancellationToken);
-
-        foreach (var booking in oldBookings)
+        // A night job may wait longer for the database than a visitor (default is 30 s)
+        if (dbContext.Database.IsRelational())
         {
-            booking.CustomerName = "Anonymisert";
-            booking.CustomerPhone = "-";
-            booking.CustomerEmail = AnonymizedEmail;
-            booking.MarketingConsent = false;
-            booking.MarketingConsentUtc = null;
-            booking.CustomerNote = null;
-            booking.CustomerUserId = null;
+            dbContext.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
+        }
+
+        var cutoff = nowUtc.AddYears(-RetentionYears);
+        var count = 0;
+        while (true)
+        {
+            var oldBookings = await dbContext.Bookings
+                .Where(b => b.EndUtc < cutoff && b.CustomerEmail != AnonymizedEmail)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
+            if (oldBookings.Count == 0)
+            {
+                break;
+            }
+
+            foreach (var booking in oldBookings)
+            {
+                booking.CustomerName = "Anonymisert";
+                booking.CustomerPhone = "-";
+                booking.CustomerEmail = AnonymizedEmail;
+                booking.MarketingConsent = false;
+                booking.MarketingConsentUtc = null;
+                booking.CustomerNote = null;
+                booking.CustomerUserId = null;
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            count += oldBookings.Count;
         }
 
         // Reviews of those visits keep stars and text (the rating stays fair), but not the name
-        var oldReviews = await dbContext.Reviews
-            .Where(r => r.Booking.EndUtc < cutoff && r.CustomerName != ProfileService.FormerCustomer)
-            .ToListAsync(cancellationToken);
-
-        foreach (var review in oldReviews)
+        while (true)
         {
-            review.CustomerName = ProfileService.FormerCustomer;
-            review.CustomerUserId = AnonymizedUserId;
+            var oldReviews = await dbContext.Reviews
+                .Where(r => r.Booking.EndUtc < cutoff && r.CustomerName != ProfileService.FormerCustomer)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
+            if (oldReviews.Count == 0)
+            {
+                break;
+            }
+
+            foreach (var review in oldReviews)
+            {
+                review.CustomerName = ProfileService.FormerCustomer;
+                review.CustomerUserId = AnonymizedUserId;
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            count += oldReviews.Count;
         }
 
-        await dbContext.SaveChangesAsync(cancellationToken);
-        return oldBookings.Count + oldReviews.Count;
+        return count;
     }
 }

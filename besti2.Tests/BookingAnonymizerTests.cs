@@ -71,6 +71,30 @@ public class BookingAnonymizerTests
         Assert.Equal(0, count);
     }
 
+// check if more old bookings than one batch are all anonymized in a single run
+    [Fact]
+    public async Task AnonymizeOldBookingsAsync_MoreThanOneBatch_AnonymizesAll()
+    {
+// Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var total = BookingAnonymizer.BatchSize + 5;
+        for (var i = 0; i < total; i++)
+        {
+            db.Bookings.Add(NewBooking(Now.AddYears(-6).AddMinutes(-i), "Gammel Kunde"));
+        }
+        await db.SaveChangesAsync();
+        var service = new BookingAnonymizer(db);
+// Act
+        var count = await service.AnonymizeOldBookingsAsync(Now);
+// Assert
+        Assert.Equal(total, count);
+        Assert.DoesNotContain(db.Bookings, b => b.CustomerName == "Gammel Kunde");
+    }
+
 // check if reviews of old visits lose the name but keep stars and text, and newer reviews stay as they are
     [Fact]
     public async Task AnonymizeOldBookingsAsync_AnonymizesReviewsOfOldVisits()
