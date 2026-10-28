@@ -42,6 +42,9 @@ public class Booking
     // When the business was reminded that this booking still waits for "Bekreft" (only once)
     public DateTime? PendingReminderSentUtc { get; set; }
 
+    // BESTI sammen: both visits booked from the same invitation share this id (null = a normal booking)
+    public Guid? InviteId { get; set; }
+
     public Guid EmployeeId { get; set; }
     public Employee Employee { get; set; } = null!;
     public Guid ServiceId { get; set; }

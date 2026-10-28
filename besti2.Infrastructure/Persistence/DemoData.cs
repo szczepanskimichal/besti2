@@ -26,6 +26,8 @@ public static class DemoData
 
         dbContext.OpeningHours.RemoveRange(
             await dbContext.OpeningHours.Where(h => BusinessIds.Contains(h.BusinessId)).ToListAsync(cancellationToken));
+        dbContext.BookingInvites.RemoveRange(
+            await dbContext.BookingInvites.Where(i => BusinessIds.Contains(i.BusinessId)).ToListAsync(cancellationToken));
         dbContext.Employees.RemoveRange(
             await dbContext.Employees.Where(e => BusinessIds.Contains(e.BusinessId)).ToListAsync(cancellationToken));
         dbContext.Services.RemoveRange(

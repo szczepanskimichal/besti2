@@ -530,6 +530,8 @@ public class BusinessRegistrationService(
         dbContext.Bookings.RemoveRange(bookings);
         dbContext.TimeOffs.RemoveRange(await dbContext.TimeOffs.Where(t => t.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
+        dbContext.BookingInvites.RemoveRange(await dbContext.BookingInvites.Where(i => i.BusinessId == business.Id)
+            .ToListAsync(cancellationToken));
         // The business's bell, and the customers' bells about these visits
         dbContext.Notifications.RemoveRange(await dbContext.Notifications
             .Where(n => n.BusinessId == business.Id || (n.BookingId != null && bookingIds.Contains(n.BookingId.Value)))

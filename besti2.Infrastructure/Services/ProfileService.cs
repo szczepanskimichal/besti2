@@ -178,6 +178,10 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             review.CustomerUserId = BookingAnonymizer.AnonymizedUserId;
         }
 
+        // BESTI sammen: own invitations go (the visits booked from them stay, anonymized above)
+        dbContext.BookingInvites.RemoveRange(await dbContext.BookingInvites.Where(i => i.InviterUserId == userId)
+            .ToListAsync(cancellationToken));
+
         // 4. The customer's bell
         dbContext.Notifications.RemoveRange(
             await dbContext.Notifications.Where(n => n.UserId == userId).ToListAsync(cancellationToken));

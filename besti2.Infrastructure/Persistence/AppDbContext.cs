@@ -42,6 +42,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<TimeOff> TimeOffs { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<OutboxEmail> OutboxEmails { get; set; } = null!;
+    public DbSet<BookingInvite> BookingInvites { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -256,6 +257,38 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             e.Property(x => x.PendingReminderSentUtc)
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            // BESTI sammen: the business calendar finds the other visit of the same invitation
+            e.HasIndex(x => x.InviteId).HasFilter("[InviteId] IS NOT NULL");
+        });
+        modelBuilder.Entity<BookingInvite>(e =>
+        {
+            e.Property(x => x.TokenHash).IsRequired().HasMaxLength(64);
+            e.HasIndex(x => x.TokenHash).IsUnique();
+            e.Property(x => x.InviterUserId).IsRequired().HasMaxLength(450);
+            e.HasIndex(x => x.InviterUserId);
+            e.Property(x => x.InviterPhone).IsRequired().HasMaxLength(20);
+            e.Property(x => x.InviterNote).HasMaxLength(500);
+            e.Property(x => x.PayMode).HasConversion<string>().HasMaxLength(30);
+            e.Property(x => x.Status).HasConversion<string>().HasMaxLength(30);
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+            // Restrict: SQL Server allows only one cascade path (Business -> Service -> BookingInvite would be a second)
+            e.HasOne(x => x.Service).WithMany()
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Restrict);
+            e.Property(x => x.StartUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.ExpiresUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            e.Property(x => x.AnsweredUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            e.Property(x => x.ClosedUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            // The job every 15 minutes looks only for groups still open
+            e.HasIndex(x => x.ExpiresUtc).HasFilter("[ClosedUtc] IS NULL");
         });
         modelBuilder.Entity<OpeningHours>(e =>
         {

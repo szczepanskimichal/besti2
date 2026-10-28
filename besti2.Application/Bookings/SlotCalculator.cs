@@ -33,6 +33,21 @@ public static class SlotCalculator
         return slots;
     }
 
+    // BESTI sammen: a time is free for N people when N different employees are free at that time.
+    // Every employee's own free times go in; out come the shared times with all employees free then
+    // (in the order they came in, so the first one gets the booking, like "Hvem som helst")
+    public static IReadOnlyList<(DateTime StartUtc, IReadOnlyList<Guid> EmployeeIds)> FreeForPersons(
+        IEnumerable<(Guid EmployeeId, IReadOnlyList<DateTime> Slots)> freeByEmployee, int persons)
+    {
+        return freeByEmployee
+            .SelectMany(e => e.Slots.Select(start => (Start: start, e.EmployeeId)))
+            .GroupBy(x => x.Start)
+            .Select(g => (StartUtc: g.Key, EmployeeIds: (IReadOnlyList<Guid>)g.Select(x => x.EmployeeId).ToList()))
+            .Where(x => x.EmployeeIds.Count >= persons)
+            .OrderBy(x => x.StartUtc)
+            .ToList();
+    }
+
     private static bool IsFree(DateTime startUtc, DateTime endUtc,
         IReadOnlyList<(DateTime StartUtc, DateTime EndUtc)> busy)
     {

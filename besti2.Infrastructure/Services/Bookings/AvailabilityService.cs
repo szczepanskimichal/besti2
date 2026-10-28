@@ -1,4 +1,5 @@
 using besti2.Application.Bookings;
+using besti2.Application.Invites;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
@@ -78,9 +79,51 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
     }
 
     public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
-        Guid serviceId, Guid? employeeId, DateOnly from, int days, int units = 1,
+        Guid serviceId, Guid? employeeId, DateOnly from, int days, int units = 1, int persons = 1,
         CancellationToken cancellationToken = default)
     {
+        var free = await FreeTimesAsync(serviceId, employeeId, from, days, units, persons, cancellationToken);
+        // One button per time; the chosen employee (or the first free one) gets the booking
+        return free?.Select(day => new FreeDayDto(day.Date,
+                day.Times.Select(t => new FreeTimeDto(t.StartUtc, employeeId ?? t.EmployeeIds[0])).ToList()))
+            .ToList();
+    }
+
+    public async Task<IReadOnlyList<Guid>?> GetFreeEmployeesAsync(
+        Guid serviceId, Guid? employeeId, DateTime startUtc, int units, int persons,
+        CancellationToken cancellationToken = default)
+    {
+        // The day in Oslo, not in UTC (00:30 on Tuesday in Oslo is still Monday in UTC)
+        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(startUtc, SlotCalculator.Oslo));
+        var free = await FreeTimesAsync(serviceId, employeeId, date, 1, units, persons, cancellationToken);
+        if (free is null)
+        {
+            return null;
+        }
+
+        var time = free[0].Times.FirstOrDefault(t => t.StartUtc == startUtc);
+        if (time.EmployeeIds is null)
+        {
+            return [];
+        }
+
+        // The chosen employee first, then the others in their usual order
+        return time.EmployeeIds
+            .OrderBy(id => id == employeeId ? 0 : 1)
+            .Take(persons)
+            .ToList();
+    }
+
+    // Free start times day by day, each with every employee free then (at least `persons` of them)
+    private async Task<List<(DateOnly Date, IReadOnlyList<(DateTime StartUtc, IReadOnlyList<Guid> EmployeeIds)> Times)>?>
+        FreeTimesAsync(Guid serviceId, Guid? employeeId, DateOnly from, int days, int units, int persons,
+            CancellationToken cancellationToken)
+    {
+        if (persons < 1 || persons > InviteRules.MaxPersons)
+        {
+            return null;
+        }
+
         var service = await dbContext.Services
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == serviceId && !s.IsDeleted && !s.Business.IsHidden, cancellationToken);
@@ -104,14 +147,19 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
 
         var employeeIds = await dbContext.Employees
             .AsNoTracking()
-            .Where(e => e.BusinessId == service.BusinessId && !e.IsDeleted
-                                                           && (employeeId == null || e.Id == employeeId))
+            .Where(e => e.BusinessId == service.BusinessId && !e.IsDeleted)
             .Select(e => e.Id)
             .ToListAsync(cancellationToken);
         // A chosen employee from another business (or deleted) = wrong link
-        if (employeeId is not null && employeeIds.Count == 0)
+        if (employeeId is not null && !employeeIds.Contains(employeeId.Value))
         {
             return null;
+        }
+
+        // Alone with a chosen employee: only that employee's times. For BESTI sammen the others count too
+        if (employeeId is not null && persons == 1)
+        {
+            employeeIds = [employeeId.Value];
         }
 
         // Same wide UTC window as GetFreeSlotsAsync, but around all the days at once
@@ -142,7 +190,7 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             .ToListAsync(cancellationToken);
         // Times starting within the next hour are not shown (see BookingRules)
         var earliestUtc = BookingRules.EarliestStartUtc(DateTime.UtcNow);
-        var result = new List<FreeDayDto>();
+        var result = new List<(DateOnly, IReadOnlyList<(DateTime, IReadOnlyList<Guid>)>)>();
 
         for (var i = 0; i < days; i++)
         {
@@ -150,23 +198,22 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             var dayHours = hours.FirstOrDefault(h => h.DayOfWeek == date.DayOfWeek);
             if (dayHours is null)
             {
-                result.Add(new FreeDayDto(date, [])); // closed: the day is still shown, greyed out
+                result.Add((date, [])); // closed: the day is still shown, greyed out
                 continue;
             }
 
-            var slots = employeeIds
-                .SelectMany(id => SlotCalculator.GetFreeSlots(
-                        date, dayHours.OpensAt, dayHours.ClosesAt, minutes,
-                        busy.Where(b => b.EmployeeId == id).Select(b => (b.StartUtc, b.EndUtc))
-                            .Concat(blocked.Where(t => t.EmployeeId == null || t.EmployeeId == id)
-                                .Select(t => (t.StartUtc, t.EndUtc)))
-                            .ToList(),
-                        earliestUtc)
-                    .Select(start => new FreeTimeDto(start, id)))
-                .OrderBy(s => s.StartUtc)
-                .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button
+            var freeByEmployee = employeeIds.Select(id => (id, SlotCalculator.GetFreeSlots(
+                date, dayHours.OpensAt, dayHours.ClosesAt, minutes,
+                busy.Where(b => b.EmployeeId == id).Select(b => (b.StartUtc, b.EndUtc))
+                    .Concat(blocked.Where(t => t.EmployeeId == null || t.EmployeeId == id)
+                        .Select(t => (t.StartUtc, t.EndUtc)))
+                    .ToList(),
+                earliestUtc)));
+            var times = SlotCalculator.FreeForPersons(freeByEmployee, persons)
+                // BESTI sammen with a chosen employee: that employee must be one of the free ones
+                .Where(t => employeeId is null || t.EmployeeIds.Contains(employeeId.Value))
                 .ToList();
-            result.Add(new FreeDayDto(date, slots));
+            result.Add((date, times));
         }
 
         return result;
