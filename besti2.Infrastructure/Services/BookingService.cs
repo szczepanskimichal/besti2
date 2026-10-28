@@ -187,8 +187,13 @@ public class BookingService(
             return new CreateBookingResult(CreateBookingOutcome.NotFound);
         }
 
+        if (AvailabilityService.VisitMinutes(service, request.Units) is not int minutes)
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: "Velg en gyldig varighet.");
+        }
+
         var startUtc = SlotCalculator.ToUtc(request.Date, request.Time);
-        var endUtc = startUtc.AddMinutes(service.DurationMinutes);
+        var endUtc = startUtc.AddMinutes(minutes);
 
         // Same protection as online bookings: one booking per employee is checked and saved at a time
         await using var transaction = dbContext.Database.IsRelational()

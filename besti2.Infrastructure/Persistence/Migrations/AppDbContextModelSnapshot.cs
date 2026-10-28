@@ -243,6 +243,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsUnique()
                         .HasFilter("[Status] <> 'Avlyst'");
 
+                    b.HasIndex("Status", "StartUtc");
+
                     b.ToTable("Bookings");
                 });
 

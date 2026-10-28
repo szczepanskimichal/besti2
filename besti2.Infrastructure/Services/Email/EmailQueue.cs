@@ -37,6 +37,7 @@ public class EmailQueue(ILogger<EmailQueue> logger, TimeSpan[]? retryDelays = nu
                     // Only the subject and the domain: the full address is personal data
                     logger.LogError(ex, "Gave up sending \"{Subject}\" to @{Domain} after {Attempts} attempts",
                         email.Subject, email.To.Split('@').LastOrDefault(), attempt + 1);
+                    MailFailures.Record();
                     return false;
                 }
 

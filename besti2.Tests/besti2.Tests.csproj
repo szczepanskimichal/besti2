@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="10.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.13"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.13"/>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0"/>
         <PackageReference Include="xunit" Version="2.9.3"/>
@@ -21,6 +22,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\besti2.Infrastructure\besti2.Infrastructure.csproj"/>
+        <ProjectReference Include="..\besti2\besti2.csproj"/>
     </ItemGroup>
 
 </Project>

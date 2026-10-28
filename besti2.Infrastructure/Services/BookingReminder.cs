@@ -4,6 +4,7 @@ using besti2.Application.Email;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
+using besti2.Infrastructure.Services.Email;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -64,6 +65,7 @@ public class BookingReminder(
                 booking.ReminderAttempts++;
                 logger.LogWarning(ex, "Could not send reminder for booking {BookingId} (attempt {Attempt} of {Max})",
                     booking.Id, booking.ReminderAttempts, MaxAttempts);
+                MailFailures.Record();
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
         }
@@ -130,6 +132,7 @@ public class BookingReminder(
                 // Tried again on the next run; the other businesses still get theirs
                 logger.LogWarning(ex, "Could not send the pending bookings reminder to business {BusinessId}",
                     group.Key);
+                MailFailures.Record();
             }
         }
 

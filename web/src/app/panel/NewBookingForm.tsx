@@ -1,9 +1,10 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { createManualBookingAction } from "./actions";
 import type { FormState } from "@/lib/formState";
 import type { Employee, Service } from "@/lib/types";
+import { formatLength } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import formStyles from "./tjenester/page.module.css";
 import calendar from "./calendar.module.css";
@@ -22,6 +23,10 @@ type NewBookingFormProps = {
 export default function NewBookingForm({ services, employees, date, time, employeeId, view, closeHref }: NewBookingFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(createManualBookingAction, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
+    // "Per time" services: the business picks how many times the service length in a row, max 8 hours (like online)
+    const [serviceId, setServiceId] = useState(value("serviceId", services[0]?.id));
+    const service = services.find((s) => s.id === serviceId);
+    const maxUnits = service?.priceType === "PerTime" ? Math.floor(480 / service.durationMinutes) : 1;
 
     return (
         <div className={calendar.overlay}>
@@ -40,12 +45,23 @@ export default function NewBookingForm({ services, employees, date, time, employ
                     <label className={formStyles.field}>
                         Tjeneste
                         {/* key: a select only takes a new defaultValue when it is created again */}
-                        <select key={value("serviceId")} name="serviceId" required defaultValue={value("serviceId", services[0]?.id)}>
+                        <select key={value("serviceId")} name="serviceId" required defaultValue={value("serviceId", services[0]?.id)}
+                                onChange={(e) => setServiceId(e.target.value)}>
                             {services.map((s) => (
                                 <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} min)</option>
                             ))}
                         </select>
                     </label>
+                    {maxUnits > 1 && service && (
+                        <label className={formStyles.field}>
+                            Varighet
+                            <select key={`${serviceId}-${value("units")}`} name="units" defaultValue={value("units", "1")}>
+                                {Array.from({ length: maxUnits }, (_, i) => i + 1).map((count) => (
+                                    <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
+                                ))}
+                            </select>
+                        </label>
+                    )}
                     <label className={formStyles.field}>
                         Ansatt
                         <select key={value("employeeId")} name="employeeId" required
