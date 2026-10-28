@@ -41,6 +41,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Review> Reviews { get; set; } = null!;
     public DbSet<TimeOff> TimeOffs { get; set; } = null!;
     public DbSet<Notification> Notifications { get; set; } = null!;
+    public DbSet<OutboxEmail> OutboxEmails { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -303,6 +304,19 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.UserId).HasMaxLength(450);
             e.Property(x => x.Text).IsRequired().HasMaxLength(300);
             e.Property(x => x.Link).HasMaxLength(300);
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        });
+        modelBuilder.Entity<OutboxEmail>(e =>
+        {
+            e.HasIndex(x => x.NextAttemptUtc);
+            e.Property(x => x.To).IsRequired().HasMaxLength(320);
+            e.Property(x => x.Subject).IsRequired().HasMaxLength(400);
+            e.Property(x => x.Body).IsRequired();
+            // Two senders (e.g. the old and the new API during a deploy) can never take the same e-mail:
+            // the second save fails because NextAttemptUtc has changed
+            e.Property(x => x.NextAttemptUtc).IsConcurrencyToken()
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
             e.Property(x => x.CreatedUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         });
