@@ -3,11 +3,17 @@ using besti2.Infrastructure.Services.Email;
 
 namespace besti2.Jobs;
 
-// Sends the e-mails from EmailQueue one by one through the mail server (Brevo)
+// Sends the e-mails from EmailQueue through the mail server (Brevo), 4 at a time: one mail takes about
+// a second, so one by one a busy hour (or 50 bookings at once) made the last mail wait many minutes
 public class EmailSenderJob(EmailQueue queue, SmtpEmailService smtp, ILogger<EmailSenderJob> logger)
     : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    public const int Senders = 4;
+
+    protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
+        Task.WhenAll(Enumerable.Range(0, Senders).Select(_ => SendLoopAsync(stoppingToken)));
+
+    private async Task SendLoopAsync(CancellationToken stoppingToken)
     {
         try
         {

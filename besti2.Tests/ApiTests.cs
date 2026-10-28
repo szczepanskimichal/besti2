@@ -159,6 +159,23 @@ public class ApiTests
         Assert.Equal(HttpStatusCode.OK, (await Search(client, "203.0.113.2")).StatusCode);
     }
 
+    // check if a position outside the map gives 400 instead of a database crash, and a strange radius is ignored
+    [Theory]
+    [InlineData("lat=1e308&lng=10&maxKm=10", HttpStatusCode.BadRequest)]
+    [InlineData("lat=95&lng=10", HttpStatusCode.BadRequest)]
+    [InlineData("lat=60.8&lng=-200", HttpStatusCode.BadRequest)]
+    [InlineData("lat=60.8&lng=10.69&maxKm=0", HttpStatusCode.OK)]
+    [InlineData("lat=60.8&lng=10.69&maxKm=1e308", HttpStatusCode.OK)]
+    public async Task Search_InvalidPosition(string query, HttpStatusCode expected)
+    {
+        await using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var response = await client.GetAsync($"/api/businesses?{query}");
+
+        Assert.Equal(expected, response.StatusCode);
+    }
+
     // Like the web server: the visitor's IP in X-Forwarded-For
     private static Task<HttpResponseMessage> Search(HttpClient client, string visitorIp)
     {

@@ -16,6 +16,18 @@ public static class BusinessEndpoints
                 double? lng, double? maxKm, string? sort, int? minRating, int? page,
                 IBusinessSearchService search, CancellationToken cancellationToken) =>
             {
+                // A position outside the map (or "infinity") would crash the database query
+                if (lat is not (null or >= -90 and <= 90) || lng is not (null or >= -180 and <= 180))
+                {
+                    return Results.BadRequest(new { message = "Ugyldig posisjon." });
+                }
+
+                // A radius of 0, below 0 or bigger than Norway = no radius
+                if (maxKm is not (> 0 and <= 2000))
+                {
+                    maxKm = null;
+                }
+
                 var all = await search.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, sort, minRating,
                     cancellationToken);
                 // 24 businesses per page (?page=2 ...)

@@ -152,13 +152,15 @@ public class BookingService(
             await transaction.CommitAsync(cancellationToken);
         }
 
-        await emails.SendConfirmationAsync(booking, service, cancellationToken);
+        // The booking is saved: mails and the bell must go out even if the customer closes the page now
+        // (with the request's token a closed page cancelled the mail to the business). Same everywhere below.
+        await emails.SendConfirmationAsync(booking, service, CancellationToken.None);
         await emails.SendNewBookingToOwnerAsync(booking, service, BookingNotifier.PanelLink(booking),
-            cancellationToken);
+            CancellationToken.None);
         await notifier.NotifyAsync(booking, toBusiness: true,
             $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}",
             BookingNotifier.PanelLink(booking),
-            cancellationToken);
+            CancellationToken.None);
 
         return new CreateBookingResult(
             CreateBookingOutcome.Created,
@@ -259,7 +261,7 @@ public class BookingService(
         // Only when the business asked for it and gave an e-mail address
         if (request.SendConfirmation && email.Length > 0)
         {
-            await emails.SendStatusAsync(booking, null, cancellationToken);
+            await emails.SendStatusAsync(booking, null, CancellationToken.None);
         }
 
         return new CreateBookingResult(
@@ -392,11 +394,11 @@ public class BookingService(
         await dbContext.SaveChangesAsync(cancellationToken);
         // The customer's optional reason goes to the business in the e-mail and the bell
         var note = ShortNote(message);
-        await emails.SendCancelledByCustomerAsync(booking, note, cancellationToken);
+        await emails.SendCancelledByCustomerAsync(booking, note, CancellationToken.None);
         await notifier.NotifyAsync(booking, toBusiness: true,
             $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" +
             (note is null ? "" : $": {note}"),
-            BookingNotifier.PanelLink(booking), cancellationToken);
+            BookingNotifier.PanelLink(booking), CancellationToken.None);
         return UpdateBookingStatusOutcome.Updated;
     }
 
@@ -448,18 +450,18 @@ public class BookingService(
         // After the start time the business only marks whether the customer came
         if (started)
         {
-            await NotifyNoShowAsync(booking, wasNoShow, cancellationToken);
+            await NotifyNoShowAsync(booking, wasNoShow, CancellationToken.None);
             return UpdateBookingStatusOutcome.Updated;
         }
 
         // A short note from the business, only when cancelling
         var note = newStatus == BookingStatus.Avlyst ? ShortNote(message) : null;
-        await emails.SendStatusAsync(booking, note, cancellationToken);
+        await emails.SendStatusAsync(booking, note, CancellationToken.None);
         await notifier.NotifyAsync(booking, toBusiness: false,
             newStatus == BookingStatus.Bekreftet
                 ? $"{{0}} har bekreftet timen {OsloTime.Format(booking.StartUtc)}"
                 : $"{{0}} har avlyst timen {OsloTime.Format(booking.StartUtc)}" + (note is null ? "" : $": {note}"),
-            newStatus == BookingStatus.Bekreftet ? "/min-besti" : null, cancellationToken);
+            newStatus == BookingStatus.Bekreftet ? "/min-besti" : null, CancellationToken.None);
         return UpdateBookingStatusOutcome.Updated;
     }
 
@@ -576,16 +578,16 @@ public class BookingService(
 
         if (token is not null)
         {
-            await emails.SendMovedAsync(booking, oldStartUtc, token, cancellationToken);
+            await emails.SendMovedAsync(booking, oldStartUtc, token, CancellationToken.None);
             await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} ønsker å flytte timen til {OsloTime.Format(booking.StartUtc)}. Passer det?", "/min-besti",
-                cancellationToken);
+                CancellationToken.None);
         }
         else if (request.NotifyCustomer)
         {
-            await emails.SendMovedAsync(booking, oldStartUtc, null, cancellationToken);
+            await emails.SendMovedAsync(booking, oldStartUtc, null, CancellationToken.None);
             await notifier.NotifyAsync(booking, toBusiness: false,
-                $"{{0}} har flyttet timen til {OsloTime.Format(booking.StartUtc)}", "/min-besti", cancellationToken);
+                $"{{0}} har flyttet timen til {OsloTime.Format(booking.StartUtc)}", "/min-besti", CancellationToken.None);
         }
 
         return new MoveBookingResult(MoveBookingOutcome.Moved);
@@ -662,13 +664,13 @@ public class BookingService(
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        await emails.SendNewTimeAnswerAsync(booking, accept, cancellationToken);
+        await emails.SendNewTimeAnswerAsync(booking, accept, CancellationToken.None);
         await notifier.NotifyAsync(booking, toBusiness: true,
             accept
                 ? $"{booking.CustomerName} har godtatt ny tid {OsloTime.Format(booking.StartUtc)}." +
                   (booking.Status == BookingStatus.Venter ? " Bekreft timen." : "")
                 : $"{booking.CustomerName} kan ikke komme {OsloTime.Format(booking.StartUtc)}. Timen er avlyst.",
-            BookingNotifier.PanelLink(booking), cancellationToken);
+            BookingNotifier.PanelLink(booking), CancellationToken.None);
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
     }
 
@@ -688,12 +690,12 @@ public class BookingService(
             {
                 booking.NoShowEmailSentUtc = DateTime.UtcNow;
                 await dbContext.SaveChangesAsync(cancellationToken);
-                await emails.SendNoShowAsync(booking, cancellationToken);
+                await emails.SendNoShowAsync(booking, CancellationToken.None);
             }
 
             await notifier.NotifyAsync(booking, toBusiness: false,
                 $"{{0}} har registrert at du ikke møtte {OsloTime.Format(booking.StartUtc)}. Var du der? Se e-posten.",
-                "/min-besti", cancellationToken);
+                "/min-besti", CancellationToken.None);
         }
         else if (wasNoShow)
         {
