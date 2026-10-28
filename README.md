@@ -24,7 +24,8 @@ Live at **[bestiapp.no](https://bestiapp.no)** (beta, starting in Gjøvik).
 - Search by service, category, city, day and time of day, or businesses near me (map)
 - Business pages with services, prices, staff, opening hours, photos and verified reviews
 - Free times for the next 7 days, "anyone" or a chosen employee, longer visits for hourly services
-- Customer account (Min Besti): upcoming visits, cancel within the business's free-cancel window,
+- Customer account with e-mail and password or "Fortsett med Google"
+- Min Besti: upcoming visits, cancel within the business's free-cancel window,
   accept or decline a new time, add to calendar (.ics), reviews only after a real visit
 - E-mail confirmations and a reminder the day before, notification bell
 - Data export and account deletion (GDPR)
@@ -107,6 +108,9 @@ Requirements: .NET 10 SDK, Node.js 22, Docker.
    npm ci
    npm run dev
    ```
+
+"Fortsett med Google" is optional: put `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `web/.env.local` and
+`Google:ClientId` in the API's user secrets. Without them the button is hidden.
 
 The database comes with three demo businesses. In development each has an owner account,
 e.g. `eier@klippogstil.example` with the password `Test123!`.

@@ -24,7 +24,8 @@ export default function PrivacyPage() {
                 BESTI drives av Michał Szczepański. BESTI er behandlingsansvarlig for brukerkontoer (kunder og bedrifter),
                 vurderinger og varsler i tjenesten. For opplysningene om en bestilling er bedriften du bestiller hos
                 også ansvarlig: bedriften bruker opplysningene for å gi deg timen, og BESTI behandler dem på vegne av
-                bedriften. Kontakt: <a href="mailto:personvern@bestiapp.no">personvern@bestiapp.no</a>.
+                bedriften. Kontakt: <a href="mailto:personvern@bestiapp.no">personvern@bestiapp.no</a>, BESTI,
+                Gjøvik.
             </p>
 
             <h2>Hvilke opplysninger behandler vi?</h2>
@@ -80,17 +81,19 @@ export default function PrivacyPage() {
                 <li><strong>Bedriften du bestiller hos</strong> ser bestillingen din.</li>
                 <li><strong>Leverandører</strong> som drifter tjenesten for oss. De behandler opplysningene bare etter
                     våre instrukser (databehandleravtale):
+                    De tre første er også databehandlere for bedriftene (se databehandleravtalen i{" "}
+                    <Link href="/vilkar#databehandleravtale">vilkårene</Link>).
                     <ul id="underleverandorer">
                         <li>Hetzner Online GmbH (Tyskland): servere og database i datasenter i Finland, og
-                            sikkerhetskopier i datasenter i Tyskland.</li>
-                        <li>Brevo (Sendinblue SAS, Frankrike): utsending av e-post.</li>
-                        <li>Cloudflare, Inc. (USA): domenenavn, beskyttelse mot angrep og sikker videreformidling av
+                            sikkerhetskopier i datasenter i Tyskland. Databehandler for bedriftene.</li>
+                        <li>Brevo (Sendinblue SAS, Frankrike): utsending av e-post. Databehandler for bedriftene.</li>
+                        <li>Cloudflare, Inc. (USA): databehandler for bedriftene. domenenavn, beskyttelse mot angrep og sikker videreformidling av
                             trafikken til nettsiden. Trafikken, også IP-adressen din, går gjennom Cloudflare.
                             Overføringen til USA skjer under EU–US Data Privacy Framework og EUs
                             standardkontraktsbestemmelser.</li>
                         <li>Umami Software, Inc. (USA): besøksstatistikk uten informasjonskapsler. IP-adressen brukes
                             bare til å finne land og lagres ikke. Statistikken lagres som tall som ikke kan knyttes
-                            til deg.</li>
+                            til deg. Får aldri opplysninger om bestillinger.</li>
                     </ul>
                 </li>
                 <li><strong>Google</strong> (Google Ireland Ltd.): bare hvis du velger «Fortsett med Google». Da
@@ -122,6 +125,18 @@ export default function PrivacyPage() {
                     14 dager. Det du sletter, er derfor helt borte også fra sikkerhetskopiene innen 14 dager.</li>
             </ul>
 
+            <h2>Må du gi oss opplysningene?</h2>
+            <p>
+                For å bestille må du ha en konto med navn og e-post, og bedriften trenger telefonnummeret ditt for
+                å kunne nå deg. Uten dem kan du ikke bestille på nett, men du kan alltid ringe bedriften. Alt annet,
+                som melding til bedriften og vurderinger, er frivillig.
+            </p>
+            <p>
+                Vi tar ingen automatiserte avgjørelser om deg og lager ingen profiler av deg. Rekkefølgen i søket
+                (for eksempel «Best vurdert») gjelder bedriftene, ikke kundene. Tjenesten er ikke laget for barn
+                under 13 år.
+            </p>
+
             <h2>Informasjonskapsler (cookies)</h2>
             <p>
                 Vi bruker bare nødvendige informasjonskapsler: én som holder deg innlogget, og i bedriftspanelet én
@@ -137,7 +152,8 @@ export default function PrivacyPage() {
                 <li><strong>Retting:</strong> endre navn og telefon under Profil.</li>
                 <li><strong>Sletting:</strong> slett kontoen under Profil → «Slett konto». En bedrift sletter sin
                     konto i panelet under Bedriftsprofil → «Slett bedrift».</li>
-                <li><strong>Protest:</strong> protester mot behandling ved å kontakte oss.</li>
+                <li><strong>Protest og begrensning:</strong> protester mot behandling vi gjør på grunnlag av
+                    berettiget interesse, eller be oss begrense behandlingen, ved å kontakte oss.</li>
                 <li>Gjelder det en bestilling, kan du også kontakte bedriften direkte.</li>
                 <li>Du kan klage til Datatilsynet (<a href="https://www.datatilsynet.no">datatilsynet.no</a>).</li>
             </ul>
