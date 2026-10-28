@@ -28,17 +28,21 @@ public class BookingEmails(
 
             var when = OsloTime.Format(booking.StartUtc);
 
+            var confirmed = booking.Status == BookingStatus.Bekreftet;
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
-                $"Vi har mottatt bestillingen din hos {business.Name}.\n\n" +
+                (confirmed
+                    ? $"Bestillingen din hos {business.Name} er bekreftet.\n\n"
+                    : $"Vi har mottatt bestillingen din hos {business.Name}.\n\n") +
                 $"Tjeneste: {service.Name}\n" +
                 $"Hos: {employee.Name} {employee.LastName}\n" +
                 $"Tid: {when}\n" +
                 $"Adresse: {business.Address}, {business.PostalCode} {business.City}\n\n" +
-                "Bedriften bekrefter bestillingen så snart som mulig.\n\n" +
+                (confirmed ? "Velkommen!\n\n" : "Bedriften bekrefter bestillingen så snart som mulig.\n\n") +
                 "Hilsen BESTI";
 
-            await emailService.SendAsync(booking.CustomerEmail, $"Bestilling mottatt: {business.Name}", body,
+            await emailService.SendAsync(booking.CustomerEmail,
+                confirmed ? $"Bestilling bekreftet: {business.Name}" : $"Bestilling mottatt: {business.Name}", body,
                 cancellationToken);
         }
         catch (Exception ex)
@@ -57,15 +61,20 @@ public class BookingEmails(
             var employee = await dbContext.Employees.AsNoTracking()
                 .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
             var when = OsloTime.Format(booking.StartUtc);
+            var waiting = booking.Status == BookingStatus.Venter;
             var body =
                 "Hei!\n\n" +
-                "Dere har fått en ny bestilling som venter på bekreftelse.\n\n" +
+                (waiting
+                    ? "Dere har fått en ny bestilling som venter på bekreftelse.\n\n"
+                    : "Dere har fått en ny bestilling. Den er bekreftet automatisk.\n\n") +
                 $"Kunde: {booking.CustomerName}, tlf. {booking.CustomerPhone}\n" +
                 $"Tjeneste: {service.Name}\n" +
                 $"Hos: {employee.Name} {employee.LastName}\n" +
                 $"Tid: {when}\n" +
                 (booking.CustomerNote is null ? "" : $"Melding fra kunden: {booking.CustomerNote}\n") +
-                $"\nBekreft eller avlys timen her: {webBaseUrl}{panelLink}\n\n" +
+                (waiting
+                    ? $"\nBekreft eller avlys timen her: {webBaseUrl}{panelLink}\n\n"
+                    : $"\nSe timen i kalenderen: {webBaseUrl}{panelLink}\n\n") +
                 "Hilsen BESTI";
             await SendToOwnerAsync(service.BusinessId, $"Ny bestilling: {service.Name}, {when}", body,
                 cancellationToken);
@@ -201,7 +210,8 @@ public class BookingEmails(
             var body =
                 $"Hei {business.Name}!\n\n" +
                 (accept
-                    ? $"{booking.CustomerName} har godtatt den nye tiden. Bekreft timen i kalenderen.\n\n"
+                    ? $"{booking.CustomerName} har godtatt den nye tiden." +
+                      (booking.Status == BookingStatus.Venter ? " Bekreft timen i kalenderen.\n\n" : "\n\n")
                     : $"{booking.CustomerName} kan ikke komme på den nye tiden. Timen er avlyst, og tiden er ledig igjen.\n\n") +
                 $"Tjeneste: {service.Name}\n" +
                 $"Tid: {when}\n\n" +

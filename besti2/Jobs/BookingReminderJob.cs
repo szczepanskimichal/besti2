@@ -2,7 +2,8 @@ using besti2.Application.Bookings;
 
 namespace besti2.Jobs;
 
-// Runs at startup and then every 15 minutes: e-mails a reminder about a day before each confirmed visit
+// Runs at startup and then every 15 minutes: e-mails a reminder about a day before each confirmed visit,
+// and reminds businesses about new bookings that still wait for "Bekreft"
 public class BookingReminderJob(IServiceScopeFactory scopeFactory, ILogger<BookingReminderJob> logger)
     : BackgroundService
 {
@@ -20,6 +21,14 @@ public class BookingReminderJob(IServiceScopeFactory scopeFactory, ILogger<Booki
                 if (count > 0)
                 {
                     logger.LogInformation("Sent {Count} booking reminders", count);
+                }
+
+                // Businesses with new bookings that still wait for "Bekreft"
+                var pending = await reminder.SendPendingRemindersAsync(DateTime.UtcNow, stoppingToken);
+                if (pending > 0)
+                {
+                    logger.LogInformation("Reminded {Count} businesses about bookings waiting for confirmation",
+                        pending);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

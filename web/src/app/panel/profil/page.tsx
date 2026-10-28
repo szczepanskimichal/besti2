@@ -53,6 +53,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     city: business.city,
                     freeCancelHours: String(business.freeCancelHours),
                     website: business.website ?? "",
+                    autoConfirm: String(business.autoConfirm),
                 }}
             />
             <AccountForms />

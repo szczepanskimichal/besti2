@@ -22,5 +22,7 @@ public record BusinessDetailsDto(
     // Free cancellation until X hours before the visit; 0 = any time
     int FreeCancelHours,
     // The business's own website (null = none)
-    string? Website
+    string? Website,
+    // New online bookings are confirmed at once (the confirmation page says so)
+    bool AutoConfirm
 );

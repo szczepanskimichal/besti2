@@ -65,7 +65,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .ToList(),
                 b.IsHidden,
                 b.FreeCancelHours,
-                b.Website))
+                b.Website,
+                b.AutoConfirm))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -298,6 +299,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         business.Email = contactEmail;
         business.FreeCancelHours = request.FreeCancelHours;
         business.Website = website;
+        business.AutoConfirm = request.AutoConfirm;
         // New address: look up the map position again (null = no map)
         if (addressChanged)
         {

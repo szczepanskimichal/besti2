@@ -43,6 +43,9 @@ public class Business
     // The only choices the business can pick in the panel
     public static readonly int[] FreeCancelOptions = [0, 2, 12, 24, 48];
 
+    // New online bookings are confirmed at once (false = the business presses "Bekreft" on each one)
+    public bool AutoConfirm { get; set; }
+
     public List<Employee> Employees { get; set; } = new();
     public List<Service> Services { get; set; } = new();
     public List<OpeningHours> OpeningHours { get; set; } = new();

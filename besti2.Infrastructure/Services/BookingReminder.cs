@@ -25,6 +25,9 @@ public class BookingReminder(
     // A mail server that keeps failing: stop after 3 tries (45 minutes), not every 15 minutes until the visit
     public const int MaxAttempts = 3;
 
+    // A booking still waiting for "Bekreft" this long after it was made: the business gets one reminder
+    public const int PendingAfterHours = 2;
+
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
     public async Task<int> SendRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
@@ -62,6 +65,71 @@ public class BookingReminder(
                 logger.LogWarning(ex, "Could not send reminder for booking {BookingId} (attempt {Attempt} of {Max})",
                     booking.Id, booking.ReminderAttempts, MaxAttempts);
                 await dbContext.SaveChangesAsync(cancellationToken);
+            }
+        }
+
+        return sent;
+    }
+
+    public async Task<int> SendPendingRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
+    {
+        var madeBefore = nowUtc.AddHours(-PendingAfterHours);
+        var pending = await dbContext.Bookings
+            .Include(b => b.Service)
+            .Include(b => b.Employee)
+            .Where(b => b.Status == BookingStatus.Venter
+                        && b.PendingReminderSentUtc == null
+                        && b.StartUtc > nowUtc
+                        && b.CreatedUtc <= madeBefore)
+            .OrderBy(b => b.StartUtc)
+            .ToListAsync(cancellationToken);
+
+        var sent = 0;
+        // One e-mail per business with all its waiting bookings
+        foreach (var group in pending.GroupBy(b => b.Service.BusinessId))
+        {
+            var ownerEmail = await dbContext.Users
+                .Where(u => u.BusinessId == group.Key && u.EmailConfirmed)
+                .Select(u => u.Email)
+                .FirstOrDefaultAsync(cancellationToken);
+            try
+            {
+                if (ownerEmail is not null)
+                {
+                    var count = group.Count();
+                    var lines = group.Select(b =>
+                        $"- {OsloTime.Format(b.StartUtc)}: {b.Service.Name}, {b.CustomerName} " +
+                        $"(hos {b.Employee.Name} {b.Employee.LastName})");
+                    var body =
+                        "Hei!\n\n" +
+                        (count == 1
+                            ? "Denne bestillingen venter fortsatt på bekreftelse:\n\n"
+                            : $"Disse {count} bestillingene venter fortsatt på bekreftelse:\n\n") +
+                        string.Join("\n", lines) + "\n\n" +
+                        $"Bekreft eller avlys dem her: {webBaseUrl}/panel/liste\n\n" +
+                        "Kunden vet ikke om timen gjelder før dere har bekreftet den.\n" +
+                        "Vil dere slippe dette? Velg «Bekreft automatisk» under Profil i panelet.\n\n" +
+                        "Hilsen BESTI";
+                    await emailService.SendAsync(ownerEmail,
+                        count == 1
+                            ? "1 bestilling venter på bekreftelse"
+                            : $"{count} bestillinger venter på bekreftelse", body, cancellationToken);
+                    sent++;
+                }
+
+                // Also without an owner e-mail: nobody to remind, so these are never looked at again
+                foreach (var booking in group)
+                {
+                    booking.PendingReminderSentUtc = nowUtc;
+                }
+
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Tried again on the next run; the other businesses still get theirs
+                logger.LogWarning(ex, "Could not send the pending bookings reminder to business {BusinessId}",
+                    group.Key);
             }
         }
 

@@ -243,6 +243,26 @@ public class BusinessServiceTests
         Assert.Equal(5.32, business.Longitude);
     }
 
+    // check if UpdateProfileAsync saves "Bekreft automatisk", and the business page shows it
+    [Fact]
+    public async Task UpdateProfileAsync_SavesAutoConfirm()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new UpdateProfileRequest(null, "+4799999999", "Karl Johans gate 10", "0154", "Oslo",
+            AutoConfirm: true);
+
+        var error = await service.UpdateProfileAsync(klippId, request);
+
+        Assert.Null(error);
+        Assert.True((await service.GetByIdAsync(klippId))!.AutoConfirm);
+    }
+
     // check if UpdateProfileAsync saves description and contact info - happy path
     [Fact]
     public async Task UpdateProfileAsync_ChangesProfile()

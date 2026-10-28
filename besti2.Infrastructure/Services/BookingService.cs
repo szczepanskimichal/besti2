@@ -36,6 +36,13 @@ public class BookingService(
             return new CreateBookingResult(CreateBookingOutcome.Invalid, Error: error);
         }
 
+        // The salon must have time to see it (the free times on the page already start an hour from now)
+        if (request.StartUtc < BookingRules.EarliestStartUtc(DateTime.UtcNow))
+        {
+            return new CreateBookingResult(CreateBookingOutcome.Invalid,
+                Error: "Velg en tid som er minst én time fram i tid.");
+        }
+
         var service = await dbContext.Services
             .AsNoTracking()
             .FirstOrDefaultAsync(s => s.Id == request.ServiceId && !s.IsDeleted, cancellationToken);
@@ -89,7 +96,27 @@ public class BookingService(
             {
                 return new CreateBookingResult(CreateBookingOutcome.CustomerBusy);
             }
+
+            // One account cannot fill the calendar of a salon
+            var nowUtc = DateTime.UtcNow;
+            var upcoming = await dbContext.Bookings.CountAsync(b =>
+                b.CustomerUserId == customerUserId
+                && b.Service.BusinessId == service.BusinessId
+                && b.Status != BookingStatus.Avlyst
+                && b.StartUtc > nowUtc, cancellationToken);
+            if (upcoming >= BookingRules.MaxUpcomingPerBusiness)
+            {
+                return new CreateBookingResult(CreateBookingOutcome.Invalid,
+                    Error: $"Du har allerede {BookingRules.MaxUpcomingPerBusiness} kommende timer hos denne bedriften. " +
+                           "Avbestill en av dem i Min Besti, eller ring bedriften.");
+            }
         }
+
+        // The business may confirm new bookings automatically (Panel → Profil)
+        var autoConfirm = await dbContext.Businesses
+            .Where(b => b.Id == service.BusinessId)
+            .Select(b => b.AutoConfirm)
+            .FirstAsync(cancellationToken);
 
         var booking = new Booking
         {
@@ -105,7 +132,7 @@ public class BookingService(
             MarketingConsentUtc = request.MarketingConsent ? DateTime.UtcNow : null,
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             CustomerUserId = customerUserId,
-            Status = BookingStatus.Venter,
+            Status = autoConfirm ? BookingStatus.Bekreftet : BookingStatus.Venter,
             CreatedUtc = DateTime.UtcNow
         };
 
@@ -589,9 +616,18 @@ public class BookingService(
             return NewTimeOutcome.TooLate;
         }
 
-        booking.Status = accept ? BookingStatus.Venter : BookingStatus.Avlyst;
+        // Accepted: confirmed at once when the business confirms new bookings automatically
+        var autoConfirm = await dbContext.Services
+            .Where(s => s.Id == booking.ServiceId)
+            .Select(s => s.Business.AutoConfirm)
+            .FirstAsync(cancellationToken);
+        booking.Status = !accept ? BookingStatus.Avlyst
+            : autoConfirm ? BookingStatus.Bekreftet
+            : BookingStatus.Venter;
         booking.NewTimeTokenHash = null;
         booking.PreviousStartUtc = null;
+        // Waits for "Bekreft" again: the business may be reminded again
+        booking.PendingReminderSentUtc = null;
         // The question "Passer den nye tiden?" is answered: it leaves the customer's bell
         if (booking.CustomerUserId is not null)
         {
@@ -604,7 +640,8 @@ public class BookingService(
         await emails.SendNewTimeAnswerAsync(booking, accept, cancellationToken);
         await notifier.NotifyAsync(booking, toBusiness: true,
             accept
-                ? $"{booking.CustomerName} har godtatt ny tid {OsloTime.Format(booking.StartUtc)}. Bekreft timen."
+                ? $"{booking.CustomerName} har godtatt ny tid {OsloTime.Format(booking.StartUtc)}." +
+                  (booking.Status == BookingStatus.Venter ? " Bekreft timen." : "")
                 : $"{booking.CustomerName} kan ikke komme {OsloTime.Format(booking.StartUtc)}. Timen er avlyst.",
             BookingNotifier.PanelLink(booking), cancellationToken);
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;

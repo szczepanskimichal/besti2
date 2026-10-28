@@ -27,7 +27,7 @@ export default async function NewTimePage({ searchParams }: NewTimePageProps) {
             <main className={styles.main}>
                 <h1 className={styles.title}>Ny tid</h1>
                 <p role="status">
-                    {svar === "godtatt" && "Takk! Bedriften bekrefter den nye tiden, og du får beskjed på e-post."}
+                    {svar === "godtatt" && "Takk! Vi har gitt beskjed til bedriften, og du ser timen i Min Besti."}
                     {svar === "avslatt" && "Timen er avlyst, og bedriften har fått beskjed. Du kan bestille en ny time når det passer."}
                     {svar === "feil" && "Svaret kunne ikke lagres. Lenken kan være brukt allerede, eller timen har startet."}
                 </p>

@@ -208,6 +208,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("NoShowEmailSentUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("PendingReminderSentUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("PreviousStartUtc")
                         .HasColumnType("datetime2");
 
@@ -260,6 +263,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTime?>("ApprovedUtc")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("AutoConfirm")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -332,6 +338,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Address = "Karl Johans gate 10",
+                            AutoConfirm = false,
                             Category = "Frisor",
                             City = "Oslo",
                             Description = "Hårklipp og farging for hele familien.",
@@ -349,6 +356,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             Address = "Bryggen 5",
+                            AutoConfirm = false,
                             Category = "Bygg",
                             City = "Bergen",
                             Description = "Befaring og oppussing av bad og kjøkken.",
@@ -366,6 +374,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Address = "Munkegata 20",
+                            AutoConfirm = false,
                             Category = "Helse",
                             City = "Trondheim",
                             Description = "Samtaleterapi for voksne.",

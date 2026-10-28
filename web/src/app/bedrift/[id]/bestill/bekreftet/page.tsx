@@ -34,8 +34,10 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
                 </div>
                 <h1 className={styles.title}>Vips! Så var det bestilt.</h1>
                 <p className={styles.muted}>
-                    Klar for kvalitetstid med din besti? 💖 {business.name} bekrefter timen så snart som mulig,
-                    og du finner den under Min Besti.
+                    {/* With "Bekreft automatisk" the visit is already confirmed */}
+                    Klar for kvalitetstid med din besti? 💖 {business.autoConfirm
+                    ? "Timen er bekreftet"
+                    : `${business.name} bekrefter timen så snart som mulig`}, og du finner den under Min Besti.
                 </p>
 
                 <dl className={styles.details}>
