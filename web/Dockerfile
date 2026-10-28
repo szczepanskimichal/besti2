@@ -21,6 +21,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0 \
     SITE_URL=$SITE_URL ALLOW_INDEXING=$ALLOW_INDEXING UMAMI_WEBSITE_ID=$UMAMI_WEBSITE_ID
 COPY --from=build --chown=node:node /app/.next/standalone ./
 COPY --from=build --chown=node:node /app/.next/static ./.next/static
+# Logo and app icons (standalone does not copy public/ by itself)
+COPY --from=build --chown=node:node /app/public ./public
 USER node
 EXPOSE 3000
 CMD ["node", "server.js"]

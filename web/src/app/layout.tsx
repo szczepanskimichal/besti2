@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
@@ -25,6 +25,11 @@ export const metadata: Metadata = {
     openGraph: { siteName: "BESTI", locale: "nb_NO", type: "website" },
     // Not in Google yet (see ALLOW_INDEXING); pages with their own robots setting keep it
     robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
+};
+
+// Colour of the phone's status bar, same as the bottom of the aurora sky
+export const viewport: Viewport = {
+    themeColor: "#04141c",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

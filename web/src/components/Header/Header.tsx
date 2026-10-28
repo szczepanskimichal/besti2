@@ -17,8 +17,10 @@ export default async function Header() {
     return (
         <header className={styles.header}>
             <div className={styles.inner}>
-                <NextLink href="/" className={styles.logo}>
-                    BESTI <span className={styles.beta}>Beta</span>
+                <NextLink href="/" className={styles.logo} aria-label="BESTI – til forsiden">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG logo, next/image not needed */}
+                    <img src="/logo/besti-logo.svg" alt="" width={97} height={36} className={styles.logoImage}/>
+                    <span className={styles.beta}>Beta</span>
                 </NextLink>
                 <nav className={styles.nav}>
                     {me ? (
