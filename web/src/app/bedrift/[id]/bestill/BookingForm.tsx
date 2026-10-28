@@ -48,10 +48,6 @@ export default function BookingForm({ businessId, serviceId, employeeId, startUt
                 <textarea name="note" maxLength={500} rows={3}
                           placeholder="F.eks. «Jeg har langt hår»" defaultValue={value("note")}/>
             </label>
-            <label className={styles.checkbox}>
-                <input type="checkbox" name="marketingConsent" defaultChecked={value("marketingConsent") === "on"}/>
-                Ja, jeg vil motta nyhetsbrev og tilbud på e-post
-            </label>
             <p className={styles.muted}>
                 Ved å bestille godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
                 bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
