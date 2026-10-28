@@ -14,7 +14,7 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
     const units = Number(formData.get("units") ?? 1);
     const token = await getToken();
     if (!token) {
-    // Come back to the same time after logging in
+        // Come back to the same time after logging in
         const back = `/bedrift/${businessId}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc, antall: String(units) })}`;
         redirect(`/logg-inn?neste=${encodeURIComponent(back)}`);
     }
@@ -26,7 +26,8 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
         customerName: "",
         customerPhone: String(formData.get("customerPhone") ?? ""),
         customerEmail: "",
-        marketingConsent: formData.get("marketingConsent") === "on",
+        // No newsletter yet: nobody sends one, so nobody is asked (see Personvern)
+        marketingConsent: false,
         note: String(formData.get("note") ?? ""),
         units,
     }, token);
@@ -38,7 +39,6 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
             values: {
                 customerPhone: String(formData.get("customerPhone") ?? ""),
                 note: String(formData.get("note") ?? ""),
-                marketingConsent: formData.get("marketingConsent") === "on" ? "on" : "",
             },
         };
     }

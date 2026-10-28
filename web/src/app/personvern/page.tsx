@@ -41,7 +41,6 @@ export default function PrivacyPage() {
                     BESTI bruker det ikke til noe annet.</li>
                 <li><strong>Vurderinger:</strong> stjerner, kommentar og fornavnet ditt, som vises på bedriftens side.</li>
                 <li><strong>Varsler i tjenesten</strong> (bjellen): korte meldinger om dine timer.</li>
-                <li><strong>Nyhetsbrev:</strong> bare om du krysser av, og når du gjorde det.</li>
                 <li><strong>Bedrifter:</strong> bedriftsnavn, organisasjonsnummer, adresse, telefon, e-post til
                     innlogging (vises aldri) og eventuelt til kunder, nettside, beskrivelse, ansatte (navn),
                     åpningstider, logo, bilder og blokkert tid.</li>
@@ -63,7 +62,6 @@ export default function PrivacyPage() {
                     timen. Var du der likevel, kontakt bedriften eller skriv til{" "}
                     <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>, så ser vi på det.</li>
                 <li>Sikkerhet og å hindre misbruk (berettiget interesse, art. 6 nr. 1 f).</li>
-                <li>Nyhetsbrev bare med samtykke (art. 6 nr. 1 a). Du kan trekke det tilbake når som helst.</li>
                 <li>Når en bedrift registrerer seg, sjekker vi organisasjonsnummeret i Enhetsregisteret
                     (Brønnøysundregistrene) og godkjenner bedriften før kundene ser den, for å hindre falske
                     bedrifter (berettiget interesse, art. 6 nr. 1 f).</li>
@@ -124,8 +122,7 @@ export default function PrivacyPage() {
                 <li><strong>Retting:</strong> endre navn og telefon under Profil.</li>
                 <li><strong>Sletting:</strong> slett kontoen under Profil → «Slett konto». En bedrift sletter sin
                     konto i panelet under Bedriftsprofil → «Slett bedrift».</li>
-                <li><strong>Protest og samtykke:</strong> trekk tilbake samtykke til nyhetsbrev, eller protester mot
-                    behandling, ved å kontakte oss.</li>
+                <li><strong>Protest:</strong> protester mot behandling ved å kontakte oss.</li>
                 <li>Gjelder det en bestilling, kan du også kontakte bedriften direkte.</li>
                 <li>Du kan klage til Datatilsynet (<a href="https://www.datatilsynet.no">datatilsynet.no</a>).</li>
             </ul>
