@@ -29,6 +29,9 @@ services:
     restart: unless-stopped
     environment:
       API_URL: http://api:8080
+      # "Fortsett med Google" (from /opt/besti/.env; empty = the button is hidden)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
     depends_on:
       - api
     networks: [besti]
@@ -46,6 +49,8 @@ services:
       ForwardedHeaders__KnownNetwork: 172.30.0.0/24
       WebBaseUrl: https://bestiapp.no
       ImageStorage__PublicBaseUrl: https://bestiapp.no/uploads
+      # The API checks that Google's ID tokens were made for this client
+      Google__ClientId: ${GOOGLE_CLIENT_ID:-}
     volumes:
       - uploads:/app/uploads
       - keys:/keys

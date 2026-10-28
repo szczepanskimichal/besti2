@@ -38,14 +38,21 @@ export default function ProfileForms({ profile }: { profile: MyProfile }) {
             </section>
 
             <section className={panelStyles.card}>
-                <h2 className={styles.heading}>Endre passord</h2>
+                <h2 className={styles.heading}>{profile.hasPassword ? "Endre passord" : "Lag passord"}</h2>
+                {!profile.hasPassword && (
+                    <p className={panelStyles.muted}>
+                        Du logger inn med Google. Med et passord kan du også logge inn med e-post.
+                    </p>
+                )}
                 <form action={passwordAction} className={styles.form}>
                     {password.error && <p className={formStyles.error} role="alert">{password.error}</p>}
-                    {password.saved && <p className={styles.saved} role="status">Passordet er endret ✓</p>}
-                    <label className={formStyles.field}>
-                        Nåværende passord
-                        <input name="currentPassword" type="password" required autoComplete="current-password"/>
-                    </label>
+                    {password.saved && <p className={styles.saved} role="status">Passordet er lagret ✓</p>}
+                    {profile.hasPassword && (
+                        <label className={formStyles.field}>
+                            Nåværende passord
+                            <input name="currentPassword" type="password" required autoComplete="current-password"/>
+                        </label>
+                    )}
                     <label className={formStyles.field}>
                         Nytt passord (minst 6 tegn)
                         <input name="newPassword" type="password" required minLength={6} autoComplete="new-password"/>
@@ -54,7 +61,9 @@ export default function ProfileForms({ profile }: { profile: MyProfile }) {
                         Gjenta nytt passord
                         <input name="repeatPassword" type="password" required minLength={6} autoComplete="new-password"/>
                     </label>
-                    <SubmitButton className={formStyles.primaryButton} pendingText="Lagrer…">Endre passord</SubmitButton>
+                    <SubmitButton className={formStyles.primaryButton} pendingText="Lagrer…">
+                        {profile.hasPassword ? "Endre passord" : "Lag passord"}
+                    </SubmitButton>
                 </form>
             </section>
             <section className={panelStyles.card}>
@@ -77,10 +86,18 @@ export default function ProfileForms({ profile }: { profile: MyProfile }) {
                     <summary className={panelStyles.dangerButton}>Slett kontoen min</summary>
                     <form action={deleteAction} className={styles.form}>
                         {deletion.error && <p className={formStyles.error} role="alert">{deletion.error}</p>}
-                        <label className={formStyles.field}>
-                            Skriv passordet ditt for å bekrefte
-                            <input name="password" type="password" required autoComplete="current-password"/>
-                        </label>
+                        {/* An account from "Fortsett med Google" has no password: the word SLETT confirms instead */}
+                        {profile.hasPassword ? (
+                            <label className={formStyles.field}>
+                                Skriv passordet ditt for å bekrefte
+                                <input name="password" type="password" required autoComplete="current-password"/>
+                            </label>
+                        ) : (
+                            <label className={formStyles.field}>
+                                Skriv SLETT for å bekrefte
+                                <input name="password" type="text" required autoComplete="off"/>
+                            </label>
+                        )}
                         <SubmitButton className={panelStyles.dangerButton} pendingText="Sletter…">
                             Ja, slett kontoen min
                         </SubmitButton>

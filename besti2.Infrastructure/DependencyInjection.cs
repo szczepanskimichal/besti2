@@ -82,6 +82,9 @@ public static class DependencyInjection
         services.AddScoped<ITimeOffService, TimeOffService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IProfileService, ProfileService>();
+        // "Fortsett med Google": the client id from Google Cloud (empty = off)
+        services.AddSingleton<IGoogleTokenValidator>(new GoogleTokenValidator(configuration["Google:ClientId"]));
+        services.AddScoped<IGoogleLoginService, GoogleLoginService>();
         return services;
     }
 }

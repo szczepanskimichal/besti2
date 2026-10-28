@@ -30,7 +30,8 @@ export default function PrivacyPage() {
             <h2>Hvilke opplysninger behandler vi?</h2>
             <ul>
                 <li><strong>Kundekonto:</strong> navn, e-post, passord (lagres bare kryptert som hash) og, hvis du vil,
-                    telefonnummer.</li>
+                    telefonnummer. Logger du inn med Google, får vi navnet, e-postadressen og en ID for
+                    Google-kontoen din fra Google, men aldri passordet ditt hos Google.</li>
                 <li><strong>Bestillinger:</strong> navn, telefon, e-post, valgt bedrift, tjeneste, ansatt og tidspunkt,
                     status (venter, bekreftet, avlyst, ny tid, møtte ikke), en melding til bedriften hvis du skriver
                     en, og en grunn når du avbestiller, hvis du skriver en (den sendes til bedriften og lagres ikke på
@@ -92,6 +93,9 @@ export default function PrivacyPage() {
                             til deg.</li>
                     </ul>
                 </li>
+                <li><strong>Google</strong> (Google Ireland Ltd.): bare hvis du velger «Fortsett med Google». Da
+                    logger du inn hos Google, og Google sender oss navnet og e-postadressen din. Google ser at du
+                    logger inn på BESTI, etter Googles egne regler for personvern.</li>
                 <li><strong>Bedriftens nettside:</strong> når du klikker på lenken, forlater du BESTI. Vi sender ingen
                     opplysninger om deg dit, og nettsiden har sine egne regler for personvern.</li>
                 <li><strong>Kartverket</strong> får bedriftens adresse for å finne koordinater til kartet, og
