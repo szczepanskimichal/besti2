@@ -1,4 +1,8 @@
+using System.Security.Claims;
+using besti2.Application.Accounts;
 using besti2.Application.Businesses;
+using besti2.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 
 namespace besti2.Endpoints.Panel;
 
@@ -77,5 +81,15 @@ public static class PanelBusinessEndpoints
             var error = await businessService.DeleteEmployeeAsync(business.Id, id, cancellationToken);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         });
+
+        // Business panel: "Slett bedrift" (confirmed with the password; not while visits are coming)
+        group.MapPost("/delete", async (DeleteAccountRequest request, ClaimsPrincipal principal,
+            UserManager<AppUser> userManager, IBusinessRegistrationService registrationService,
+            CancellationToken cancellationToken) =>
+        {
+            var error = await registrationService.DeleteOwnBusinessAsync(userManager.GetUserId(principal)!,
+                request.Password, cancellationToken);
+            return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+        }).RequireRateLimiting("login");
     }
 }

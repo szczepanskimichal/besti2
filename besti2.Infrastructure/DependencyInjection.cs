@@ -47,7 +47,8 @@ public static class DependencyInjection
             webBaseUrl,
             provider.GetRequiredService<IBusinessRegistry>(),
             configuration["AdminEmail"],
-            provider.GetRequiredService<MailLimiter>()));
+            provider.GetRequiredService<MailLimiter>(),
+            provider.GetRequiredService<IImageStorage>()));
         services.AddScoped<ICustomerAccountService>(provider => new CustomerAccountService(
             provider.GetRequiredService<UserManager<AppUser>>(),
             provider.GetRequiredService<IEmailService>(),

@@ -194,6 +194,78 @@ public class BusinessRegistrationServiceTests
         Assert.True(result.Success);
     }
 
+    // check if "Slett bedrift" needs the password, waits for coming visits to be cancelled, and then
+    // deletes the business with its visits, reviews, bells, image files and the owner account
+    [Fact]
+    public async Task DeleteOwnBusinessAsync_DeletesEverything()
+    {
+        var (_, db, users) = CreateService();
+        var images = new FakeImageStorage();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), new FakeEmailService(),
+            "http://localhost:3000", imageStorage: images);
+        await service.RegisterAsync(TestFrisor());
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        var businessId = owner.BusinessId!.Value;
+        var haircut = new Service
+            { Id = Guid.NewGuid(), Name = "Klipp", DurationMinutes = 30, BusinessId = businessId };
+        db.Services.Add(haircut);
+        var employeeId = db.Employees.Single(e => e.BusinessId == businessId).Id;
+        var coming = NewBooking(DateTime.UtcNow.AddDays(1), haircut.Id, employeeId);
+        var past = NewBooking(DateTime.UtcNow.AddDays(-7), haircut.Id, employeeId);
+        db.Bookings.AddRange(coming, past);
+        db.Reviews.Add(new Review
+        {
+            Id = Guid.NewGuid(), BookingId = past.Id, BusinessId = businessId, CustomerUserId = "kunde-1",
+            CustomerName = "Kari", Stars = 5, CreatedUtc = DateTime.UtcNow
+        });
+        db.Notifications.Add(new Notification
+        {
+            Id = Guid.NewGuid(), UserId = "kunde-1", BookingId = past.Id, Text = "Hei", CreatedUtc = DateTime.UtcNow
+        });
+        db.BusinessImages.Add(new BusinessImage
+        {
+            Id = Guid.NewGuid(), Kind = ImageKind.Logo, FileName = "logo.webp", BusinessId = businessId,
+            CreatedUtc = DateTime.UtcNow
+        });
+        await images.SaveAsync("logo.webp", new MemoryStream([1, 2, 3]));
+        await db.SaveChangesAsync();
+
+        var wrongPassword = await service.DeleteOwnBusinessAsync(owner.Id, "feil");
+        var withComingVisit = await service.DeleteOwnBusinessAsync(owner.Id, "Test123!");
+        coming.Status = BookingStatus.Avlyst;
+        await db.SaveChangesAsync();
+        var ok = await service.DeleteOwnBusinessAsync(owner.Id, "Test123!");
+
+        Assert.Equal("Passordet er feil.", wrongPassword);
+        Assert.Contains("kommende timer", withComingVisit);
+        Assert.Null(ok);
+        Assert.Empty(db.Businesses.Where(b => b.Id == businessId));
+        Assert.Empty(db.Bookings);
+        Assert.Empty(db.Reviews);
+        Assert.Empty(db.Notifications);
+        Assert.Empty(db.BusinessImages);
+        Assert.Empty(images.Files);
+        Assert.Null(await users.FindByEmailAsync("eier@testfrisor.example"));
+    }
+
+    // check if a customer account cannot delete a business
+    [Fact]
+    public async Task DeleteOwnBusinessAsync_CustomerHasNoBusiness()
+    {
+        var (service, _, users) = CreateService();
+        var customer = new AppUser { UserName = "kunde@test.example", Email = "kunde@test.example" };
+        await users.CreateAsync(customer, "Test123!");
+
+        Assert.Equal("Fant ikke bedriften.", await service.DeleteOwnBusinessAsync(customer.Id, "Test123!"));
+    }
+
+    private static Booking NewBooking(DateTime startUtc, Guid serviceId, Guid employeeId) => new()
+    {
+        Id = Guid.NewGuid(), StartUtc = startUtc, EndUtc = startUtc.AddMinutes(30),
+        CustomerName = "Kari", CustomerPhone = "+4790000002", CustomerEmail = "kari@test.example",
+        Status = BookingStatus.Bekreftet, ServiceId = serviceId, EmployeeId = employeeId
+    };
+
     // check if a wrong link deletes nothing, and an approved business can never be rejected
     [Fact]
     public async Task RejectAsync_WrongTokenOrApproved_DoesNothing()
