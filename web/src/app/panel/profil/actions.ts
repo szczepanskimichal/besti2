@@ -1,9 +1,13 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { updateProfile, uploadLogo } from "@/lib/api";
-import { getToken } from "@/lib/auth";
+import { changeMyPassword, deleteMyBusiness, getMe, login, updateProfile, uploadLogo } from "@/lib/api";
+import { getToken, setToken, TOKEN_COOKIE } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
+
+// saved = show "Passordet er endret" under the form
+export type AccountFormState = FormState & { saved?: boolean };
 
 // Errors come back to the form with the typed values (no text in the URL)
 export async function updateProfileAction(_previous: FormState, formData: FormData): Promise<FormState> {
@@ -50,4 +54,45 @@ export async function uploadLogoAction(_previous: FormState, formData: FormData)
         return { error: result.message };
     }
     redirect("/panel/profil?logo=1");
+}
+
+// Same as in Min Besti: a new password logs out every device, so the owner is logged in again right away
+export async function changePasswordAction(_previous: AccountFormState, formData: FormData): Promise<AccountFormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const newPassword = String(formData.get("newPassword") ?? "");
+    if (newPassword !== String(formData.get("repeatPassword") ?? "")) {
+        return { error: "De nye passordene er ikke like." };
+    }
+    const me = await getMe(token);
+    const result = await changeMyPassword(token, {
+        currentPassword: String(formData.get("currentPassword") ?? ""),
+        newPassword,
+    });
+    if (!result.ok) {
+        return { error: result.message };
+    }
+    const fresh = me ? await login(me.email, newPassword) : null;
+    if (!fresh || fresh === "tooMany") {
+        redirect("/logg-inn?neste=/panel/profil");
+    }
+    await setToken(fresh.accessToken, fresh.expiresIn);
+    return { saved: true };
+}
+
+// Deleted: log out and show the goodbye page
+export async function deleteBusinessAction(_previous: AccountFormState, formData: FormData): Promise<AccountFormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const result = await deleteMyBusiness(token, String(formData.get("password") ?? ""));
+    if (!result.ok) {
+        return { error: result.message };
+    }
+    const cookieStore = await cookies();
+    cookieStore.delete(TOKEN_COOKIE);
+    redirect("/konto-slettet?bedrift=1");
 }

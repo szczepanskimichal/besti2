@@ -83,6 +83,19 @@ public class ProfileServiceTests
         Assert.True(await users.CheckPasswordAsync((await users.FindByIdAsync(kari.Id))!, "Nytt123!"));
     }
 
+    // check if a business owner can change the password too (Bedriftsprofil in the panel)
+    [Fact]
+    public async Task ChangePassword_WorksForBusinessOwner()
+    {
+        var (profile, users, _, _) = await CreateAsync();
+        var owner = await KariAsync(users, KlippOgStil);
+
+        var ok = await profile.ChangePasswordAsync(owner.Id, new ChangePasswordRequest(Password, "Nytt123!"));
+
+        Assert.Null(ok);
+        Assert.True(await users.CheckPasswordAsync((await users.FindByIdAsync(owner.Id))!, "Nytt123!"));
+    }
+
     // check if deleting cancels coming visits (the business is told), anonymises visits, keeps reviews as
     // "Tidligere kunde", removes the bell and the account
     [Fact]

@@ -138,3 +138,7 @@ export async function updateEmployee(token: string, employeeId: string, input: o
 export async function deleteEmployee(token: string, employeeId: string): Promise<ApiResult> {
     return toResult(await apiFetch(`/api/panel/employees/${employeeId}`, { method: "DELETE", token }));
 }
+// "Slett bedrift": the business with all its data and the owner account; confirmed with the password
+export async function deleteMyBusiness(token: string, password: string): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/panel/delete", { method: "POST", token, body: { password }, forwardIp: true }));
+}

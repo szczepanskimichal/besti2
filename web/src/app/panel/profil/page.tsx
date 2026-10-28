@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import AccountForms from "./AccountForms";
 import LogoUploadForm from "./LogoUploadForm";
 import ProfileForm from "./ProfileForm";
 import styles from "../tjenester/page.module.css";
@@ -54,6 +55,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     website: business.website ?? "",
                 }}
             />
+            <AccountForms />
         </main>
     );
 }

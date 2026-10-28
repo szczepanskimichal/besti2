@@ -70,4 +70,47 @@ public class BookingAnonymizerTests
 // Assert
         Assert.Equal(0, count);
     }
+
+// check if reviews of old visits lose the name but keep stars and text, and newer reviews stay as they are
+    [Fact]
+    public async Task AnonymizeOldBookingsAsync_AnonymizesReviewsOfOldVisits()
+    {
+// Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var oldBooking = NewBooking(Now.AddYears(-6), "Gammel Kunde");
+        var newBooking = NewBooking(Now.AddYears(-1), "Ny Kunde");
+        db.Bookings.AddRange(oldBooking, newBooking);
+        db.Reviews.Add(NewReview(oldBooking, "Gammel"));
+        db.Reviews.Add(NewReview(newBooking, "Ny"));
+        await db.SaveChangesAsync();
+        var service = new BookingAnonymizer(db);
+// Act
+        var count = await service.AnonymizeOldBookingsAsync(Now);
+// Assert
+        Assert.Equal(2, count); // one booking and one review
+        var old = await db.Reviews.SingleAsync(r => r.BookingId == oldBooking.Id);
+        Assert.Equal(ProfileService.FormerCustomer, old.CustomerName);
+        Assert.Equal(BookingAnonymizer.AnonymizedUserId, old.CustomerUserId);
+        Assert.Equal(5, old.Stars);
+        Assert.Equal("Veldig fornøyd", old.Comment);
+        var fresh = await db.Reviews.SingleAsync(r => r.BookingId == newBooking.Id);
+        Assert.Equal("Ny", fresh.CustomerName);
+        Assert.Equal("kunde-1", fresh.CustomerUserId);
+    }
+
+    private static Review NewReview(Booking booking, string name) => new()
+    {
+        Id = Guid.NewGuid(),
+        BookingId = booking.Id,
+        BusinessId = new Guid("c1111111-0000-0000-0000-000000000001"),
+        CustomerUserId = "kunde-1",
+        CustomerName = name,
+        Stars = 5,
+        Comment = "Veldig fornøyd",
+        CreatedUtc = booking.EndUtc.AddDays(1)
+    };
 }

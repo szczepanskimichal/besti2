@@ -84,9 +84,10 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         return result.Succeeded ? null : "Kunne ikke lagre. Prøv igjen.";
     }
 
+    // Customers and business owners alike (Min Besti → Profil and Panel → Bedriftsprofil)
     public async Task<string?> ChangePasswordAsync(string userId, ChangePasswordRequest request)
     {
-        var user = await CustomerAsync(userId);
+        var user = await userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return "Fant ikke kontoen.";

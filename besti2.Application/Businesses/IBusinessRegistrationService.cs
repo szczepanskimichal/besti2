@@ -14,4 +14,7 @@ public interface IBusinessRegistrationService
 
     // Deletes a business that is not approved yet, with its owner account
     Task<bool> RejectAsync(string token, CancellationToken cancellationToken = default);
+
+    // "Slett bedrift": the owner deletes the business with all its data; null = deleted, otherwise the error
+    Task<string?> DeleteOwnBusinessAsync(string userId, string? password, CancellationToken cancellationToken = default);
 }

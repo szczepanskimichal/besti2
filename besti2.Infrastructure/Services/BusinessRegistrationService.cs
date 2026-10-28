@@ -2,6 +2,7 @@ using besti2.Application.Businesses;
 using besti2.Application.Common;
 using besti2.Application.Email;
 using besti2.Application.Geocoding;
+using besti2.Application.Images;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
@@ -13,7 +14,8 @@ namespace besti2.Infrastructure.Services;
 
 // webBaseUrl = address of the Next.js site, used in the confirmation link;
 // registry = Brønnøysund (null in tests that do not need it);
-// adminEmail = where BESTI gets the approval link for a new business (no mail when null)
+// adminEmail = where BESTI gets the approval link for a new business (no mail when null);
+// imageStorage = where the logo and gallery files are deleted with the business (null in tests that do not need it)
 public class BusinessRegistrationService(
     AppDbContext dbContext,
     UserManager<AppUser> userManager,
@@ -22,7 +24,8 @@ public class BusinessRegistrationService(
     string webBaseUrl,
     IBusinessRegistry? registry = null,
     string? adminEmail = null,
-    MailLimiter? mailLimiter = null)
+    MailLimiter? mailLimiter = null,
+    IImageStorage? imageStorage = null)
     : IBusinessRegistrationService
 {
     private readonly MailLimiter limiter = mailLimiter ?? new MailLimiter();
@@ -39,7 +42,7 @@ public class BusinessRegistrationService(
                                                             || !request.Email.Contains('@') ||
                                                             string.IsNullOrWhiteSpace(request.Password)
                                                             || request.BusinessName.Length > 200 ||
-                                                            request.Phone.Length > 200 || request.Email.Length > 250)
+                                                            request.Address.Length > 200 || request.Email.Length > 250)
         {
             return new RegisterBusinessResult(false, "Fyll ut alle feltene.");
         }
@@ -326,6 +329,40 @@ public class BusinessRegistrationService(
         return true;
     }
 
+    // "Slett bedrift" in the panel: the owner confirms with the password. Coming visits must be cancelled
+    // first in the calendar, so every customer gets the normal cancel e-mail
+    public async Task<string?> DeleteOwnBusinessAsync(string userId, string? password,
+        CancellationToken cancellationToken = default)
+    {
+        var owner = await userManager.FindByIdAsync(userId);
+        if (owner?.BusinessId is not Guid businessId)
+        {
+            return "Fant ikke bedriften.";
+        }
+
+        if (!await userManager.CheckPasswordAsync(owner, password ?? ""))
+        {
+            return "Passordet er feil.";
+        }
+
+        var now = DateTime.UtcNow;
+        if (await dbContext.Bookings.AnyAsync(b => b.Employee.BusinessId == businessId
+                                                   && b.Status != BookingStatus.Avlyst && b.StartUtc > now,
+                cancellationToken))
+        {
+            return "Dere har kommende timer. Avlys dem i kalenderen først, så får kundene beskjed.";
+        }
+
+        var business = await dbContext.Businesses.FindAsync([businessId], cancellationToken);
+        if (business is null)
+        {
+            return "Fant ikke bedriften.";
+        }
+
+        await DeleteBusinessAsync(business, cancellationToken);
+        return null;
+    }
+
     // The owner's login e-mail (private), where BESTI's mails to the business go
     private Task<string?> OwnerEmailAsync(Guid businessId, CancellationToken cancellationToken) =>
         dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email)
@@ -420,19 +457,25 @@ public class BusinessRegistrationService(
         }
     }
 
-    // Deletes a business that was never approved, with its owner and what the owner may already
-    // have added in the panel. Bookings, reviews and time off are removed by hand first, because
+    // Deletes a business with its owner and everything added in the panel (a rejected registration or
+    // "Slett bedrift"). Bookings, reviews and time off are removed by hand first, because
     // the database does not delete them on its own (Restrict)
     private async Task DeleteBusinessAsync(Business business, CancellationToken cancellationToken)
     {
         var bookings = await dbContext.Bookings.Where(b => b.Employee.BusinessId == business.Id)
+            .ToListAsync(cancellationToken);
+        var bookingIds = bookings.Select(b => b.Id).ToList();
+        var imageFiles = await dbContext.BusinessImages.Where(i => i.BusinessId == business.Id)
+            .Select(i => i.FileName)
             .ToListAsync(cancellationToken);
         dbContext.Reviews.RemoveRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
         dbContext.Bookings.RemoveRange(bookings);
         dbContext.TimeOffs.RemoveRange(await dbContext.TimeOffs.Where(t => t.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
-        dbContext.Notifications.RemoveRange(await dbContext.Notifications.Where(n => n.BusinessId == business.Id)
+        // The business's bell, and the customers' bells about these visits
+        dbContext.Notifications.RemoveRange(await dbContext.Notifications
+            .Where(n => n.BusinessId == business.Id || (n.BookingId != null && bookingIds.Contains(n.BookingId.Value)))
             .ToListAsync(cancellationToken));
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -444,5 +487,23 @@ public class BusinessRegistrationService(
 
         dbContext.Businesses.Remove(business);
         await dbContext.SaveChangesAsync(cancellationToken);
+
+        // The files only after the database no longer points to them; a file left behind is no reason to fail
+        if (imageStorage is null)
+        {
+            return;
+        }
+
+        foreach (var fileName in imageFiles)
+        {
+            try
+            {
+                await imageStorage.DeleteAsync(fileName, cancellationToken);
+            }
+            catch (Exception)
+            {
+                // The business is deleted anyway
+            }
+        }
     }
 }

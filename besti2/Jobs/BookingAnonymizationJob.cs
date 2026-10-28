@@ -21,7 +21,8 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
                 var count = await anonymizer.AnonymizeOldBookingsAsync(DateTime.UtcNow, stoppingToken);
                 if (count > 0)
                 {
-                    logger.LogInformation("Anonymized {Count} old bookings", count);
+                    logger.LogInformation("Anonymized {Count} old bookings and reviews", count);
+                    
                 }
 
                 var notifications = scope.ServiceProvider.GetRequiredService<INotificationService>();
