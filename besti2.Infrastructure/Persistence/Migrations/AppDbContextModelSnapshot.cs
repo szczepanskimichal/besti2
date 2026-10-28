@@ -347,6 +347,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
 
+                    b.Property<DateTime?>("VerifiedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Website")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");

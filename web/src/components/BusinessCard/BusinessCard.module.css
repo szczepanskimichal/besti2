@@ -38,6 +38,13 @@
     border-radius: 999px;
 }
 
+/* Category and "Verifisert bedrift" next to the logo; under each other when the card is narrow */
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
 .name {
     font-size: 1.15rem;
     margin: 12px 0 4px;

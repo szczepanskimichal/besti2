@@ -11,6 +11,7 @@ export type BusinessListItem = {
     distanceKm: number | null; // only with "Nær meg"
     averageRating: number | null; // e.g. 4.7; null when nobody has reviewed yet
     reviewCount: number;
+    isVerified: boolean; // "Verifisert bedrift": active in Brønnøysund and approved by BESTI
 };
 
 export type FreeSlot = {
@@ -71,6 +72,17 @@ export type BusinessDetails = {
     freeCancelHours: number; // free cancellation until X hours before the visit; 0 = any time
     website: string | null; // always starts with http:// or https://
     autoConfirm: boolean; // new online bookings are confirmed at once
+    // "Verifisert bedrift": when Brønnøysund last said the business is active; null = no badge
+    verifiedUtc: string | null;
+};
+
+// "Forslag for din bransje" in the panel: a ready service the owner can add with one click
+export type ServiceTemplate = {
+    name: string;
+    description: string | null;
+    durationMinutes: number;
+    priceNok: number | null;
+    priceType: string;
 };
 
 export type BusinessApproval = {

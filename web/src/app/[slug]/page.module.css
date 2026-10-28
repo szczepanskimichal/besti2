@@ -41,6 +41,20 @@
     margin: 12px 0 8px;
 }
 
+/* "Verifisert bedrift" under the name, with the date of the last check */
+.verified {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+    margin: 0 0 8px;
+}
+
+.verified .muted {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
 .muted {
     color: var(--color-muted);
     margin: 4px 0 0;

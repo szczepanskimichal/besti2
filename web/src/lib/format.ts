@@ -8,6 +8,9 @@ export function formatPrice(priceNok: number | null, priceType: string): string 
     if (priceNok === null || priceType === "EtterAvtale") {
         return "Pris etter avtale";
     }
+    if (priceNok === 0 && priceType === "FastPris") {
+        return "Gratis";
+    }
 
     const amount = nok.format(priceNok);
 

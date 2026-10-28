@@ -42,6 +42,7 @@ builder.Services.Configure<BearerTokenOptions>(IdentityConstants.BearerScheme, o
 builder.Services.AddHostedService<BookingAnonymizationJob>();
 builder.Services.AddHostedService<BookingReminderJob>();
 builder.Services.AddHostedService<EmailSenderJob>();
+builder.Services.AddHostedService<BusinessVerificationJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
 // The web server tells us the visitor's IP in X-Forwarded-For. Only callers on this machine are trusted

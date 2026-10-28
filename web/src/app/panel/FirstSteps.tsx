@@ -23,7 +23,7 @@ export default function FirstSteps({ business }: { business: BusinessDetails }) 
             done: business.services.length > 0,
             href: "/panel/tjenester",
             title: "Legg til tjenester",
-            text: "Med pris og varighet. Uten tjenester kan ingen bestille.",
+            text: "Velg fra forslagene for bransjen din, eller lag dine egne. Uten tjenester kan ingen bestille.",
         },
         {
             done: !hasDefaultHours(business),

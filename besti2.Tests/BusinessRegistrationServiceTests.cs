@@ -145,6 +145,45 @@ public class BusinessRegistrationServiceTests
         Assert.Null(await service.GetApprovalAsync(token));
     }
 
+    // check if "Verifisert bedrift" comes from Brønnøysund: at sign-up, and again at approval
+    [Fact]
+    public async Task Verified_SetAtSignUpAndCheckedAgainAtApproval()
+    {
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        // The register is down at sign-up: the business can still register, but without the badge
+        var registry = new FakeBusinessRegistry { Result = new RegistryLookup(RegistryStatus.Unavailable) };
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email,
+            "http://localhost:3000", registry, adminEmail: "post@bestiapp.no");
+        Assert.True((await service.RegisterAsync(TestFrisor())).Success);
+        var business = await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688");
+        Assert.Null(business.VerifiedUtc);
+
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
+        var token = Assert.Single(email.Sent, m => m.To == "post@bestiapp.no").Body
+            .Split("/godkjenn?token=")[1].Trim();
+
+        // Back up at approval: the badge is there from the first day
+        registry.Result = new RegistryLookup(RegistryStatus.Active);
+        Assert.True(await service.ApproveAsync(token));
+        Assert.NotNull(business.VerifiedUtc);
+    }
+
+    // check if an active business gets the badge right at sign-up
+    [Fact]
+    public async Task RegisterAsync_ActiveInRegister_IsVerified()
+    {
+        var (_, db, users) = CreateService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), new FakeEmailService(),
+            "http://localhost:3000", new FakeBusinessRegistry());
+
+        await service.RegisterAsync(TestFrisor());
+
+        Assert.NotNull((await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688")).VerifiedUtc);
+    }
+
     // check if "Hvor hørte du om BESTI?" is saved and shown to BESTI, and an unknown answer is ignored
     [Theory]
     [InlineData("Instagram", "Instagram")]

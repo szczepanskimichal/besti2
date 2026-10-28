@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { formatDate } from "@/lib/format";
+import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 import AccountForms from "./AccountForms";
 import LogoUploadForm from "./LogoUploadForm";
 import ProfileForm from "./ProfileForm";
@@ -26,6 +28,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
             <h1 className={styles.title}>Bedriftsprofil</h1>
             <p className={styles.muted}>{business.name}</p>
+            {/* What customers see under the name; the API checks Brønnøysund again every week */}
+            <p className={styles.muted}>
+                {business.verifiedUtc ? (
+                    <>
+                        <VerifiedBadge href="/aerlig-booking#verifisert"/> Sjekket i Brønnøysundregistrene{" "}
+                        {formatDate(business.verifiedUtc)}. Kundene ser merket på siden din og i søket.
+                    </>
+                ) : (
+                    <>
+                        Merket «Verifisert bedrift» kommer når bedriften er godkjent og sjekket i
+                        Brønnøysundregistrene (senest innen et døgn).
+                    </>
+                )}
+            </p>
             {lagret && (
                 <p className={styles.success} role="status">
                     Profilen er lagret.

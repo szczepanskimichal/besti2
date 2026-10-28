@@ -79,10 +79,17 @@ public class BusinessRegistrationService(
             return new RegisterBusinessResult(false, "Du må godta databehandleravtalen for å registrere bedriften.");
         }
 
-        // Only real, active businesses (when the register does not answer, the registration goes on)
+        // Only real, active businesses (when the register does not answer, the registration goes on
+        // without "Verifisert bedrift"; the weekly check adds it later)
+        DateTime? verifiedUtc = null;
         if (registry is not null)
         {
             var lookup = await registry.LookupAsync(request.OrgNumber, cancellationToken);
+            if (lookup.Status == RegistryStatus.Active)
+            {
+                verifiedUtc = DateTime.UtcNow;
+            }
+
             if (lookup.Status == RegistryStatus.NotFound)
             {
                 return new RegisterBusinessResult(false,
@@ -169,6 +176,7 @@ public class BusinessRegistrationService(
             Longitude = location?.Longitude,
             IsHidden = true, // customers see it after the owner confirms the email and BESTI approves it
             DataProcessingAcceptedUtc = DateTime.UtcNow,
+            VerifiedUtc = verifiedUtc,
             ReferralSource = ReferralSources.Clean(request.ReferralSource)
         };
         dbContext.Businesses.Add(business);
@@ -282,6 +290,7 @@ public class BusinessRegistrationService(
         business.ApprovedUtc = DateTime.UtcNow;
         business.ApprovalTokenHash = null;
         business.IsHidden = false;
+        await RecheckRegistryAsync(business, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
         var body =
             "Hei!\n\n" +
@@ -386,6 +395,24 @@ public class BusinessRegistrationService(
         }
 
         return slug;
+    }
+
+    // "Verifisert bedrift" from the day of approval: Brønnøysund is asked again (weeks may have passed since
+    // sign-up). When the register does not answer, the badge stays as it was and the weekly check tries again
+    private async Task RecheckRegistryAsync(Business business, CancellationToken cancellationToken)
+    {
+        if (registry is null)
+        {
+            return;
+        }
+
+        var lookup = await registry.LookupAsync(business.OrgNumber, cancellationToken);
+        business.VerifiedUtc = lookup.Status switch
+        {
+            RegistryStatus.Active => DateTime.UtcNow,
+            RegistryStatus.Unavailable => business.VerifiedUtc,
+            _ => null
+        };
     }
 
     // The owner's login e-mail (private), where BESTI's mails to the business go

@@ -18,6 +18,15 @@ public interface IBusinessService
     Task<string?> UpdateServiceAsync(Guid businessId, Guid serviceId, CreateServiceRequest request,
         CancellationToken cancellationToken = default);
 
+    // "Forslag for din bransje": the templates for the business's category, without those it already has
+    Task<IReadOnlyList<ServiceTemplateDto>> GetServiceTemplatesAsync(Guid businessId,
+        CancellationToken cancellationToken = default);
+
+    // Several services at once (the chosen suggestions): all are saved, or none when one is not valid.
+    // Returns null when saved, otherwise an error message for the owner
+    Task<string?> AddServicesAsync(Guid businessId, IReadOnlyList<CreateServiceRequest> requests,
+        CancellationToken cancellationToken = default);
+
     // Soft delete: returns false when the service was not found
     Task<bool> DeleteServiceAsync(Guid businessId, Guid serviceId,
         CancellationToken cancellationToken = default);

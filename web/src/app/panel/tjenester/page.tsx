@@ -1,17 +1,18 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBusiness } from "@/lib/api";
+import { getPanelBusiness, getServiceTemplates } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatPrice } from "@/lib/format";
 import { addServiceAction, deleteServiceAction } from "./actions";
 import ServiceForm from "./ServiceForm";
+import ServiceSuggestions from "./ServiceSuggestions";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 
 type ServicesPageProps = {
     searchParams: Promise<{ feil?: string; "lagt-til"?: string;endret?: string; 
-        slettet?: string }>;
+        slettet?: string; forslag?: string }>;
 };
 
 export default async function ServicesPage({ searchParams }: ServicesPageProps) {
@@ -24,6 +25,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
         redirect("/logg-inn");
     }
     const params = await searchParams;
+    const templates = await getServiceTemplates(token);
     return (
         <main className={styles.main}>
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
@@ -42,6 +44,12 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                 </p>
             )}
 
+            {params.forslag && (
+                <p className={styles.success} role="status">
+                    Tjenestene er lagt til. Du kan endre dem under.
+                </p>
+            )}
+
             {params.endret && (
                 <p className={styles.success} role="status">
                     Tjenesten er endret.
@@ -54,8 +62,15 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
                 </p>
             )}
             
+            {templates.length > 0 && (
+                <ServiceSuggestions templates={templates} open={business.services.length === 0}/>
+            )}
+
             {business.services.length === 0 ? (
-                <p className={styles.muted}>Ingen tjenester ennå. Legg til den første under.</p>
+                <p className={styles.muted}>
+                    Ingen tjenester ennå. {templates.length > 0 ? "Velg fra forslagene over, eller legg" : "Legg"} til
+                    din egen under.
+                </p>
             ) : (
                 <ul className={styles.list}>
                     {business.services.map((service) => (

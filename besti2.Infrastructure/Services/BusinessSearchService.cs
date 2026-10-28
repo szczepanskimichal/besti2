@@ -69,7 +69,8 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                 null,
                 // Stars for the card, counted in the same query (no extra request per business)
                 dbContext.Reviews.Where(r => r.BusinessId == b.Id).Average(r => (double?)r.Stars),
-                dbContext.Reviews.Count(r => r.BusinessId == b.Id)
+                dbContext.Reviews.Count(r => r.BusinessId == b.Id),
+                b.ApprovedUtc != null && b.VerifiedUtc != null
             ))
             .ToListAsync(cancellationToken);
 

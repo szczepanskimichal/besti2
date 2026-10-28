@@ -14,6 +14,7 @@ export default function Footer() {
                 <nav aria-label="Bunntekst" className={styles.links}>
                     <NextLink href="/">Finn bedrift</NextLink>
                     <NextLink href="/registrer-bedrift">Registrer bedrift</NextLink>
+                    <NextLink href="/aerlig-booking">Ærlig booking</NextLink>
                     <NextLink href="/personvern">Personvern</NextLink>
                     <NextLink href="/vilkar">Vilkår</NextLink>
                 </nav>

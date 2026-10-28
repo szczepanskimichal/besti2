@@ -5,6 +5,7 @@ import { formatDate, formatTime, osloDay} from "@/lib/format";
 import styles from "./BusinessCard.module.css";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
+import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 
 
 type Props = {
@@ -20,7 +21,10 @@ export default function BusinessCard({ business }: Props) {
             <NextLink href={href} className={styles.link}>
                 <div className={styles.top}>
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl}/>
-                    <span className={styles.category}>{getCategoryLabel(business.category)}</span>
+                    <div className={styles.tags}>
+                        <span className={styles.category}>{getCategoryLabel(business.category)}</span>
+                        {business.isVerified && <VerifiedBadge/>}
+                    </div>
                 </div>
                 <h2 className={styles.name}>{business.name}</h2>
                 <p className={styles.city}>

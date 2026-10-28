@@ -74,7 +74,9 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.IsHidden,
                 b.FreeCancelHours,
                 b.Website,
-                b.AutoConfirm))
+                b.AutoConfirm,
+                // "Verifisert bedrift": only an approved business that Brønnøysund still says is active
+                b.ApprovedUtc != null ? b.VerifiedUtc : null))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -109,6 +111,68 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             PriceType = priceType,
             PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok
         });
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return null;
+    }
+
+    public async Task<IReadOnlyList<ServiceTemplateDto>> GetServiceTemplatesAsync(Guid businessId,
+        CancellationToken cancellationToken = default)
+    {
+        var category = await dbContext.Businesses.Where(b => b.Id == businessId).Select(b => (BusinessCategory?)b.Category)
+            .FirstOrDefaultAsync(cancellationToken);
+        if (category is null)
+        {
+            return [];
+        }
+
+        // A suggestion disappears once the business has a service with that name
+        var names = await dbContext.Services.Where(s => s.BusinessId == businessId && !s.IsDeleted)
+            .Select(s => s.Name)
+            .ToListAsync(cancellationToken);
+        var existing = names.Select(n => n.Trim().ToLowerInvariant()).ToHashSet();
+        return ServiceTemplates.For(category.Value)
+            .Where(t => !existing.Contains(t.Name.ToLowerInvariant()))
+            .ToList();
+    }
+
+    public async Task<string?> AddServicesAsync(Guid businessId, IReadOnlyList<CreateServiceRequest> requests,
+        CancellationToken cancellationToken = default)
+    {
+        if (requests.Count == 0)
+        {
+            return "Velg minst én tjeneste.";
+        }
+
+        if (requests.Count > ServiceTemplates.MaxPerRequest)
+        {
+            return $"Du kan legge til maks {ServiceTemplates.MaxPerRequest} tjenester om gangen.";
+        }
+
+        // Every one is checked first, so a wrong price on the last one never leaves half of them saved
+        foreach (var request in requests)
+        {
+            var error = ValidateService(request);
+            if (error is not null)
+            {
+                return $"{request.Name?.Trim()}: {error}";
+            }
+        }
+
+        foreach (var request in requests)
+        {
+            var priceType = Enum.Parse<PriceType>(request.PriceType);
+            dbContext.Services.Add(new Service
+            {
+                Id = Guid.NewGuid(),
+                BusinessId = businessId,
+                Name = request.Name.Trim(),
+                Description = string.IsNullOrWhiteSpace(request.Description) ? null : request.Description.Trim(),
+                DurationMinutes = request.DurationMinutes,
+                PriceType = priceType,
+                PriceNok = priceType == PriceType.EtterAvtale ? null : request.PriceNok
+            });
+        }
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;

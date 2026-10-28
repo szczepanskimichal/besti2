@@ -25,5 +25,7 @@ public record BusinessDetailsDto(
     // The business's own website (null = none)
     string? Website,
     // New online bookings are confirmed at once (the confirmation page says so)
-    bool AutoConfirm
+    bool AutoConfirm,
+    // "Verifisert bedrift": when Brønnøysund last said the business is active; null = no badge
+    DateTime? VerifiedUtc = null
 );
