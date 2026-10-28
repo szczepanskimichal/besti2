@@ -10,6 +10,7 @@ using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using besti2.Infrastructure.Services.Bookings;
+using besti2.Infrastructure.Services.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,7 +37,11 @@ public static class DependencyInjection
             provider.GetRequiredService<IEmailService>(),
             provider.GetRequiredService<ILogger<BookingService>>(),
             webBaseUrl));
-        services.AddTransient<IEmailService, SmtpEmailService>();
+        // Every e-mail goes through a queue and is sent in the background (see EmailQueue);
+        // SmtpEmailService talks to the mail server itself
+        services.AddTransient<SmtpEmailService>();
+        services.AddSingleton<EmailQueue>();
+        services.AddTransient<IEmailService, QueuedEmailService>();
         // One shared counter for the whole API (see MailLimiter)
         services.AddSingleton(new MailLimiter());
         services.AddScoped<IBusinessRegistrationService>(provider => new BusinessRegistrationService(
@@ -67,9 +72,10 @@ public static class DependencyInjection
         services.AddSingleton<IImageStorage, LocalImageStorage>();
         services.AddScoped<IBusinessImageService, BusinessImageService>();
         services.AddScoped<IBookingAnonymizer, BookingAnonymizer>();
+        // Reminders straight to the mail server, not the queue: a reminder that fails is counted and tried again
         services.AddScoped<IBookingReminder>(provider => new BookingReminder(
             provider.GetRequiredService<AppDbContext>(),
-            provider.GetRequiredService<IEmailService>(),
+            provider.GetRequiredService<SmtpEmailService>(),
             provider.GetRequiredService<ILogger<BookingReminder>>(),
             webBaseUrl));
         services.AddScoped<IReviewService, ReviewService>();
