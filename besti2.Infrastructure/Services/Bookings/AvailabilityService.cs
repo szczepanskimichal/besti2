@@ -37,12 +37,15 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
 
         var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
         var toUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(2);
+        // Visits are max 8 hours, so older ones cannot reach into the window (keeps the index read short)
+        var startsAfterUtc = fromUtc.AddMinutes(-BookingRules.MaxVisitMinutes);
 
         var busy = await dbContext.Bookings
             .AsNoTracking()
             .Where(b => b.EmployeeId == employeeId
                         && b.Status != BookingStatus.Avlyst
                         && b.StartUtc < toUtc
+                        && b.StartUtc > startsAfterUtc
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);
@@ -114,12 +117,15 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
         // Same wide UTC window as GetFreeSlotsAsync, but around all the days at once
         var fromUtc = from.ToDateTime(TimeOnly.MinValue).AddDays(-1);
         var toUtc = from.ToDateTime(TimeOnly.MinValue).AddDays(days + 1);
+        // Visits are max 8 hours, so older ones cannot reach into the window (keeps the index read short)
+        var startsAfterUtc = fromUtc.AddMinutes(-BookingRules.MaxVisitMinutes);
 
         var busy = await dbContext.Bookings
             .AsNoTracking()
             .Where(b => employeeIds.Contains(b.EmployeeId)
                         && b.Status != BookingStatus.Avlyst
                         && b.StartUtc < toUtc
+                        && b.StartUtc > startsAfterUtc
                         && b.EndUtc > fromUtc)
             .Select(b => new { b.EmployeeId, b.StartUtc, b.EndUtc })
             .ToListAsync(cancellationToken);

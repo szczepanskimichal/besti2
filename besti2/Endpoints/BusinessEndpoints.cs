@@ -20,13 +20,13 @@ public static class BusinessEndpoints
                     cancellationToken);
                 // 24 businesses per page (?page=2 ...)
                 return Results.Ok(BusinessPageDto.From(all, page));
-            }).RequireRateLimiting("search");
+            }).RequireRateLimiting("search").CacheOutput("search");
         // Get distinct cities for the filter
         group.MapGet("/cities",
             async (IBusinessSearchService search, CancellationToken cancellationToken) =>
             {
                 return Results.Ok(await search.GetCitiesAsync(cancellationToken));
-            });
+            }).CacheOutput("search");
         // Get business by id
         group.MapGet("/businesses/{id:guid}",
             async (Guid id, IBusinessService businessService, CancellationToken cancellationToken) =>

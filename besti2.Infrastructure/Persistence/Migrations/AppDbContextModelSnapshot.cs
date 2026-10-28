@@ -17,7 +17,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.13")
+                .HasAnnotation("ProductVersion", "10.0.14")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -242,6 +242,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId", "StartUtc")
                         .IsUnique()
                         .HasFilter("[Status] <> 'Avlyst'");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("EmployeeId", "StartUtc"), new[] { "EndUtc" });
 
                     b.HasIndex("Status", "StartUtc");
 
@@ -740,6 +742,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("BusinessId");
 
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("BusinessId"), new[] { "Stars" });
+
                     b.ToTable("Reviews");
                 });
 
@@ -778,6 +782,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BusinessId");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("BusinessId"), new[] { "IsDeleted", "Name", "DurationMinutes" });
 
                     b.ToTable("Services");
 
