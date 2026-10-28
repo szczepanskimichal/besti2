@@ -127,6 +127,22 @@ export type PanelBooking = {
     employeeId: string; // the calendar puts the booking in this employee's column
     previousStartUtc: string | null; // set while a moved visit waits for the customer ("VenterKunde")
     noShowCount: number; // "Møtte ikke" for this customer at this business
+    inviteId: string | null; // BESTI sammen: all visits of one group share it (👯)
+    group: PanelGroup | null;
+};
+
+// BESTI sammen seen by the business: places, how many said yes, until when; open = more may still join
+export type PanelGroup = {
+    id: string;
+    persons: number;
+    joined: number;
+    expiresUtc: string;
+    open: boolean;
+    organizerName: string;
+    organizerComes: boolean;
+    organizerPays: boolean; // "Jeg spanderer": the organizer pays for the whole group
+    isOrganizer: boolean; // this booking is the organizer's own visit
+    names: string[]; // everyone booked, in the order they said yes
 };
 // Blocked time in the calendar; employeeId null = the whole business is closed
 export type TimeOff = {
@@ -155,6 +171,68 @@ export type CustomerBooking = {
     businessPhone: string;
     freeCancelHours: number;
     previousStartUtc: string | null; // set while the business waits for the customer to accept a new time
+    inviteId: string | null; // BESTI sammen: booked together with friends
+};
+
+// BESTI sammen: the invitation behind /invitasjon/{token}. Only the inviter's first name, never contact details
+export type InviteStatus = "Venter" | "Akseptert" | "Avslatt" | "Utlopt" | "Trukket";
+
+export type PayMode = "HverSelv" | "JegSpanderer";
+
+export type Invite = {
+    id: string;
+    status: InviteStatus;
+    inviterFirstName: string;
+    names: string[]; // first names of everyone booked, the inviter first (when they come)
+    businessName: string;
+    businessSlug: string;
+    businessAddress: string;
+    serviceName: string;
+    visitMinutes: number;
+    priceNok: number | null;
+    priceType: string;
+    startUtc: string;
+    expiresUtc: string;
+    payMode: PayMode;
+    persons: number; // all visits in the group
+    organizerJoins: boolean; // false = the inviter only sends (and maybe pays), without a visit
+    joined: number; // booked so far
+    placesLeft: number; // places still free for others
+    open: boolean; // new people can still join
+    isInviter: boolean; // the logged-in visitor sent it
+    isMember: boolean; // the logged-in visitor is booked in it
+    stillFree: boolean; // a place for the visitor is still free right now
+};
+
+// One invitation in Min Besti
+export type CustomerInvite = {
+    id: string;
+    status: InviteStatus;
+    isInviter: boolean;
+    inviterFirstName: string;
+    names: string[]; // everyone booked, the inviter first
+    businessName: string;
+    businessSlug: string;
+    serviceName: string;
+    startUtc: string;
+    expiresUtc: string;
+    payMode: PayMode;
+    persons: number;
+    joined: number;
+    open: boolean; // more people can still join
+};
+
+export type CreateInviteInput = {
+    serviceId: string;
+    employeeId: string | null; // null = Hvem som helst
+    startUtc: string;
+    phone: string;
+    payMode: PayMode;
+    decisionMinutes: number;
+    note: string;
+    units: number;
+    persons: number; // 2-8, the inviter included when organizerJoins
+    organizerJoins: boolean;
 };
 
 export type Review = {

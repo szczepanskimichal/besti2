@@ -2,6 +2,7 @@
 export type {ApiResult} from "./client";
 export * from "./businesses";
 export * from "./bookings";
+export * from "./invites";
 export * from "./panel";
 export * from "./account";
 export * from "./reviews";

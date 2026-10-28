@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatTime, osloMinutes } from "@/lib/format";
-import { statusLabels } from "@/lib/bookingStatus";
+import { customerLabel, statusLabels } from "@/lib/bookingStatus";
 import PendingBadge from "../PendingBadge";
 import calendar from "../calendar.module.css";
 import { PX_PER_MINUTE, type Column, type Range, type Href, type BlockHref, blockMinutes, blockLabel, describeBlock, hourMarks, halfHours, clock } from "./calendarLayout";
@@ -67,7 +67,7 @@ export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockH
                                         {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
                                         <PendingBadge status={booking.status}/>
                                     </span>
-                                    <span className={calendar.customer}>{booking.customerName}</span>
+                                    <span className={calendar.customer}>{customerLabel(booking)}</span>
                                     <span className={calendar.service}>
                                         {showEmployee ? `${booking.employeeName} · ${booking.serviceName}` : booking.serviceName}
                                     </span>

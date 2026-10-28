@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatTime } from "@/lib/format";
+import { customerLabel } from "@/lib/bookingStatus";
 import PendingBadge from "../PendingBadge";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
@@ -31,7 +32,7 @@ export default function PhoneList({ columns, hrefFor, blockHref }: { columns: Co
                                         {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
                                         <PendingBadge status={booking.status}/>
                                     </span>
-                                    <span>{booking.customerName}</span>
+                                    <span>{customerLabel(booking)}</span>
                                     <span className={calendar.service}>{booking.serviceName} hos {booking.employeeName}</span>
                                 </Link>
                             </li>

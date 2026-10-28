@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { formatDay, formatTime, todayInOslo, weekdayOf } from "@/lib/format";
+import { customerLabel } from "@/lib/bookingStatus";
 import type { BusinessDetails } from "@/lib/types";
 import PendingBadge from "../PendingBadge";
 import calendar from "../calendar.module.css";
@@ -55,7 +56,7 @@ export default function MonthGrid({ days, month, business, dayHref, newHref, hre
                                           className={`${calendar.monthVisit} ${calendar[booking.status] ?? ""}`}
                                           title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName}`}>
                                         <PendingBadge status={booking.status} iconOnly/>
-                                        {formatTime(booking.startUtc)} {booking.customerName}
+                                        {formatTime(booking.startUtc)} {customerLabel(booking)}
                                     </Link>
                                 ))}
                                 {visits.length > MONTH_PREVIEW && (

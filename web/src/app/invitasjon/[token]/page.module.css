@@ -1,0 +1,402 @@
+/* BESTI sammen: one centred card, like the booking confirmation */
+.main {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 32px 16px 48px;
+}
+
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 32px 20px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    text-align: center;
+}
+
+.title {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin: 0;
+}
+
+.muted {
+    color: var(--color-muted);
+    margin: 0;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Two aurora circles side by side; they lean in while waiting and meet with a check mark when booked */
+.badge {
+    position: relative;
+    width: 168px;
+    height: 104px;
+    margin: 0 auto;
+}
+
+.orb {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #062430;
+    border: 2px solid var(--color-success);
+    box-shadow: 0 0 24px rgba(80, 230, 160, 0.25);
+}
+
+.orbRight {
+    left: auto;
+    right: 0;
+    mix-blend-mode: screen;
+}
+
+.glow {
+    position: absolute;
+    inset: -15%;
+    background:
+            radial-gradient(50% 35% at 35% 65%, rgba(80, 230, 160, 0.95), transparent 70%),
+            radial-gradient(45% 35% at 65% 40%, rgba(60, 200, 210, 0.85), transparent 70%),
+            radial-gradient(40% 30% at 50% 85%, rgba(179, 155, 181, 0.7), transparent 70%);
+    filter: blur(8px);
+    animation: dance 6s ease-in-out infinite alternate;
+}
+
+.orbRight .glow {
+    animation-delay: -3s;
+}
+
+.badgeWaiting .orb {
+    border-color: var(--color-border);
+    animation: lean 2.4s ease-in-out infinite alternate;
+}
+
+.badgeWaiting .orbRight {
+    animation-name: leanRight;
+}
+
+.check {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 72px;
+    height: 72px;
+    transform: translate(-50%, -50%);
+}
+
+.check path {
+    fill: none;
+    stroke: #e3f2c8;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 80;
+    stroke-dashoffset: 80;
+    filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6));
+    animation: draw 0.5s 0.3s ease-out forwards;
+}
+
+@keyframes draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes dance {
+    0% {
+        transform: translateX(-12%) rotate(0deg);
+    }
+    50% {
+        transform: translateX(8%) rotate(8deg) scale(1.1);
+    }
+    100% {
+        transform: translateX(12%) rotate(-6deg);
+    }
+}
+
+@keyframes lean {
+    to {
+        transform: translateX(10px);
+    }
+}
+
+@keyframes leanRight {
+    to {
+        transform: translateX(-10px);
+    }
+}
+
+/* Phone setting "reduce motion": everything stands still, the check mark is shown at once */
+@media (prefers-reduced-motion: reduce) {
+    .glow,
+    .badgeWaiting .orb {
+        animation: none;
+    }
+
+    .check path {
+        animation: none;
+        stroke-dashoffset: 0;
+    }
+}
+
+/* "Svarfrist 27:13" */
+.timer {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.clock {
+    display: inline-block;
+    min-width: 4ch;
+    margin-left: 4px;
+    color: var(--color-warning);
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+/* What, when, where and price as two columns */
+.details {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 8px 16px;
+    margin: 0;
+    padding: 16px;
+    background: var(--color-bg);
+    border-radius: 12px;
+    text-align: left;
+}
+
+.details dt {
+    color: var(--color-muted);
+}
+
+.details dd {
+    margin: 0;
+    font-weight: 600;
+}
+
+.details a {
+    color: var(--color-primary);
+}
+
+.details .muted {
+    font-weight: 400;
+}
+
+.share {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.shareRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.link {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.primaryButton,
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font: inherit;
+    font-weight: 700;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 999px;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.primaryButton {
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.primaryButton:hover {
+    opacity: 0.9;
+}
+
+.secondaryButton {
+    border: 1px solid var(--color-primary);
+    background: rgba(20, 28, 24, 0.35);
+    color: var(--color-primary);
+    font-weight: 600;
+    min-height: 44px;
+    padding: 0 8px;
+}
+
+.secondaryButton:hover {
+    background: var(--color-primary-soft);
+}
+
+.textButton {
+    font: inherit;
+    min-height: 44px;
+    padding: 0 12px;
+    border: none;
+    background: none;
+    color: var(--color-muted);
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: left;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.field input,
+.field textarea {
+    font: inherit;
+    font-weight: 400;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    background: rgba(20, 28, 24, 0.35);
+}
+
+.field textarea {
+    resize: vertical;
+}
+
+.error {
+    background: rgba(255, 155, 133, 0.12);
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 0;
+}
+
+.warning {
+    background: rgba(242, 196, 109, 0.12);
+    border: 1px solid var(--color-warning);
+    border-radius: 8px;
+    padding: 12px 16px;
+    text-align: left;
+}
+
+.warning p {
+    margin: 0 0 8px;
+}
+
+/* Groups: one circle per place, a first letter for everyone in, "+" for each free place.
+   A new one pops in when someone joins (the page refreshes live) */
+.seats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.seatsCount {
+    margin: 0;
+    color: var(--color-muted);
+}
+
+.seatsCount strong {
+    color: var(--color-primary);
+}
+
+.seatList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 56px;
+}
+
+.seatCircle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #062430;
+    border: 2px solid var(--color-success);
+    box-shadow: 0 0 14px rgba(80, 230, 160, 0.25);
+    font-weight: 700;
+    animation: seatIn 0.5s ease-out;
+}
+
+.seatName {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+}
+
+.seatFree .seatCircle {
+    border: 2px dashed var(--color-border);
+    box-shadow: none;
+    background: transparent;
+    color: var(--color-muted);
+    animation: none;
+}
+
+.seatFree .seatName {
+    color: var(--color-muted);
+}
+
+@keyframes seatIn {
+    from {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .seatCircle {
+        animation: none;
+    }
+}
