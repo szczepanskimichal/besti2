@@ -11,7 +11,7 @@ Intern protokoll over behandlingsaktiviteter (GDPR art. 30). Én kilde til sannh
 - endrer hvor lenge noe lagres.
 
 Behandlingsansvarlig: Michał Szczepański (BESTI). Kontakt: personvern@bestiapp.no
-Sist gjennomgått: 2026-10-24
+Sist gjennomgått: 2026-10-28
 
 ## Behandlinger
 
@@ -20,10 +20,12 @@ Sist gjennomgått: 2026-10-24
 | Kundekonto | navn, e-post, passord-hash, telefon (valgfritt) | kunder | konto, innlogging, fylle ut bestilling | 6.1 b (avtale) | til kontoen slettes | `AppUser`, `ProfileService`, `CustomerAccountService` |
 | Bestilling | navn, telefon, e-post, tjeneste, ansatt, tid, status, melding | kunder | gjennomføre timen; bedriften ser bestillingen | 6.1 b | 5 år etter timen, så anonymisert | `Booking`, `BookingService`, `BookingAnonymizer` (`RetentionYears = 5`) |
 | Ny tid (Flytt) | lenketoken (kun SHA-256), forrige tidspunkt | kunder | kunden godtar eller avslår ny tid | 6.1 b | til kunden svarer / timen avlyses | `Booking.NewTimeTokenHash`, `PreviousStartUtc` |
-| Vurderinger | fornavn, stjerner, kommentar | kunder | vise vurderinger offentlig | 6.1 f (berettiget interesse) | til bedriften slettes; ved slettet konto: «Tidligere kunde» | `Review`, `ReviewService`, `ProfileService.DeleteAsync` |
+| Vurderinger | fornavn, stjerner, kommentar | kunder | vise vurderinger offentlig | 6.1 f (berettiget interesse) | navnet byttes til «Tidligere kunde» 5 år etter timen eller ved slettet konto; slettes med bedriften | `Review`, `ReviewService`, `BookingAnonymizer`, `ProfileService.DeleteAsync` |
+| «Møtte ikke» | status på timen, antall per kunde (e-post) hos samme bedrift | kunder | bedriften planlegger; kunden får e-post og kan protestere | 6.1 f | som bestillingen | `BookingStatus.MotteIkke`, `BookingService` (teller bare innen bedriften), `BookingEmails.SendNoShowAsync` |
+| Påminnelse | navn, e-post, tid, tjeneste | kunder | e-post dagen før timen | 6.1 b | som bestillingen | `BookingReminder`, `BookingReminderJob`, `Booking.NoReminder` |
 | Varsler (bjelle) | tekst om timer, lenke | kunder, bedrifter | informere om endringer | 6.1 b | til slettet, maks 7 dager (kunde) / 14 dager (bedrift) | `Notification`, `NotificationService` (`CustomerDays`, `BusinessDays`), `BookingAnonymizationJob` |
 | Nyhetsbrev-samtykke | ja/nei og tidspunkt | kunder | markedsføring (ikke i bruk ennå) | 6.1 a (samtykke) | som bestillingen | `Booking.MarketingConsent` |
-| Bedriftskonto | bedriftsnavn, org.nr, adresse, telefon, e-post, ansattes navn, bilder | bedrifter, ansatte | vise bedriften og ta imot bestillinger | 6.1 b | til bedriften avslutter | `Business`, `Employee`, `BusinessService` |
+| Bedriftskonto | bedriftsnavn, org.nr, adresse, telefon, e-post (innlogging + til kunder), nettside, ansattes navn, logo og bilder | bedrifter, ansatte | vise bedriften og ta imot bestillinger | 6.1 b | til bedriften sletter den («Slett bedrift»: alt slettes, også timer, vurderinger og bildefiler) | `Business`, `Employee`, `BusinessService`, `BusinessRegistrationService.DeleteOwnBusinessAsync` |
 | Bedriftssjekk | org.nr | bedrifter | hindre falske bedrifter | 6.1 f | ikke lagret hos Brreg | `BrregBusinessRegistry` |
 | Godkjenning av bedrift | bedriftens opplysninger i e-post til BESTI, lenketoken (kun SHA-256), godkjent-tidspunkt | bedrifter | hindre at noen registrerer en annens bedrift | 6.1 f | token til godkjent; tidspunkt så lenge bedriften finnes | `BusinessRegistrationService` (`ApproveAsync`), `Business.ApprovedUtc` |
 | Databehandleravtale | tidspunkt for godkjenning | bedrifter | dokumentere avtalen (art. 28) | 6.1 c / 6.1 b | så lenge bedriften finnes | `Business.DataProcessingAcceptedUtc`, `/vilkar#databehandleravtale` |
@@ -48,7 +50,7 @@ Overføring ut av EU/EØS: bare Cloudflare (USA), under Data Privacy Framework o
 
 - Innsyn og dataportabilitet: Min Besti → Profil → «Last ned mine data» (`GET /api/me/export`)
 - Retting: Profil (navn, telefon)
-- Sletting: Profil → «Slett konto» (`POST /api/me/delete`)
+- Sletting: Profil → «Slett konto» (`POST /api/me/delete`); bedrift: Bedriftsprofil → «Slett bedrift» (`POST /api/panel/delete`)
 - Klage: Datatilsynet
 
 ## Rutiner
