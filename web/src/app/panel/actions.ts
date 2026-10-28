@@ -1,9 +1,11 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { changeBookingStatus, createManualBooking, createTimeOff, deleteTimeOff, moveBooking } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { safeRedirectPath } from "@/lib/safeRedirect";
+import { FIRST_STEPS_COOKIE } from "./firstStepsCookie";
 import type { FormState } from "@/lib/formState";
 
 
@@ -147,3 +149,15 @@ export async function moveBookingAction(_previous: FormState, formData: FormData
     redirect(`/panel?dag=${values.date}${viewParam(formData)}`);
 }
 
+
+// "Skjul listen" on Kom i gang: remembered in this browser for a year
+export async function hideFirstStepsAction() {
+    (await cookies()).set(FIRST_STEPS_COOKIE, "skjult", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/panel",
+        maxAge: 60 * 60 * 24 * 365,
+    });
+    redirect("/panel");
+}
