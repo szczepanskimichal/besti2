@@ -303,8 +303,10 @@ public class BookingService(
                 b.CustomerNote,
                 b.EmployeeId,
                 b.PreviousStartUtc,
-                0))
+                0,
+                b.InviteId))
             .ToListAsync(cancellationToken);
+        bookings = await AddGroupsAsync(bookings, cancellationToken);
 
         // "Møtte ikke" for these customers at this business only (other businesses never see it), counted in
         // ONE query for the whole week. Deleted and anonymized customers all share one address: never add them up
@@ -330,6 +332,62 @@ public class BookingService(
             .ToList();
     }
 
+    // BESTI sammen: the whole group for every visit that belongs to one (one query for the invitations,
+    // one for their visits, also those outside the shown days)
+    private async Task<List<PanelBookingDto>> AddGroupsAsync(List<PanelBookingDto> bookings,
+        CancellationToken cancellationToken)
+    {
+        var inviteIds = bookings.Where(b => b.InviteId != null).Select(b => b.InviteId!.Value).Distinct().ToList();
+        if (inviteIds.Count == 0)
+        {
+            return bookings;
+        }
+
+        var invites = await dbContext.BookingInvites
+            .AsNoTracking()
+            .Where(i => inviteIds.Contains(i.Id))
+            .Select(i => new
+            {
+                i.Id, i.Persons, i.ExpiresUtc, i.ClosedUtc, i.Status, i.OrganizerJoins, i.PayMode,
+                i.InviterUserId, OrganizerName = dbContext.Users.Where(u => u.Id == i.InviterUserId)
+                    .Select(u => u.FullName).FirstOrDefault()
+            })
+            .ToListAsync(cancellationToken);
+        var members = await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.InviteId != null && inviteIds.Contains(b.InviteId.Value) && b.Status != BookingStatus.Avlyst)
+            .OrderBy(b => b.CreatedUtc)
+            .Select(b => new { b.Id, InviteId = b.InviteId!.Value, b.CustomerName, b.CustomerUserId })
+            .ToListAsync(cancellationToken);
+        var nowUtc = DateTime.UtcNow;
+        var groups = invites.ToDictionary(i => i.Id, i =>
+        {
+            var inGroup = members.Where(m => m.InviteId == i.Id).ToList();
+            var organizerFirst = inGroup.OrderBy(m => m.CustomerUserId == i.InviterUserId ? 0 : 1).ToList();
+            return (Invite: i, Members: organizerFirst,
+                Open: i.ClosedUtc == null && i.ExpiresUtc > nowUtc && inGroup.Count < i.Persons
+                      && i.Status is InviteStatus.Venter or InviteStatus.Akseptert);
+        });
+
+        return bookings.Select(b =>
+        {
+            if (b.InviteId is not Guid id || !groups.TryGetValue(id, out var group))
+            {
+                return b;
+            }
+
+            var invite = group.Invite;
+            var isOrganizer = group.Members.Any(m => m.Id == b.Id && m.CustomerUserId == invite.InviterUserId);
+            return b with
+            {
+                Group = new PanelGroupDto(id, invite.Persons, group.Members.Count, invite.ExpiresUtc, group.Open,
+                    invite.OrganizerName ?? "Organisator", invite.OrganizerJoins,
+                    invite.PayMode == PayMode.JegSpanderer, isOrganizer,
+                    group.Members.Select(m => m.CustomerName).ToList())
+            };
+        }).ToList();
+    }
+
     public async Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(
         string customerUserId, CancellationToken cancellationToken = default)
     {
@@ -353,7 +411,8 @@ public class BookingService(
                 dbContext.Reviews.Any(r => r.BookingId == b.Id),
                 b.Service.Business.PhoneNumber,
                 b.Service.Business.FreeCancelHours,
-                b.PreviousStartUtc))
+                b.PreviousStartUtc,
+                b.InviteId))
             .ToListAsync(cancellationToken);
     }
 

@@ -1,10 +1,12 @@
 using besti2.Application.Bookings;
+using besti2.Application.Invites;
 using besti2.Infrastructure.Services.Email;
 
 namespace besti2.Jobs;
 
 // Runs at startup and then every 15 minutes: e-mails a reminder about a day before each confirmed visit,
-// and reminds businesses about new bookings that still wait for "Bekreft".
+// reminds businesses about new bookings that still wait for "Bekreft", and closes BESTI sammen groups whose
+// answer time is up (the business gets the final count).
 // After each run it pings healthchecks.io (Monitoring__MailPingUrl), with /fail when e-mails could not be sent
 public class BookingReminderJob(
     IServiceScopeFactory scopeFactory,
@@ -36,6 +38,14 @@ public class BookingReminderJob(
                 {
                     logger.LogInformation("Reminded {Count} businesses about bookings waiting for confirmation",
                         pending);
+                }
+
+                // BESTI sammen: groups nobody has opened since the answer time ran out
+                var closed = await scope.ServiceProvider.GetRequiredService<IInviteService>()
+                    .CloseDueAsync(DateTime.UtcNow, stoppingToken);
+                if (closed > 0)
+                {
+                    logger.LogInformation("Closed {Count} BESTI sammen invitations", closed);
                 }
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

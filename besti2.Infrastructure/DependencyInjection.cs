@@ -4,6 +4,7 @@ using besti2.Application.Businesses;
 using besti2.Application.Email;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
+using besti2.Application.Invites;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
 using besti2.Infrastructure.Identity;
@@ -11,6 +12,7 @@ using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using besti2.Infrastructure.Services.Bookings;
 using besti2.Infrastructure.Services.Email;
+using besti2.Infrastructure.Services.Invites;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -36,6 +38,11 @@ public static class DependencyInjection
             provider.GetRequiredService<AppDbContext>(),
             provider.GetRequiredService<IEmailService>(),
             provider.GetRequiredService<ILogger<BookingService>>(),
+            webBaseUrl));
+        services.AddScoped<IInviteService>(provider => new InviteService(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<IEmailService>(),
+            provider.GetRequiredService<ILogger<InviteService>>(),
             webBaseUrl));
         // Every e-mail is saved in the outbox in the database and sent in the background (see EmailOutbox);
         // SmtpEmailService talks to the mail server itself

@@ -169,6 +169,7 @@ app.MapGet("/health", async (AppDbContext dbContext, CancellationToken cancellat
 
 app.MapBusinessEndpoints();
 app.MapBookingEndpoints();
+app.MapInviteEndpoints();
 app.MapAccountEndpoints();
 app.MapGodkjennEndpoints();
 app.MapNotificationEndpoints();

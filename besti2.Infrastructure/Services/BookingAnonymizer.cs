@@ -79,6 +79,24 @@ public class BookingAnonymizer(AppDbContext dbContext) : IBookingAnonymizer
             count += oldReviews.Count;
         }
 
+        // BESTI sammen invitations of those visits are deleted (the bookings above keep the history)
+        while (true)
+        {
+            var oldInvites = await dbContext.BookingInvites
+                .Where(i => i.StartUtc < cutoff)
+                .Take(BatchSize)
+                .ToListAsync(cancellationToken);
+            if (oldInvites.Count == 0)
+            {
+                break;
+            }
+
+            dbContext.BookingInvites.RemoveRange(oldInvites);
+            await dbContext.SaveChangesAsync(cancellationToken);
+            dbContext.ChangeTracker.Clear();
+            count += oldInvites.Count;
+        }
+
         return count;
     }
 }
