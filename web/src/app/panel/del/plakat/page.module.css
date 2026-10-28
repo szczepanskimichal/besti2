@@ -1,0 +1,157 @@
+.main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 16px;
+    margin-bottom: 20px;
+}
+
+.back {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.printButton {
+    min-height: 44px;
+    padding: 0 18px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.printButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.hint {
+    flex-basis: 100%;
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
+/* The A5 sheet (148 × 210 mm); on screen a white page with the same proportions */
+.sheet {
+    width: 100%;
+    max-width: 148mm;
+    aspect-ratio: 148 / 210;
+    margin: 0 auto;
+    padding: 9% 8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: #fff;
+    color: #0b2a33;
+    border-radius: 6px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.brand {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    font-size: 0.85rem;
+    color: #3f6b5a;
+}
+
+.logo {
+    width: 22%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    margin-top: 5%;
+    border-radius: 12px;
+}
+
+.name {
+    margin: 4% 0 0;
+    font-weight: 700;
+    font-size: clamp(1rem, 4.5vw, 1.4rem);
+}
+
+.heading {
+    margin: 2% 0 0;
+    font-size: clamp(1.5rem, 7vw, 2.3rem);
+    line-height: 1.15;
+    color: #0f4b57;
+}
+
+.qr {
+    width: 62%;
+    aspect-ratio: 1;
+    margin: auto 0 0;
+    padding-top: 4%;
+}
+
+.scan {
+    margin: 3% 0 0;
+    font-weight: 700;
+    font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+}
+
+.link {
+    margin: 1% 0 0;
+    font-size: clamp(0.85rem, 3.4vw, 1.05rem);
+    overflow-wrap: anywhere;
+    color: #3f6b5a;
+}
+
+.footer {
+    margin: auto 0 0;
+    padding-top: 4%;
+    font-size: clamp(0.75rem, 3vw, 0.9rem);
+    color: #4d5f55;
+}
+
+@media print {
+    .main {
+        max-width: none;
+        padding: 0;
+    }
+
+    .toolbar {
+        display: none;
+    }
+
+    /* Fills the paper; the browser picks A5 or A4 and the proportions stay */
+    .sheet {
+        max-width: none;
+        width: 100%;
+        height: 100vh;
+        aspect-ratio: auto;
+        padding: 12mm 10mm;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .name {
+        font-size: 16pt;
+    }
+
+    .heading {
+        font-size: 26pt;
+    }
+
+    .scan {
+        font-size: 13pt;
+    }
+
+    .link {
+        font-size: 12pt;
+    }
+
+    .footer {
+        font-size: 10pt;
+    }
+}

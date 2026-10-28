@@ -11,5 +11,6 @@ public static class PanelEndpoints
         group.MapPanelBusinessEndpoints();
         group.MapPanelMediaEndpoints();
         group.MapPanelReviewEndpoints();
+        group.MapPanelShareEndpoints();
     }
 }

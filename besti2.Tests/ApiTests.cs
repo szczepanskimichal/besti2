@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using besti2.Infrastructure.Identity;
+using besti2.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -55,6 +56,39 @@ public class ApiTests
 
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    // check if the owner gets the QR code to the business page, as SVG and as PNG
+    [Fact]
+    public async Task PanelQr_AsOwner_ReturnsSvgAndPng()
+    {
+        await using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using (var scope = factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.EnsureCreatedAsync(); // the demo businesses
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var owner = new AppUser
+            {
+                UserName = "eier@test.example", Email = "eier@test.example", EmailConfirmed = true,
+                BusinessId = new Guid("11111111-1111-1111-1111-111111111111")
+            };
+            Assert.True((await users.CreateAsync(owner, "Test123!")).Succeeded);
+        }
+
+        var login = await client.PostAsJsonAsync("/api/auth/login",
+            new { email = "eier@test.example", password = "Test123!" });
+        var token = (await login.Content.ReadFromJsonAsync<TokenResponse>())!.AccessToken;
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        var svg = await client.GetAsync("/api/panel/qr");
+        var png = await client.GetAsync("/api/panel/qr?format=png");
+
+        Assert.Equal(HttpStatusCode.OK, svg.StatusCode);
+        Assert.Equal("image/svg+xml", svg.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("<svg", await svg.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.OK, png.StatusCode);
+        Assert.Equal("image/png", png.Content.Headers.ContentType?.MediaType);
     }
 
     // check if Identity's own sign-up endpoint is hidden (accounts are made only through our endpoints)
