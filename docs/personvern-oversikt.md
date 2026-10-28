@@ -65,6 +65,16 @@ Overføring ut av EU/EØS: Cloudflare (USA), under Data Privacy Framework og SCC
 - Før vi tar i bruk en ny leverandør: sjekk at den har databehandleravtale og lagrer i EU/EØS (eller har gyldig overføringsgrunnlag), og varsle bedriftene før den tas i bruk (databehandleravtalen i vilkårene).
 - Ved sikkerhetsbrudd som gjelder kunder av en bedrift: varsle bedriften innen 48 timer.
 
+## Gjennomgang 2026-10-28 (før beta)
+
+- Vilkår: konto (13 år, Google), bestillingsregler (60 min, maks 3 kommende), ny tid, fast sideadresse og QR,
+  lisens til å vise bedriftens innhold, falske vurderinger, helsevirksomheter, pris (30 dagers varsel), ansvar overfor bedrifter.
+- Databehandleravtalen: registrerte (kunder og ansatte), varsler, melding om ulovlig instruks, underleverandører på
+  samme vilkår og merket i personvernerklæringen, overføring ut av EØS, kontroll, 30 dagers varsel ved endringer.
+- Personvernerklæringen: plikt til å gi opplysninger, ingen automatiserte avgjørelser, barn, begrensning, Google, besøksstatistikk.
+- Bør sjekkes gratis av jurist (Jussformidlingen i Bergen eller Juss-Buss i Oslo) før start. Geografisk adresse
+  (ehandelsloven § 8) og org.nr. legges inn når ENK er registrert.
+
 ## Åpne punkter
 
 - Bedrifter innen helse (psykolog, fysioterapi): bestillinger kan avsløre helseforhold. Vurder egne regler før slike bedrifter tas inn i større skala.
