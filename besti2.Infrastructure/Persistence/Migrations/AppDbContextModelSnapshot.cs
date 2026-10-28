@@ -192,6 +192,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("EndUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid?>("InviteId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<bool>("MarketingConsent")
                         .HasColumnType("bit");
 
@@ -239,6 +242,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasDatabaseName("IX_Bookings_ToAnonymize")
                         .HasFilter("[CustomerEmail] <> N'anonymisert@besti.invalid'");
 
+                    b.HasIndex("InviteId")
+                        .HasFilter("[InviteId] IS NOT NULL");
+
                     b.HasIndex("NewTimeTokenHash");
 
                     b.HasIndex("StartUtc")
@@ -262,6 +268,91 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasIndex("Status", "StartUtc");
 
                     b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.BookingInvite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("AnsweredUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("ClosedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("InviterNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("InviterPhone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("InviterUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("OrganizerJoins")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PayMode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("Persons")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("StartUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("Units")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("ExpiresUtc")
+                        .HasFilter("[ClosedUtc] IS NULL");
+
+                    b.HasIndex("InviterUserId");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.ToTable("BookingInvites");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Business", b =>
@@ -1096,6 +1187,25 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.BookingInvite", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("besti2.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Business");
 
                     b.Navigation("Service");
                 });
