@@ -15,10 +15,8 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
 
     public async Task<string?> CreateAsync(string customerUserId, CreateReviewRequest request,
         CancellationToken cancellationToken = default)
-
     {
         if (request.Stars is < 1 or > 5)
-
         {
             return "Velg mellom 1 og 5 stjerner.";
         }
@@ -26,20 +24,17 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
         var comment = string.IsNullOrWhiteSpace(request.Comment) ? null : request.Comment.Trim();
 
         if (comment is { Length: > MaxLength })
-
         {
             return "Kommentaren kan være maks 500 tegn.";
         }
 
         // Only the customer's own booking; someone else's looks like "not found"
-
         var booking = await dbContext.Bookings.AsNoTracking()
             .Where(b => b.Id == request.BookingId && b.CustomerUserId == customerUserId)
             .Select(b => new { b.Id, b.EndUtc, b.Status, b.CustomerName, b.Service.BusinessId })
             .FirstOrDefaultAsync(cancellationToken);
 
         if (booking is null)
-
         {
             return "Fant ikke bestillingen.";
         }
@@ -62,29 +57,20 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
         }
 
         if (await dbContext.Reviews.AnyAsync(r => r.BookingId == booking.Id, cancellationToken))
-
         {
             return "Du har allerede vurdert denne timen.";
         }
 
         dbContext.Reviews.Add(new Review
-
         {
             Id = Guid.NewGuid(),
-
             BookingId = booking.Id,
-
             BusinessId = booking.BusinessId,
-
             CustomerUserId = customerUserId,
-
             CustomerName = booking.CustomerName.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ??
                            "Kunde",
-
             Stars = request.Stars,
-
             Comment = comment,
-
             CreatedUtc = DateTime.UtcNow
         });
 
@@ -113,7 +99,6 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
 
     public async Task<BusinessReviewsDto> GetForBusinessAsync(Guid businessId,
         CancellationToken cancellationToken = default)
-
     {
         var reviews = await dbContext.Reviews.AsNoTracking()
             .Where(r => r.BusinessId == businessId)
@@ -128,29 +113,24 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
 
     public async Task<string?> ReplyAsync(Guid businessId, Guid reviewId, string reply,
         CancellationToken cancellationToken = default)
-
     {
         var text = reply?.Trim() ?? "";
 
         if (text.Length == 0)
-
         {
             return "Skriv et svar.";
         }
 
         if (text.Length > MaxLength)
-
         {
             return "Svaret kan være maks 500 tegn.";
         }
 
-// Only reviews of the business's own bookings
-
+        // Only reviews of the business's own bookings
         var review = await dbContext.Reviews
             .FirstOrDefaultAsync(r => r.Id == reviewId && r.BusinessId == businessId, cancellationToken);
 
         if (review is null)
-
         {
             return "Fant ikke vurderingen.";
         }

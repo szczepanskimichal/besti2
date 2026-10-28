@@ -3,14 +3,23 @@ import {apiFetch, toResult, type ApiResult} from "./client";
 
 // Login, customer account, password and Min profil
 
-export async function login(email: string, password: string): Promise<{ accessToken: string; expiresIn: number } | null | "tooMany"> {
+// null = wrong e-mail or password (or the e-mail is not confirmed yet)
+export type LoginProblem = "tooMany" | "lockedOut" | "noContact";
+
+export async function login(email: string, password: string): Promise<{ accessToken: string; expiresIn: number } | null | LoginProblem> {
     const res = await apiFetch("/api/auth/login", { method: "POST", body: { email, password }, forwardIp: true });
-// Too many attempts: the API's rate limiter answered 429
+    // Too many attempts: the API's rate limiter answered 429
     if (res.status === 429) {
         return "tooMany";
     }
+    // API down or too slow (safeFetch answers 503)
+    if (res.status >= 500) {
+        return "noContact";
+    }
     if (!res.ok) {
-        return null;
+        // Identity says "LockedOut" after 5 wrong passwords in a row (the account waits 5 minutes)
+        const body = await res.json().catch(() => null);
+        return String(body?.detail ?? "").toLowerCase() === "lockedout" ? "lockedOut" : null;
     }
     return res.json();
 }

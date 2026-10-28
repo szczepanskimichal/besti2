@@ -129,6 +129,8 @@ public class BusinessRegistrationServiceTests
         // Confirmed: still hidden, BESTI gets the approval link
         await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
         await service.ShowBusinessOfOwnerAsync(owner.Id);
+        // The owner clicks the link once more: no second mail, the first link keeps working
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
         Assert.True(business.IsHidden);
         var request = Assert.Single(email.Sent, m => m.To == "post@bestiapp.no");
         var token = request.Body.Split("/godkjenn?token=")[1].Trim();

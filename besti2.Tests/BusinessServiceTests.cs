@@ -77,6 +77,24 @@ public class BusinessServiceTests
         Assert.Contains(business!.Services, s => s.Name == "Skjeggtrim" && s.DurationMinutes == 20);
     }
 
+    // check if AddServiceAsync rejects a price the database cannot hold - unhappy path
+    [Fact]
+    public async Task AddServiceAsync_ReturnsError_WhenPriceIsTooHigh()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var request = new CreateServiceRequest("Skjeggtrim", null, 20, 1_000_000_000, "FastPris");
+
+        var error = await service.AddServiceAsync(klippId, request);
+
+        Assert.Equal("Prisen kan være maks 1 000 000 kr.", error);
+    }
+
     // check if AddServiceAsync rejects an unknown price type - unhappy path
     [Fact]
     public async Task AddServiceAsync_ReturnsError_WhenPriceTypeIsInvalid()

@@ -31,5 +31,4 @@ export async function registerCustomerAction(_previous: FormState, formData: For
         });
     }
     redirect("/registrer?sendt=1");
-    
 }

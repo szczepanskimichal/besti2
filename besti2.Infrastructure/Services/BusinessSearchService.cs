@@ -17,8 +17,10 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null, double? maxKm = null,
         string? sort = null, int? minRating = null, CancellationToken cancellationToken = default)
     {
-        // Hidden businesses (owner has not confirmed the email yet) are never shown
-        var query = dbContext.Businesses.AsNoTracking().Where(b => !b.IsHidden);
+        // Hidden businesses (owner has not confirmed the email yet) are never shown, and neither are
+        // businesses without any service yet (nothing to book, the page would look dead)
+        var query = dbContext.Businesses.AsNoTracking()
+            .Where(b => !b.IsHidden && b.Services.Any(s => !s.IsDeleted));
         if (!string.IsNullOrWhiteSpace(category))
         {
             if (!Enum.TryParse<BusinessCategory>(category, ignoreCase: true, out var parsedCategory)
@@ -129,7 +131,6 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             .ToListAsync(cancellationToken);
 
         // Same wide UTC window as AvailabilityService.GetFreeSlotsAsync (the whole Oslo day is inside it)
-
         var fromUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(-1);
 
         var toUtc = date.ToDateTime(TimeOnly.MinValue).AddDays(2);
@@ -158,14 +159,12 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         var result = new List<BusinessListItemDto>();
 
         foreach (var business in businesses)
-
         {
             var dayHours = hours.FirstOrDefault(h => h.BusinessId == business.Id);
 
             var businessServices = services.Where(s => s.BusinessId == business.Id).ToList();
 
             // The searched service ("klipp" -> Herreklipp), otherwise the shortest one
-
             var service = businessServices
                               .Where(s => !string.IsNullOrEmpty(text) && s.Name.ToLower().Contains(text))
                               .OrderBy(s => s.DurationMinutes)
@@ -173,7 +172,6 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                           ?? businessServices.OrderBy(s => s.DurationMinutes).FirstOrDefault();
 
             if (dayHours is null || service is null)
-
             {
                 continue; // closed that day, or no services
             }
@@ -267,7 +265,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
     {
         return await dbContext.Businesses
             .AsNoTracking()
-            .Where(b => !b.IsHidden)
+            .Where(b => !b.IsHidden && b.Services.Any(s => !s.IsDeleted))
             .Select(b => b.City)
             .Distinct()
             .OrderBy(city => city)

@@ -130,7 +130,6 @@ if (app.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 
 // First: the visitor's real IP for everything after (rate limiting)
 app.UseForwardedHeaders();
-app.UseHttpsRedirection();
 // Uploaded images (development storage), e.g. /uploads/abc.webp
 var uploadsFolder = Path.Combine(app.Environment.ContentRootPath, "uploads");
 Directory.CreateDirectory(uploadsFolder);

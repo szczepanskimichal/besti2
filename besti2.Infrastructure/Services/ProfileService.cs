@@ -161,7 +161,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         foreach (var review in reviews)
         {
             review.CustomerName = FormerCustomer;
-            review.CustomerUserId = "slettet";
+            review.CustomerUserId = BookingAnonymizer.AnonymizedUserId;
         }
 
         // 4. The customer's bell

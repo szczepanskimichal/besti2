@@ -15,6 +15,12 @@ export async function loginAction(_previous: FormState, formData: FormData): Pro
     if (result === "tooMany") {
         return { error: "For mange forsøk. Prøv igjen om litt.", values: { email } };
     }
+    if (result === "lockedOut") {
+        return { error: "For mange feil passord. Vent 5 minutter og prøv igjen, eller velg «Glemt passord».", values: { email } };
+    }
+    if (result === "noContact") {
+        return { error: "Vi fikk ikke kontakt med BESTI akkurat nå. Prøv igjen om litt.", values: { email } };
+    }
     if (!result) {
         return {
             error: "Feil e-post eller passord. Har du nettopp opprettet konto? Bekreft e-posten først.",

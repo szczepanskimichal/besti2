@@ -26,6 +26,27 @@ public class BusinessSearchServiceTests
         return (db, new BusinessSearchService(db, new FakeImageStorage()));
     }
 
+    // check if a business without services (nothing to book yet) is left out of the search and the city list
+    [Fact]
+    public async Task GetAllAsync_BusinessWithoutServices_IsNotShown()
+    {
+        var (db, service) = await CreateServiceAsync();
+        await using var _ = db;
+        foreach (var s in db.Services.Where(s => s.BusinessId == new Guid("33333333-3333-3333-3333-333333333333")))
+        {
+            s.IsDeleted = true;
+        }
+
+        await db.SaveChangesAsync();
+
+        var result = await service.GetAllAsync();
+        var cities = await service.GetCitiesAsync();
+
+        Assert.Equal(2, result.Count);
+        Assert.DoesNotContain(result, b => b.Name == "Nordlys Psykologsenter");
+        Assert.DoesNotContain("Trondheim", cities);
+    }
+
     [Fact]
     public async Task GetAllAsync_ReturnsSeededBusinesses_SortedByName()
     {

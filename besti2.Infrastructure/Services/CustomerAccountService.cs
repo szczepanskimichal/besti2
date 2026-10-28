@@ -18,10 +18,12 @@ public class CustomerAccountService(
     public async Task<string?> RegisterAsync(RegisterCustomerRequest request,
         CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(request.FullName) || string.IsNullOrWhiteSpace(request.Email)
-                                                        || !request.Email.Contains('@') ||
-                                                        string.IsNullOrWhiteSpace(request.Password)
-                                                        || request.FullName.Length > 100 || request.Email.Length > 250)
+        if (string.IsNullOrWhiteSpace(request.FullName)
+            || string.IsNullOrWhiteSpace(request.Email)
+            || !request.Email.Contains('@')
+            || string.IsNullOrWhiteSpace(request.Password)
+            || request.FullName.Length > 100
+            || request.Email.Length > 250)
         {
             return "Fyll ut alle feltene.";
         }
@@ -48,8 +50,13 @@ public class CustomerAccountService(
             }
 
             existing.FullName = request.FullName.Trim();
-            await userManager.RemovePasswordAsync(existing);
-            await userManager.AddPasswordAsync(existing, request.Password);
+            var removed = await userManager.RemovePasswordAsync(existing);
+            var added = removed.Succeeded ? await userManager.AddPasswordAsync(existing, request.Password) : removed;
+            if (!added.Succeeded)
+            {
+                return "Kunne ikke opprette kontoen. Prøv igjen.";
+            }
+
             await TrySendConfirmationAsync(existing, cancellationToken);
             return null;
         }
@@ -97,9 +104,7 @@ public class CustomerAccountService(
         return result.Succeeded;
     }
 
-
     // null when the password follows the rules, otherwise the message for the form
-    // Builds the confirmation link and mails it; a mail error must not break sign-up
     private async Task<string?> CheckPasswordAsync(string password)
     {
         foreach (var validator in userManager.PasswordValidators)
@@ -113,6 +118,7 @@ public class CustomerAccountService(
         return null;
     }
 
+    // Builds the confirmation link and mails it; a mail error must not break sign-up
     private async Task<bool> TrySendConfirmationAsync(AppUser user, CancellationToken cancellationToken)
     {
         var code = await userManager.GenerateEmailConfirmationTokenAsync(user);
