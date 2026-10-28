@@ -27,3 +27,9 @@ updates:
     directory: "/"
     schedule:
       interval: "monthly"
+
+  # Caddy and SQL Server images on the server are pinned to a version: a monthly PR when a newer one comes out
+  - package-ecosystem: "docker-compose"
+    directory: "/deploy"
+    schedule:
+      interval: "monthly"

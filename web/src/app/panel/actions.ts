@@ -42,7 +42,7 @@ function viewParam(formData: FormData): string {
 }
 
 const MANUAL_FIELDS = ["serviceId", "employeeId", "date", "time", "customerName", "customerPhone", "customerEmail",
-    "note", "sendConfirmation"];
+    "note", "sendConfirmation", "units"];
 
 // "+ Ny bestilling": errors come back to the form with everything typed; on success the calendar
 // shows the day of the new visit
@@ -67,6 +67,7 @@ export async function createManualBookingAction(_previous: FormState, formData: 
         customerEmail: values.customerEmail.trim() === "" ? null : values.customerEmail,
         note: values.note,
         sendConfirmation: values.sendConfirmation === "on",
+        units: Number(values.units) || 1, // no field = a service with a fixed length
     });
     if (!result.ok) {
         return { error: result.message, values };

@@ -17,6 +17,8 @@ public class ManualBookingTests
     private static readonly Guid FjordBygg = new("22222222-2222-2222-2222-222222222222");
     private static readonly Guid HerreklippId = new("a1111111-0000-0000-0000-000000000002");
     private static readonly Guid IngridId = new("b1111111-0000-0000-0000-000000000001");
+    private static readonly Guid SnekkerarbeidId = new("a2222222-0000-0000-0000-000000000003"); // Per time, 60 min
+    private static readonly Guid LarsId = new("b2222222-0000-0000-0000-000000000001"); // Fjord Bygg, Monday 7–15
 
     private static async Task<AppDbContext> CreateSeededDbAsync()
     {
@@ -80,6 +82,35 @@ public class ManualBookingTests
         var result = await service.CreateByBusinessAsync(FjordBygg, WalkIn(monday, new TimeOnly(12, 0)));
 
         Assert.Equal(CreateBookingOutcome.NotFound, result.Outcome);
+    }
+
+    // check if the business can add 3 hours of a "Per time" service in a row
+    [Fact]
+    public async Task CreateByBusinessAsync_PerTimeThreeHours_BooksThreeHours()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        var result = await service.CreateByBusinessAsync(FjordBygg, new CreateManualBookingRequest(SnekkerarbeidId,
+            LarsId, monday, new TimeOnly(10, 0), "Ola", "912 34 567", null, null, false, Units: 3));
+
+        Assert.Equal(CreateBookingOutcome.Created, result.Outcome);
+        Assert.Equal(FutureMondayAt10.AddHours(3), result.Booking!.EndUtc);
+    }
+
+    // check if a service with a fixed length cannot be booked several times in a row
+    [Fact]
+    public async Task CreateByBusinessAsync_FixedServiceTwoUnits_IsInvalid()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var monday = DateOnly.FromDateTime(FutureMondayAt10);
+
+        var result = await service.CreateByBusinessAsync(KlippOgStil,
+            WalkIn(monday, new TimeOnly(12, 0)) with { Units = 2 });
+
+        Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
     }
 
     // check if the customer gets a confirmation mail only when the business asks for it

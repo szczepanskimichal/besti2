@@ -199,6 +199,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .IsUnique()
                 .HasFilter("[Status] <> 'Avlyst'");
             e.HasIndex(x => x.CustomerUserId);
+            // Reminders and the pending-bookings check every 15 minutes look for a status and a time range
+            e.HasIndex(x => new { x.Status, x.StartUtc });
             e.HasOne(x => x.Employee).WithMany()
                 .HasForeignKey(x => x.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
