@@ -1,6 +1,7 @@
 using besti2.Application.Bookings;
 using besti2.Application.Businesses;
 using besti2.Application.Images;
+using besti2.Application.Invites;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -15,8 +16,10 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
     public async Task<IReadOnlyList<BusinessListItemDto>> GetAllAsync(
         string? category = null, string? city = null, string? q = null, DateOnly? date = null,
         TimeOnly? from = null, TimeOnly? to = null, double? lat = null, double? lng = null, double? maxKm = null,
-        string? sort = null, int? minRating = null, CancellationToken cancellationToken = default)
+        string? sort = null, int? minRating = null, int persons = 1, CancellationToken cancellationToken = default)
     {
+        // BESTI sammen ("For hvem?": Meg + en venn): only times when two employees are free together
+        persons = Math.Clamp(persons, 1, InviteRules.MaxPersons);
         // Hidden businesses (owner has not confirmed the email yet) are never shown, and neither are
         // businesses without any service yet (nothing to book, the page would look dead)
         var query = dbContext.Businesses.AsNoTracking()
@@ -86,11 +89,12 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             withLogos = withLogos.Where(b => b.ReviewCount < MinReviewsForAverage || b.AverageRating >= min).ToList();
         }
 
-        // Only a time of day: the soonest day for each business
+        // Only a time of day: the soonest day for each business. For two people always the soonest shared
+        // times, so only businesses that can take two at once are shown
         var list = date is not null
-            ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, cancellationToken)
-            : from is not null || to is not null
-                ? await FindSoonestSlotsAsync(withLogos, q, from, to, cancellationToken)
+            ? await AddFreeSlotsAsync(withLogos, date.Value, q, from, to, persons, cancellationToken)
+            : from is not null || to is not null || persons > 1
+                ? await FindSoonestSlotsAsync(withLogos, q, from, to, persons, cancellationToken)
                 : withLogos;
         var sorted = lat is double userLat && lng is double userLng
             ? await SortByDistanceAsync(list, userLat, userLng, maxKm, cancellationToken)
@@ -117,7 +121,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
 
     // Free times for the whole list with 5 queries, however many businesses there are (no query per business)
     private async Task<IReadOnlyList<BusinessListItemDto>> AddFreeSlotsAsync(
-        List<BusinessListItemDto> businesses, DateOnly date, string? q, TimeOnly? from, TimeOnly? to,
+        List<BusinessListItemDto> businesses, DateOnly date, string? q, TimeOnly? from, TimeOnly? to, int persons,
         CancellationToken cancellationToken = default)
     {
         // Outside any sensible booking range (also avoids a DateTime overflow for 9999-12-31)
@@ -127,7 +131,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         }
 
         var data = await LoadSlotDataAsync(businesses, date, date, cancellationToken);
-        return FindSlotsOnDay(businesses, data, date, q, from, to, cancellationToken);
+        return FindSlotsOnDay(businesses, data, date, q, from, to, persons, cancellationToken);
     }
 
     // Everything the free times need for a range of days, read in 5 queries and grouped for fast lookups
@@ -194,7 +198,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
 
     // The first 3 free times on one day for each business, soonest first; businesses without any are left out
     private static List<BusinessListItemDto> FindSlotsOnDay(List<BusinessListItemDto> businesses, SlotData data,
-        DateOnly date, string? q, TimeOnly? from, TimeOnly? to, CancellationToken cancellationToken)
+        DateOnly date, string? q, TimeOnly? from, TimeOnly? to, int persons, CancellationToken cancellationToken)
     {
         // The same earliest time as on the booking page (see BookingRules)
         var earliestUtc = BookingRules.EarliestStartUtc(DateTime.UtcNow);
@@ -223,19 +227,19 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             var chosen = matching.Count > 0 ? matching[0] : businessServices[0];
 
             var timeOffs = data.TimeOffs[business.Id].ToList();
-            var slots = data.Employees[business.Id]
-                .SelectMany(employeeId => SlotCalculator.GetFreeSlots(
-                        date, open.OpensAt, open.ClosesAt, chosen.DurationMinutes,
-                        data.Bookings[employeeId]
-                            .Concat(timeOffs
-                                .Where(t => t.EmployeeId == null || t.EmployeeId == employeeId)
-                                .Select(t => (t.StartUtc, t.EndUtc)))
-                            .ToList(), earliestUtc)
-                    .Where(start => IsInTimeWindow(start, from, to))
-                    .Select(start => new FreeSlotDto(start, chosen.Id, chosen.Name, employeeId)))
-                .OrderBy(s => s.StartUtc)
-                .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button
+            var freeByEmployee = data.Employees[business.Id]
+                .Select(employeeId => (employeeId, SlotCalculator.GetFreeSlots(
+                    date, open.OpensAt, open.ClosesAt, chosen.DurationMinutes,
+                    data.Bookings[employeeId]
+                        .Concat(timeOffs
+                            .Where(t => t.EmployeeId == null || t.EmployeeId == employeeId)
+                            .Select(t => (t.StartUtc, t.EndUtc)))
+                        .ToList(), earliestUtc)));
+            // Two free employees at 10:00 = one button (for two people: both are needed)
+            var slots = SlotCalculator.FreeForPersons(freeByEmployee, persons)
+                .Where(t => IsInTimeWindow(t.StartUtc, from, to))
                 .Take(3)
+                .Select(t => new FreeSlotDto(t.StartUtc, chosen.Id, chosen.Name, t.EmployeeIds[0]))
                 .ToList();
             if (slots.Count > 0)
             {
@@ -256,7 +260,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
 
     // "Tid på dagen" without a date: for each business the soonest day (max 14 days ahead) with a free time in that window
     private async Task<IReadOnlyList<BusinessListItemDto>> FindSoonestSlotsAsync(
-        List<BusinessListItemDto> businesses, string? q, TimeOnly? from, TimeOnly? to,
+        List<BusinessListItemDto> businesses, string? q, TimeOnly? from, TimeOnly? to, int persons,
         CancellationToken cancellationToken = default)
     {
         const int daysAhead = 14;
@@ -267,7 +271,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         var left = businesses;
         for (var day = 0; day < daysAhead && left.Count > 0; day++)
         {
-            var withSlots = FindSlotsOnDay(left, data, today.AddDays(day), q, from, to, cancellationToken);
+            var withSlots = FindSlotsOnDay(left, data, today.AddDays(day), q, from, to, persons, cancellationToken);
             found.AddRange(withSlots);
             var foundIds = withSlots.Select(w => w.Id).ToHashSet();
             left = left.Where(b => !foundIds.Contains(b.Id)).ToList();

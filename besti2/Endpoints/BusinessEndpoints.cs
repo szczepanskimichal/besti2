@@ -13,7 +13,7 @@ public static class BusinessEndpoints
         // sort=rating = "Best vurdert", minRating=4 = "4★ og over")
         group.MapGet("/businesses",
             async (string? category, string? city, string? q, DateOnly? date, TimeOnly? from, TimeOnly? to, double? lat,
-                double? lng, double? maxKm, string? sort, int? minRating, int? page,
+                double? lng, double? maxKm, string? sort, int? minRating, int? page, int? persons,
                 IBusinessSearchService search, CancellationToken cancellationToken) =>
             {
                 // A position outside the map (or "infinity") would crash the database query
@@ -29,7 +29,7 @@ public static class BusinessEndpoints
                 }
 
                 var all = await search.GetAllAsync(category, city, q, date, from, to, lat, lng, maxKm, sort, minRating,
-                    cancellationToken);
+                    persons ?? 1, cancellationToken);
                 // 24 businesses per page (?page=2 ...)
                 return Results.Ok(BusinessPageDto.From(all, page));
             }).RequireRateLimiting("search").CacheOutput("search");
