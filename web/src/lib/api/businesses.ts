@@ -32,7 +32,8 @@ export async function getBusinesses(
     if (sort) params.set("sort", sort);
     if (minRating) params.set("minRating", minRating);
 
-    const res = await apiFetch(`/api/businesses?${params}`);
+    // forwardIp: the API limits searches per visitor, not for the whole site at once
+    const res = await apiFetch(`/api/businesses?${params}`, { forwardIp: true });
 
     if (!res.ok) {
         throw new Error(`Kunne ikke hente bedrifter (${res.status})`);
@@ -70,7 +71,8 @@ export async function getFreeDays(serviceId: string, employeeId: string | undefi
     if (employeeId) {
         params.set("employeeId", employeeId);
     }
-    const res = await apiFetch(`/api/availability/days?${params}`);
+    // forwardIp: the API limits free-time lookups per visitor, not for the whole site at once
+    const res = await apiFetch(`/api/availability/days?${params}`, { forwardIp: true });
     if (res.status === 404) {
         return null;
     }

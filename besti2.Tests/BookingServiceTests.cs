@@ -3,6 +3,7 @@ using besti2.Application.Bookings;
 using besti2.Domain.Entities;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -75,6 +76,49 @@ public class BookingServiceTests
         Assert.Equal("kari@test.example", sent.To);
         Assert.Contains("Herreklipp", sent.Body);
         Assert.Contains("mandag 5. januar kl. 10:00", sent.Body);
+    }
+
+    // check if the owner gets an e-mail about a new booking, with the customer and a link to the calendar
+    [Fact]
+    public async Task CreateAsync_OwnerGetsNewBookingEmail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = KlippOgStil
+        });
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance, "https://bestiapp.no");
+
+        var created = await service.CreateAsync(HerreklippHosIngrid());
+
+        Assert.Equal(2, email.Sent.Count);
+        var toOwner = email.Sent.Single(m => m.To == "eier@klippogstil.example");
+        Assert.StartsWith("Ny bestilling: Herreklipp", toOwner.Subject);
+        Assert.Contains("Kari Nordmann", toOwner.Body);
+        Assert.Contains("+4790000000", toOwner.Body);
+        Assert.Contains($"https://bestiapp.no/panel?dag=2099-01-05&bestilling={created.Booking!.Id}", toOwner.Body);
+    }
+
+    // check if an owner who never confirmed the e-mail gets nothing (nobody knows the address is right)
+    [Fact]
+    public async Task CreateAsync_UnconfirmedOwner_GetsNoEmail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = false, BusinessId = KlippOgStil
+        });
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+
+        await service.CreateAsync(HerreklippHosIngrid());
+
+        Assert.Equal("kari@test.example", Assert.Single(email.Sent).To);
     }
 
     [Fact]

@@ -126,6 +126,8 @@ public class BookingService(
         }
 
         await emails.SendConfirmationAsync(booking, service, cancellationToken);
+        await emails.SendNewBookingToOwnerAsync(booking, service, BookingNotifier.PanelLink(booking),
+            cancellationToken);
         await notifier.NotifyAsync(booking, toBusiness: true,
             $"Ny bestilling: {booking.CustomerName}, {service.Name} {OsloTime.Format(booking.StartUtc)}",
             BookingNotifier.PanelLink(booking),
