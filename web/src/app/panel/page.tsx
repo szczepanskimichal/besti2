@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelBookings, getPanelBusiness, getPanelTimeOff } from "@/lib/api";
@@ -7,6 +8,8 @@ import MoveBookingForm from "./MoveBookingForm";
 import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
 import TimeOffForm from "./TimeOffForm";
+import FirstSteps from "./FirstSteps";
+import { FIRST_STEPS_COOKIE } from "./firstStepsCookie";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
 import { employeeColumns, dayColumns, blocksOn, visibleRange, clock } from "./calendar/calendarLayout";
@@ -83,6 +86,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const selectedBlock = allBlocks.find((t) => t.id === query.blokkering);
     // Visits already in a time that was just blocked (they are kept)
     const overlapping = Number(query.varsel);
+    const firstStepsHidden = (await cookies()).has(FIRST_STEPS_COOKIE);
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
@@ -93,6 +97,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                     tjenester, ansatte og åpningstider. Kundene ser bedriften når den er godkjent.
                 </p>
             )}
+            {!firstStepsHidden && <FirstSteps business={business}/>}
             {query.feil && (
                 <p className={styles.error} role="alert">
                     {query.feil === "for-sent"
