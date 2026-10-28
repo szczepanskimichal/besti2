@@ -176,6 +176,53 @@ public class ApiTests
         Assert.Equal(expected, response.StatusCode);
     }
 
+    // check if BESTI sammen works through HTTP: a customer sends, the link is open to all, but only the
+    // logged-in inviter is recognised, and "Jeg blir med!" needs a login
+    [Fact]
+    public async Task Invite_SendOpenAndAcceptNeedsLogin()
+    {
+        await using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        using (var scope = factory.Services.CreateScope())
+        {
+            await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.EnsureCreatedAsync();
+            var users = scope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+            var kari = new AppUser
+            {
+                UserName = "kari@test.example", Email = "kari@test.example", EmailConfirmed = true,
+                FullName = "Kari Nordmann"
+            };
+            Assert.True((await users.CreateAsync(kari, "Test123!")).Succeeded);
+        }
+
+        var login = await client.PostAsJsonAsync("/api/auth/login",
+            new { email = "kari@test.example", password = "Test123!" });
+        var accessToken = (await login.Content.ReadFromJsonAsync<TokenResponse>())!.AccessToken;
+        var kariClient = factory.CreateClient();
+        kariClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var sent = await kariClient.PostAsJsonAsync("/api/invites", new
+        {
+            serviceId = "a1111111-0000-0000-0000-000000000002", startUtc = "2099-01-05T09:00:00Z",
+            phone = "91234567", payMode = "JegSpanderer", decisionMinutes = 30
+        });
+        var link = (await sent.Content.ReadFromJsonAsync<InviteLink>())!.Token;
+        var asKari = await kariClient.GetFromJsonAsync<InviteView>($"/api/invites/{link}");
+        var asStranger = await client.GetFromJsonAsync<InviteView>($"/api/invites/{link}");
+        var acceptWithoutLogin = await client.PostAsJsonAsync($"/api/invites/{link}/accept", new { phone = "91234567" });
+
+        Assert.Equal(HttpStatusCode.OK, sent.StatusCode);
+        Assert.True(asKari!.IsInviter);
+        Assert.False(asStranger!.IsInviter);
+        Assert.Equal("Kari", asStranger.InviterFirstName);
+        Assert.Equal("JegSpanderer", asStranger.PayMode);
+        Assert.Equal(HttpStatusCode.Unauthorized, acceptWithoutLogin.StatusCode);
+    }
+
+    private record InviteLink(string Token);
+
+    private record InviteView(bool IsInviter, string InviterFirstName, string PayMode);
+
     // Like the web server: the visitor's IP in X-Forwarded-For
     private static Task<HttpResponseMessage> Search(HttpClient client, string visitorIp)
     {
