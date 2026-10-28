@@ -1,48 +1,46 @@
-using besti2.Infrastructure.Services;
 using besti2.Infrastructure.Services.Email;
 
 namespace besti2.Jobs;
 
-// Sends the e-mails from EmailQueue through the mail server (Brevo), 4 at a time: one mail takes about
-// a second, so one by one a busy hour (or 50 bookings at once) made the last mail wait many minutes
-public class EmailSenderJob(EmailQueue queue, SmtpEmailService smtp, ILogger<EmailSenderJob> logger)
+// Sends the e-mails from the outbox (see EmailOutbox) through the mail server (Brevo): right after a new e-mail
+// is saved, and every 30 seconds for the retries. The e-mails wait in the database, so a deploy loses none
+public class EmailSenderJob(
+    IServiceScopeFactory scopeFactory,
+    EmailOutboxSignal signal,
+    ILogger<EmailSenderJob> logger)
     : BackgroundService
 {
-    public const int Senders = 4;
-
-    protected override Task ExecuteAsync(CancellationToken stoppingToken) =>
-        Task.WhenAll(Enumerable.Range(0, Senders).Select(_ => SendLoopAsync(stoppingToken)));
-
-    private async Task SendLoopAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
         {
-            await foreach (var email in queue.Reader.ReadAllAsync(stoppingToken))
+            while (!stoppingToken.IsCancellationRequested)
             {
-                await queue.DeliverAsync(email, smtp, stoppingToken);
+                int taken;
+                try
+                {
+                    // A background job lives for the whole app, so it needs its own scope for the DbContext
+                    using var scope = scopeFactory.CreateScope();
+                    var outbox = scope.ServiceProvider.GetRequiredService<EmailOutbox>();
+                    taken = await outbox.SendDueAsync(DateTime.UtcNow, stoppingToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    // The database is down for a moment: never crash the API, try again in 30 seconds
+                    logger.LogError(ex, "Sending e-mails from the outbox failed");
+                    taken = 0;
+                }
+
+                // A full batch: maybe more are waiting, so no pause
+                if (taken < EmailOutbox.BatchSize)
+                {
+                    await signal.WaitAsync(TimeSpan.FromSeconds(30), stoppingToken);
+                }
             }
         }
         catch (OperationCanceledException)
         {
-            // The API is stopping: StopAsync sends what is left
-        }
-    }
-
-    // A deploy restarts the API: the e-mails still waiting get one quick try first (Docker waits 10 s)
-    public override async Task StopAsync(CancellationToken cancellationToken)
-    {
-        await base.StopAsync(cancellationToken);
-        using var limit = new CancellationTokenSource(TimeSpan.FromSeconds(8));
-        while (!limit.IsCancellationRequested && queue.Reader.TryRead(out var email))
-        {
-            try
-            {
-                await smtp.SendAsync(email.To, email.Subject, email.Body, limit.Token);
-            }
-            catch (Exception ex)
-            {
-                logger.LogWarning(ex, "E-mail \"{Subject}\" not sent before the API stopped", email.Subject);
-            }
+            // The API is stopping; the e-mails not sent yet stay in the outbox for the next start
         }
     }
 }

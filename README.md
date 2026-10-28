@@ -50,7 +50,7 @@ Live at **[bestiapp.no](https://bestiapp.no)** (beta, starting in Gjøvik).
 | Tests | xUnit (service tests and HTTP tests with `WebApplicationFactory`) |
 | Hosting | Docker Compose on a Hetzner server, Caddy, Cloudflare, nightly backups |
 | CI/CD | GitHub Actions: build, test, lint, Docker images, automatic deploy with rollback |
-| E-mail | Brevo SMTP through a background queue (Mailpit locally) |
+| E-mail | Brevo SMTP through an outbox table in the database, sent in the background with retries (Mailpit locally) |
 
 The web app only shows data; all rules live in the API, so a mobile app can use the same API later.
 

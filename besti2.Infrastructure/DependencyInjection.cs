@@ -37,11 +37,15 @@ public static class DependencyInjection
             provider.GetRequiredService<IEmailService>(),
             provider.GetRequiredService<ILogger<BookingService>>(),
             webBaseUrl));
-        // Every e-mail goes through a queue and is sent in the background (see EmailQueue);
+        // Every e-mail is saved in the outbox in the database and sent in the background (see EmailOutbox);
         // SmtpEmailService talks to the mail server itself
         services.AddTransient<SmtpEmailService>();
-        services.AddSingleton<EmailQueue>();
-        services.AddTransient<IEmailService, QueuedEmailService>();
+        services.AddSingleton<EmailOutboxSignal>();
+        services.AddTransient<IEmailService, OutboxEmailService>();
+        services.AddScoped(provider => new EmailOutbox(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<SmtpEmailService>(),
+            provider.GetRequiredService<ILogger<EmailOutbox>>()));
         // One shared counter for the whole API (see MailLimiter)
         services.AddSingleton(new MailLimiter());
         services.AddScoped<IBusinessRegistrationService>(provider => new BusinessRegistrationService(

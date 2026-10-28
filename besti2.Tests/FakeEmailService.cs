@@ -8,7 +8,12 @@ public class FakeEmailService : IEmailService
 
     public Task SendAsync(string to, string subject, string body, CancellationToken cancellationToken = default)
     {
-        Sent.Add((to, subject, body));
+        // The outbox sends several e-mails at the same time
+        lock (Sent)
+        {
+            Sent.Add((to, subject, body));
+        }
+
         return Task.CompletedTask;
     }
 }
