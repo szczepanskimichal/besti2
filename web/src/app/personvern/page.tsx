@@ -108,9 +108,10 @@ export default function PrivacyPage() {
 
             <h2>Hvor lenge lagrer vi opplysningene?</h2>
             <ul>
-                <li><strong>Bestillinger:</strong> i 5 år etter timen, slik at bedriften har historikk. Deretter
+                <li><strong>Bestillinger:</strong> i 3 år etter timen, slik at bedriften har historikk og timen kan
+                    dokumenteres ved en eventuell uenighet (den vanlige foreldelsesfristen er 3 år). Deretter
                     anonymiseres de automatisk (navn, telefon, e-post og melding fjernes).</li>
-                <li><strong>Vurderinger:</strong> 5 år etter timen fjernes navnet ditt, og vurderingen vises som
+                <li><strong>Vurderinger:</strong> 3 år etter timen fjernes navnet ditt, og vurderingen vises som
                     «Tidligere kunde». Stjernene og teksten blir stående, slik at bedriftens snitt forblir riktig.</li>
                 <li><strong>Varsler:</strong> til du sletter dem, men aldri lenger enn 7 dager for kunder og 14 dager
                     for bedrifter.</li>

@@ -62,7 +62,7 @@ export default function TermsPage() {
                 <li>Du kan gi én vurdering for hver time du har hatt, og bare etter at timen er over.</li>
                 <li>Skriv om din egen opplevelse, ærlig og saklig. Ikke skriv personangrep, trusler, hatefulle eller
                     ulovlige ytringer, reklame eller opplysninger om andre personer, for eksempel ansattes helse.</li>
-                <li>Vurderingen vises med fornavnet ditt. 5 år etter timen, eller når du sletter kontoen, vises den som
+                <li>Vurderingen vises med fornavnet ditt. 3 år etter timen, eller når du sletter kontoen, vises den som
                     «Tidligere kunde».</li>
                 <li>Bedriften kan svare offentlig, men kan ikke slette, endre eller velge bort vurderinger. Snittet
                     regnes av alle vurderinger, og en bedrift får stjerner i søket først når den har minst
@@ -126,7 +126,7 @@ export default function TermsPage() {
                 <li><strong>Hva behandles:</strong> opplysninger om bedriftens kunder i forbindelse med bestillinger
                     (navn, telefon, e-post, tjeneste, ansatt, tidspunkt, status inkludert «møtte ikke», kundens
                     melding og grunn for avbestilling, varsler om timen) og navn på bedriftens ansatte.</li>
-                <li><strong>Hvor lenge:</strong> bestillinger anonymiseres automatisk 5 år etter timen. Varsler slettes
+                <li><strong>Hvor lenge:</strong> bestillinger anonymiseres automatisk 3 år etter timen. Varsler slettes
                     etter høyst 14 dager. Sikkerhetskopier slettes etter 14 dager.</li>
                 <li><strong>Formål:</strong> å ta imot, vise, flytte og avlyse bestillinger og sende bekreftelser,
                     påminnelser og varsler på vegne av bedriften. BESTI bruker ikke opplysningene til egne formål,

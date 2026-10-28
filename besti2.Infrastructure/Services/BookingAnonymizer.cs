@@ -6,8 +6,9 @@ namespace besti2.Infrastructure.Services;
 
 public class BookingAnonymizer(AppDbContext dbContext) : IBookingAnonymizer
 {
-    // Same period as promised on /personvern
-    public const int RetentionYears = 5;
+    // Same period as promised on /personvern: the general limitation period for claims in Norway
+    // (foreldelsesloven § 2), so a dispute about a visit can still be documented; no payments are stored
+    public const int RetentionYears = 3;
 
     // .invalid is a reserved domain, so no real mail can ever go there
     public const string AnonymizedEmail = "anonymisert@besti.invalid";

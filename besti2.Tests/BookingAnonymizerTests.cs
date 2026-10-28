@@ -26,7 +26,7 @@ public class BookingAnonymizerTests
         EmployeeId = new Guid("b1111111-0000-0000-0000-000000000001")
     };
 
-// check if only bookings older than 5 years lose their customer data
+// check if only bookings older than 3 years lose their customer data
     [Fact]
     public async Task AnonymizeOldBookingsAsync_AnonymizesOnlyOldBookings()
     {
@@ -36,7 +36,7 @@ public class BookingAnonymizerTests
             .Options;
         await using var db = new AppDbContext(options);
         await db.Database.EnsureCreatedAsync();
-        db.Bookings.Add(NewBooking(Now.AddYears(-6), "Gammel Kunde"));
+        db.Bookings.Add(NewBooking(Now.AddYears(-4), "Gammel Kunde"));
         db.Bookings.Add(NewBooking(Now.AddYears(-1), "Ny Kunde"));
         await db.SaveChangesAsync();
         var service = new BookingAnonymizer(db);
