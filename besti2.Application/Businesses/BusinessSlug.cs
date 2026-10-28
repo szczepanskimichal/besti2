@@ -12,7 +12,7 @@ public static class BusinessSlug
     // Top-level pages of the website: a business can never get one of these addresses
     private static readonly HashSet<string> Reserved =
     [
-        "api", "bedrift", "bekreft-epost", "glemt-passord", "godkjenn", "konto-slettet", "logg-inn", "min-besti",
+        "aerlig-booking", "api", "bedrift", "bekreft-epost", "glemt-passord", "godkjenn", "konto-slettet", "logg-inn", "min-besti",
         "ny-tid", "panel", "personvern", "registrer", "registrer-bedrift", "robots.txt", "sitemap.xml", "uploads",
         "varsler", "vilkar", "favicon.ico", "_next", "health", "om", "hjelp", "kontakt", "admin"
     ];

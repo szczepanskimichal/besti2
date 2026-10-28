@@ -4,11 +4,12 @@ import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusinessBySlug, getBusinessReviews } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
-import { formatPrice } from "@/lib/format";
+import { formatDate, formatPrice } from "@/lib/format";
 import { freeCancelText } from "@/lib/freeCancel";
 import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
+import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 
 import styles from "./page.module.css";
 
@@ -65,6 +66,14 @@ export default async function BusinessPage({ params }: Props) {
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
+                {business.verifiedUtc && (
+                    <p className={styles.verified}>
+                        <VerifiedBadge href="/aerlig-booking#verifisert"/>
+                        <span className={styles.muted}>
+                            Sjekket i Brønnøysundregistrene {formatDate(business.verifiedUtc)}
+                        </span>
+                    </p>
+                )}
                 {/* Average only from 3 reviews (same limit as in the search), before that "Ny på Besti" */}
                 {reviews.average !== null && reviews.count >= 3 ? (
                     <a href="#vurderinger" className={styles.rating}>

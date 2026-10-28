@@ -1,4 +1,4 @@
-import type {BusinessDetails, PanelBooking, TimeOff} from "@/lib/types";
+import type {BusinessDetails, PanelBooking, ServiceTemplate, TimeOff} from "@/lib/types";
 import {API_URL, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
 // The business panel: calendar, blocked time, services, employees, profile, photos
 
@@ -88,6 +88,17 @@ export async function getPanelQr(token: string, format: "svg" | "png"): Promise<
 
 export async function addService(token: string, input: object): Promise<ApiResult> {
     return toResult(await apiFetch("/api/panel/services", { method: "POST", token, body: input }));
+}
+
+// "Forslag for din bransje": suggestions for the business's industry, without the services it already has
+export async function getServiceTemplates(token: string): Promise<ServiceTemplate[]> {
+    const res = await apiFetch("/api/panel/service-templates", { token });
+    return res.ok ? res.json() : [];
+}
+
+// The chosen suggestions in one go: all are saved, or none
+export async function addServices(token: string, input: object[]): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/panel/services/batch", { method: "POST", token, body: input }));
 }
 
 export async function updateService(token: string, serviceId: string, input: object): Promise<ApiResult> {

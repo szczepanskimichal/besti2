@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { addService, deleteService, updateService } from "@/lib/api";
+import { addService, addServices, deleteService, getServiceTemplates, updateService } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -15,6 +15,43 @@ export async function addServiceAction(_previous: FormState, formData: FormData)
         return { error: result.message, values: typedValues(formData) };
     }
     redirect("/panel/tjenester?lagt-til=1");
+}
+// "Forslag for din bransje": name, price type and description come from the API's own list,
+// only the ticked boxes, the length and the price come from the form
+export async function addSuggestionsAction(_previous: FormState, formData: FormData): Promise<FormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const templates = await getServiceTemplates(token);
+    const count = Math.min(Number(formData.get("antall")) || 0, templates.length);
+    const values: Record<string, string> = {};
+    const chosen = [];
+    for (let i = 0; i < count; i++) {
+        for (const field of [`valgt-${i}`, `tid-${i}`, `pris-${i}`]) {
+            values[field] = String(formData.get(field) ?? "");
+        }
+        const template = templates.find((t) => t.name === formData.get(`navn-${i}`));
+        if (!template || formData.get(`valgt-${i}`) !== "on") {
+            continue;
+        }
+        const price = String(formData.get(`pris-${i}`) ?? "").trim();
+        chosen.push({
+            name: template.name,
+            description: template.description,
+            durationMinutes: Number(formData.get(`tid-${i}`)),
+            priceNok: template.priceType === "EtterAvtale" || price === "" ? null : Number(price),
+            priceType: template.priceType,
+        });
+    }
+    if (chosen.length === 0) {
+        return { error: "Kryss av minst én tjeneste.", values };
+    }
+    const result = await addServices(token, chosen);
+    if (!result.ok) {
+        return { error: result.message, values };
+    }
+    redirect("/panel/tjenester?forslag=1");
 }
 export async function updateServiceAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const token = await getToken();

@@ -37,6 +37,10 @@ public class Business
     // Set when BESTI approves the business; until then it stays hidden even with a confirmed e-mail
     public DateTime? ApprovedUtc { get; set; }
 
+    // "Verifisert bedrift": the last time Brønnøysund said the org number is active (checked at sign-up,
+    // at approval and then every week); null = not checked yet, or no longer active
+    public DateTime? VerifiedUtc { get; set; }
+
     // The one-click approval link sent to BESTI (only the hash is stored)
     public string? ApprovalTokenHash { get; set; }
 

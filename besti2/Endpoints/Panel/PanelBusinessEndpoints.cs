@@ -43,6 +43,19 @@ public static class PanelBusinessEndpoints
             return error is null ? Results.Created() : Results.BadRequest(new { message = error });
         });
 
+        // Business panel: ready services for the owner's industry ("Forslag for din bransje")
+        group.MapGet("/service-templates", async (PanelBusiness business, IBusinessService businessService,
+                CancellationToken cancellationToken) =>
+            Results.Ok(await businessService.GetServiceTemplatesAsync(business.Id, cancellationToken)));
+
+        // Business panel: add the chosen suggestions in one go (all or none)
+        group.MapPost("/services/batch", async (List<CreateServiceRequest> requests, PanelBusiness business,
+            IBusinessService businessService, CancellationToken cancellationToken) =>
+        {
+            var error = await businessService.AddServicesAsync(business.Id, requests, cancellationToken);
+            return error is null ? Results.Created() : Results.BadRequest(new { message = error });
+        });
+
         // Business panel: edit one of the owner's services
         group.MapPut("/services/{id:guid}", async (Guid id, CreateServiceRequest request, PanelBusiness business,
             IBusinessService businessService, CancellationToken cancellationToken) =>
