@@ -43,25 +43,55 @@ public class EmailQueueTests
     [Fact]
     public async Task DeliverAsync_FailsTwice_SentOnThirdAttempt()
     {
+        var queue = NewQueue();
         var smtp = new FlakyEmailService(failures: 2);
+        queue.Enqueue(new QueuedEmail("kari@test.example", "Hei", "Hei"));
 
-        var delivered = await NewQueue().DeliverAsync(new QueuedEmail("kari@test.example", "Hei", "Hei"), smtp,
-            CancellationToken.None);
+        var delivered = false;
+        for (var i = 0; i < 3; i++)
+        {
+            // A failed e-mail comes back to the queue after its delay
+            var email = await queue.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+            delivered = await queue.DeliverAsync(email, smtp, CancellationToken.None);
+        }
 
         Assert.True(delivered);
         Assert.Equal(3, smtp.Attempts);
     }
 
-    // check if a mail server that is down is given up after 3 attempts (the next e-mails must not wait forever)
+    // check if a failed e-mail does not block the next one: the next one is sent before the retry
+    [Fact]
+    public async Task DeliverAsync_FailedEmail_DoesNotBlockTheNext()
+    {
+        var queue = new EmailQueue(NullLogger<EmailQueue>.Instance, [TimeSpan.FromMinutes(10)]);
+        var smtp = new FlakyEmailService(failures: 1);
+
+        var first = await queue.DeliverAsync(new QueuedEmail("kari@test.example", "Første", "Hei"), smtp,
+            CancellationToken.None);
+        var second = await queue.DeliverAsync(new QueuedEmail("ola@test.example", "Andre", "Hei"), smtp,
+            CancellationToken.None);
+
+        Assert.False(first);
+        Assert.True(second);
+        Assert.False(queue.Reader.TryRead(out _)); // the retry of the first one waits 10 minutes
+    }
+
+    // check if a mail server that is down is given up after 3 attempts (the queue must not grow forever)
     [Fact]
     public async Task DeliverAsync_ServerDown_GivesUpAfterThreeAttempts()
     {
+        var queue = NewQueue();
         var smtp = new FlakyEmailService(failures: int.MaxValue);
+        queue.Enqueue(new QueuedEmail("kari@test.example", "Hei", "Hei"));
 
-        var delivered = await NewQueue().DeliverAsync(new QueuedEmail("kari@test.example", "Hei", "Hei"), smtp,
-            CancellationToken.None);
+        for (var i = 0; i < 3; i++)
+        {
+            var email = await queue.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.False(await queue.DeliverAsync(email, smtp, CancellationToken.None));
+        }
 
-        Assert.False(delivered);
+        await Task.Delay(100);
+        Assert.False(queue.Reader.TryRead(out _));
         Assert.Equal(3, smtp.Attempts);
     }
 }

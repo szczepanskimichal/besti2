@@ -235,7 +235,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerUserId");
 
-                    b.HasIndex("EndUtc");
+                    b.HasIndex("EndUtc")
+                        .HasDatabaseName("IX_Bookings_ToAnonymize")
+                        .HasFilter("[CustomerEmail] <> N'anonymisert@besti.invalid'");
 
                     b.HasIndex("NewTimeTokenHash");
 

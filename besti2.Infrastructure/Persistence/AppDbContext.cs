@@ -1,6 +1,7 @@
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
+using besti2.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -221,8 +222,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => x.StartUtc)
                 .HasFilter("[Status] = 'Bekreftet' AND [ReminderSentUtc] IS NULL AND [NoReminder] = 0")
                 .HasDatabaseName("IX_Bookings_ReminderDue");
-            // The daily anonymizer looks for visits that ended more than 5 years ago
-            e.HasIndex(x => x.EndUtc);
+            // The daily anonymizer looks for visits that ended more than 5 years ago. Only rows that still have
+            // customer data are in it: then free-time searches can never use it (with a plain EndUtc index the
+            // database once kept a plan for year 2099 and later read every booking for a normal date)
+            e.HasIndex(x => x.EndUtc)
+                .HasFilter($"[CustomerEmail] <> N'{BookingAnonymizer.AnonymizedEmail}'")
+                .HasDatabaseName("IX_Bookings_ToAnonymize");
             e.HasOne(x => x.Employee).WithMany()
                 .HasForeignKey(x => x.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
