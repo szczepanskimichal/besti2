@@ -322,6 +322,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
 
+                    b.Property<string>("ReferralSource")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Slug")
                         .IsRequired()
                         .HasMaxLength(80)

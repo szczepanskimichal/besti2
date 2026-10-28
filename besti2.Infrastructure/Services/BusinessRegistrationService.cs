@@ -168,7 +168,8 @@ public class BusinessRegistrationService(
             Latitude = location?.Latitude,
             Longitude = location?.Longitude,
             IsHidden = true, // customers see it after the owner confirms the email and BESTI approves it
-            DataProcessingAcceptedUtc = DateTime.UtcNow
+            DataProcessingAcceptedUtc = DateTime.UtcNow,
+            ReferralSource = ReferralSources.Clean(request.ReferralSource)
         };
         dbContext.Businesses.Add(business);
         try
@@ -416,7 +417,8 @@ public class BusinessRegistrationService(
             "Ny bedrift venter på godkjenning:\n\n" +
             $"{business.Name} (org.nr. {business.OrgNumber})\n" +
             $"{business.Address}, {business.PostalCode} {business.City}\n" +
-            $"Innlogging: {ownerEmail}, e-post til kunder: {business.Email ?? "ingen"}, telefon: {business.PhoneNumber}\n\n" +
+            $"Innlogging: {ownerEmail}, e-post til kunder: {business.Email ?? "ingen"}, telefon: {business.PhoneNumber}\n" +
+            $"Hørte om BESTI: {business.ReferralSource ?? "ikke oppgitt"}\n\n" +
             $"Brønnøysund: https://virksomhet.brreg.no/nb/oppslag/enheter/{business.OrgNumber}\n\n" +
             $"Godkjenn: {webBaseUrl}/godkjenn?token={token}\n";
         try

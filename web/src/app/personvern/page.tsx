@@ -43,9 +43,13 @@ export default function PrivacyPage() {
                 <li><strong>Varsler i tjenesten</strong> (bjellen): korte meldinger om dine timer.</li>
                 <li><strong>Bedrifter:</strong> bedriftsnavn, organisasjonsnummer, adresse, telefon, e-post til
                     innlogging (vises aldri) og eventuelt til kunder, nettside, beskrivelse, ansatte (navn),
-                    åpningstider, logo, bilder og blokkert tid.</li>
+                    åpningstider, logo, bilder, blokkert tid og eventuelt hvor dere hørte om BESTI.</li>
                 <li><strong>Teknisk:</strong> IP-adresse brukes kortvarig for å stoppe misbruk (for mange forsøk på
                     innlogging eller bestilling) og kan stå i serverlogger.</li>
+                <li><strong>Besøksstatistikk:</strong> hvilke offentlige sider som besøkes, hvilken nettside du kom
+                    fra (for eksempel Instagram eller en QR-kode), land, nettleser, operativsystem og skjermstørrelse.
+                    Uten informasjonskapsler, og uten at vi kan se hvem du er. Sider der du er innlogget (Min Besti,
+                    bedriftspanelet, varsler) telles ikke.</li>
             </ul>
 
             <h2>Hvorfor, og med hvilket grunnlag?</h2>
@@ -62,6 +66,8 @@ export default function PrivacyPage() {
                     timen. Var du der likevel, kontakt bedriften eller skriv til{" "}
                     <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>, så ser vi på det.</li>
                 <li>Sikkerhet og å hindre misbruk (berettiget interesse, art. 6 nr. 1 f).</li>
+                <li>Besøksstatistikk, for å se hvilke kanaler som gir nye kunder og bedrifter og gjøre tjenesten
+                    bedre (berettiget interesse, art. 6 nr. 1 f).</li>
                 <li>Når en bedrift registrerer seg, sjekker vi organisasjonsnummeret i Enhetsregisteret
                     (Brønnøysundregistrene) og godkjenner bedriften før kundene ser den, for å hindre falske
                     bedrifter (berettiget interesse, art. 6 nr. 1 f).</li>
@@ -81,6 +87,9 @@ export default function PrivacyPage() {
                             trafikken til nettsiden. Trafikken, også IP-adressen din, går gjennom Cloudflare.
                             Overføringen til USA skjer under EU–US Data Privacy Framework og EUs
                             standardkontraktsbestemmelser.</li>
+                        <li>Umami Software, Inc. (USA): besøksstatistikk uten informasjonskapsler. IP-adressen brukes
+                            bare til å finne land og lagres ikke. Statistikken lagres som tall som ikke kan knyttes
+                            til deg.</li>
                     </ul>
                 </li>
                 <li><strong>Bedriftens nettside:</strong> når du klikker på lenken, forlater du BESTI. Vi sender ingen
@@ -111,8 +120,10 @@ export default function PrivacyPage() {
 
             <h2>Informasjonskapsler (cookies)</h2>
             <p>
-                Vi bruker bare én nødvendig informasjonskapsel, som holder deg innlogget. Vi bruker ikke sporing,
-                analyseverktøy eller reklame-cookies, og trenger derfor ikke samtykke til cookies.
+                Vi bruker bare nødvendige informasjonskapsler: én som holder deg innlogget, og i bedriftspanelet én
+                som husker at listen «Kom i gang» er skjult. Besøksstatistikken bruker ingen informasjonskapsler og
+                lagrer ingenting i nettleseren din. Vi bruker ikke reklame-cookies eller sporing på tvers av
+                nettsider, og trenger derfor ikke samtykke til cookies.
             </p>
 
             <h2>Dine rettigheter</h2>

@@ -145,6 +145,28 @@ public class BusinessRegistrationServiceTests
         Assert.Null(await service.GetApprovalAsync(token));
     }
 
+    // check if "Hvor hørte du om BESTI?" is saved and shown to BESTI, and an unknown answer is ignored
+    [Theory]
+    [InlineData("Instagram", "Instagram")]
+    [InlineData("noe tull", null)]
+    [InlineData(null, null)]
+    public async Task RegisterAsync_SavesReferralSource(string? answer, string? expected)
+    {
+        var (_, db, users) = CreateService();
+        var email = new FakeEmailService();
+        var service = new BusinessRegistrationService(db, users, new FakeGeocodingService(), email,
+            "http://localhost:3000", adminEmail: "post@bestiapp.no");
+
+        await service.RegisterAsync(TestFrisor() with { ReferralSource = answer });
+        var owner = (await users.FindByEmailAsync("eier@testfrisor.example"))!;
+        await users.ConfirmEmailAsync(owner, await users.GenerateEmailConfirmationTokenAsync(owner));
+        await service.ShowBusinessOfOwnerAsync(owner.Id);
+
+        Assert.Equal(expected, (await db.Businesses.SingleAsync(b => b.OrgNumber == "912345688")).ReferralSource);
+        Assert.Contains($"Hørte om BESTI: {expected ?? "ikke oppgitt"}",
+            Assert.Single(email.Sent, m => m.To == "post@bestiapp.no").Body);
+    }
+
     // check if a wrong approval link does nothing
     [Fact]
     public async Task ApproveAsync_WrongToken_DoesNothing()

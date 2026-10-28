@@ -30,6 +30,8 @@ Sist gjennomgått: 2026-10-28
 | Godkjenning av bedrift | bedriftens opplysninger i e-post til BESTI, lenketoken (kun SHA-256), godkjent-tidspunkt | bedrifter | hindre at noen registrerer en annens bedrift | 6.1 f | token til godkjent; tidspunkt så lenge bedriften finnes | `BusinessRegistrationService` (`ApproveAsync`), `Business.ApprovedUtc` |
 | Databehandleravtale | tidspunkt for godkjenning | bedrifter | dokumentere avtalen (art. 28) | 6.1 c / 6.1 b | så lenge bedriften finnes | `Business.DataProcessingAcceptedUtc`, `/vilkar#databehandleravtale` |
 | Sikkerhet | IP-adresse | alle | hindre misbruk (rate limiting), feilsøking | 6.1 f | i minnet minutter; serverlogger maks 5 × 10 MB per tjeneste | `Program.cs` (rate limiter), `deploy/docker-compose.prod.yml` (logging) |
+| Besøksstatistikk | side (uten søkeparametre, bare utm_), henvisende nettside, land, nettleser, OS, skjermstørrelse; IP bare til land, lagres ikke | besøkende på offentlige sider | se hvilke kanaler som virker | 6.1 f | anonyme tall hos Umami | `components/Analytics` (filtrerer bort innloggede sider), `UMAMI_WEBSITE_ID` |
+| «Hvor hørte du om BESTI?» | svar fra fast liste (valgfritt) | bedrifter | se hvilke kanaler som gir bedrifter | 6.1 f | så lenge bedriften finnes | `Business.ReferralSource`, `ReferralSources` |
 | Innlogging | innloggingstoken i informasjonskapsel | alle | holde brukeren innlogget | 6.1 b | 14 dager; ugyldig straks passordet endres | `Program.cs` (`BearerTokenExpiration`, security stamp), `lib/auth.ts` |
 | Sikkerhetskopi | hele databasen, bilder, innloggingsnøkler | alle | gjenopprette etter feil eller angrep | 6.1 f | 14 dager (på serveren og i Hetzner Storage Box, Tyskland) | `deploy/backup.sh` |
 
@@ -39,12 +41,13 @@ Sist gjennomgått: 2026-10-28
 |---|---|---|---|
 | Bedriften kunden bestiller hos | bestillingen | Norge | — (egen behandlingsansvarlig) |
 | Hetzner Online GmbH (servere, database, sikkerhetskopier) | hele databasen og bildene | EU (servere i Finland, sikkerhetskopier i Tyskland) | databehandleravtale (DPA) |
+| Umami Software, Inc. (besøksstatistikk, uten cookies) | side, henvisning, land, nettleser; IP brukes kortvarig til land | USA | DPA hos Umami; ingen personopplysninger lagres |
 | Brevo / Sendinblue SAS (e-post) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
 | Cloudflare, Inc. (DNS, beskyttelse, videreformidling av trafikk) | IP-adresse og all trafikk til nettsiden | USA / globalt | DPA, EU–US Data Privacy Framework + standardkontraktsbestemmelser (SCC) |
 | Kartverket (Geonorge) | bedriftens adresse | Norge | offentlig API, ingen kundedata |
 | Brønnøysundregistrene | bedriftens org.nr | Norge | offentlig API, ingen kundedata |
 
-Overføring ut av EU/EØS: bare Cloudflare (USA), under Data Privacy Framework og SCC. Ingen sporing, analyse eller annonsenettverk. Én nødvendig informasjonskapsel (innlogging).
+Overføring ut av EU/EØS: Cloudflare (USA), under Data Privacy Framework og SCC, og Umami (USA, besøksstatistikk uten personopplysninger lagret). Ingen sporing på tvers av nettsider og ingen annonsenettverk. Bare nødvendige informasjonskapsler (innlogging, «Kom i gang» skjult i panelet).
 
 ## Den registrertes rettigheter – hvor i tjenesten
 
