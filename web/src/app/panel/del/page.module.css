@@ -1,0 +1,120 @@
+.main {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+}
+
+.back {
+    display: inline-block;
+    margin-bottom: 16px;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.title {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+    margin: 0 0 4px;
+}
+
+.muted {
+    color: var(--color-muted);
+    margin: 0 0 16px;
+}
+
+.card {
+    padding: 20px 16px;
+    margin-bottom: 16px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.card h2 {
+    font-size: 1.15rem;
+    margin: 0 0 8px;
+}
+
+.card p {
+    margin: 0 0 12px;
+}
+
+.card ol {
+    margin: 0 0 12px;
+    padding-left: 20px;
+}
+
+.card li + li {
+    margin-top: 6px;
+}
+
+/* The link in a box that wraps on small phones */
+.link {
+    display: block;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+    background: rgba(4, 20, 28, 0.5);
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+    font-weight: 600;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.primaryButton,
+.secondaryButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.primaryButton {
+    border: none;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+.secondaryButton {
+    border: 1px solid var(--color-border);
+    background: var(--color-primary-soft);
+    color: var(--color-text);
+}
+
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.qrRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+}
+
+/* White box: a QR code needs a light background to scan */
+.qr {
+    width: 168px;
+    height: 168px;
+    padding: 8px;
+    background: #fff;
+    border-radius: 8px;
+}
+
+.small {
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}

@@ -73,3 +73,20 @@ h1, h2, h3 {
     scroll-behavior: auto !important;
   }
 }
+/* Printing a poster (panel → Del og få kunder): only the page itself on white paper, no header,
+   footer or northern lights */
+@media print {
+  body:has(.print-page) {
+    background: #fff;
+    min-height: 0;
+  }
+
+  body:has(.print-page) > :not(main) {
+    display: none !important;
+  }
+
+  @page {
+    size: A5 portrait;
+    margin: 0;
+  }
+}

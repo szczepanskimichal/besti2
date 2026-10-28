@@ -72,6 +72,20 @@ export async function getPanelBusiness(token: string): Promise<BusinessDetails |
     return res.json();
 }
 
+// "Del og få kunder": the QR code to the business page as a data: address for <img> and download links;
+// null = not logged in as a business
+export async function getPanelQr(token: string, format: "svg" | "png"): Promise<string | null> {
+    const res = await apiFetch(`/api/panel/qr?format=${format}`, { token });
+    if (res.status === 401 || res.status === 403) {
+        return null;
+    }
+    if (!res.ok) {
+        throw new Error(`Kunne ikke lage QR-koden (${res.status})`);
+    }
+    const base64 = Buffer.from(await res.arrayBuffer()).toString("base64");
+    return `data:image/${format === "svg" ? "svg+xml" : "png"};base64,${base64}`;
+}
+
 export async function addService(token: string, input: object): Promise<ApiResult> {
     return toResult(await apiFetch("/api/panel/services", { method: "POST", token, body: input }));
 }

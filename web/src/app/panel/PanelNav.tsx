@@ -15,6 +15,7 @@ export default function PanelNav({ title }: { title: string }) {
                 <Link href="/panel/galleri" className={styles.secondaryButton}>Galleri</Link>
                 <Link href="/panel/vurderinger" className={styles.secondaryButton}>Vurderinger</Link>
                 <Link href="/panel/apningstider" className={styles.secondaryButton}>Åpningstider</Link>
+                <Link href="/panel/del" className={styles.secondaryButton}>Del og få kunder</Link>
             </nav>
         </div>
     );
