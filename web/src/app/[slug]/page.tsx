@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusiness, getBusinessReviews } from "@/lib/api";
+import { getBusinessBySlug, getBusinessReviews } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatPrice } from "@/lib/format";
 import { freeCancelText } from "@/lib/freeCancel";
@@ -13,13 +13,13 @@ import Stars from "@/components/Stars/Stars";
 import styles from "./page.module.css";
 
 type Props = {
-    params: Promise<{ id: string }>;
+    params: Promise<{ slug: string }>;
 };
 
 // Title, description and link preview per business (for Google, Messenger, SMS)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const { id } = await params;
-    const business = await getBusiness(id);
+    const { slug } = await params;
+    const business = await getBusinessBySlug(slug);
     if (!business) {
         return { title: "Fant ikke bedriften" };
     }
@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
         title,
         description,
+        alternates: { canonical: `/${business.slug}` },
         openGraph: {
             title,
             description,
@@ -37,13 +38,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 export default async function BusinessPage({ params }: Props) {
-    const { id } = await params;
-    // Business and reviews at the same time
-    const [business, reviews] = await Promise.all([getBusiness(id), getBusinessReviews(id)]);
-
+    const { slug } = await params;
+    const business = await getBusinessBySlug(slug);
     if (!business) {
         notFound();
     }
+
+    const reviews = await getBusinessReviews(business.id);
 
     // OpenStreetMap embed: small box around the business with a marker
     const d = 0.005;
@@ -123,7 +124,7 @@ export default async function BusinessPage({ params }: Props) {
                                 <span className={styles.price}>{formatPrice(service.priceNok, service.priceType)}</span>
                                 <span className={styles.muted}>{service.durationMinutes} min</span>
                                 <NextLink
-                                    href={`/bedrift/${business.id}/bestill?tjeneste=${service.id}`}
+                                    href={`/${business.slug}/bestill?tjeneste=${service.id}`}
                                     className={styles.bookButton}
                                 >
                                     Bestill

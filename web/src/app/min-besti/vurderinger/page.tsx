@@ -52,7 +52,7 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
                             <p className={panelStyles.when}>{formatDate(booking.startUtc)}</p>
                             <p className={panelStyles.service}>
                                 {booking.serviceName} hos{" "}
-                                <Link href={`/bedrift/${booking.businessId}`}>{booking.businessName}</Link>
+                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
                             </p>
                             <ReviewForm bookingId={booking.id}/>
                         </li>

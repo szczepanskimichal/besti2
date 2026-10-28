@@ -55,6 +55,24 @@ export const getBusiness = cache(async (id: string): Promise<BusinessDetails | n
     return res.json();
 });
 
+// The public page by its short address (bestiapp.no/klipp-og-stil-frisor-gjovik)
+export const getBusinessBySlug = cache(async (slug: string): Promise<BusinessDetails | null> => {
+    // Only a-z, 0-9 and dashes can be a business; /favicon.png or /wp-admin never reach the API
+    if (!/^[a-z0-9-]{1,80}$/.test(slug)) {
+        return null;
+    }
+    const res = await apiFetch(`/api/businesses/by-slug/${slug}`);
+    if (res.status === 404) {
+        return null;
+    }
+
+    if (!res.ok) {
+        throw new Error(`Kunne ikke hente bedriften (${res.status})`);
+    }
+
+    return res.json();
+});
+
 export async function getCities(): Promise<string[]> {
     const res = await apiFetch("/api/cities");
 

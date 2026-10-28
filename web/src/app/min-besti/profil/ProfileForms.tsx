@@ -3,7 +3,7 @@ import { useActionState } from "react";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import type { MyProfile } from "@/lib/api";
 import { changePasswordAction, deleteAccountAction, type ProfileFormState, updateProfileAction } from "./actions";
-import formStyles from "../../bedrift/[id]/bestill/page.module.css";
+import formStyles from "../../[slug]/bestill/page.module.css";
 import panelStyles from "../../panel/page.module.css";
 import styles from "./page.module.css";
 

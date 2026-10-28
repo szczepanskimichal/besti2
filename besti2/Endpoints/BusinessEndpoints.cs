@@ -34,6 +34,13 @@ public static class BusinessEndpoints
                 var business = await businessService.GetByIdAsync(id, cancellationToken);
                 return business is null ? Results.NotFound() : Results.Ok(business);
             });
+        // Get business by its short page address (bestiapp.no/klipp-og-stil-frisor-gjovik)
+        group.MapGet("/businesses/by-slug/{slug}",
+            async (string slug, IBusinessService businessService, CancellationToken cancellationToken) =>
+            {
+                var business = await businessService.GetBySlugAsync(slug, cancellationToken);
+                return business is null ? Results.NotFound() : Results.Ok(business);
+            });
         // Register a new business with its owner account
         group.MapPost("/businesses/register", async (RegisterBusinessRequest request,
             IBusinessRegistrationService registrationService, CancellationToken cancellationToken) =>

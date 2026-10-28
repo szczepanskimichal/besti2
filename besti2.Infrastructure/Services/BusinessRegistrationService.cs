@@ -157,6 +157,7 @@ public class BusinessRegistrationService(
         {
             Id = Guid.NewGuid(),
             Name = request.BusinessName.Trim(),
+            Slug = await NewSlugAsync(request.BusinessName, request.City, cancellationToken),
             OrgNumber = request.OrgNumber,
             Category = category,
             Email = contactEmail,
@@ -369,6 +370,21 @@ public class BusinessRegistrationService(
 
         await DeleteBusinessAsync(business, cancellationToken);
         return null;
+    }
+
+    // "klipp-og-stil-frisor-gjovik", or "klipp-og-stil-frisor-gjovik-2" when that address is taken
+    private async Task<string> NewSlugAsync(string name, string city, CancellationToken cancellationToken)
+    {
+        var start = BusinessSlug.From(name, city);
+        var slug = start;
+        for (var number = 2; BusinessSlug.IsReserved(slug)
+                             || await dbContext.Businesses.AnyAsync(b => b.Slug == slug, cancellationToken); number++)
+        {
+            var suffix = $"-{number}";
+            slug = start[..Math.Min(start.Length, BusinessSlug.MaxLength - suffix.Length)].TrimEnd('-') + suffix;
+        }
+
+        return slug;
     }
 
     // The owner's login e-mail (private), where BESTI's mails to the business go

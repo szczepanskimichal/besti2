@@ -4,6 +4,9 @@ public interface IBusinessService
 {
     Task<BusinessDetailsDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
+    // The public page by its short address (bestiapp.no/klipp-og-stil-frisor-gjovik); null when not found
+    Task<BusinessDetailsDto?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default);
+
     // The owner's panel: also a business that is still waiting for approval
     Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default);
 

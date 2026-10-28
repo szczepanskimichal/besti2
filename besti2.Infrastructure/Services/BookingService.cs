@@ -325,6 +325,7 @@ public class BookingService(
                 b.Employee.Name + " " + b.Employee.LastName,
                 b.Service.BusinessId,
                 b.Service.Business.Name,
+                b.Service.Business.Slug,
                 b.Service.Business.Address + ", " + b.Service.Business.PostalCode + " " + b.Service.Business.City,
                 b.ServiceId,
                 b.EmployeeId,

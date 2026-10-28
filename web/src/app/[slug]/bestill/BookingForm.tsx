@@ -7,7 +7,7 @@ import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
 type BookingFormProps = {
-    businessId: string;
+    businessSlug: string;
     serviceId: string;
     employeeId: string;
     startUtc: string;
@@ -18,7 +18,7 @@ type BookingFormProps = {
     units: number;
 };
 // The booking form: on an error (e.g. the time was just taken) the phone, note and consent stay
-export default function BookingForm({ businessId, serviceId, employeeId, startUtc, date, units, fullName, email, phone }: BookingFormProps) {
+export default function BookingForm({ businessSlug, serviceId, employeeId, startUtc, date, units, fullName, email, phone }: BookingFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(createBookingAction, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? fallback;
 
@@ -30,7 +30,7 @@ export default function BookingForm({ businessId, serviceId, employeeId, startUt
                 </p>
             )}
             <p className={styles.muted}>Bestiller som <strong>{fullName}</strong> ({email})</p>
-            <input type="hidden" name="businessId" value={businessId}/>
+            <input type="hidden" name="businessSlug" value={businessSlug}/>
             <input type="hidden" name="serviceId" value={serviceId}/>
             <input type="hidden" name="employeeId" value={employeeId}/>
             <input type="hidden" name="startUtc" value={startUtc}/>

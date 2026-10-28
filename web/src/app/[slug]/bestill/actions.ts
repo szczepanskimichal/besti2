@@ -6,7 +6,11 @@ import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
 export async function createBookingAction(_previous: FormState, formData: FormData): Promise<FormState> {
-    const businessId = String(formData.get("businessId"));
+    const businessSlug = String(formData.get("businessSlug"));
+    // Only a real page address, so the redirects below can never lead to another website
+    if (!/^[a-z0-9-]{1,80}$/.test(businessSlug)) {
+        return { error: "Noe gikk galt. Last inn siden på nytt." };
+    }
     const serviceId = String(formData.get("serviceId"));
     const employeeId = String(formData.get("employeeId"));
     const startUtc = String(formData.get("startUtc"));
@@ -15,7 +19,7 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
     const token = await getToken();
     if (!token) {
         // Come back to the same time after logging in
-        const back = `/bedrift/${businessId}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc, antall: String(units) })}`;
+        const back = `/${businessSlug}/bestill?${new URLSearchParams({ tjeneste: serviceId, ansatt: employeeId, dato: date, tid: startUtc, antall: String(units) })}`;
         redirect(`/logg-inn?neste=${encodeURIComponent(back)}`);
     }
     // Name and email come from the account in the API
@@ -31,7 +35,7 @@ export async function createBookingAction(_previous: FormState, formData: FormDa
         note: String(formData.get("note") ?? ""),
         units,
     }, token);
-    const basePath = `/bedrift/${businessId}/bestill`;
+    const basePath = `/${businessSlug}/bestill`;
 
     if (!result.ok) {
         return {

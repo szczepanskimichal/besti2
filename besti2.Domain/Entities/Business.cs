@@ -7,6 +7,9 @@ public class Business
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = null!;
+
+    // The short page address, e.g. "klipp-og-stil-frisor-gjovik" (unique, never changes, see BusinessSlug)
+    public string Slug { get; set; } = null!;
     public string OrgNumber { get; set; } = null!;
     public BusinessCategory Category { get; set; }
 

@@ -49,6 +49,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
             .OrderBy(b => b.Name)
             .Select(b => new BusinessListItemDto(
                 b.Id,
+                b.Slug,
                 b.Name,
                 b.Category.ToString(),
                 b.Description,

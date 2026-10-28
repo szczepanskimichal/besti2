@@ -50,6 +50,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property((x => x.Name)).IsRequired().HasMaxLength(200);
             e.Property(x => x.OrgNumber).IsRequired().HasMaxLength(9);
             e.HasIndex(x => x.OrgNumber).IsUnique();
+            e.Property(x => x.Slug).IsRequired().HasMaxLength(80);
+            e.HasIndex(x => x.Slug).IsUnique();
             e.Property(x => x.PostalCode).IsRequired().HasMaxLength(4);
             e.Property(x => x.Category).HasConversion<string>().IsRequired().HasMaxLength(100);
             e.Property(x => x.Email).HasMaxLength(250);
@@ -65,6 +67,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 {
                     Id = new Guid("11111111-1111-1111-1111-111111111111"),
                     Name = "Klipp & Stil Frisør",
+                    Slug = "klipp-og-stil-frisor-oslo",
                     OrgNumber = "999000001",
                     Category = BusinessCategory.Frisor,
                     Description = "Hårklipp og farging for hele familien.",
@@ -80,6 +83,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 {
                     Id = new Guid("22222222-2222-2222-2222-222222222222"),
                     Name = "Fjord Bygg AS",
+                    Slug = "fjord-bygg-as-bergen",
                     OrgNumber = "999000002",
                     Category = BusinessCategory.Bygg,
                     Description = "Befaring og oppussing av bad og kjøkken.",
@@ -95,6 +99,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 {
                     Id = new Guid("33333333-3333-3333-3333-333333333333"),
                     Name = "Nordlys Psykologsenter",
+                    Slug = "nordlys-psykologsenter-trondheim",
                     OrgNumber = "999000003",
                     Category = BusinessCategory.Helse,
                     Description = "Samtaleterapi for voksne.",

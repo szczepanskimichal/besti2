@@ -23,7 +23,7 @@ public class BookingNotifier(AppDbContext dbContext, ILogger logger)
         {
             var business = await dbContext.Services.AsNoTracking()
                 .Where(s => s.Id == booking.ServiceId)
-                .Select(s => new { s.BusinessId, s.Business.Name })
+                .Select(s => new { s.BusinessId, s.Business.Name, s.Business.Slug })
                 .FirstAsync(cancellationToken);
             dbContext.Notifications.Add(new Notification
             {
@@ -33,7 +33,7 @@ public class BookingNotifier(AppDbContext dbContext, ILogger logger)
                 BookingId = booking.Id,
                 Text = Shorten(text.Replace("{0}", business.Name)),
                 // Cancelled visits are gone from Min Besti: the customer can book again with the business
-                Link = link ?? $"/bedrift/{business.BusinessId}",
+                Link = link ?? $"/{business.Slug}",
                 CreatedUtc = DateTime.UtcNow
             });
             await dbContext.SaveChangesAsync(cancellationToken);

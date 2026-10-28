@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function BusinessCard({ business }: Props) {
-    const href = `/bedrift/${business.id}`;
+    const href = `/${business.slug}`;
     const slots = business.freeSlots ?? [];
 
     return (
