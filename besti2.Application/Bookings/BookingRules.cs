@@ -1,3 +1,5 @@
+namespace besti2.Application.Bookings;
+
 // Rules for online bookings by customers (a business adding or moving a visit itself is not limited)
 public static class BookingRules
 {
