@@ -538,6 +538,20 @@ public class InviteService(
             return false;
         }
 
+        // The job, a visitor reading the link and a late "Jeg blir med!" can all get here in the same second:
+        // only the one that sets ClosedUtc first in the database sends the messages
+        if (dbContext.Database.IsRelational())
+        {
+            var claimed = await dbContext.BookingInvites
+                .Where(i => i.Id == invite.Id && i.ClosedUtc == null)
+                .ExecuteUpdateAsync(i => i.SetProperty(x => x.ClosedUtc, nowUtc), cancellationToken);
+            if (claimed == 0)
+            {
+                await dbContext.Entry(invite).ReloadAsync(cancellationToken);
+                return invite.Status == InviteStatus.Utlopt;
+            }
+        }
+
         invite.ClosedUtc = nowUtc;
         ForgetContactDetails(invite);
         if (invite.Status == InviteStatus.Venter)
