@@ -71,7 +71,7 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             hours.ClosesAt,
             minutes,
             busy.Select(b => (b.StartUtc, b.EndUtc)).Concat(blocked.Select(t => (t.StartUtc, t.EndUtc))).ToList(),
-            DateTime.UtcNow);
+            BookingRules.EarliestStartUtc(DateTime.UtcNow));
     }
 
     public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
@@ -134,7 +134,8 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             .AsNoTracking()
             .Where(h => h.BusinessId == service.BusinessId)
             .ToListAsync(cancellationToken);
-        var nowUtc = DateTime.UtcNow;
+        // Times starting within the next hour are not shown (see BookingRules)
+        var earliestUtc = BookingRules.EarliestStartUtc(DateTime.UtcNow);
         var result = new List<FreeDayDto>();
 
         for (var i = 0; i < days; i++)
@@ -154,7 +155,7 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
                             .Concat(blocked.Where(t => t.EmployeeId == null || t.EmployeeId == id)
                                 .Select(t => (t.StartUtc, t.EndUtc)))
                             .ToList(),
-                        nowUtc)
+                        earliestUtc)
                     .Select(start => new FreeTimeDto(start, id)))
                 .OrderBy(s => s.StartUtc)
                 .DistinctBy(s => s.StartUtc) // two free employees at 10:00 = one button

@@ -150,7 +150,8 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                         && t.EndUtc > fromUtc)
             .Select(t => new { t.BusinessId, t.EmployeeId, t.StartUtc, t.EndUtc })
             .ToListAsync(cancellationToken);
-        var nowUtc = DateTime.UtcNow;
+        // The same earliest time as on the booking page (see BookingRules)
+        var earliestUtc = BookingRules.EarliestStartUtc(DateTime.UtcNow);
 
         var text = q?.Trim().ToLower();
 
@@ -185,7 +186,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                             .Concat(timeOffs.Where(t => t.BusinessId == business.Id
                                                         && (t.EmployeeId == null || t.EmployeeId == e.Id))
                                 .Select(t => (t.StartUtc, t.EndUtc)))
-                            .ToList(), nowUtc)
+                            .ToList(), earliestUtc)
                     .Where(start => IsInTimeWindow(start, from, to))
                     .Select(start => new FreeSlotDto(start, service.Id, service.Name, e.Id)))
                 .OrderBy(s => s.StartUtc)

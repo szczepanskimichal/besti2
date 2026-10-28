@@ -63,6 +63,13 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
                     ))}
                 </select>
             </label>
+            <label className={styles.field}>
+                Nye bestillinger
+                <select name="autoConfirm" defaultValue={value("autoConfirm")}>
+                    <option value="false">Jeg bekrefter hver bestilling selv</option>
+                    <option value="true">Bekreft automatisk (kunden får bekreftelse med en gang)</option>
+                </select>
+            </label>
             <SubmitButton className={styles.primaryButton} pendingText="Lagrer…">
                 Lagre profil
             </SubmitButton>

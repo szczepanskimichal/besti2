@@ -68,6 +68,7 @@ export type BusinessDetails = {
     isHidden: boolean;
     freeCancelHours: number; // free cancellation until X hours before the visit; 0 = any time
     website: string | null; // always starts with http:// or https://
+    autoConfirm: boolean; // new online bookings are confirmed at once
 };
 
 export type BusinessApproval = {

@@ -11,5 +11,7 @@ public record UpdateProfileRequest(
     // Free cancellation until X hours before the visit (0, 2, 12, 24 or 48)
     int FreeCancelHours = 24,
     // The business's own website; empty removes it, "klippogstil.no" becomes https://klippogstil.no
-    string? Website = null
+    string? Website = null,
+    // New online bookings are confirmed at once
+    bool AutoConfirm = false
 );

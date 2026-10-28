@@ -2,6 +2,7 @@ using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
+using besti2.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -171,4 +172,53 @@ public class BookingReminderTests
         Assert.Empty(email.Sent);
     }
 
+
+    // check if a booking still waiting for "Bekreft" after 2 hours gives the owner one e-mail, and only once
+    [Fact]
+    public async Task SendPendingRemindersAsync_WaitingTwoHours_OwnerGetsOneMail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = new Guid("11111111-1111-1111-1111-111111111111")
+        });
+        db.Bookings.Add(NewBooking(Now.AddDays(2), BookingStatus.Venter, createdUtc: Now.AddHours(-3)));
+        db.Bookings.Add(NewBooking(Now.AddDays(3), BookingStatus.Venter, createdUtc: Now.AddHours(-5)));
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var reminder = new BookingReminder(db, email, NullLogger<BookingReminder>.Instance, "https://bestiapp.no");
+
+        var first = await reminder.SendPendingRemindersAsync(Now);
+        var second = await reminder.SendPendingRemindersAsync(Now.AddMinutes(15));
+
+        Assert.Equal(1, first);
+        Assert.Equal(0, second);
+        var mail = Assert.Single(email.Sent);
+        Assert.Equal("eier@klippogstil.example", mail.To);
+        Assert.Equal("2 bestillinger venter på bekreftelse", mail.Subject);
+        Assert.Contains("https://bestiapp.no/panel/liste", mail.Body);
+    }
+
+    // check if a booking made less than 2 hours ago, or already confirmed, gives no reminder yet
+    [Fact]
+    public async Task SendPendingRemindersAsync_JustBookedOrConfirmed_NoMail()
+    {
+        await using var db = await CreateSeededDbAsync();
+        db.Users.Add(new AppUser
+        {
+            UserName = "eier@klippogstil.example", Email = "eier@klippogstil.example",
+            EmailConfirmed = true, BusinessId = new Guid("11111111-1111-1111-1111-111111111111")
+        });
+        db.Bookings.Add(NewBooking(Now.AddDays(2), BookingStatus.Venter, createdUtc: Now.AddHours(-1)));
+        db.Bookings.Add(NewBooking(Now.AddDays(3), BookingStatus.Bekreftet, createdUtc: Now.AddHours(-5)));
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var reminder = new BookingReminder(db, email, NullLogger<BookingReminder>.Instance);
+
+        var sent = await reminder.SendPendingRemindersAsync(Now);
+
+        Assert.Equal(0, sent);
+        Assert.Empty(email.Sent);
+    }
 }

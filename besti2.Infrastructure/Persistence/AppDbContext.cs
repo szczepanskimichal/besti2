@@ -224,6 +224,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             e.Property(x => x.NoShowEmailSentUtc)
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            e.Property(x => x.PendingReminderSentUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
         });
         modelBuilder.Entity<OpeningHours>(e =>
         {

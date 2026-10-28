@@ -121,6 +121,60 @@ public class BookingServiceTests
         Assert.Equal("kari@test.example", Assert.Single(email.Sent).To);
     }
 
+    // check if a time less than an hour away cannot be booked online (the salon must have time to see it)
+    [Fact]
+    public async Task CreateAsync_StartsWithinAnHour_IsInvalid()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        var soon = DateTime.UtcNow.AddMinutes(30);
+
+        var result = await service.CreateAsync(HerreklippHosIngrid() with { StartUtc = soon }, "kunde-1");
+
+        Assert.Equal(CreateBookingOutcome.Invalid, result.Outcome);
+        Assert.Contains("minst én time", result.Error);
+    }
+
+    // check if one account can have at most 3 coming visits at the same business
+    [Fact]
+    public async Task CreateAsync_FourthUpcomingAtSameBusiness_IsInvalid()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new BookingService(db, new FakeEmailService(), NullLogger<BookingService>.Instance);
+        for (var i = 0; i < BookingRules.MaxUpcomingPerBusiness; i++)
+        {
+            var created = await service.CreateAsync(
+                HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddMinutes(30 * i) }, "kunde-1");
+            Assert.Equal(CreateBookingOutcome.Created, created.Outcome);
+        }
+
+        var fourth = await service.CreateAsync(
+            HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddHours(2) }, "kunde-1");
+        var otherCustomer = await service.CreateAsync(
+            HerreklippHosIngrid() with { StartUtc = FutureMondayAt10.AddHours(2) }, "kunde-2");
+
+        Assert.Equal(CreateBookingOutcome.Invalid, fourth.Outcome);
+        Assert.Contains("3 kommende timer", fourth.Error);
+        Assert.Equal(CreateBookingOutcome.Created, otherCustomer.Outcome);
+    }
+
+    // check if a business with "Bekreft automatisk" gets the booking confirmed at once, and the customer is told
+    [Fact]
+    public async Task CreateAsync_AutoConfirm_IsConfirmedAtOnce()
+    {
+        await using var db = await CreateSeededDbAsync();
+        (await db.Businesses.SingleAsync(b => b.Id == KlippOgStil)).AutoConfirm = true;
+        await db.SaveChangesAsync();
+        var email = new FakeEmailService();
+        var service = new BookingService(db, email, NullLogger<BookingService>.Instance);
+
+        var result = await service.CreateAsync(HerreklippHosIngrid(), "kunde-1");
+
+        Assert.Equal("Bekreftet", result.Booking!.Status);
+        Assert.Equal(BookingStatus.Bekreftet, (await db.Bookings.SingleAsync()).Status);
+        Assert.StartsWith("Bestilling bekreftet", Assert.Single(email.Sent).Subject);
+    }
+
     [Fact]
     public async Task UpdateStatusAsync_Confirm_SendsStatusEmail()
     {

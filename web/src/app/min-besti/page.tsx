@@ -49,7 +49,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                 </p>
             )}
             {svar === "godtatt" && (
-                <p className={styles.muted} role="status">Takk! Bedriften bekrefter den nye tiden.</p>
+                <p className={styles.muted} role="status">Takk! Vi har gitt beskjed til bedriften.</p>
             )}
             {svar === "avslatt" && (
                 <p className={styles.muted} role="status">Timen er avlyst, og bedriften har fått beskjed.</p>
