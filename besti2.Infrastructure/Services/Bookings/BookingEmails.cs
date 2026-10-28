@@ -47,6 +47,36 @@ public class BookingEmails(
         }
     }
 
+    // A new online booking, to the business: it waits for "Bekreft", so the owner must see it also
+    // when the panel is closed. A failed email must not fail the booking
+    public async Task SendNewBookingToOwnerAsync(Booking booking, Service service, string panelLink,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var employee = await dbContext.Employees.AsNoTracking()
+                .FirstAsync(e => e.Id == booking.EmployeeId, cancellationToken);
+            var when = OsloTime.Format(booking.StartUtc);
+            var body =
+                "Hei!\n\n" +
+                "Dere har fått en ny bestilling som venter på bekreftelse.\n\n" +
+                $"Kunde: {booking.CustomerName}, tlf. {booking.CustomerPhone}\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Hos: {employee.Name} {employee.LastName}\n" +
+                $"Tid: {when}\n" +
+                (booking.CustomerNote is null ? "" : $"Melding fra kunden: {booking.CustomerNote}\n") +
+                $"\nBekreft eller avlys timen her: {webBaseUrl}{panelLink}\n\n" +
+                "Hilsen BESTI";
+            await SendToOwnerAsync(service.BusinessId, $"Ny bestilling: {service.Name}, {when}", body,
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send new booking email to the business for booking {BookingId}",
+                booking.Id);
+        }
+    }
+
     // The new time after "Flytt"; a failed email must not undo the move
     // answerToken = the customer must accept the new time (Godta / Passer ikke on the BESTI page)
     public async Task SendMovedAsync(Booking booking, DateTime oldStartUtc, string? answerToken,

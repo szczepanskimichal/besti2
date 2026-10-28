@@ -77,8 +77,8 @@ public class CustomerCancelTests
         var outcome = await service.CancelByCustomerAsync(created.Booking!.Id, "kunde-1");
         Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
         Assert.Equal(BookingStatus.Avlyst, (await db.Bookings.SingleAsync()).Status);
-        // 1st mail = "Bestilling mottatt" to the customer, 2nd = cancellation to the business
-        Assert.Equal(2, email.Sent.Count);
+        // "Bestilling mottatt" to the customer, "Ny bestilling" and then the cancellation to the business
+        Assert.Equal(3, email.Sent.Count);
         Assert.StartsWith("Avbestilling", email.Sent[^1].Subject);
         Assert.Equal("eier@klippogstil.example", email.Sent[^1].To);
     }
