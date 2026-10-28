@@ -2,6 +2,7 @@
 import { useActionState, useRef, useState } from "react";
 import NextLink from "next/link";
 import { categoryOptionGroups } from "@/lib/categories";
+import { referralSources } from "@/lib/referralSources";
 import { registerAction } from "./actions";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
@@ -116,6 +117,15 @@ export default function RegisterBusinessForm() {
                 <input name="password" type="password" required minLength={6} autoComplete="new-password" />
             </label>
             <p className={styles.hint}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
+            <label className={styles.field}>
+                Hvor hørte du om BESTI? (valgfritt)
+                <select key={value("referralSource")} name="referralSource" defaultValue={value("referralSource")}>
+                    <option value="">Velg</option>
+                    {referralSources.map((source) => (
+                        <option key={source} value={source}>{source}</option>
+                    ))}
+                </select>
+            </label>
             <label className={styles.checkbox}>
                 <input type="checkbox" name="acceptDataProcessing" required
                        defaultChecked={value("acceptDataProcessing") === "on"}/>

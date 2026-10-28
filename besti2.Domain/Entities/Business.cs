@@ -28,6 +28,9 @@ public class Business
     public double? Latitude { get; set; }
     public double? Longitude { get; set; }
 
+    // "Hvor hørte du om BESTI?" from the sign-up form (optional); only BESTI sees it
+    public string? ReferralSource { get; set; }
+
     // A new business is hidden from customers until the owner has confirmed the email
     public bool IsHidden { get; set; }
 

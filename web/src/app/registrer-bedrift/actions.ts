@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { registerBusiness } from "@/lib/api";
 import type { FormState } from "@/lib/formState";
 
-const FIELDS = ["businessName", "orgNumber", "category", "email", "contactEmail", "phone", "address", "postalCode", "city", "password"];
+const FIELDS = ["businessName", "orgNumber", "category", "email", "contactEmail", "phone", "address", "postalCode", "city", "password", "referralSource"];
 export async function registerAction(_previous: FormState, formData: FormData): Promise<FormState> {
     const input: Record<string, string> = {};
     for (const field of FIELDS) {

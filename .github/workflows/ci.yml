@@ -88,6 +88,7 @@ jobs:
           build-args: |
             SITE_URL=https://bestiapp.no
             ALLOW_INDEXING=${{ vars.ALLOW_INDEXING || 'false' }}
+            UMAMI_WEBSITE_ID=${{ vars.UMAMI_WEBSITE_ID || '' }}
           tags: |
             ghcr.io/szczepanskimichal/besti2-web:${{ github.sha }}
             ghcr.io/szczepanskimichal/besti2-web:latest

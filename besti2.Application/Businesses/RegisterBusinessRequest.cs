@@ -12,5 +12,7 @@ public record RegisterBusinessRequest(
     string Password,
     bool AcceptDataProcessing = false,
     // Public e-mail for customers; empty = only the phone is shown
-    string? ContactEmail = null
+    string? ContactEmail = null,
+    // "Hvor hørte du om BESTI?" (optional, one of ReferralSources.All)
+    string? ReferralSource = null
 );
