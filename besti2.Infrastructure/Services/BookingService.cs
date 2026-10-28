@@ -274,9 +274,11 @@ public class BookingService(
         var fromUtc = from is DateOnly firstDay
             ? SlotCalculator.ToUtc(firstDay, TimeOnly.MinValue)
             : DateTime.UtcNow.AddDays(-14);
+        // Visits are max 8 hours: older ones cannot reach into the period (keeps the index read short)
+        var startsAfterUtc = fromUtc.AddMinutes(-BookingRules.MaxVisitMinutes);
         var query = dbContext.Bookings
             .AsNoTracking()
-            .Where(b => b.Service.BusinessId == businessId && b.EndUtc > fromUtc);
+            .Where(b => b.Service.BusinessId == businessId && b.StartUtc > startsAfterUtc && b.EndUtc > fromUtc);
         if (to is DateOnly lastDay)
         {
             // ... until midnight after the last day (a visit is shown on every day it touches)
@@ -284,7 +286,7 @@ public class BookingService(
             query = query.Where(b => b.StartUtc < toUtc);
         }
 
-        return await query
+        var bookings = await query
             .OrderBy(b => b.StartUtc)
             .Select(b => new PanelBookingDto(
                 b.Id,
@@ -299,14 +301,31 @@ public class BookingService(
                 b.CustomerNote,
                 b.EmployeeId,
                 b.PreviousStartUtc,
-                // "Møtte ikke" for this customer at this business only (other businesses never see it)
-                // Deleted and anonymized customers all share one address: never add them up
-                b.CustomerEmail == "" || b.CustomerEmail == BookingAnonymizer.AnonymizedEmail
-                    ? 0
-                    : dbContext.Bookings.Count(o => o.Service.BusinessId == businessId
-                                                    && o.Status == BookingStatus.MotteIkke
-                                                    && o.CustomerEmail == b.CustomerEmail)))
+                0))
             .ToListAsync(cancellationToken);
+
+        // "Møtte ikke" for these customers at this business only (other businesses never see it), counted in
+        // ONE query for the whole week. Deleted and anonymized customers all share one address: never add them up
+        var emails = bookings.Select(b => b.CustomerEmail)
+            .Where(email => email != "" && email != BookingAnonymizer.AnonymizedEmail)
+            .Distinct()
+            .ToList();
+        if (emails.Count == 0)
+        {
+            return bookings;
+        }
+
+        var noShows = await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.Status == BookingStatus.MotteIkke
+                        && b.Service.BusinessId == businessId
+                        && emails.Contains(b.CustomerEmail))
+            .GroupBy(b => b.CustomerEmail)
+            .Select(g => new { Email = g.Key, Count = g.Count() })
+            .ToDictionaryAsync(x => x.Email, x => x.Count, cancellationToken);
+        return bookings
+            .Select(b => noShows.TryGetValue(b.CustomerEmail, out var count) ? b with { NoShowCount = count } : b)
+            .ToList();
     }
 
     public async Task<IReadOnlyList<CustomerBookingDto>> GetForCustomerAsync(

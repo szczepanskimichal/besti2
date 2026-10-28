@@ -235,15 +235,27 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CustomerUserId");
 
+                    b.HasIndex("EndUtc");
+
                     b.HasIndex("NewTimeTokenHash");
 
-                    b.HasIndex("ServiceId");
+                    b.HasIndex("StartUtc")
+                        .HasDatabaseName("IX_Bookings_ReminderDue")
+                        .HasFilter("[Status] = 'Bekreftet' AND [ReminderSentUtc] IS NULL AND [NoReminder] = 0");
 
                     b.HasIndex("EmployeeId", "StartUtc")
                         .IsUnique()
                         .HasFilter("[Status] <> 'Avlyst'");
 
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("EmployeeId", "StartUtc"), new[] { "EndUtc" });
+
+                    b.HasIndex("ServiceId", "CustomerEmail")
+                        .HasDatabaseName("IX_Bookings_NoShows")
+                        .HasFilter("[Status] = 'MotteIkke'");
+
+                    b.HasIndex("ServiceId", "StartUtc");
+
+                    SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("ServiceId", "StartUtc"), new[] { "EndUtc" });
 
                     b.HasIndex("Status", "StartUtc");
 

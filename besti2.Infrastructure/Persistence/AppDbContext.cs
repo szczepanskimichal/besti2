@@ -209,8 +209,20 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasFilter("[Status] <> 'Avlyst'")
                 .IncludeProperties(x => x.EndUtc);
             e.HasIndex(x => x.CustomerUserId);
+            // The business calendar reads a week per service; EndUtc in the index saves opening every row
+            e.HasIndex(x => new { x.ServiceId, x.StartUtc }).IncludeProperties(x => x.EndUtc);
+            // "Møtte ikke" counts in the calendar: a small index with only those visits
+            e.HasIndex(x => new { x.ServiceId, x.CustomerEmail })
+                .HasFilter("[Status] = 'MotteIkke'")
+                .HasDatabaseName("IX_Bookings_NoShows");
             // Reminders and the pending-bookings check every 15 minutes look for a status and a time range
             e.HasIndex(x => new { x.Status, x.StartUtc });
+            // The reminder job only looks at confirmed visits that still wait for a mail: a tiny index instead of reading all
+            e.HasIndex(x => x.StartUtc)
+                .HasFilter("[Status] = 'Bekreftet' AND [ReminderSentUtc] IS NULL AND [NoReminder] = 0")
+                .HasDatabaseName("IX_Bookings_ReminderDue");
+            // The daily anonymizer looks for visits that ended more than 5 years ago
+            e.HasIndex(x => x.EndUtc);
             e.HasOne(x => x.Employee).WithMany()
                 .HasForeignKey(x => x.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
