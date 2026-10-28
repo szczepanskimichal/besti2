@@ -30,4 +30,20 @@ tar czf "backups/files-$DAY.tar.gz" -C /var/lib/docker/volumes besti_uploads/_da
 find backups -type f -mtime +13 -delete
 rsync -a --delete -e "ssh -p 23 -i /root/.ssh/storagebox" backups/ "$BOX:besti/"
 
+# 4. Database size: SQL Server Express stops at 10 GB of data, so warn at 7 GB.
+#    Its own healthchecks.io check; a failure here never fails the backup above.
+SIZE_URL=$(grep '^DB_SIZE_PING_URL=' .env | cut -d= -f2- || true)
+if [ -n "$SIZE_URL" ]; then
+  SIZE_MB=$(compose exec -T sqlserver /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$SA_PASSWORD" -d besti2 -h -1 -W \
+    -Q "SET NOCOUNT ON; SELECT CAST(SUM(CAST(size AS bigint)) * 8 / 1024 AS int) FROM sys.database_files WHERE type_desc = 'ROWS'" \
+    | tr -dc '0-9' || true)
+  if [ -z "$SIZE_MB" ]; then
+    curl -fsS -m 10 --retry 3 -o /dev/null --data-raw "Could not read the database size" "$SIZE_URL/fail" || true
+  elif [ "$SIZE_MB" -ge 7168 ]; then
+    curl -fsS -m 10 --retry 3 -o /dev/null --data-raw "Database is $SIZE_MB MB (limit 10240 MB)" "$SIZE_URL/fail" || true
+  else
+    curl -fsS -m 10 --retry 3 -o /dev/null --data-raw "Database is $SIZE_MB MB" "$SIZE_URL" || true
+  fi
+fi
+
 echo "$(date '+%F %T') backup OK"
