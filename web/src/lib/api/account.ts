@@ -24,6 +24,19 @@ export async function login(email: string, password: string): Promise<{ accessTo
     return res.json();
 }
 
+// "Fortsett med Google": the ID token from Google in, BESTI's login token out (or the API's message)
+export async function loginWithGoogle(idToken: string): Promise<{ ok: true; accessToken: string; expiresIn: number } | { ok: false; message: string }> {
+    const res = await apiFetch("/api/auth/google", { method: "POST", body: { idToken }, forwardIp: true });
+    const body = await res.json().catch(() => null);
+    if (res.ok && body?.accessToken) {
+        return { ok: true, accessToken: body.accessToken, expiresIn: body.expiresIn };
+    }
+    return {
+        ok: false,
+        message: res.status === 429 ? "For mange forsøk. Prøv igjen om litt." : body?.message ?? "Kunne ikke logge inn med Google. Prøv igjen.",
+    };
+}
+
 // Always "ok": the API never says whether the e-mail exists (so nobody can check who has an account)
 export async function forgotPassword(email: string): Promise<void> {
     await apiFetch("/api/auth/forgotPassword", { method: "POST", body: { email }, forwardIp: true });
@@ -60,7 +73,8 @@ export const getMe = cache(async (token: string): Promise<Me | null> => {
 });
 
 // "Min profil" (customer)
-export type MyProfile = { fullName: string; email: string; phone: string | null };
+// hasPassword = false for an account made with "Fortsett med Google"
+export type MyProfile = { fullName: string; email: string; phone: string | null; hasPassword: boolean };
 
 export async function getMyProfile(token: string): Promise<MyProfile | null> {
     const res = await apiFetch("/api/me/profile", { token });

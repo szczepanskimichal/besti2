@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { privatePage } from "@/lib/site";
+import GoogleButton from "@/components/GoogleButton/GoogleButton";
 import RegisterForm from "./RegisterForm";
 import styles from "../logg-inn/page.module.css";
 
@@ -33,6 +34,7 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
         <main className={styles.main}>
             <h1 className={styles.title}>Opprett konto</h1>
             <p className={styles.muted}>Med en konto kan du bestille time og se bestillingene dine.</p>
+            <GoogleButton next={neste}/>
             <RegisterForm neste={neste ?? ""} />
             <p className={styles.muted}>
                 Har du allerede konto? <NextLink href={`/logg-inn?neste=${encodeURIComponent(neste ?? "/")}`}>Logg inn</NextLink>

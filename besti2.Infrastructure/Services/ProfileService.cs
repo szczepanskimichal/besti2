@@ -16,12 +16,16 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
     public const string FormerCustomer = "Tidligere kunde";
     public const string DeletedCustomer = "Slettet kunde";
 
+    // "Slett konto" for an account without a password
+    public const string ConfirmDeleteWord = "SLETT";
+
     public async Task<ProfileDto?> GetAsync(string userId, CancellationToken cancellationToken = default)
     {
         var user = await userManager.FindByIdAsync(userId);
         return user is null || user.BusinessId is not null
             ? null
-            : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber);
+            : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber,
+                await userManager.HasPasswordAsync(user));
     }
 
     public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)
@@ -98,7 +102,10 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             return "Det nye passordet må ha minst 6 tegn.";
         }
 
-        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword ?? "", request.NewPassword);
+        // An account from "Fortsett med Google" has no password yet: it makes its first one
+        var result = await userManager.HasPasswordAsync(user)
+            ? await userManager.ChangePasswordAsync(user, request.CurrentPassword ?? "", request.NewPassword)
+            : await userManager.AddPasswordAsync(user, request.NewPassword);
         if (result.Succeeded)
         {
             return null;
@@ -118,9 +125,16 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             return "Fant ikke kontoen.";
         }
 
-        if (!await userManager.CheckPasswordAsync(user, request.Password ?? ""))
+        // Without a password (Google account) the customer types the word SLETT instead
+        var hasPassword = await userManager.HasPasswordAsync(user);
+        if (hasPassword && !await userManager.CheckPasswordAsync(user, request.Password ?? ""))
         {
             return "Passordet er feil.";
+        }
+
+        if (!hasPassword && request.Password?.Trim().ToUpperInvariant() != ConfirmDeleteWord)
+        {
+            return $"Skriv {ConfirmDeleteWord} for å bekrefte.";
         }
 
         // 1. Coming visits are cancelled the normal way: the business gets the e-mail and the bell

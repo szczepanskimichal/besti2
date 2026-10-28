@@ -1,0 +1,52 @@
+/* Google's own look for sign-in buttons: white, the coloured G, dark text */
+.button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 1px solid #747775;
+    border-radius: 999px;
+    background: #fff;
+    color: #1f1f1f;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.button:hover {
+    background: #f2f2f2;
+}
+
+.button:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.logo {
+    width: 20px;
+    height: 20px;
+}
+
+.terms {
+    margin: 8px 0 0;
+    color: var(--color-muted);
+    font-size: 0.85rem;
+}
+
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}
+
+.divider::before,
+.divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: var(--color-border);
+}

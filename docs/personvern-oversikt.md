@@ -19,6 +19,7 @@ Sist gjennomgått: 2026-10-28
 |---|---|---|---|---|---|---|
 | Kundekonto | navn, e-post, passord-hash, telefon (valgfritt) | kunder | konto, innlogging, fylle ut bestilling | 6.1 b (avtale) | til kontoen slettes | `AppUser`, `ProfileService`, `CustomerAccountService` |
 | Bestilling | navn, telefon, e-post, tjeneste, ansatt, tid, status, melding | kunder | gjennomføre timen; bedriften ser bestillingen | 6.1 b | 5 år etter timen, så anonymisert | `Booking`, `BookingService`, `BookingAnonymizer` (`RetentionYears = 5`) |
+| «Fortsett med Google» | navn, e-post, Google-ID (`sub`) | kunder (og bedrifter som velger det) | logge inn uten passord | 6.1 b | til kontoen slettes | `GoogleLoginService`, `AspNetUserLogins`, `web/src/app/logg-inn/google` |
 | Ny tid (Flytt) | lenketoken (kun SHA-256), forrige tidspunkt | kunder | kunden godtar eller avslår ny tid | 6.1 b | til kunden svarer / timen avlyses | `Booking.NewTimeTokenHash`, `PreviousStartUtc` |
 | Vurderinger | fornavn, stjerner, kommentar | kunder | vise vurderinger offentlig | 6.1 f (berettiget interesse) | navnet byttes til «Tidligere kunde» 5 år etter timen eller ved slettet konto; slettes med bedriften | `Review`, `ReviewService`, `BookingAnonymizer`, `ProfileService.DeleteAsync` |
 | «Møtte ikke» | status på timen, antall per kunde (e-post) hos samme bedrift | kunder | bedriften planlegger; kunden får e-post og kan protestere | 6.1 f | som bestillingen | `BookingStatus.MotteIkke`, `BookingService` (teller bare innen bedriften), `BookingEmails.SendNoShowAsync` |
@@ -44,6 +45,7 @@ Sist gjennomgått: 2026-10-28
 | Umami Software, Inc. (besøksstatistikk, uten cookies) | side, henvisning, land, nettleser; IP brukes kortvarig til land | USA | DPA hos Umami; ingen personopplysninger lagres |
 | Brevo / Sendinblue SAS (e-post) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
 | Cloudflare, Inc. (DNS, beskyttelse, videreformidling av trafikk) | IP-adresse og all trafikk til nettsiden | USA / globalt | DPA, EU–US Data Privacy Framework + standardkontraktsbestemmelser (SCC) |
+| Google Ireland Ltd. (innlogging, bare når brukeren velger det) | Google vet at personen logger inn på BESTI; vi får navn og e-post | EU / USA | Googles egne vilkår (brukeren velger selv) |
 | Kartverket (Geonorge) | bedriftens adresse | Norge | offentlig API, ingen kundedata |
 | Brønnøysundregistrene | bedriftens org.nr | Norge | offentlig API, ingen kundedata |
 
