@@ -136,6 +136,12 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
                 cancellationToken: cancellationToken);
         }
 
+        // 2.–5. All or nothing: the data is never anonymized while the account stays (or the other way round).
+        // The in-memory test database has no transactions
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+
         // 2. All visits stay for the business's history, but without who it was
         var bookings = await dbContext.Bookings.Where(b => b.CustomerUserId == userId).ToListAsync(cancellationToken);
         foreach (var booking in bookings)
@@ -165,7 +171,18 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
 
         // 5. The account itself
         var result = await userManager.DeleteAsync(user);
-        return result.Succeeded ? null : "Kontoen kunne ikke slettes. Prøv igjen.";
+        if (!result.Succeeded)
+        {
+            // Not committed: the bookings and reviews keep the name, so trying again works
+            return "Kontoen kunne ikke slettes. Prøv igjen.";
+        }
+
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
+        return null;
     }
 
     // Only customer accounts; a business owner cannot use these (a business has its own data)

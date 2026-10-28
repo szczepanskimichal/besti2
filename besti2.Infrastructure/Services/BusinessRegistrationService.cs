@@ -459,9 +459,13 @@ public class BusinessRegistrationService(
 
     // Deletes a business with its owner and everything added in the panel (a rejected registration or
     // "Slett bedrift"). Bookings, reviews and time off are removed by hand first, because
-    // the database does not delete them on its own (Restrict)
+    // the database does not delete them on its own (Restrict). All or nothing: never half a business
     private async Task DeleteBusinessAsync(Business business, CancellationToken cancellationToken)
     {
+        // The in-memory test database has no transactions
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
         var bookings = await dbContext.Bookings.Where(b => b.Employee.BusinessId == business.Id)
             .ToListAsync(cancellationToken);
         var bookingIds = bookings.Select(b => b.Id).ToList();
@@ -482,11 +486,20 @@ public class BusinessRegistrationService(
         foreach (var owner in await dbContext.Users.Where(u => u.BusinessId == business.Id)
                      .ToListAsync(cancellationToken))
         {
-            await userManager.DeleteAsync(owner);
+            var deleted = await userManager.DeleteAsync(owner);
+            if (!deleted.Succeeded)
+            {
+                // The transaction is never committed: everything above is undone
+                throw new InvalidOperationException($"Could not delete the owner of business {business.Id}");
+            }
         }
 
         dbContext.Businesses.Remove(business);
         await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
 
         // The files only after the database no longer points to them; a file left behind is no reason to fail
         if (imageStorage is null)
