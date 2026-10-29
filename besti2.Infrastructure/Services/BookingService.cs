@@ -133,7 +133,8 @@ public class BookingService(
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             CustomerUserId = customerUserId,
             Status = autoConfirm ? BookingStatus.Bekreftet : BookingStatus.Venter,
-            CreatedUtc = DateTime.UtcNow
+            CreatedUtc = DateTime.UtcNow,
+            PriceNok = BookingRules.PriceFor(service, request.Units)
         };
 
         dbContext.Bookings.Add(booking);
@@ -241,7 +242,8 @@ public class BookingService(
             CustomerNote = string.IsNullOrWhiteSpace(request.Note) ? null : request.Note.Trim(),
             Status = BookingStatus.Bekreftet,
             CreatedUtc = DateTime.UtcNow,
-            NoReminder = !request.SendConfirmation
+            NoReminder = !request.SendConfirmation,
+            PriceNok = BookingRules.PriceFor(service, request.Units)
         };
         dbContext.Bookings.Add(booking);
         try

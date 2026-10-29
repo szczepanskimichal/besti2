@@ -303,3 +303,124 @@ export type RebookReminder = {
     employeeId: string | null;
     weeks: number;
 };
+
+// "Statistikk" in the panel (revenue is estimated from the prices saved on the bookings)
+export type StatsNumbers = {
+    visits: number;
+    revenue: number;
+    visitsWithoutPrice: number;
+    cancelled: number;
+    noShows: number;
+    newCustomers: number;
+    returningCustomers: number;
+    online: number;
+    manual: number;
+};
+
+export type StatsRow = { name: string; visits: number; revenue: number };
+
+export type StatsTip = { kind: "tips" | "pro"; title: string; text: string; link: string | null };
+
+export type BusinessStats = {
+    days: number;
+    current: StatsNumbers;
+    previous: StatsNumbers;
+    upcomingVisits: number;
+    upcomingRevenue: number;
+    averageStars: number | null;
+    reviewCount: number;
+    newReviews: number;
+    occupancyPercent: number | null;
+    services: StatsRow[];
+    employees: StatsRow[];
+    weekdays: number[]; // Monday first
+    hours: number[]; // 0-23 in Oslo
+    weeks: { weekStart: string; visits: number; revenue: number }[];
+    tips: StatsTip[];
+    weeklyReportOn: boolean;
+    proInterest: boolean;
+};
+
+// "Favoritter" in Min Besti
+export type Favorite = {
+    businessId: string;
+    name: string;
+    slug: string;
+    city: string;
+    category: string;
+    logoUrl: string | null;
+    averageRating: number | null;
+    reviewCount: number;
+    lastVisit: {
+        startUtc: string;
+        serviceId: string;
+        serviceName: string;
+        employeeId: string;
+        employeeName: string;
+        serviceAvailable: boolean;
+        employeeAvailable: boolean;
+    } | null;
+    nextVisitUtc: string | null;
+};
+
+// /admin (BESTI team only)
+export type AdminBusinessRow = {
+    id: string;
+    name: string;
+    slug: string;
+    city: string;
+    category: string;
+    status: "Venter" | "Synlig" | "Ubekreftet" | "Skjult";
+    createdUtc: string;
+    ownerEmail: string | null;
+    phoneNumber: string;
+    verified: boolean;
+    setupDone: number;
+    setupTotal: number;
+    bookingsLast30Days: number;
+    upcoming: number;
+    averageStars: number | null;
+    proInterest: boolean;
+    hasNote: boolean;
+};
+
+export type AdminOverview = {
+    visibleBusinesses: number;
+    waitingForApproval: number;
+    unconfirmedSignups: number;
+    customerAccounts: number;
+    bookingsLast7Days: number;
+    visitsLast30Days: number;
+    reviewsLast30Days: number;
+    proInterested: number;
+    waiting: AdminBusinessRow[];
+    needHelp: AdminBusinessRow[];
+};
+
+export type AdminBusinessDetails = {
+    business: AdminBusinessRow;
+    orgNumber: string;
+    address: string;
+    postalCode: string;
+    publicEmail: string | null;
+    website: string | null;
+    referralSource: string | null;
+    approvedUtc: string | null;
+    adminNote: string | null;
+    weeklyReportOn: boolean;
+    reviewCount: number;
+    lastBookingCreatedUtc: string | null;
+    setup: { title: string; done: boolean }[];
+};
+
+export type AdminReview = {
+    id: string;
+    businessName: string;
+    businessSlug: string;
+    businessId: string;
+    customerName: string;
+    stars: number;
+    comment: string | null;
+    businessReply: string | null;
+    createdUtc: string;
+};

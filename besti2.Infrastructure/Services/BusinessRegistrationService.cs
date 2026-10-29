@@ -176,6 +176,7 @@ public class BusinessRegistrationService(
             Longitude = location?.Longitude,
             IsHidden = true, // customers see it after the owner confirms the email and BESTI approves it
             DataProcessingAcceptedUtc = DateTime.UtcNow,
+            CreatedUtc = DateTime.UtcNow,
             VerifiedUtc = verifiedUtc,
             ReferralSource = ReferralSources.Clean(request.ReferralSource)
         };
@@ -287,6 +288,49 @@ public class BusinessRegistrationService(
             return false;
         }
 
+        await ApproveAsync(business, cancellationToken);
+        return true;
+    }
+
+    // The same from the admin page: only a business that waits for approval (the owner confirmed the e-mail)
+    public async Task<bool> ApproveByIdAsync(Guid businessId, CancellationToken cancellationToken = default)
+    {
+        var business = await FindWaitingAsync(businessId, cancellationToken);
+        if (business is null)
+        {
+            return false;
+        }
+
+        await ApproveAsync(business, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> RejectAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var business = await FindByApprovalTokenAsync(token, cancellationToken);
+        if (business is null)
+        {
+            return false;
+        }
+
+        await RejectAsync(business, cancellationToken);
+        return true;
+    }
+
+    public async Task<bool> RejectByIdAsync(Guid businessId, CancellationToken cancellationToken = default)
+    {
+        var business = await FindWaitingAsync(businessId, cancellationToken);
+        if (business is null)
+        {
+            return false;
+        }
+
+        await RejectAsync(business, cancellationToken);
+        return true;
+    }
+
+    private async Task ApproveAsync(Business business, CancellationToken cancellationToken)
+    {
         business.ApprovedUtc = DateTime.UtcNow;
         business.ApprovalTokenHash = null;
         business.IsHidden = false;
@@ -310,20 +354,12 @@ public class BusinessRegistrationService(
         {
             // The approval is saved; the owner also sees it in the panel
         }
-
-        return true;
     }
 
     // Someone registered an org number that is not theirs: the business and the owner account are
     // deleted, so the real owner can register it, and the person who registered gets a mail
-    public async Task<bool> RejectAsync(string token, CancellationToken cancellationToken = default)
+    private async Task RejectAsync(Business business, CancellationToken cancellationToken)
     {
-        var business = await FindByApprovalTokenAsync(token, cancellationToken);
-        if (business is null)
-        {
-            return false;
-        }
-
         var ownerEmail = await OwnerEmailAsync(business.Id, cancellationToken);
         var body =
             "Hei!\n\n" +
@@ -344,8 +380,6 @@ public class BusinessRegistrationService(
         {
             // The registration is deleted anyway
         }
-
-        return true;
     }
 
     // "Slett bedrift" in the panel: the owner confirms with the password. Coming visits must be cancelled
@@ -420,6 +454,10 @@ public class BusinessRegistrationService(
         dbContext.Users.Where(u => u.BusinessId == businessId).Select(u => u.Email)
             .FirstOrDefaultAsync(cancellationToken);
 
+    private Task<Business?> FindWaitingAsync(Guid businessId, CancellationToken cancellationToken) =>
+        dbContext.Businesses.FirstOrDefaultAsync(b => b.Id == businessId && b.ApprovalTokenHash != null,
+            cancellationToken);
+
     private async Task<Business?> FindByApprovalTokenAsync(string token, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(token) || token.Length > 100)
@@ -446,7 +484,8 @@ public class BusinessRegistrationService(
             $"{business.Address}, {business.PostalCode} {business.City}\n" +
             $"Innlogging: {ownerEmail}, e-post til kunder: {business.Email ?? "ingen"}, telefon: {business.PhoneNumber}\n" +
             $"Hørte om BESTI: {business.ReferralSource ?? "ikke oppgitt"}\n\n" +
-            $"Brønnøysund: https://virksomhet.brreg.no/nb/oppslag/enheter/{business.OrgNumber}\n\n" +
+            $"Brønnøysund: https://virksomhet.brreg.no/nb/oppslag/enheter/{business.OrgNumber}\n" +
+            $"Admin: {webBaseUrl}/admin\n\n" +
             $"Godkjenn: {webBaseUrl}/godkjenn?token={token}\n";
         try
         {
@@ -535,6 +574,8 @@ public class BusinessRegistrationService(
         // The business's bell, and the customers' bells about these visits
         dbContext.Notifications.RemoveRange(await dbContext.Notifications
             .Where(n => n.BusinessId == business.Id || (n.BookingId != null && bookingIds.Contains(n.BookingId.Value)))
+            .ToListAsync(cancellationToken));
+        dbContext.Favorites.RemoveRange(await dbContext.Favorites.Where(f => f.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
         // The owners' phones stop getting push messages
         dbContext.WebPushSubscriptions.RemoveRange(await dbContext.WebPushSubscriptions

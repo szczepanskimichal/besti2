@@ -55,10 +55,15 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             .OrderBy(n => n.CreatedUtc)
             .Select(n => new ExportNotification(n.CreatedUtc, n.Text, n.ReadUtc != null))
             .ToListAsync(cancellationToken);
+        var favorites = await dbContext.Favorites.AsNoTracking()
+            .Where(f => f.UserId == userId)
+            .OrderBy(f => f.CreatedUtc)
+            .Select(f => new ExportFavorite(f.CreatedUtc, f.Business.Name))
+            .ToListAsync(cancellationToken);
 
         return new MyDataExport(DateTime.UtcNow,
             new ExportAccount(user.FullName ?? "", user.Email ?? "", user.PhoneNumber, user.EmailConfirmed),
-            bookings, reviews, notifications);
+            bookings, reviews, notifications, favorites);
     }
 
     public async Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request,
@@ -191,6 +196,8 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             await dbContext.WaitlistEntries.Where(w => w.UserId == userId).ToListAsync(cancellationToken));
         dbContext.RebookReminders.RemoveRange(
             await dbContext.RebookReminders.Where(r => r.UserId == userId).ToListAsync(cancellationToken));
+        dbContext.Favorites.RemoveRange(
+            await dbContext.Favorites.Where(f => f.UserId == userId).ToListAsync(cancellationToken));
         await dbContext.SaveChangesAsync(cancellationToken);
 
         // 5. The account itself

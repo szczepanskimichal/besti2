@@ -28,6 +28,7 @@ Live at **[bestiapp.no](https://bestiapp.no)** (beta, starting in Gjøvik).
 - Min Besti: upcoming visits, cancel within the business's free-cancel window,
   accept or decline a new time, add to calendar (.ics), reviews only after a real visit
 - E-mail confirmations and a reminder the day before, notification bell
+- Favoritter: save a business with the heart and book the same service again in one tap
 - Data export and account deletion (GDPR)
 
 **For businesses**
@@ -39,6 +40,12 @@ Live at **[bestiapp.no](https://bestiapp.no)** (beta, starting in Gjøvik).
 - A short page address (`bestiapp.no/salong-kari-gjovik`), QR code, printable A5 poster and
   ready texts for Google, Instagram and Facebook
 - "Kom i gang" checklist for new businesses
+- Statistikk: visits, estimated revenue, new and returning customers, busy days and hours, top services
+  and employees, with tips from the business's own numbers; a short Ukerapport by e-mail every Monday
+
+**For the BESTI team**
+- /admin (only the e-mails in `Admin:Emails`): approve or reject new businesses, see who needs help
+  getting started, contact details, a private note per business and the newest reviews
 
 ## Tech stack
 

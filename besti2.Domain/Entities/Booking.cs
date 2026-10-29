@@ -45,6 +45,10 @@ public class Booking
     // BESTI sammen: both visits booked from the same invitation share this id (null = a normal booking)
     public Guid? InviteId { get; set; }
 
+    // The price when the visit was booked (fixed price, or the hourly price times the hours); null = by agreement,
+    // per m² and similar. Kept here because the business may change the service price later (Statistikk)
+    public decimal? PriceNok { get; set; }
+
     public Guid EmployeeId { get; set; }
     public Employee Employee { get; set; } = null!;
     public Guid ServiceId { get; set; }

@@ -274,3 +274,35 @@
     background: var(--color-primary-soft);
     border-radius: 6px;
 }
+
+/* "Lagre som favoritt": the heart at the right of the logo row */
+.favorite {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    margin-left: auto;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.favorite span {
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+.favoriteSaved {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+}
+
+.favoriteForm {
+    margin-left: auto;
+}

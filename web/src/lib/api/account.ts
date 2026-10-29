@@ -61,6 +61,7 @@ export type Me = {
     fullName: string | null;
     phone: string | null; // from "Min profil"; fills in the booking form
     isBusiness: boolean;
+    isAdmin: boolean; // the BESTI team: the header shows a link to /admin
 };
 
 // null = not logged in (401/403). Other errors (API down) are thrown, so a logged-in business

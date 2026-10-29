@@ -52,6 +52,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<WebPushSubscription> WebPushSubscriptions { get; set; } = null!;
     public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
     public DbSet<RebookReminder> RebookReminders { get; set; } = null!;
+    public DbSet<Favorite> Favorites { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -77,6 +78,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => x.ApprovalTokenHash);
             e.Property(x => x.CalendarFeedToken).HasMaxLength(64);
             e.HasIndex(x => x.CalendarFeedToken).IsUnique();
+            e.Property(x => x.AdminNote).HasMaxLength(2000);
             e.HasData(
                 new Business
                 {
@@ -92,7 +94,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PostalCode = "0154",
                     City = "Oslo",
                     Latitude = 59.91181,
-                    Longitude = 10.74646
+                    Longitude = 10.74646,
+                    CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new Business
                 {
@@ -108,7 +111,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PostalCode = "5003",
                     City = "Bergen",
                     Latitude = 60.39612,
-                    Longitude = 5.32553
+                    Longitude = 5.32553,
+                    CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc)
                 },
                 new Business
                 {
@@ -124,7 +128,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                     PostalCode = "7011",
                     City = "Trondheim",
                     Latitude = 63.42952,
-                    Longitude = 10.39516
+                    Longitude = 10.39516,
+                    CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, DateTimeKind.Utc)
                 });
         });
 
@@ -248,6 +253,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasForeignKey(x => x.ServiceId)
                 .OnDelete(DeleteBehavior.Restrict);
             e.Property(x => x.Status).HasConversion<string>().HasMaxLength(30);
+            e.Property(x => x.PriceNok).HasPrecision(10, 2);
             e.Property(x => x.CustomerEmail).IsRequired().HasMaxLength(250);
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.CustomerPhone).IsRequired().HasMaxLength(20);
@@ -383,6 +389,15 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => new { x.UserId, x.ServiceId }).IsUnique();
             e.HasOne(x => x.Service).WithMany()
                 .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<Favorite>(e =>
+        {
+            e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+            // One heart per customer and business
+            e.HasIndex(x => new { x.UserId, x.BusinessId }).IsUnique();
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<OutboxEmail>(e =>
