@@ -21,26 +21,26 @@ export default async function Image({ params }: { params: Promise<{ token: strin
         (
             <div style={{
                 width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center",
-                padding: "72px 88px", color: "#c8d5b9", fontSize: 40,
-                backgroundColor: "#04141c",
-                backgroundImage: "radial-gradient(60% 50% at 25% 20%, rgba(80, 230, 160, 0.45), transparent 70%), " +
-                    "radial-gradient(50% 45% at 80% 15%, rgba(140, 110, 200, 0.40), transparent 70%), " +
-                    "linear-gradient(180deg, #0f4b57 0%, #04141c 100%)",
+                padding: "72px 88px", color: "#eef7f4", fontSize: 40,
+                backgroundColor: "#050d1c",
+                backgroundImage: "radial-gradient(60% 50% at 25% 20%, rgba(98, 195, 238, 0.45), transparent 70%), " +
+                    "radial-gradient(50% 45% at 80% 15%, rgba(60, 200, 210, 0.30), transparent 70%), " +
+                    "linear-gradient(180deg, #123a6b 0%, #050d1c 100%)",
             }}>
                 <div style={{ display: "flex", marginBottom: 40 }}>
                     <div style={{
-                        width: 120, height: 120, borderRadius: 60, border: "4px solid #8fd6a0",
-                        backgroundImage: "radial-gradient(circle at 40% 60%, rgba(80, 230, 160, 0.9), #062430 70%)",
+                        width: 120, height: 120, borderRadius: 60, border: "4px solid #62c3ee",
+                        backgroundImage: "radial-gradient(circle at 40% 60%, rgba(98, 195, 238, 0.9), #06202f 70%)",
                     }}/>
                     <div style={{
-                        width: 120, height: 120, borderRadius: 60, border: "4px solid #8fd6a0", marginLeft: -36,
-                        backgroundImage: "radial-gradient(circle at 60% 40%, rgba(60, 200, 210, 0.9), #062430 70%)",
+                        width: 120, height: 120, borderRadius: 60, border: "4px solid #62c3ee", marginLeft: -36,
+                        backgroundImage: "radial-gradient(circle at 60% 40%, rgba(60, 200, 210, 0.9), #06202f 70%)",
                     }}/>
                 </div>
-                <div style={{ fontSize: 76, fontWeight: 800, color: "#e3f2c8" }}>{title}</div>
+                <div style={{ fontSize: 76, fontWeight: 800, color: "#eef7f4" }}>{title}</div>
                 <div style={{ marginTop: 20 }}>{what}</div>
-                {when && <div style={{ marginTop: 8, color: "#9aab8e" }}>{when}</div>}
-                <div style={{ marginTop: "auto", fontSize: 32, color: "#879c79" }}>bestiapp.no · Bestill med din besti</div>
+                {when && <div style={{ marginTop: 8, color: "#c3dad3" }}>{when}</div>}
+                <div style={{ marginTop: "auto", fontSize: 32, color: "#62c3ee" }}>bestiapp.no · Bestill med din besti</div>
             </div>
         ),
         size,

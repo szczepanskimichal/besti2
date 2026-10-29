@@ -13,6 +13,8 @@
     border-radius: 999px;
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     font-weight: 600;
     text-decoration: none;
@@ -52,9 +54,10 @@
     gap: 2px;
     padding: 14px;
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    backdrop-filter: blur(8px);
 }
 
 .tileLabel {
@@ -132,6 +135,8 @@
     margin: 0;
     padding: 16px;
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
 }
@@ -239,7 +244,7 @@
 
 .pro {
     margin-top: 32px;
-    border-color: rgba(156, 175, 136, 0.5);
+    border-color: rgba(98, 195, 238, 0.5);
 }
 
 .pro .heading {
@@ -293,8 +298,9 @@
     min-height: 44px;
     padding: 0 10px;
     font: inherit;
+    font-family: var(--font-heading);
     color: var(--color-text);
-    background: rgba(4, 20, 28, 0.6);
+    background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
 }

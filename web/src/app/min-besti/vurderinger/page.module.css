@@ -17,6 +17,7 @@
 
 .textarea {
     font: inherit;
+    font-family: var(--font-heading);
     font-weight: 400;
     width: 100%;
     box-sizing: border-box;
@@ -48,7 +49,7 @@
     min-height: 44px;
     font-size: 2rem;
     line-height: 1;
-    color: rgba(200, 213, 185, 0.3);
+    color: rgba(160, 215, 255, 0.3);
     cursor: pointer;
 }
 
@@ -58,7 +59,7 @@
 }
 
 .stars input:checked + label ~ label {
-    color: rgba(200, 213, 185, 0.3);
+    color: rgba(160, 215, 255, 0.3);
 }
 
 /* While hovering: gold up to the star under the mouse (.stars.stars = wins over the chosen star) */
@@ -67,7 +68,7 @@
 }
 
 .stars.stars label:hover ~ label {
-    color: rgba(200, 213, 185, 0.3);
+    color: rgba(160, 215, 255, 0.3);
 }
 
 .stars input:focus-visible + label {

@@ -40,10 +40,12 @@ export default async function Home({searchParams}: HomeProps) {
     return (
         <main className={styles.main}>
             <section className={styles.hero}>
-                <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
-                <p className={styles.heroLead}>
-                    Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
-                </p>
+                <div>
+                    <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
+                    <p className={styles.heroLead}>
+                        Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
+                    </p>
+                </div>
                 <Form action="/" className={styles.filters}>
                     <label className={styles.field}>
                         Hva leter du etter?
@@ -105,7 +107,11 @@ export default async function Home({searchParams}: HomeProps) {
                             <option value="kveld">Etter kl. 17</option>
                         </select>
                     </label>
-                    <button type="submit" className={styles.searchButton}>Søk</button>
+                    <button type="submit" className={styles.searchButton}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- small SVG logo, next/image not needed */}
+                        <img src="/logo/besti-pin.svg" alt="" width={28} height={30} className={styles.searchIcon}/>
+                        Finn besti time
+                    </button>
                     {lat && lng && (
                         <>
                             <input type="hidden" name="lat" value={lat}/>
@@ -118,6 +124,7 @@ export default async function Home({searchParams}: HomeProps) {
                     <NearMeButton/>
                 </Form>
             </section>
+            <h2 className={styles.listTitle}>Bedrifter</h2>
             {lat && lng && (
                 <p className={styles.subtitle}>
                     📍 {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}

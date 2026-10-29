@@ -40,6 +40,7 @@
     padding: 0 16px;
     border-radius: 999px;
     font: inherit;
+    font-family: var(--font-heading);
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -50,6 +51,8 @@
 .secondaryButton {
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
 }
 
@@ -63,6 +66,8 @@
 .dangerButton {
     border: 1px solid var(--color-danger);
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-danger);
 }
 
@@ -131,9 +136,10 @@
 .card {
     padding: 16px;
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    backdrop-filter: blur(8px);
 }
 
 .card {
@@ -262,8 +268,9 @@
 .searchInput,
 .textarea {
     font: inherit;
+    font-family: var(--font-heading);
     color: var(--color-text);
-    background: rgba(4, 20, 28, 0.6);
+    background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
 }
@@ -322,8 +329,9 @@
     min-height: 44px;
     padding: 0 12px;
     font: inherit;
+    font-family: var(--font-heading);
     color: var(--color-text);
-    background: rgba(4, 20, 28, 0.6);
+    background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
     max-width: 100%;

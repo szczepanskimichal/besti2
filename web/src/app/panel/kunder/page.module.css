@@ -7,8 +7,9 @@
 .searchInput,
 .textarea {
     font: inherit;
+    font-family: var(--font-heading);
     color: var(--color-text);
-    background: rgba(4, 20, 28, 0.6);
+    background: var(--color-input-bg);
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
 }
@@ -90,6 +91,7 @@
     background: var(--color-primary);
     color: var(--color-on-primary);
     font: inherit;
+    font-family: var(--font-heading);
     font-weight: 600;
     cursor: pointer;
 }

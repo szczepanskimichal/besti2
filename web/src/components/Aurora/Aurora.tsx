@@ -1,94 +1,70 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import styles from "./Aurora.module.css";
 
-// Curtains of thin vertical light rays along a slowly waving line (Ada's approved preview)
-const curtains = [
-    { y: 0.42, amp: 0.06, len: 0.3, hue: 152, speed: 1.0, phase: 0 },
-    { y: 0.3, amp: 0.05, len: 0.24, hue: 165, speed: 0.7, phase: 2 },
-    { y: 0.52, amp: 0.04, len: 0.2, hue: 145, speed: 1.3, phase: 4 },
-    { y: 0.24, amp: 0.05, len: 0.16, hue: 290, speed: 0.9, phase: 6 },
-];
+// Brightest stars in the photo as [x, y, brightness], x and y as a share of the image size.
+// Only these twinkle; the photo is drawn with background-size: cover, so they are placed the same way.
+const STARS = {
+    desktop: { w: 2400, h: 1350, s: [[0.1083, 0.0156, 1.0], [0.7588, 0.4933, 0.99], [0.0583, 0.3867, 0.96], [0.4079, 0.7756, 0.96], [0.69, 0.6533, 0.95], [0.8425, 0.577, 0.94], [0.0183, 0.96, 0.94], [0.6817, 0.5393, 0.93], [0.2221, 0.1022, 0.93], [0.5354, 0.7281, 0.92], [0.4129, 0.0356, 0.91], [0.6029, 0.7793, 0.91], [0.63, 0.6711, 0.89], [0.0396, 0.1741, 0.89], [0.4421, 0.5207, 0.87], [0.9129, 0.3696, 0.85], [0.2475, 0.0111, 0.84], [0.1825, 0.3059, 0.84], [0.5996, 0.5363, 0.84], [0.8213, 0.7889, 0.83], [0.2942, 0.1704, 0.83], [0.0171, 0.4778, 0.83], [0.4892, 0.5822, 0.83], [0.2329, 0.9852, 0.82], [0.68, 0.4444, 0.82], [0.3658, 0.6459, 0.8]] },
+    mobil: { w: 1000, h: 2000, s: [[0.196, 0.0145, 1.0], [0.575, 0.0955, 0.99], [0.028, 0.363, 0.96], [0.659, 0.0105, 0.92], [0.814, 0.1595, 0.88], [0.075, 0.3725, 0.87], [0.489, 0.218, 0.87], [0.314, 0.2315, 0.87], [0.935, 0.675, 0.86], [0.177, 0.327, 0.86], [0.443, 0.287, 0.85], [0.551, 0.3135, 0.83], [0.103, 0.338, 0.82], [0.35, 0.2125, 0.82], [0.611, 0.9235, 0.82], [0.688, 0.134, 0.82], [0.923, 0.114, 0.82], [0.506, 0.253, 0.81], [0.85, 0.62, 0.81], [0.33, 0.075, 0.8], [0.916, 0.6235, 0.8], [0.257, 0.1485, 0.78], [0.352, 0.339, 0.78], [0.041, 0.2945, 0.77], [0.767, 0.01, 0.76], [0.269, 0.4535, 0.75]] },
+};
 
-// Smooth "random" wave made of three sine waves
-function wave(x: number) {
-    return Math.sin(x) * 0.5 + Math.sin(x * 2.3 + 1.7) * 0.3 + Math.sin(x * 5.1 + 0.3) * 0.2;
-}
+type Size = { w: number; h: number };
 
 export default function Aurora() {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    // Moves on every page (still with prefers-reduced-motion or a hidden tab)
-    const moving = true;
+    const svgRef = useRef<SVGSVGElement>(null);
+    // Unknown on the server, so the stars appear right after the page loads
+    const [size, setSize] = useState<Size | null>(null);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        const ctx = canvas?.getContext("2d");
-        if (!canvas || !ctx) return;
-        const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        let t = 0;
-        let frame = 0;
-
-        const draw = () => {
-            const w = canvas.width;
-            const h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-            ctx.globalCompositeOperation = "lighter";
-            for (const c of curtains) {
-                for (let x = 0; x < w; x += 2) {
-                    const u = x / w;
-                    const base = h * (c.y + c.amp * wave(u * 4 + t * 0.15 * c.speed + c.phase));
-                    const ray = Math.max(0, wave(u * 40 + t * 0.6 * c.speed + c.phase) * 0.6 + wave(u * 9 - t * 0.2) * 0.5 + 0.35);
-                    const len = h * c.len * (0.8 + ray * 0.9);
-                    const a = Math.min(1, ray * 0.5);
-                    const g = ctx.createLinearGradient(0, base, 0, base - len);
-                    g.addColorStop(0, `hsla(${c.hue}, 85%, 62%, ${a})`);
-                    g.addColorStop(0.12, `hsla(${c.hue}, 80%, 55%, ${a * 0.8})`);
-                    g.addColorStop(0.6, `hsla(${c.hue + 15}, 75%, 50%, ${a * 0.35})`);
-                    g.addColorStop(1, "hsla(185, 70%, 45%, 0)");
-                    ctx.fillStyle = g;
-                    ctx.fillRect(x, base - len, 2, len + 3);
-                }
-            }
-        };
-
-        const loop = () => {
-            draw();
-            t += 0.012;
-            frame = requestAnimationFrame(loop);
-        };
-
-        // Animate only when allowed and the tab is visible; otherwise draw one still frame
-        const start = () => {
-            cancelAnimationFrame(frame);
-            if (moving && !reduceMotion && !document.hidden) loop();
-            else draw();
-        };
-
-        // Half resolution is enough because the canvas is blurred anyway
-        const resize = () => {
-            canvas.width = Math.round(window.innerWidth * 0.5);
-            canvas.height = Math.round(window.innerHeight * 0.5);
-            start();
-        };
-
+        // The SVG wave animation is not CSS, so it is paused by hand for people who turn off motion
+        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) svgRef.current?.pauseAnimations();
+        const resize = () => setSize({ w: window.innerWidth, h: window.innerHeight });
         resize();
         window.addEventListener("resize", resize);
-        document.addEventListener("visibilitychange", start);
-        return () => {
-            cancelAnimationFrame(frame);
-            window.removeEventListener("resize", resize);
-            document.removeEventListener("visibilitychange", start);
-        };
-    }, [moving]);
+        return () => window.removeEventListener("resize", resize);
+    }, []);
 
     return (
         <div className={styles.sky} aria-hidden="true">
-            <div className={styles.stars} />
-            <canvas ref={canvasRef} className={styles.canvas} />
-            <svg className={styles.fjell} viewBox="0 0 1200 200" preserveAspectRatio="none">
-                <path d="M0 200 L0 150 L90 120 L170 140 L260 90 L330 120 L420 70 L520 130 L600 105 L690 140 L780 95 L860 125 L950 80 L1040 130 L1120 110 L1200 135 L1200 200 Z" />
+            <svg ref={svgRef} width="0" height="0" style={{ position: "absolute" }}>
+                <filter id="besti-warp" x="-10%" y="-10%" width="120%" height="120%">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.0025 0.008" numOctaves={2} seed={4} result="n">
+                        <animate attributeName="baseFrequency" dur="18s" values="0.002 0.006;0.0045 0.010;0.002 0.006" repeatCount="indefinite"/>
+                    </feTurbulence>
+                    <feDisplacementMap in="SourceGraphic" in2="n" scale={95} xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
             </svg>
+            <i className={styles.photo}/>
+            <i className={styles.aurora}/>
+            <div className={styles.stars}>{size && <Stars size={size}/>}</div>
+            <div className={styles.shade}/>
         </div>
     );
+}
+
+function Stars({ size }: { size: Size }) {
+    const desktop = size.w >= 800;
+    const image = desktop ? STARS.desktop : STARS.mobil;
+    // Same maths as background-size: cover (centered on a computer, from the top on a phone)
+    const scale = Math.max(size.w / image.w, size.h / image.h);
+    const width = image.w * scale;
+    const height = image.h * scale;
+    const left = (size.w - width) / 2;
+    const top = desktop ? (size.h - height) / 2 : 0;
+
+    return image.s.map(([x, y, brightness], i) => (
+        <u
+            key={i}
+            className={i % 2 === 0 ? `${styles.star} ${styles.big}` : styles.star}
+            style={{
+                left: left + x * width,
+                top: top + y * height,
+                "--d": `${4 + ((i * 37) % 50) / 10}s`,
+                "--dl": `${-((i * 53) % 70) / 10}s`,
+                "--o": (0.55 + 0.4 * brightness).toFixed(2),
+            } as CSSProperties}
+        />
+    ));
 }
