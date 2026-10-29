@@ -36,10 +36,12 @@ export async function toggleHelpful(token: string, reviewId: string): Promise<{ 
 const NO_REVIEWS: BusinessReviews = {average: null, count: 0, reviews: []};
 
 // Public: reviews of a business with the average (with a token: which ones the reader marked "Nyttig")
-export async function getBusinessReviews(businessId: string, token?: string): Promise<BusinessReviews> {
+// take = only the newest ones; the average and the count are always from all of them
+export async function getBusinessReviews(businessId: string, token?: string, take?: number): Promise<BusinessReviews> {
     // No reviews section rather than a broken business page when the API fails or is too slow
     try {
-        const res = await apiFetch(`/api/businesses/${businessId}/reviews`, { token });
+        const query = take ? `?${new URLSearchParams({ antall: String(take) })}` : "";
+        const res = await apiFetch(`/api/businesses/${businessId}/reviews${query}`, { token });
         return res.ok ? await res.json() : NO_REVIEWS;
     } catch {
         return NO_REVIEWS;

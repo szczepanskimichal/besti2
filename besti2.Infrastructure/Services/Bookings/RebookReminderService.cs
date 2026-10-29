@@ -57,7 +57,15 @@ public class RebookReminderService(AppDbContext dbContext) : IRebookReminderServ
         }
         existing.Weeks = request.Weeks;
         existing.EmployeeId = employeeId;
-        await dbContext.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            // Two clicks at the same moment: the first one saved it
+        }
+
         return null;
     }
 

@@ -141,11 +141,25 @@ public class ReviewService(AppDbContext dbContext, IBusinessImageService? images
     }
 
     public async Task<BusinessReviewsDto> GetForBusinessAsync(Guid businessId, bool includeHidden = false,
-        string? viewerUserId = null, CancellationToken cancellationToken = default)
+        string? viewerUserId = null, int? take = null, CancellationToken cancellationToken = default)
     {
-        var rows = await dbContext.Reviews.AsNoTracking()
+        // The stars and the count from every visible review, counted by the database
+        var visible = dbContext.Reviews.Where(r => r.BusinessId == businessId && r.HiddenUtc == null);
+        var count = await visible.CountAsync(cancellationToken);
+        double? average = count == 0
+            ? null
+            : Math.Round(await visible.AverageAsync(r => (double)r.Stars, cancellationToken), 1);
+
+        IQueryable<Review> query = dbContext.Reviews.AsNoTracking()
             .Where(r => r.BusinessId == businessId && (includeHidden || r.HiddenUtc == null))
             .OrderByDescending(r => r.CreatedUtc)
+            .ThenBy(r => r.Id);
+        if (take is int limit)
+        {
+            query = query.Take(limit);
+        }
+
+        var rows = await query
             .Select(r => new
             {
                 r.Id, r.Stars, r.Comment, r.CustomerName, r.CreatedUtc, r.BusinessReply, r.PhotoFileName,
@@ -164,10 +178,8 @@ public class ReviewService(AppDbContext dbContext, IBusinessImageService? images
                 Hidden: r.HiddenUtc != null,
                 HiddenReason: r.HiddenReason))
             .ToList();
-        var counted = reviews.Where(r => !r.Hidden).ToList();
-        double? average = counted.Count == 0 ? null : Math.Round(counted.Average(r => r.Stars), 1);
 
-        return new BusinessReviewsDto(average, counted.Count, reviews);
+        return new BusinessReviewsDto(average, count, reviews);
     }
 
     public async Task<HelpfulResult?> ToggleHelpfulAsync(string userId, Guid reviewId,

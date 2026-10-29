@@ -23,8 +23,11 @@ public class AdminService(AppDbContext dbContext, IEmailService? emailService = 
         "Personopplysninger om andre",
         "Ikke en ekte vurdering av besøket",
         "Reklame eller spam",
-        "Bildet passer ikke"
+        PhotoReason
     ];
+
+    // Hiding with this reason also deletes the photo (it cannot come back with "Vis igjen")
+    public const string PhotoReason = "Bildet passer ikke";
 
     // The only reasons to close a business page (the owner sees the reason)
     public static readonly string[] SuspendReasons =
@@ -210,6 +213,12 @@ public class AdminService(AppDbContext dbContext, IEmailService? emailService = 
         var businessName = await BusinessNameAsync(review.BusinessId, cancellationToken);
         review.HiddenUtc = DateTime.UtcNow;
         review.HiddenReason = reason;
+        // A photo that does not belong there is deleted for good: the file address could have been shared already
+        var photo = reason == PhotoReason ? review.PhotoFileName : null;
+        if (photo is not null)
+        {
+            review.PhotoFileName = null;
+        }
         // The customer learns why (a deleted or anonymized account has no bell)
         if (review.CustomerUserId != BookingAnonymizer.AnonymizedUserId)
         {
@@ -222,6 +231,12 @@ public class AdminService(AppDbContext dbContext, IEmailService? emailService = 
             "/panel/vurderinger");
         AddLog(adminEmail, $"Skjulte vurdering ({review.Stars} ★) av {businessName}: {reason}", review.BusinessId);
         await dbContext.SaveChangesAsync(cancellationToken);
+        // The file only after the database no longer points to it
+        if (photo is not null && storage is not null)
+        {
+            await storage.DeleteAsync(photo, cancellationToken);
+        }
+
         return null;
     }
 

@@ -126,6 +126,26 @@ public class ReviewServiceTests
         Assert.Equal(4.5, result.Average);
     }
 
+// check if the business page can ask for only the newest reviews, while the average and count stay from all
+    [Fact]
+    public async Task GetForBusinessAsync_TakeLimitsTheListOnly()
+    {
+        var (service, db) = await CreateAsync();
+        var older = await AddBookingAsync(db, hoursFromNow: -48);
+        var newer = await AddBookingAsync(db, hoursFromNow: -24);
+        await service.CreateAsync("kunde-1", new CreateReviewRequest(older.Id, 2, "Eldre"));
+        await service.CreateAsync("kunde-1", new CreateReviewRequest(newer.Id, 4, "Nyere"));
+        var newest = await db.Reviews.SingleAsync(r => r.Comment == "Nyere");
+        newest.CreatedUtc = DateTime.UtcNow.AddMinutes(1);
+        await db.SaveChangesAsync();
+
+        var result = await service.GetForBusinessAsync(KlippId, take: 1);
+
+        Assert.Equal(2, result.Count);
+        Assert.Equal(3, result.Average);
+        Assert.Equal("Nyere", Assert.Single(result.Reviews).Comment);
+    }
+
 // check if only the reviewed business can reply
     [Fact]
     public async Task ReplyAsync_OnlyOwnBusiness()

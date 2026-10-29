@@ -2,8 +2,8 @@ import NextLink from "next/link";
 import styles from "@/components/Header/Header.module.css";
 import {getMe, getUnreadCount} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {logoutAction} from "@/app/logg-inn/actions";
 import NotificationBell from "@/components/NotificationBell/NotificationBell";
+import LogoutButton from "@/components/Header/LogoutButton";
 
 
 // Server component: reads the login cookie and shows who is logged in
@@ -40,9 +40,7 @@ export default async function Header() {
                             {unread !== null && (
                                 <NotificationBell key={unread} initialUnread={unread}/>
                             )}
-                            <form action={logoutAction}>
-                                <button type="submit" className={styles.logoutButton}>Logg ut</button>
-                            </form>
+                            <LogoutButton className={styles.logoutButton}/>
                         </>
                     ) : (
                         <>

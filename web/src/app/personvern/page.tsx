@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     return (
         <main className={styles.main}>
             <h1>Personvernerklæring</h1>
-            <p className={styles.updated}>Sist oppdatert: 28. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 29. oktober 2026</p>
 
             <p>
                 Her forklarer vi hvilke personopplysninger BESTI behandler, hvorfor, hvor lenge og hvilke rettigheter
@@ -32,7 +32,8 @@ export default function PrivacyPage() {
             <ul>
                 <li><strong>Kundekonto:</strong> navn, e-post, passord (lagres bare kryptert som hash) og, hvis du vil,
                     telefonnummer. Logger du inn med Google, får vi navnet, e-postadressen og en ID for
-                    Google-kontoen din fra Google, men aldri passordet ditt hos Google.</li>
+                    Google-kontoen din fra Google, men aldri passordet ditt hos Google. Vi lagrer også valgene dine
+                    under Varsler (e-post dagen før timen og «Snart tid!» to timer før).</li>
                 <li><strong>Bestillinger:</strong> navn, telefon, e-post, valgt bedrift, tjeneste, ansatt og tidspunkt,
                     status (venter, bekreftet, avlyst, ny tid, møtte ikke), en melding til bedriften hvis du skriver
                     en, og en grunn når du avbestiller, hvis du skriver en (den sendes til bedriften og lagres ikke på
@@ -41,11 +42,32 @@ export default function PrivacyPage() {
                 <li><strong>«Møtte ikke»:</strong> bedriften kan registrere at du ikke kom til timen. Bare den
                     bedriften ser hvor mange ganger du ikke har møtt hos dem. Andre bedrifter ser det aldri, og
                     BESTI bruker det ikke til noe annet.</li>
-                <li><strong>Vurderinger:</strong> stjerner, kommentar og fornavnet ditt, som vises på bedriftens side.</li>
+                <li><strong>Vurderinger:</strong> stjerner, kommentar, fornavnet ditt og eventuelt et bilde fra
+                    besøket, som vises på bedriftens side. Ikke last opp bilder der andre personer kan kjennes igjen
+                    uten at de har sagt ja. Andre kunder kan markere en vurdering som «Nyttig»: vi lagrer hvem som
+                    markerte, men viser bare antallet.</li>
                 <li><strong>Varsler i tjenesten</strong> (bjellen): korte meldinger om dine timer.</li>
+                <li><strong>Varsler på telefonen</strong> (bare hvis du slår det på): en adresse fra nettleserens
+                    push-tjeneste og to nøkler, slik at vi kan sende bjellens meldinger til enheten din.</li>
+                <li><strong>Favoritter, venteliste og «Tid for ny time?»:</strong> bedrifter du har lagt til som
+                    favoritt, dager du står på venteliste for («Si fra hvis det blir ledig») og påminnelser du selv har
+                    bedt om. Dette ser bare du.</li>
+                <li><strong>BESTI sammen:</strong> når du inviterer venner, lagrer vi invitasjonen (bedrift, tjeneste,
+                    tid, antall personer, telefonnummeret ditt og meldingen din). De som åpner lenken, ser fornavnet
+                    ditt, og du ser fornavnene til dem som blir med.</li>
+                <li><strong>Stempelkort og «Mitt BESTI-år»:</strong> regnes ut fra timene du har hatt. Vi lagrer bare
+                    når en bedrift har gitt deg belønningen.</li>
+                <li><strong>Bedriftens kundekort:</strong> bedriften ser en oversikt over dine timer hos den (antall
+                    besøk, «møtte ikke», neste time) og kan skrive et eget notat om deg, for eksempel «liker kort på
+                    sidene». Notatet ser bare bedriften og de ansatte den har gitt egen innlogging. Bedriften er
+                    ansvarlig for det den skriver.</li>
                 <li><strong>Bedrifter:</strong> bedriftsnavn, organisasjonsnummer, adresse, telefon, e-post til
                     innlogging (vises aldri) og eventuelt til kunder, nettside, beskrivelse, ansatte (navn),
-                    åpningstider, logo, bilder, blokkert tid og eventuelt hvor dere hørte om BESTI.</li>
+                    åpningstider, logo, bilder, blokkert tid og eventuelt hvor dere hørte om BESTI. Ansatte som får
+                    egen innlogging, bruker en vanlig BESTI-konto, og bedriften lagrer e-postadressen de ble invitert
+                    med.</li>
+                <li><strong>Administrasjon:</strong> når BESTI godkjenner eller stenger en bedrift, skjuler en
+                    vurdering eller hjelper en kunde, lagrer vi hva som ble gjort, når, av hvem i BESTI og hvorfor.</li>
                 <li><strong>Teknisk:</strong> IP-adresse brukes kortvarig for å stoppe misbruk (for mange forsøk på
                     innlogging eller bestilling) og kan stå i serverlogger.</li>
                 <li><strong>Besøksstatistikk:</strong> hvilke offentlige sider som besøkes, hvilken nettside du kom
@@ -67,6 +89,14 @@ export default function PrivacyPage() {
                     art. 6 nr. 1 f). Du får beskjed på e-post når det blir registrert, og kan ikke gi vurdering av den
                     timen. Var du der likevel, kontakt bedriften eller skriv til{" "}
                     <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>, så ser vi på det.</li>
+                <li>Favoritter, venteliste, «Tid for ny time?», «Snart tid!», BESTI sammen, stempelkort og varsler på
+                    telefonen: funksjoner du selv velger å bruke (avtale, art. 6 nr. 1 b). Du kan slå dem av når som
+                    helst.</li>
+                <li>Bedriftens kundekort, notater, ansattes egen kalender og bedriftens kalender i egen app: bedriften
+                    er behandlingsansvarlig og bruker dem for å gi deg timen. BESTI er databehandler for bedriften.</li>
+                <li>Å skjule vurderinger som bryter <Link href="/vilkar#vurderinger">vilkårene</Link>, stenge
+                    bedrifter ved misbruk og føre logg over det (berettiget interesse, art. 6 nr. 1 f). Du får
+                    beskjed med grunnen og kan svare oss.</li>
                 <li>Sikkerhet og å hindre misbruk (berettiget interesse, art. 6 nr. 1 f).</li>
                 <li>Besøksstatistikk, for å se hvilke kanaler som gir nye kunder og bedrifter og gjøre tjenesten
                     bedre (berettiget interesse, art. 6 nr. 1 f).</li>
@@ -78,7 +108,10 @@ export default function PrivacyPage() {
             <h2>Hvem deler vi med?</h2>
             <p>Vi selger aldri personopplysninger og bruker ikke annonsenettverk. Opplysninger deles bare slik:</p>
             <ul>
-                <li><strong>Bedriften du bestiller hos</strong> ser bestillingen din.</li>
+                <li><strong>Bedriften du bestiller hos</strong> ser bestillingen din, og de ansatte den har gitt egen
+                    innlogging ser sine egne timer. Bedriften kan også vise timene i sin egen kalenderapp (Google,
+                    Apple eller Outlook) gjennom en hemmelig lenke. Da får den kalenderleverandøren navn, telefon og
+                    melding for timene, etter bedriftens avtale med leverandøren.</li>
                 <li><strong>Leverandører</strong> som drifter tjenesten for oss. De behandler opplysningene bare etter
                     våre instrukser (databehandleravtale):
                     De tre første er også databehandlere for bedriftene (se databehandleravtalen i{" "}
@@ -96,6 +129,9 @@ export default function PrivacyPage() {
                             til deg. Får aldri opplysninger om bestillinger.</li>
                     </ul>
                 </li>
+                <li><strong>Nettleserens push-tjeneste</strong> (Google, Apple, Mozilla eller Microsoft, etter hvilken
+                    nettleser du bruker): bare hvis du slår på varsler på telefonen. Meldingen er kryptert, så bare
+                    enheten din kan lese den. Tjenesten ser at det sendes en melding til enheten, og når.</li>
                 <li><strong>Google</strong> (Google Ireland Ltd.): bare hvis du velger «Fortsett med Google». Da
                     logger du inn hos Google, og Google sender oss navnet og e-postadressen din. Google ser at du
                     logger inn på BESTI, etter Googles egne regler for personvern.</li>
@@ -115,8 +151,17 @@ export default function PrivacyPage() {
                     «Tidligere kunde». Stjernene og teksten blir stående, slik at bedriftens snitt forblir riktig.</li>
                 <li><strong>Varsler:</strong> til du sletter dem, men aldri lenger enn 7 dager for kunder og 14 dager
                     for bedrifter.</li>
+                <li><strong>Venteliste:</strong> til dagen er over. <strong>Favoritter og «Tid for ny time?»:</strong>
+                    til du fjerner dem eller sletter kontoen. <strong>Varsler på telefonen:</strong> til du slår dem
+                    av, logger ut på enheten eller nettleseren melder at adressen ikke virker lenger.</li>
+                <li><strong>Bilder i vurderinger:</strong> slettes når du sletter kontoen, 3 år etter timen, eller
+                    når BESTI fjerner bildet fordi det bryter vilkårene.</li>
+                <li><strong>BESTI sammen:</strong> invitasjonen slettes 3 år etter tidspunktet. Bedriftens notat om
+                    deg slettes når du ikke har vært hos bedriften på 3 år, når du sletter kontoen, eller når
+                    bedriften slettes. Loggen over administrasjon slettes etter 3 år.</li>
                 <li><strong>Kundekonto:</strong> til du sletter den. Når du sletter kontoen, blir kommende timer
-                    avlyst (bedriften får beskjed), tidligere timer anonymiseres med en gang, varslene slettes, og
+                    avlyst (bedriften får beskjed), tidligere timer anonymiseres med en gang, varslene, favorittene,
+                    ventelisten, påminnelsene, invitasjonene, bildene og bedriftenes notater om deg slettes, og
                     vurderingene dine blir stående som «Tidligere kunde» uten navnet ditt.</li>
                 <li><strong>Bedriftskonto:</strong> til bedriften sletter den i panelet (Bedriftsprofil → «Slett
                     bedrift»). Da slettes bedriften, de ansatte, bildene, alle timer og vurderinger hos bedriften og
@@ -142,7 +187,9 @@ export default function PrivacyPage() {
             <p>
                 Vi bruker bare nødvendige informasjonskapsler: én som holder deg innlogget, og i bedriftspanelet én
                 som husker at listen «Kom i gang» er skjult. Besøksstatistikken bruker ingen informasjonskapsler og
-                lagrer ingenting i nettleseren din. Vi bruker ikke reklame-cookies eller sporing på tvers av
+                lagrer ingenting i nettleseren din. Velger du «Lyd ved nye varsler», husker nettleseren det valget
+                (lokal lagring), og varsler på telefonen bruker en «service worker» som bare viser meldingene. Vi
+                bruker ikke reklame-cookies eller sporing på tvers av
                 nettsider, og trenger derfor ikke samtykke til cookies.
             </p>
 

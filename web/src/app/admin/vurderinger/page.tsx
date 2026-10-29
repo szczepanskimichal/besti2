@@ -82,6 +82,9 @@ export default async function AdminReviewsPage({ searchParams }: AdminReviewsPag
                                     {reasons.review.map((reason) => <option key={reason} value={reason}>{reason}</option>)}
                                 </select>
                                 <SubmitButton className={styles.dangerButton} pendingText="Skjuler …">Skjul</SubmitButton>
+                                {review.photoUrl && (
+                                    <span className={styles.muted}>«Bildet passer ikke» sletter bildet for godt.</span>
+                                )}
                             </form>
                         )}
                     </li>

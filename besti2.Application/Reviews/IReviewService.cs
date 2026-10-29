@@ -12,9 +12,10 @@ public interface IReviewService
         CancellationToken cancellationToken = default);
 
     // includeHidden = the business panel (shows reviews BESTI has hidden, with the reason);
-    // viewerUserId = the logged-in reader, for MarkedHelpful
+    // viewerUserId = the logged-in reader, for MarkedHelpful; take = only the newest ones (the average and the
+    // count are always from all of them)
     Task<BusinessReviewsDto> GetForBusinessAsync(Guid businessId, bool includeHidden = false,
-        string? viewerUserId = null, CancellationToken cancellationToken = default);
+        string? viewerUserId = null, int? take = null, CancellationToken cancellationToken = default);
 
     // Returns null when saved, otherwise an error message for the business
     Task<string?> ReplyAsync(Guid businessId, Guid reviewId, string reply,

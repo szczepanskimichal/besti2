@@ -175,6 +175,19 @@ public class ProfileServiceTests
         });
         db.Notifications.Add(new Notification
             { Id = Guid.NewGuid(), UserId = kari.Id, Text = "Hei", CreatedUtc = DateTime.UtcNow });
+        db.WaitlistEntries.Add(new WaitlistEntry
+        {
+            Id = Guid.NewGuid(), UserId = kari.Id, ServiceId = HerreklippId, Date = FutureMonday,
+            CreatedUtc = DateTime.UtcNow
+        });
+        db.RebookReminders.Add(new RebookReminder
+            { Id = Guid.NewGuid(), UserId = kari.Id, ServiceId = HerreklippId, Weeks = 6, CreatedUtc = DateTime.UtcNow });
+        db.WebPushSubscriptions.Add(new WebPushSubscription
+        {
+            Id = Guid.NewGuid(), UserId = kari.Id, Endpoint = "https://fcm.googleapis.com/fcm/send/hemmelig",
+            P256dh = "key", Auth = "auth", CreatedUtc = DateTime.UtcNow
+        });
+        kari.ReminderEmailOff = true;
         await db.SaveChangesAsync();
 
         var export = await profile.ExportAsync(kari.Id);
@@ -186,5 +199,11 @@ public class ProfileServiceTests
         Assert.True(booking.MarketingConsent);
         Assert.Equal("Klipp & Stil Frisør", Assert.Single(export.Reviews).Business);
         Assert.Equal("Hei", Assert.Single(export.Notifications).Text);
+        Assert.False(export.Account.ReminderEmail);
+        Assert.True(export.Account.SoonNotice);
+        Assert.Equal(FutureMonday, Assert.Single(export.Waitlist).Date);
+        Assert.Equal(6, Assert.Single(export.RebookReminders).Weeks);
+        // Only the push service, never the secret device address
+        Assert.Equal("fcm.googleapis.com", Assert.Single(export.PushDevices).PushService);
     }
 }
