@@ -2,6 +2,7 @@ using besti2.Application.Accounts;
 using besti2.Application.Admin;
 using besti2.Application.Bookings;
 using besti2.Application.Businesses;
+using besti2.Application.Customers;
 using besti2.Application.Email;
 using besti2.Application.Favorites;
 using besti2.Application.Loyalty;
@@ -10,6 +11,7 @@ using besti2.Application.Images;
 using besti2.Application.Invites;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
+using besti2.Application.Staff;
 using besti2.Application.Statistics;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
@@ -117,6 +119,12 @@ public static class DependencyInjection
             provider.GetRequiredService<ILogger<WeeklyReportService>>(),
             webBaseUrl));
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<ICustomerCardService, CustomerCardService>();
+        services.AddScoped<IBookingExportService, BookingExportService>();
+        services.AddScoped<IStaffService>(provider => new StaffService(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<IEmailService>(),
+            webBaseUrl));
         services.AddScoped<IFavoriteService, FavoriteService>();
         services.AddScoped<ILoyaltyService, LoyaltyService>();
         services.AddScoped<IMyYearService, MyYearService>();

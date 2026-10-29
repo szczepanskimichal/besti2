@@ -2,6 +2,7 @@ import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusinessBySlug } from "@/lib/api";
 import { formatDate, formatTime } from "@/lib/format";
+import ShareButton from "@/components/ShareButton/ShareButton";
 import RebookReminderForm from "./RebookReminderForm";
 import styles from "./page.module.css";
 
@@ -53,6 +54,14 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
                 </dl>
 
                 <RebookReminderForm serviceId={service.id} employeeId={employee.id}/>
+
+                {/* Friends are the best marketing: one tap sends the business page in Messenger or SMS */}
+                <div className={styles.share}>
+                    <p className={styles.muted}>Kjenner du noen som også trenger en time?</p>
+                    <ShareButton path={`/${business.slug}`} title={business.name} label="Del med en venn"
+                                 text={`Jeg har bestilt time hos ${business.name} på BESTI. Bli med?`}
+                                 className={styles.shareButton}/>
+                </div>
 
                 <NextLink href="/" className={styles.back}>← Tilbake til forsiden</NextLink>
             </div>

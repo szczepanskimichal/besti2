@@ -79,7 +79,7 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
             .ToListAsync(cancellationToken);
 
         var reviews = await dbContext.Reviews.AsNoTracking()
-            .Where(r => r.BusinessId == businessId)
+            .Where(r => r.BusinessId == businessId && r.HiddenUtc == null)
             .Select(r => new { r.Stars, r.CreatedUtc })
             .ToListAsync(cancellationToken);
 
@@ -105,12 +105,13 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
 
         var openingHours = await dbContext.OpeningHours.AsNoTracking()
             .Where(o => o.BusinessId == businessId)
-            .Select(o => new { o.DayOfWeek, o.OpensAt, o.ClosesAt })
+            .Select(o => new { o.DayOfWeek, o.OpensAt, o.ClosesAt, o.BreakStart, o.BreakEnd })
             .ToListAsync(cancellationToken);
         var employees = await dbContext.Employees.CountAsync(e => e.BusinessId == businessId && !e.IsDeleted,
             cancellationToken);
         var occupancy = Occupancy(bookings, fromUtc, toUtc, nowUtc,
-            openingHours.ToDictionary(o => o.DayOfWeek, o => (o.ClosesAt - o.OpensAt).TotalMinutes), employees);
+            openingHours.ToDictionary(o => o.DayOfWeek, o => (o.ClosesAt - o.OpensAt).TotalMinutes
+                                                          - ((o.BreakEnd - o.BreakStart)?.TotalMinutes ?? 0)), employees);
 
         var setup = new Setup(
             HasOpeningHours: openingHours.Count > 0,

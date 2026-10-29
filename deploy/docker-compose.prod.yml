@@ -48,6 +48,8 @@ services:
       DataProtection__KeysPath: /keys
       ForwardedHeaders__KnownNetwork: 172.30.0.0/24
       WebBaseUrl: https://bestiapp.no
+      # Shown under Systemstatus in /admin (the commit that is running)
+      BESTI_VERSION: ${TAG:-}
       ImageStorage__PublicBaseUrl: https://bestiapp.no/uploads
       # The API checks that Google's ID tokens were made for this client
       Google__ClientId: ${GOOGLE_CLIENT_ID:-}

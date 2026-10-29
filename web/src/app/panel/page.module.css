@@ -244,3 +244,13 @@
     font-weight: 600;
     color: var(--color-danger);
 }
+/* "Kunder": the business's own note about the customer (only the business sees it) */
+.salonNote {
+    margin: 8px 0 0;
+    padding: 8px 12px;
+    border-left: 3px solid var(--color-warning);
+    background: rgba(242, 196, 109, 0.1);
+    border-radius: 4px;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}

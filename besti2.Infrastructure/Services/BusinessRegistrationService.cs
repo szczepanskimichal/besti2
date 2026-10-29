@@ -193,7 +193,10 @@ public class BusinessRegistrationService(
 
         // 3. Create the owner account linked to the business
         // The owner must confirm the email before logging in (link in the mail at the end)
-        var user = new AppUser { UserName = email, Email = email, BusinessId = business.Id };
+        var user = new AppUser
+        {
+            UserName = email, Email = email, BusinessId = business.Id, CreatedUtc = DateTime.UtcNow
+        };
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
@@ -244,7 +247,8 @@ public class BusinessRegistrationService(
         }
 
         var business = await dbContext.Businesses.FindAsync([owner.BusinessId.Value], cancellationToken);
-        if (business is not { IsHidden: true })
+        // Closed by BESTI: a confirmation link opened again must not open the page
+        if (business is not { IsHidden: true, SuspendedUtc: null })
         {
             return;
         }
@@ -564,6 +568,12 @@ public class BusinessRegistrationService(
         var imageFiles = await dbContext.BusinessImages.Where(i => i.BusinessId == business.Id)
             .Select(i => i.FileName)
             .ToListAsync(cancellationToken);
+        // Photos the customers added to their reviews go with the reviews
+        imageFiles.AddRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id && r.PhotoFileName != null)
+            .Select(r => r.PhotoFileName!)
+            .ToListAsync(cancellationToken));
+        dbContext.ReviewHelpfuls.RemoveRange(await dbContext.ReviewHelpfuls
+            .Where(h => h.Review.BusinessId == business.Id).ToListAsync(cancellationToken));
         dbContext.Reviews.RemoveRange(await dbContext.Reviews.Where(r => r.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
         dbContext.Bookings.RemoveRange(bookings);

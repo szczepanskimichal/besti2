@@ -2,7 +2,11 @@ namespace besti2.Application.Accounts;
 
 // "Min profil" in Min Besti
 // HasPassword = false for an account made with "Fortsett med Google" (it can make a password under Profil)
-public record ProfileDto(string FullName, string Email, string? Phone, bool HasPassword = true);
+// ReminderEmail / SoonNotice: the "Varsler" choices (reminder e-mail the day before, "Snart tid!" 2 hours before)
+public record ProfileDto(string FullName, string Email, string? Phone, bool HasPassword = true,
+    bool ReminderEmail = true, bool SoonNotice = true);
+
+public record NotificationSettingsRequest(bool ReminderEmail, bool SoonNotice);
 
 public record UpdateMyProfileRequest(string FullName, string? Phone);
 

@@ -13,9 +13,16 @@ public static class SlotCalculator
         TimeOnly closesAt,
         int durationMinutes,
         IReadOnlyList<(DateTime StartUtc, DateTime EndUtc)> busy,
-        DateTime nowUtc)
+        DateTime nowUtc,
+        TimeOnly? breakStart = null,
+        TimeOnly? breakEnd = null)
     {
         var slots = new List<DateTime>();
+        // The daily break (lunch) is busy like a booking
+        if (breakStart is TimeOnly pauseStart && breakEnd is TimeOnly pauseEnd && pauseEnd > pauseStart)
+        {
+            busy = [.. busy, (ToUtc(date, pauseStart), ToUtc(date, pauseEnd))];
+        }
 
         var duration = TimeSpan.FromMinutes(durationMinutes);
         var closesUtc = ToUtc(date, closesAt);

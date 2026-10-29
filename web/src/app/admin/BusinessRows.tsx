@@ -8,6 +8,7 @@ const statusLabels: Record<AdminBusinessRow["status"], string> = {
     Venter: "Venter på godkjenning",
     Synlig: "Synlig",
     Ubekreftet: "E-post ikke bekreftet",
+    Stengt: "Stengt av BESTI",
     Skjult: "Skjult",
 };
 

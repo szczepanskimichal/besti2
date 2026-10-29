@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { answerMyNewTime, cancelMyBooking, createReview, leaveWaitlist, newInviteLink, removeRebookReminder } from "@/lib/api";
+import { answerMyNewTime, cancelMyBooking, createReview, leaveWaitlist, newInviteLink, removeRebookReminder, uploadReviewPhoto } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -40,13 +40,22 @@ export async function createReviewAction(_previous: FormState, formData: FormDat
     }
     const stars = String(formData.get("stars") ?? "");
     const comment = String(formData.get("comment") ?? "");
+    const bookingId = String(formData.get("bookingId") ?? "");
     const result = await createReview(token, {
-        bookingId: String(formData.get("bookingId") ?? ""),
+        bookingId,
         stars: Number(stars),
         comment,
     });
     if (!result.ok) {
         return { error: result.message, values: { stars, comment } };
+    }
+    // The photo is extra: when it fails, the review is still saved and the page says so
+    const photo = formData.get("photo");
+    if (photo instanceof File && photo.size > 0) {
+        const uploaded = await uploadReviewPhoto(token, bookingId, photo);
+        if (!uploaded.ok) {
+            redirect("/min-besti/vurderinger?takk=1&bilde=feil");
+        }
     }
     redirect("/min-besti/vurderinger?takk=1");
 }

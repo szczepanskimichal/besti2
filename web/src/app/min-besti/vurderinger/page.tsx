@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     title: "Vurderinger",
 };
 type ReviewsPageProps = {
-    searchParams: Promise<{ takk?: string }>;
+    searchParams: Promise<{ takk?: string; bilde?: string }>;
 };
 export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
     const token = await getToken();
@@ -30,7 +30,7 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
     if (!bookings) {
         redirect("/logg-inn?neste=/min-besti/vurderinger");
     }
-    const { takk } = await searchParams;
+    const { takk, bilde } = await searchParams;
     // Only visits still waiting for a review (at most 30 days old); reviewed ones disappear
     const visits = bookingsToReview(bookings);
     return (
@@ -38,6 +38,9 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
             <h1 className={panelStyles.title}>Min Besti</h1>
             <MinBestiTabs/>
             {takk && <p className={styles.success} role="status">Takk for vurderingen! 💙</p>}
+            {bilde === "feil" && (
+                <p className={panelStyles.error} role="alert">Vurderingen er lagret, men bildet kunne ikke lastes opp.</p>
+            )}
             <p className={panelStyles.muted}>
                 Hvordan var timen? Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
             </p>

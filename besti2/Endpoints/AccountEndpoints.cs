@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using besti2.Application.Accounts;
 using besti2.Application.Businesses;
 using besti2.Application.Reviews;
+using besti2.Application.Staff;
 using besti2.Endpoints.Admin;
 using besti2.Infrastructure.Identity;
 
@@ -39,9 +40,9 @@ public static class AccountEndpoints
         }).RequireRateLimiting("signup");
 
         // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages,
-        // isAdmin for the link to /admin
+        // isAdmin for the link to /admin, isStaff for "Min arbeidsplan" (/ansatt)
         group.MapGet("/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
-            AdminEmails adminEmails) =>
+            AdminEmails adminEmails, IStaffService staffService, CancellationToken cancellationToken) =>
         {
             var user = await userManager.GetUserAsync(principal);
             return user is null
@@ -49,7 +50,8 @@ public static class AccountEndpoints
                 : Results.Ok(new
                 {
                     user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null,
-                    IsAdmin = adminEmails.IsAdmin(user)
+                    IsAdmin = adminEmails.IsAdmin(user),
+                    IsStaff = user.BusinessId is null && await staffService.IsStaffAsync(user.Id, cancellationToken)
                 });
         }).RequireAuthorization();
 
@@ -66,6 +68,22 @@ public static class AccountEndpoints
             var error = await reviewService.CreateAsync(userId, request, cancellationToken);
             return error is null ? Results.Created() : Results.BadRequest(new { message = error });
         }).RequireAuthorization();
+
+        // Customer: a photo from the visit on the own review (PNG, JPG or WebP, max 10 MB, saved as WebP)
+        group.MapPost("/me/reviews/{bookingId:guid}/photo", async (Guid bookingId, IFormFile file,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IReviewService reviewService,
+            CancellationToken cancellationToken) =>
+        {
+            var userId = userManager.GetUserId(principal);
+            if (userId is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            await using var stream = file.OpenReadStream();
+            var error = await reviewService.SetPhotoAsync(userId, bookingId, stream, file.Length, cancellationToken);
+            return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+        }).RequireAuthorization().DisableAntiforgery().RequireRateLimiting("upload");
 
         // Customer: "Min profil" – name, e-mail (read only) and phone
         group.MapGet("/me/profile", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
@@ -94,6 +112,20 @@ public static class AccountEndpoints
             }
 
             var error = await profileService.UpdateAsync(userId, request, cancellationToken);
+            return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
+        }).RequireAuthorization();
+
+        // Customer: "Varsler" – reminder e-mail the day before and "Snart tid!" 2 hours before, on or off
+        group.MapPut("/me/notification-settings", async (NotificationSettingsRequest request,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IProfileService profileService) =>
+        {
+            var userId = userManager.GetUserId(principal);
+            if (userId is null)
+            {
+                return Results.Unauthorized();
+            }
+
+            var error = await profileService.SetNotificationSettingsAsync(userId, request);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         }).RequireAuthorization();
 

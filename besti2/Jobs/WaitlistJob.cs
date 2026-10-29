@@ -1,4 +1,5 @@
 using besti2.Application.Bookings;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -18,9 +19,11 @@ public class WaitlistJob(IServiceScopeFactory scopeFactory, ILogger<WaitlistJob>
                     using var scope = scopeFactory.CreateScope();
                     var waitlist = scope.ServiceProvider.GetRequiredService<IWaitlistService>();
                     await waitlist.CheckAsync(DateTime.UtcNow, stoppingToken);
+                    JobHeartbeats.Ran("Venteliste", true);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    JobHeartbeats.Ran("Venteliste", false);
                     // The database is down for a moment: never crash the API, try again next round
                     logger.LogError(ex, "Checking the waitlist failed");
                 }

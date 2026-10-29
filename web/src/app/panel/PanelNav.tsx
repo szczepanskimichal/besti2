@@ -9,6 +9,7 @@ export default function PanelNav({ title }: { title: string }) {
             <nav className={styles.topActions} aria-label="Panel">
                 <Link href="/panel" className={styles.secondaryButton}>Kalender</Link>
                 <Link href="/panel/liste" className={styles.secondaryButton}>Liste</Link>
+                <Link href="/panel/kunder" className={styles.secondaryButton}>Kunder</Link>
                 <Link href="/panel/statistikk" className={styles.secondaryButton}>Statistikk</Link>
                 <Link href="/panel/tjenester" className={styles.secondaryButton}>Tjenester</Link>
                 <Link href="/panel/ansatte" className={styles.secondaryButton}>Ansatte</Link>

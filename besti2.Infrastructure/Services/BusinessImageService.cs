@@ -14,6 +14,7 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
     private const int LogoMaxSize = 512; // longest side in pixels after resizing
     private const int GalleryMaxSize = 1600; // big enough for a sharp photo on any screen
     private const int MaxGalleryImages = 12;
+    private const int ReviewPhotoMaxSize = 1200; // a customer's photo next to a review
     private const long MaxPixels = 50_000_000; // 50 megapixels: more than any phone camera (48 MP)
 
     public async Task<string?> SetLogoAsync(Guid businessId, Stream content, long length,
@@ -98,6 +99,20 @@ public class BusinessImageService(AppDbContext dbContext, IImageStorage storage)
         });
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
+    }
+
+    public async Task<(string? FileName, string? Error)> SaveReviewPhotoAsync(Stream content, long length,
+        CancellationToken cancellationToken = default)
+    {
+        var (resized, error) = await ReadAsWebpAsync(content, length, ReviewPhotoMaxSize, cancellationToken);
+        if (resized is null)
+        {
+            return (null, error);
+        }
+
+        var fileName = $"{Guid.NewGuid()}.webp";
+        await storage.SaveAsync(fileName, new MemoryStream(resized), cancellationToken);
+        return (fileName, null);
     }
 
     public async Task<bool> DeleteGalleryImageAsync(Guid businessId, Guid imageId,

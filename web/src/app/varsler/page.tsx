@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getNotifications, getPushPublicKey } from "@/lib/api";
+import { getMe, getMyProfile, getNotifications, getPushPublicKey } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate, formatTime } from "@/lib/format";
 import { privatePage } from "@/lib/site";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { deleteNotificationAction, markAllReadAction } from "./actions";
 import PhoneApp from "./PhoneApp";
+import ReminderSettings from "./ReminderSettings";
 import SoundToggle from "./SoundToggle";
 // Same cards as Min Besti and the panel
 import panelStyles from "../panel/page.module.css";
@@ -24,10 +25,12 @@ export default async function NotificationsPage() {
     if (!token) {
         redirect("/logg-inn?neste=/varsler");
     }
-    const [notifications, pushKey] = await Promise.all([getNotifications(token), getPushPublicKey()]);
+    const [notifications, pushKey, me] = await Promise.all([getNotifications(token), getPushPublicKey(), getMe(token)]);
     if (!notifications) {
         redirect("/logg-inn?neste=/varsler");
     }
+    // The reminders are about the customer's own visits, so a business account does not get them
+    const profile = me && !me.isBusiness ? await getMyProfile(token) : null;
 
     return (
         <main className={panelStyles.main}>
@@ -42,6 +45,7 @@ export default async function NotificationsPage() {
                 )}
             </div>
             <SoundToggle/>
+            {profile && <ReminderSettings reminderEmail={profile.reminderEmail} soonNotice={profile.soonNotice}/>}
             <PhoneApp publicKey={pushKey}/>
             {notifications.items.length === 0 ? (
                 <p className={panelStyles.muted}>Du har ingen varsler.</p>

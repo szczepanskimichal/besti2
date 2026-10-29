@@ -97,7 +97,12 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>
             <PanelNav title="Kalender"/>
-            {business.isHidden && (
+            {business.suspendedReason ? (
+                <p className={styles.error} role="status">
+                    BESTI har stengt siden midlertidig: {business.suspendedReason}. Kundene finner den ikke og kan
+                    ikke bestille nye timer, men timene som allerede er bestilt gjelder. Spørsmål? Skriv til post@bestiapp.no.
+                </p>
+            ) : business.isHidden && (
                 <p className={calendar.notice} role="status">
                     Bedriften venter på godkjenning – vanligvis innen én arbeidsdag. Du kan allerede legge inn
                     tjenester, ansatte og åpningstider. Kundene ser bedriften når den er godkjent.
@@ -175,7 +180,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                            newHref={(date) => link({ dag: date, ny: "1" })}
                            hrefFor={(booking) => link({ bestilling: booking.id })}/>
             ) : (
-                <TimeGrid columns={columns} range={range} showEmployee={week}
+                <TimeGrid columns={columns} range={range} showEmployee={week} openingHours={business.openingHours}
                           hrefFor={(booking) => link({ bestilling: booking.id })}
                           blockHref={(block) => link({ blokkering: block.id })}
                           newHref={(column, minute) => link({

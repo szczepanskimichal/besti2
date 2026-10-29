@@ -1,4 +1,5 @@
 using besti2.Application.Businesses;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -17,9 +18,11 @@ public class BusinessVerificationJob(IServiceScopeFactory scopeFactory, ILogger<
                 using var scope = scopeFactory.CreateScope();
                 var verifier = scope.ServiceProvider.GetRequiredService<IBusinessVerifier>();
                 await verifier.RecheckAsync(DateTime.UtcNow, stoppingToken);
+                JobHeartbeats.Ran("Brreg-sjekk", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                JobHeartbeats.Ran("Brreg-sjekk", false);
                 // Never crash the API because of the check; try again tomorrow
                 logger.LogError(ex, "Checking businesses in Brønnøysund failed");
             }

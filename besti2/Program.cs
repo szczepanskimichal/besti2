@@ -189,6 +189,7 @@ app.MapRebookReminderEndpoints();
 app.MapFavoriteEndpoints();
 app.MapMyYearAndLoyaltyEndpoints();
 app.MapCalendarFeedEndpoints();
+app.MapStaffEndpoints();
 app.MapPanelEndpoints();
 app.MapAdminEndpoints();
 app.MapAuthEndpoints();

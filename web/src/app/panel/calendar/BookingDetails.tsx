@@ -46,6 +46,16 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
                     )}
                 </p>
                 <NoShowCount count={booking.noShowCount}/>
+                {booking.salonNote && (
+                    <p className={styles.salonNote}><span aria-hidden="true">📝</span> {booking.salonNote}</p>
+                )}
+                {booking.customerKey && (
+                    <p>
+                        <Link href={`/panel/kunder/${encodeURIComponent(booking.customerKey)}`}>
+                            {booking.salonNote ? "Kundekort" : "Kundekort og notat"} →
+                        </Link>
+                    </p>
+                )}
                 {booking.customerNote && (
                     <div className={styles.note}>
                         <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>

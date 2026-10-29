@@ -324,3 +324,55 @@
 .loyalty .muted {
     margin: 0;
 }
+
+.share {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.reviewPhoto {
+    display: block;
+    max-width: 200px;
+    max-height: 200px;
+    margin: 4px 0 8px;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+.helpful {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    margin-top: 4px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.helpfulOn {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* "(pause 12:00–12:30)" after the opening hours */
+.breakTime {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+}

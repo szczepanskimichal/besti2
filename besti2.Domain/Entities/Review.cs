@@ -14,4 +14,11 @@ public class Review
     public string? BusinessReply { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime? RepliedUtc { get; set; }
+
+    // An optional photo from the visit (file name in the image storage, see IImageStorage)
+    public string? PhotoFileName { get; set; }
+
+    // Hidden by BESTI (e.g. hateful words or personal details): not shown and not counted in the stars
+    public DateTime? HiddenUtc { get; set; }
+    public string? HiddenReason { get; set; }
 }

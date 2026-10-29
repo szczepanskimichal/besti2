@@ -71,8 +71,8 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                 null,
                 null,
                 // Stars for the card, counted in the same query (no extra request per business)
-                dbContext.Reviews.Where(r => r.BusinessId == b.Id).Average(r => (double?)r.Stars),
-                dbContext.Reviews.Count(r => r.BusinessId == b.Id),
+                dbContext.Reviews.Where(r => r.BusinessId == b.Id && r.HiddenUtc == null).Average(r => (double?)r.Stars),
+                dbContext.Reviews.Count(r => r.BusinessId == b.Id && r.HiddenUtc == null),
                 b.ApprovedUtc != null && b.VerifiedUtc != null
             ))
             .ToListAsync(cancellationToken);
@@ -138,7 +138,8 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
     private sealed record SlotData(
         ILookup<Guid, (Guid Id, string Name, int DurationMinutes)> Services,
         ILookup<Guid, Guid> Employees,
-        ILookup<(Guid BusinessId, DayOfWeek Day), (TimeOnly OpensAt, TimeOnly ClosesAt)> Hours,
+        ILookup<(Guid BusinessId, DayOfWeek Day), (TimeOnly OpensAt, TimeOnly ClosesAt, TimeOnly? BreakStart,
+            TimeOnly? BreakEnd)> Hours,
         ILookup<Guid, (DateTime StartUtc, DateTime EndUtc)> Bookings,
         ILookup<Guid, (Guid? EmployeeId, DateTime StartUtc, DateTime EndUtc)> TimeOffs);
 
@@ -191,7 +192,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
         return new SlotData(
             services.ToLookup(s => s.BusinessId, s => (s.Id, s.Name, s.DurationMinutes)),
             employees.ToLookup(e => e.BusinessId, e => e.Id),
-            hours.ToLookup(h => (h.BusinessId, h.DayOfWeek), h => (h.OpensAt, h.ClosesAt)),
+            hours.ToLookup(h => (h.BusinessId, h.DayOfWeek), h => (h.OpensAt, h.ClosesAt, h.BreakStart, h.BreakEnd)),
             bookings.ToLookup(b => b.EmployeeId, b => (b.StartUtc, b.EndUtc)),
             timeOffs.ToLookup(t => t.BusinessId, t => (t.EmployeeId, t.StartUtc, t.EndUtc)));
     }
@@ -234,7 +235,7 @@ public class BusinessSearchService(AppDbContext dbContext, IImageStorage imageSt
                         .Concat(timeOffs
                             .Where(t => t.EmployeeId == null || t.EmployeeId == employeeId)
                             .Select(t => (t.StartUtc, t.EndUtc)))
-                        .ToList(), earliestUtc)));
+                        .ToList(), earliestUtc, open.BreakStart, open.BreakEnd)));
             // Two free employees at 10:00 = one button (for two people: both are needed)
             var slots = SlotCalculator.FreeForPersons(freeByEmployee, persons)
                 .Where(t => IsInTimeWindow(t.StartUtc, from, to))

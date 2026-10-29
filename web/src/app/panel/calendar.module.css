@@ -407,6 +407,20 @@ a.booking:hover {
     color: var(--color-text);
 }
 
+/* Pause fra/til under Åpningstider: lighter than a block, and clicks pass through to "Ny bestilling" */
+.breakTime {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    color: var(--color-muted);
+    background: rgba(200, 213, 185, 0.06);
+    border-left: 3px dotted var(--color-muted);
+    pointer-events: none;
+}
+
 .phoneCard.phoneBlocked {
     color: var(--color-muted);
     background: repeating-linear-gradient(135deg, rgba(200, 213, 185, 0.06) 0 8px, rgba(200, 213, 185, 0.12) 8px 16px);

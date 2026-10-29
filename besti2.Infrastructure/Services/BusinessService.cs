@@ -60,7 +60,7 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                     .ToList(),
                 b.OpeningHours
                     .OrderBy(h => h.DayOfWeek)
-                    .Select(h => new OpeningHoursDto(h.DayOfWeek, h.OpensAt, h.ClosesAt))
+                    .Select(h => new OpeningHoursDto(h.DayOfWeek, h.OpensAt, h.ClosesAt, h.BreakStart, h.BreakEnd))
                     .ToList(),
                 b.Latitude,
                 b.Longitude,
@@ -78,7 +78,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 // "Verifisert bedrift": only an approved business that Brønnøysund still says is active
                 b.ApprovedUtc != null ? b.VerifiedUtc : null,
                 b.LoyaltyVisits,
-                b.LoyaltyReward))
+                b.LoyaltyReward,
+                includeHidden ? b.SuspendedReason : null))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null
@@ -300,6 +301,11 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         }
 
         employee.IsDeleted = true;
+        // The employee's own login ("/ansatt") ends too
+        employee.StaffUserId = null;
+        employee.StaffEmail = null;
+        employee.StaffInviteTokenHash = null;
+        employee.StaffInviteExpiresUtc = null;
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }
@@ -404,6 +410,18 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             return "Stengetid må være etter åpningstid.";
         }
 
+        // A break: both times or none, inside the opening hours
+        if (request.Days.Any(d => (d.BreakStart is null) != (d.BreakEnd is null)))
+        {
+            return "Fyll ut både start og slutt på pausen, eller ingen av dem.";
+        }
+
+        if (request.Days.Any(d => d.BreakStart is TimeOnly start && d.BreakEnd is TimeOnly end
+                                  && (end <= start || start <= d.OpensAt || end >= d.ClosesAt)))
+        {
+            return "Pausen må være innenfor åpningstiden, og slutt må være etter start.";
+        }
+
         var existing = await dbContext.OpeningHours
             .Where(h => h.BusinessId == businessId)
             .ToListAsync(cancellationToken);
@@ -423,6 +441,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
 
             row.OpensAt = day.OpensAt;
             row.ClosesAt = day.ClosesAt;
+            row.BreakStart = day.BreakStart;
+            row.BreakEnd = day.BreakEnd;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);

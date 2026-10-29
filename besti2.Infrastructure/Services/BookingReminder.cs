@@ -29,6 +29,9 @@ public class BookingReminder(
     // A booking still waiting for "Bekreft" this long after it was made: the business gets one reminder
     public const int PendingAfterHours = 2;
 
+    // "Om 2 timer": the notice before the visit (the job runs every 15 minutes, so 1 t 45 min – 2 t before)
+    public const int SoonHoursBefore = 2;
+
     private static readonly TimeZoneInfo Oslo = SlotCalculator.Oslo;
 
     public async Task<int> SendRemindersAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
@@ -44,7 +47,9 @@ public class BookingReminder(
                         && b.CustomerEmail != ""
                         && !b.NoReminder
                         && b.StartUtc > nowUtc
-                        && b.StartUtc <= until)
+                        && b.StartUtc <= until
+                        // The customer turned the reminder e-mail off under Varsler
+                        && !dbContext.Users.Any(u => u.Id == b.CustomerUserId && u.ReminderEmailOff))
             .ToListAsync(cancellationToken);
 
         var sent = 0;
@@ -70,6 +75,46 @@ public class BookingReminder(
             }
         }
 
+        return sent;
+    }
+
+    public async Task<int> SendSoonNoticesAsync(DateTime nowUtc, CancellationToken cancellationToken = default)
+    {
+        var until = nowUtc.AddHours(SoonHoursBefore);
+        var bookings = await dbContext.Bookings
+            .Include(b => b.Service).ThenInclude(s => s.Business)
+            .Where(b => b.Status == BookingStatus.Bekreftet
+                        && b.CustomerUserId != null
+                        && b.SoonNoticeSentUtc == null
+                        && b.StartUtc > nowUtc
+                        && b.StartUtc <= until
+                        && !dbContext.Users.Any(u => u.Id == b.CustomerUserId && u.SoonNoticeOff))
+            .ToListAsync(cancellationToken);
+
+        var sent = 0;
+        foreach (var booking in bookings)
+        {
+            booking.SoonNoticeSentUtc = nowUtc;
+            // Booked in the last hours: the customer just did it and knows, so no notice
+            if (booking.StartUtc - booking.CreatedUtc < TimeSpan.FromHours(SoonHoursBefore + 1))
+            {
+                continue;
+            }
+
+            var start = TimeZoneInfo.ConvertTimeFromUtc(booking.StartUtc, Oslo);
+            dbContext.Notifications.Add(new Notification
+            {
+                Id = Guid.NewGuid(),
+                UserId = booking.CustomerUserId,
+                BookingId = booking.Id,
+                Text = $"Snart tid! {booking.Service.Name} hos {booking.Service.Business.Name} kl. {start:HH:mm}",
+                Link = "/min-besti",
+                CreatedUtc = nowUtc
+            });
+            sent++;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
         return sent;
     }
 
