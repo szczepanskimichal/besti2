@@ -19,7 +19,11 @@ export default function Footer() {
                     <NextLink href="/vilkar">Vilkår</NextLink>
                 </nav>
             </div>
-            <p className={styles.copy}>© {year} BESTI</p>
+            <p className={styles.copy}>
+                <span>© {year} BESTI · Bestill med din besti</span>
+                {/* Required credit for the northern lights photo in the background */}
+                <span>Foto: Tomáš Malík / Unsplash</span>
+            </p>
         </footer>
     );
 }

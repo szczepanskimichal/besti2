@@ -13,6 +13,8 @@
     border-radius: 999px;
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     font-weight: 600;
     text-decoration: none;
@@ -29,7 +31,7 @@
     padding: 28px 20px;
     border-radius: 20px;
     border: 1px solid var(--color-border);
-    background: linear-gradient(135deg, rgba(15, 75, 87, 0.85), rgba(4, 20, 28, 0.85) 60%, rgba(120, 90, 200, 0.35));
+    background: linear-gradient(135deg, rgba(20, 70, 120, 0.85), rgba(5, 13, 28, 0.85) 60%, rgba(98, 195, 238, 0.25));
     backdrop-filter: blur(8px);
     text-align: center;
 }
@@ -84,9 +86,10 @@
     gap: 2px;
     padding: 14px;
     background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
-    backdrop-filter: blur(8px);
 }
 
 .icon {

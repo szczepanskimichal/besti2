@@ -2,23 +2,24 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    align-items: center;
 }
 
 .button {
     font: inherit;
+    font-family: var(--font-heading);
     font-weight: 600;
     min-height: 44px;
-    width: 100%;
     padding: 0 20px;
-    border: 2px solid var(--color-primary);
+    border: none;
     border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-primary);
+    background: none;
+    color: var(--color-heading);
     cursor: pointer;
 }
 
 .button:hover {
-    background: var(--color-primary-soft);
+    text-decoration: underline;
 }
 
 .denied {

@@ -19,7 +19,8 @@ export default async function Header() {
             <div className={styles.inner}>
                 <NextLink href="/" className={styles.logo} aria-label="BESTI – til forsiden">
                     {/* eslint-disable-next-line @next/next/no-img-element -- small SVG logo, next/image not needed */}
-                    <img src="/logo/besti-logo.svg" alt="" width={97} height={36} className={styles.logoImage}/>
+                    <img src="/logo/besti-pin.svg" alt="" width={42} height={44} className={styles.logoImage}/>
+                    <span className={styles.word}>besti</span>
                     <span className={styles.beta}>Beta</span>
                 </NextLink>
                 <nav className={styles.nav}>

@@ -9,6 +9,7 @@
     background: var(--color-primary);
     color: var(--color-on-primary);
     font: inherit;
+    font-family: var(--font-heading);
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;

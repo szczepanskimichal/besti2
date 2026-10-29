@@ -1,6 +1,8 @@
 .footer {
     margin-top: auto;
-    background: var(--color-surface);
+    background: rgba(4, 16, 24, 0.45);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
     border-top: 1px solid var(--color-border);
 }
 
@@ -15,7 +17,8 @@
 
 .brand {
     margin: 0 0 4px;
-    font-weight: 700;
+    font-family: var(--font-heading);
+    font-weight: 600;
     color: var(--color-primary);
 }
 
@@ -46,8 +49,12 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 16px 24px;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
     color: var(--color-muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 4px 12px;
 }
 
 @media (min-width: 768px) {

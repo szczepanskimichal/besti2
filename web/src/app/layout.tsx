@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito } from "next/font/google";
+import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -7,10 +7,19 @@ import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
 import Aurora from "../components/Aurora/Aurora";
 import Analytics from "../components/Analytics/Analytics";
 
-const nunito = Nunito({
+// Headings, buttons and form fields
+const poppins = Poppins({
     subsets: ["latin", "latin-ext"],
-    weight: ["400", "600", "700", "800"],
-    variable: "--font-nunito",
+    weight: ["500", "600", "700"],
+    variable: "--font-poppins",
+    display: "swap",
+});
+
+// Small text and descriptions
+const inter = Inter({
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "500", "600"],
+    variable: "--font-inter",
     display: "swap",
 });
 
@@ -27,14 +36,14 @@ export const metadata: Metadata = {
     robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
 };
 
-// Colour of the phone's status bar, same as the bottom of the aurora sky
+// Colour of the phone's status bar, same as the navy sky
 export const viewport: Viewport = {
-    themeColor: "#04141c",
+    themeColor: "#050d1c",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="nb" className={nunito.variable}>
+        <html lang="nb" className={`${poppins.variable} ${inter.variable}`}>
         <body>
         <Aurora />
         <Header />

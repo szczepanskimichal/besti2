@@ -2,7 +2,9 @@
     position: sticky;
     top: 0;
     z-index: 10;
-    background: var(--color-surface);
+    background: rgba(4, 16, 24, 0.45);
+    backdrop-filter: blur(16px) saturate(150%);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
     border-bottom: 1px solid var(--color-border);
 }
 
@@ -10,7 +12,7 @@
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 16px;
-    height: 56px;
+    height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -19,28 +21,35 @@
 .logo {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: var(--color-primary);
+    gap: 8px;
     text-decoration: none;
 }
-/* Logo A: aurora icon + "besti" (public/logo/besti-logo.svg) */
+/* Pin with B (public/logo/besti-pin.svg); its glow needs room, hence the negative margins */
 .logoImage {
     display: block;
-    height: 36px;
+    height: 44px;
     width: auto;
+    margin: -6px -6px -6px -10px;
+}
+
+.word {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    font-size: 1.55rem;
+    letter-spacing: -0.01em;
+    color: var(--color-primary);
+    filter: drop-shadow(0 0 8px rgba(98, 195, 238, 0.45));
 }
 /* Small "Beta" badge next to the logo while the first businesses test BESTI */
 .beta {
     padding: 2px 6px;
     border-radius: 999px;
     background: var(--color-primary-soft);
-    color: var(--color-primary-dark);
-    font-size: 0.7rem;
-    font-weight: 600;
+    color: var(--color-heading);
+    font-size: 0.65rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
 }
 .nav {
     display: flex;
@@ -53,7 +62,8 @@
     align-items: center;
     min-height: 44px;
     padding: 0 8px;
-    color: var(--color-muted);
+    font-weight: 600;
+    color: var(--color-text);
     text-decoration: none;
     white-space: nowrap;
 }
@@ -69,7 +79,9 @@
     border-radius: 999px;
     background: var(--color-primary);
     color: var(--color-on-primary);
+    font-family: var(--font-heading);
     font-weight: 600;
+    box-shadow: 0 0 10px rgba(98, 195, 238, 0.25);
     text-decoration: none;
     white-space: nowrap;
 }
@@ -79,11 +91,8 @@
 }
 
 .greeting {
-
     color: var(--color-text);
-
     font-weight: 500;
-
     padding: 0 8px;
 }
 
@@ -96,6 +105,7 @@
     border: none;
     background: none;
     font: inherit;
+    font-family: var(--font-heading);
     color: var(--color-muted);
     cursor: pointer;
 }
@@ -104,19 +114,30 @@
     color: var(--color-text);
 }
 
-@media (min-width: 768px) {
-    .inner {
-        height: 64px;
-    }
-}
-
 @media (max-width: 480px) {
     .greeting {
         display: none;
     }
 
     .logoImage {
-        height: 30px;
+        height: 38px;
+    }
+
+    .word {
+        font-size: 1.3rem;
+    }
+
+    .beta {
+        display: none;
+    }
+
+    .nav {
+        gap: 2px;
+    }
+
+    .ctaLink {
+        padding: 0 12px;
+        font-size: 0.92rem;
     }
 }
 /* The bell with the number of unread notifications */
@@ -145,13 +166,6 @@
     font-weight: 700;
     line-height: 18px;
     text-align: center;
-}
-
-/* Narrow phones: logo and both buttons must fit in one row */
-@media (max-width: 400px) {
-    .beta {
-        display: none;
-    }
 }
 
 /* A new notification: the bell swings for a moment (not with "reduce motion") */
