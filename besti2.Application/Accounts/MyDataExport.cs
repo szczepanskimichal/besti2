@@ -7,7 +7,8 @@ public record MyDataExport(
     IReadOnlyList<ExportBooking> Bookings,
     IReadOnlyList<ExportReview> Reviews,
     IReadOnlyList<ExportNotification> Notifications,
-    IReadOnlyList<ExportFavorite> Favorites);
+    IReadOnlyList<ExportFavorite> Favorites,
+    IReadOnlyList<ExportLoyaltyReward> LoyaltyRewards);
 
 public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed);
 
@@ -30,3 +31,5 @@ public record ExportReview(DateTime CreatedUtc, string Business, int Stars, stri
 public record ExportNotification(DateTime CreatedUtc, string Text, bool IsRead);
 
 public record ExportFavorite(DateTime CreatedUtc, string Business);
+
+public record ExportLoyaltyReward(DateTime RedeemedUtc, string Business);

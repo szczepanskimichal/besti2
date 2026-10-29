@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getMe, getMyFavorites } from "@/lib/api";
+import { getMe, getMyFavorites, getMyLoyalty } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatTime } from "@/lib/format";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
+import StampCard from "@/components/StampCard/StampCard";
 import Stars from "@/components/Stars/Stars";
 import { toggleFavoriteAction } from "./actions";
 import panel from "../../panel/page.module.css";
@@ -24,7 +25,7 @@ export default async function FavoritesPage({ searchParams }: FavoritesPageProps
     if (!token) {
         redirect("/logg-inn?neste=/min-besti/favoritter");
     }
-    const [me, favorites] = await Promise.all([getMe(token), getMyFavorites(token)]);
+    const [me, favorites, cards] = await Promise.all([getMe(token), getMyFavorites(token), getMyLoyalty(token)]);
     if (me?.isBusiness) {
         redirect("/panel");
     }
@@ -38,6 +39,28 @@ export default async function FavoritesPage({ searchParams }: FavoritesPageProps
             <h1 className={panel.title}>Min Besti</h1>
             <MinBestiTabs/>
             {favoritt === "feil" && <p className={panel.error} role="alert">Det gikk ikke. Prøv igjen.</p>}
+
+            {/* "Stempelkort": only businesses with a card where the customer has been */}
+            {cards.length > 0 && (
+                <section aria-labelledby="stempelkort" className={styles.section}>
+                    <h2 id="stempelkort" className={styles.heading}>Stempelkort <span aria-hidden="true">🎟️</span></h2>
+                    <ul className={styles.grid}>
+                        {cards.map((card) => (
+                            <li key={card.businessId} className={card.rewardReady ? `${panel.card} ${styles.ready}` : panel.card}>
+                                <h3 className={styles.name}><Link href={`/${card.businessSlug}`}>{card.businessName}</Link></h3>
+                                <StampCard stamps={card.stamps} visits={card.visits}/>
+                                <p className={panel.muted}>
+                                    {card.rewardReady
+                                        ? <>Fullt kort! Si fra ved neste besøk, så får du <strong>{card.reward}</strong>.</>
+                                        : <>{card.visits - card.stamps} besøk igjen til <strong>{card.reward}</strong>.</>}
+                                </p>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+
+            {cards.length > 0 && <h2 className={styles.heading}>Favoritter <span aria-hidden="true">♥</span></h2>}
 
             {favorites.length === 0 ? (
                 <div className={panel.card}>

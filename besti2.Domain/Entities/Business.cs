@@ -69,6 +69,15 @@ public class Business
     // The owner pressed "Jeg er interessert" for BESTI Pro (so BESTI knows who to ask first)
     public DateTime? ProInterestUtc { get; set; }
 
+    // "Stempelkort": every N-th visit gives the reward (null = no stamp card). Only visits booked with a
+    // customer account and confirmed after LoyaltyStartUtc count (turning it on again starts from zero)
+    public int? LoyaltyVisits { get; set; }
+    public string? LoyaltyReward { get; set; }
+    public DateTime? LoyaltyStartUtc { get; set; }
+
+    // The choices in the panel
+    public static readonly int[] LoyaltyOptions = [5, 6, 8, 10, 12];
+
     // BESTI's own note about the business (admin only, never shown to the business or customers)
     public string? AdminNote { get; set; }
 

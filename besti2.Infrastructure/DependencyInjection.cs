@@ -4,6 +4,7 @@ using besti2.Application.Bookings;
 using besti2.Application.Businesses;
 using besti2.Application.Email;
 using besti2.Application.Favorites;
+using besti2.Application.Loyalty;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
 using besti2.Application.Invites;
@@ -117,6 +118,8 @@ public static class DependencyInjection
             webBaseUrl));
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IFavoriteService, FavoriteService>();
+        services.AddScoped<ILoyaltyService, LoyaltyService>();
+        services.AddScoped<IMyYearService, MyYearService>();
         services.AddScoped<IBusinessVerifier>(provider => new BusinessVerifier(
             provider.GetRequiredService<AppDbContext>(),
             provider.GetRequiredService<IBusinessRegistry>(),

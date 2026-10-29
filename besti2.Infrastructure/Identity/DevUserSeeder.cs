@@ -42,7 +42,23 @@ public static class DevUserSeeder
             { UserName = AdminEmail, Email = AdminEmail, EmailConfirmed = true, FullName = "Ada Admin" });
 
         var customer = await userManager.FindByEmailAsync(CustomerEmail);
-        await SeedPastVisitsAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(), customer!.Id);
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await SeedPastVisitsAsync(dbContext, customer!.Id);
+        await SeedStampCardAsync(dbContext);
+    }
+
+    // A stamp card for Klipp & Stil that started 90 days ago, so Kari Kunde already has stamps.
+    // Only when it was never set up (turning it off keeps the reward text, so it is not turned on again)
+    private static async Task SeedStampCardAsync(AppDbContext dbContext)
+    {
+        var business = await dbContext.Businesses.FindAsync(KlippOgStil);
+        if (business is null || business.LoyaltyReward is not null)
+            return;
+
+        business.LoyaltyVisits = 10;
+        business.LoyaltyReward = "Gratis herreklipp";
+        business.LoyaltyStartUtc = DateTime.UtcNow.AddDays(-90);
+        await dbContext.SaveChangesAsync();
     }
 
     private static async Task CreateAsync(UserManager<AppUser> userManager, AppUser user)

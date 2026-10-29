@@ -424,6 +424,16 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<double?>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("LoyaltyReward")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("LoyaltyStartUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("LoyaltyVisits")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -675,6 +685,32 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Favorites");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.LoyaltyRedemption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CustomerUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("RedeemedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerUserId");
+
+                    b.HasIndex("BusinessId", "CustomerUserId");
+
+                    b.ToTable("LoyaltyRedemptions");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Notification", b =>
@@ -1422,6 +1458,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Favorite", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.LoyaltyRedemption", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
                         .WithMany()

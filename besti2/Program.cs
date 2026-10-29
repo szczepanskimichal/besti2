@@ -187,6 +187,7 @@ app.MapPushEndpoints();
 app.MapWaitlistEndpoints();
 app.MapRebookReminderEndpoints();
 app.MapFavoriteEndpoints();
+app.MapMyYearAndLoyaltyEndpoints();
 app.MapCalendarFeedEndpoints();
 app.MapPanelEndpoints();
 app.MapAdminEndpoints();
