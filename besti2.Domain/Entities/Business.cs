@@ -53,6 +53,10 @@ public class Business
     // The only choices the business can pick in the panel
     public static readonly int[] FreeCancelOptions = [0, 2, 12, 24, 48];
 
+    // "Kalender på telefonen": the secret part of the address the owner's calendar app (Google, Apple, Outlook)
+    // reads the bookings from; null = turned off. A new one makes the old address stop working
+    public string? CalendarFeedToken { get; set; }
+
     // New online bookings are confirmed at once (false = the business presses "Bekreft" on each one)
     public bool AutoConfirm { get; set; }
 

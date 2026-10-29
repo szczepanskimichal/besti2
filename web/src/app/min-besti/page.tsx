@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getMe, getMyBookings, getMyInvites } from "@/lib/api";
+import { getMe, getMyBookings, getMyInvites, getMyRebookReminders, getMyWaitlist } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatDate, formatDay, formatTime } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
-import { answerMyNewTimeAction, shareInviteAgainAction } from "./actions";
+import type { CustomerBooking } from "@/lib/types";
+import { answerMyNewTimeAction, leaveWaitlistAction, removeRebookReminderAction, shareInviteAgainAction } from "./actions";
 import { withdrawInviteAction } from "../invitasjon/actions";
 import CancelBookingForm from "./CancelBookingForm";
+import Countdown from "./Countdown";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
+import waitlistStyles from "./waitlist.module.css";
 
 export const metadata: Metadata = {
     title: "Min Besti",
@@ -30,7 +33,9 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
         redirect("/logg-inn?neste=/min-besti");
     }
     // Both at the same time instead of one after the other
-    const [me, bookings, invites] = await Promise.all([getMe(token), getMyBookings(token), getMyInvites(token)]);
+    const [me, bookings, invites, waitlist, rebook] = await Promise.all([
+        getMe(token), getMyBookings(token), getMyInvites(token), getMyWaitlist(token), getMyRebookReminders(token),
+    ]);
     if (me?.isBusiness) {
         redirect("/panel");
     }
@@ -121,6 +126,38 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     </Link>
                 </p>
             )}
+            {waitlist.length > 0 && (
+                <>
+                    <h2>Venteliste <span aria-hidden="true">🔔</span></h2>
+                    <ul className={styles.list}>
+                        {waitlist.map((entry) => {
+                            const times = `/${entry.businessSlug}/bestill?${new URLSearchParams({
+                                tjeneste: entry.serviceId, fra: entry.date, dato: entry.date,
+                                ...(entry.employeeId ? { ansatt: entry.employeeId } : {}),
+                            })}`;
+                            return (
+                                <li key={entry.id} className={styles.card}>
+                                    <div className={styles.cardHeader}>
+                                        <p className={styles.when}>{formatDay(entry.date)}</p>
+                                        <span className={styles.status}>{entry.notified ? "Det ble ledig!" : "Venter"}</span>
+                                    </div>
+                                    <p className={styles.service}>
+                                        {entry.serviceName} hos <Link href={`/${entry.businessSlug}`}>{entry.businessName}</Link>
+                                        {entry.employeeName && ` (${entry.employeeName})`}
+                                    </p>
+                                    <div className={styles.actions}>
+                                        <Link href={times} className={`${styles.primaryButton} ${waitlistStyles.linkButton}`}>Se ledige tider</Link>
+                                        <form action={leaveWaitlistAction}>
+                                            <input type="hidden" name="id" value={entry.id}/>
+                                            <SubmitButton className={styles.secondaryButton} pendingText="Fjerner…">Fjern</SubmitButton>
+                                        </form>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </>
+            )}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
                 <p className={styles.muted}>
@@ -140,6 +177,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                         : statusLabels[booking.status] ?? booking.status}
                                 </span>
                             </div>
+                            <Countdown startUtc={booking.startUtc} freeCancelUntilUtc={freeCancelUntil(booking)}/>
                             <p className={styles.service}>
                                 {booking.serviceName} hos {booking.employeeName}
                             </p>
@@ -178,6 +216,10 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             )}
                             <p>
                                 <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
+                                {" · "}
+                                <a href={directionsUrl(booking.businessAddress)} target="_blank" rel="noopener noreferrer">
+                                    Veibeskrivelse
+                                </a>
                             </p>
                             {/* After the business's free-cancel deadline: only by phone */}
                             {canCancelOnline(booking) ? (
@@ -199,6 +241,39 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     ))}
                 </ul>
             )}
+            {rebook.length > 0 && (
+                <>
+                    <h2>Påminnelser om ny time</h2>
+                    <ul className={styles.list}>
+                        {rebook.map((reminder) => (
+                            <li key={reminder.id} className={styles.card}>
+                                <p className={styles.service}>
+                                    {reminder.serviceName} hos{" "}
+                                    <Link href={`/${reminder.businessSlug}`}>{reminder.businessName}</Link>
+                                </p>
+                                <p className={styles.muted}>Vi minner deg på det {reminder.weeks} uker etter hver time.</p>
+                                <form action={removeRebookReminderAction} className={styles.actions}>
+                                    <input type="hidden" name="id" value={reminder.id}/>
+                                    <SubmitButton className={styles.secondaryButton} pendingText="Fjerner…">Slå av</SubmitButton>
+                                </form>
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            )}
         </main>
     );
+}
+
+// Only a confirmed visit with a deadline (0 = cancel any time, and a waiting one can always be cancelled)
+function freeCancelUntil(booking: CustomerBooking): string | null {
+    if (booking.status !== "Bekreftet" || booking.freeCancelHours === 0) {
+        return null;
+    }
+    return new Date(new Date(booking.startUtc).getTime() - booking.freeCancelHours * 60 * 60 * 1000).toISOString();
+}
+
+// Google Maps route from where you are (opens the Maps app on the phone). Free, no API key
+function directionsUrl(address: string): string {
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 }

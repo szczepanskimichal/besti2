@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { getNotifications } from "@/lib/api";
+import { getNotifications, getPushPublicKey } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate, formatTime } from "@/lib/format";
 import { privatePage } from "@/lib/site";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { deleteNotificationAction, markAllReadAction } from "./actions";
+import PhoneApp from "./PhoneApp";
+import SoundToggle from "./SoundToggle";
 // Same cards as Min Besti and the panel
 import panelStyles from "../panel/page.module.css";
 import styles from "./page.module.css";
@@ -22,7 +24,7 @@ export default async function NotificationsPage() {
     if (!token) {
         redirect("/logg-inn?neste=/varsler");
     }
-    const notifications = await getNotifications(token);
+    const [notifications, pushKey] = await Promise.all([getNotifications(token), getPushPublicKey()]);
     if (!notifications) {
         redirect("/logg-inn?neste=/varsler");
     }
@@ -39,6 +41,8 @@ export default async function NotificationsPage() {
                     </form>
                 )}
             </div>
+            <SoundToggle/>
+            <PhoneApp publicKey={pushKey}/>
             {notifications.items.length === 0 ? (
                 <p className={panelStyles.muted}>Du har ingen varsler.</p>
             ) : (

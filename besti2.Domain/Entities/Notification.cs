@@ -17,4 +17,7 @@ public class Notification
     public string? Link { get; set; }
     public DateTime CreatedUtc { get; set; }
     public DateTime? ReadUtc { get; set; }
+
+    // When it went out as a push message to the phone (or was skipped); null = not looked at yet
+    public DateTime? PushedUtc { get; set; }
 }

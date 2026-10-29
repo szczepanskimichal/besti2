@@ -279,3 +279,27 @@ export type NotificationList = {
     unread: number;
     items: NotificationItem[];
 };
+
+// "Si fra hvis det blir ledig": one day a customer waits for (notified = the message has been sent)
+export type WaitlistEntry = {
+    id: string;
+    businessName: string;
+    businessSlug: string;
+    serviceId: string;
+    serviceName: string;
+    employeeId: string | null;
+    employeeName: string | null;
+    date: string; // "2026-10-30" in Oslo
+    notified: boolean;
+};
+
+// "Tid for ny time?": the customer is reminded to book this service again N weeks after each visit
+export type RebookReminder = {
+    id: string;
+    businessName: string;
+    businessSlug: string;
+    serviceId: string;
+    serviceName: string;
+    employeeId: string | null;
+    weeks: number;
+};

@@ -7,20 +7,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\besti2.Domain\besti2.Domain.csproj"/>
-        <ProjectReference Include="..\besti2.Application\besti2.Application.csproj"/>
+        <ProjectReference Include="..\besti2.Domain\besti2.Domain.csproj" />
+        <ProjectReference Include="..\besti2.Application\besti2.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Google.Apis.Auth" Version="1.77.0"/>
-        <PackageReference Include="MailKit" Version="4.18.2"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.14"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14"/>
-        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.14"/>
-        <PackageReference Include="SkiaSharp" Version="4.154.0"/>
-        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.154.0"/>
-        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14"/>
+        <PackageReference Include="Google.Apis.Auth" Version="1.77.0" />
+        <PackageReference Include="Lib.Net.Http.WebPush" Version="3.3.1" />
+        <PackageReference Include="MailKit" Version="4.18.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.14" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.14" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.14" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.14" />
+        <PackageReference Include="SkiaSharp" Version="4.154.0" />
+        <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.154.0" />
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
     </ItemGroup>
 
 </Project>

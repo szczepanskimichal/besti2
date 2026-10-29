@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createBooking, createInvite } from "@/lib/api";
+import { createBooking, createInvite, joinWaitlist, setRebookReminder } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -91,4 +91,37 @@ export async function createInviteAction(_previous: FormState, formData: FormDat
         return { error: result.message, values };
     }
     redirect(`/invitasjon/${result.token}?ny=1`);
+}
+
+// "Si fra hvis det blir ledig": saved = show "Du står på ventelisten"
+export type WaitlistFormState = FormState & { saved?: boolean };
+
+export async function joinWaitlistAction(_previous: WaitlistFormState, formData: FormData): Promise<WaitlistFormState> {
+    const serviceId = String(formData.get("serviceId") ?? "");
+    const employeeId = String(formData.get("employeeId") ?? "");
+    const date = String(formData.get("date") ?? "");
+    const token = await getToken();
+    if (!token) {
+        return { error: "Logg inn for å stå på venteliste." };
+    }
+    const result = await joinWaitlist(token, { serviceId, employeeId: employeeId === "" ? null : employeeId, date });
+    return result.ok ? { saved: true, values: { date } } : { error: result.message, values: { date } };
+}
+
+// "Tid for ny time?" on the Vips! page: saved = the chosen number of weeks (0 = Nei takk)
+export type RebookFormState = FormState & { weeks?: number };
+
+export async function setRebookReminderAction(_previous: RebookFormState, formData: FormData): Promise<RebookFormState> {
+    const token = await getToken();
+    if (!token) {
+        return { error: "Logg inn igjen for å lagre påminnelsen." };
+    }
+    const weeks = Number(formData.get("weeks") ?? 0);
+    const employeeId = String(formData.get("employeeId") ?? "");
+    const result = await setRebookReminder(token, {
+        serviceId: String(formData.get("serviceId") ?? ""),
+        employeeId: employeeId === "" ? null : employeeId,
+        weeks,
+    });
+    return result.ok ? { weeks } : { error: result.message };
 }

@@ -1,0 +1,6 @@
+/* "Se ledige tider" is a link that looks like the primary button */
+.linkButton {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}

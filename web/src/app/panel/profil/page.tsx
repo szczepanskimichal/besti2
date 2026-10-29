@@ -1,27 +1,28 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBusiness } from "@/lib/api";
+import { getCalendarFeedToken, getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 import AccountForms from "./AccountForms";
+import CalendarFeed from "./CalendarFeed";
 import LogoUploadForm from "./LogoUploadForm";
 import ProfileForm from "./ProfileForm";
 import styles from "../tjenester/page.module.css";
 
 type ProfilePageProps = {
-    searchParams: Promise<{ lagret?: string, logo?: string }>;
+    searchParams: Promise<{ lagret?: string, logo?: string, kalender?: string }>;
 };
 export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
-    const business = await getPanelBusiness(token);
+    const [business, feedToken] = await Promise.all([getPanelBusiness(token), getCalendarFeedToken(token)]);
     if (!business) {
         redirect("/logg-inn");
     }
-    const { lagret, logo } = await searchParams;
+    const { lagret, logo, kalender } = await searchParams;
 
     return (
         <main className={styles.main}>
@@ -72,6 +73,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
                     autoConfirm: String(business.autoConfirm),
                 }}
             />
+            <CalendarFeed feedToken={feedToken} status={kalender}/>
             <AccountForms />
         </main>
     );

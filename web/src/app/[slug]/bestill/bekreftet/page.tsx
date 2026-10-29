@@ -2,6 +2,7 @@ import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusinessBySlug } from "@/lib/api";
 import { formatDate, formatTime } from "@/lib/format";
+import RebookReminderForm from "./RebookReminderForm";
 import styles from "./page.module.css";
 
 type Props = {
@@ -50,6 +51,8 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
                     <dt>Adresse</dt>
                     <dd>{business.address}, {business.postalCode} {business.city}</dd>
                 </dl>
+
+                <RebookReminderForm serviceId={service.id} employeeId={employee.id}/>
 
                 <NextLink href="/" className={styles.back}>← Tilbake til forsiden</NextLink>
             </div>

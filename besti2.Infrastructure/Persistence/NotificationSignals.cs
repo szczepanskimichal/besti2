@@ -41,6 +41,27 @@ public static class NotificationSignals
         }
     }
 
+    // A new notification was saved: wakes the push job (see PushSenderJob). One waiting signal is enough
+    private static readonly Channel<bool> NewOnes = Channel.CreateBounded<bool>(
+        new BoundedChannelOptions(1) { FullMode = BoundedChannelFullMode.DropWrite });
+
+    public static void Added() => NewOnes.Writer.TryWrite(true);
+
+    // Waits for a new notification, at most maxWait
+    public static async Task WaitForNewAsync(TimeSpan maxWait, CancellationToken cancellationToken)
+    {
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(maxWait);
+        try
+        {
+            await NewOnes.Reader.ReadAsync(timeout.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            // maxWait has passed: look anyway
+        }
+    }
+
     public sealed class Subscription(ChannelReader<bool> reader, Action unsubscribe) : IDisposable
     {
         public ChannelReader<bool> Reader { get; } = reader;

@@ -376,6 +376,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<bool>("AutoConfirm")
                         .HasColumnType("bit");
 
+                    b.Property<string>("CalendarFeedToken")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -448,6 +452,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ApprovalTokenHash");
+
+                    b.HasIndex("CalendarFeedToken")
+                        .IsUnique()
+                        .HasFilter("[CalendarFeedToken] IS NOT NULL");
 
                     b.HasIndex("OrgNumber")
                         .IsUnique();
@@ -635,6 +643,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
+                    b.Property<DateTime?>("PushedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("ReadUtc")
                         .HasColumnType("datetime2");
 
@@ -650,6 +661,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BusinessId", "CreatedUtc");
+
+                    b.HasIndex("PushedUtc", "CreatedUtc");
 
                     b.HasIndex("UserId", "CreatedUtc");
 
@@ -839,6 +852,42 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.HasIndex("NextAttemptUtc");
 
                     b.ToTable("OutboxEmails");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.RebookReminder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("LastRemindedBookingId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Weeks")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("UserId", "ServiceId")
+                        .IsUnique();
+
+                    b.ToTable("RebookReminders");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Review", b =>
@@ -1050,6 +1099,93 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.ToTable("TimeOffs");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.WaitlistEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<Guid?>("EmployeeId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("KnownFreeTimes")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime?>("NotifiedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ServiceId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Date")
+                        .HasFilter("[NotifiedUtc] IS NULL");
+
+                    b.HasIndex("ServiceId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WaitlistEntries");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.WebPushSubscription", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Auth")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<Guid?>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Endpoint")
+                        .IsRequired()
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
+
+                    b.Property<string>("P256dh")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("Endpoint")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WebPushSubscriptions");
+                });
+
             modelBuilder.Entity("besti2.Infrastructure.Identity.AppUser", b =>
                 {
                     b.Property<string>("Id")
@@ -1243,6 +1379,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.RebookReminder", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Review", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Booking", "Booking")
@@ -1281,6 +1428,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Business");
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.WaitlistEntry", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Service");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Business", b =>

@@ -167,3 +167,27 @@ export async function deleteEmployee(token: string, employeeId: string): Promise
 export async function deleteMyBusiness(token: string, password: string): Promise<ApiResult> {
     return toResult(await apiFetch("/api/panel/delete", { method: "POST", token, body: { password }, forwardIp: true }));
 }
+
+// "Kalender på telefonen": the secret part of the calendar address, or null when it is turned off
+export async function getCalendarFeedToken(token: string): Promise<string | null> {
+    const res = await apiFetch("/api/panel/calendar-feed", { token });
+    if (!res.ok) {
+        return null;
+    }
+    return (await res.json()).token ?? null;
+}
+
+// Turns it on, or makes a new address (the old one stops working)
+export async function createCalendarFeed(token: string): Promise<boolean> {
+    return (await apiFetch("/api/panel/calendar-feed", { method: "POST", token })).ok;
+}
+
+export async function turnOffCalendarFeed(token: string): Promise<boolean> {
+    return (await apiFetch("/api/panel/calendar-feed", { method: "DELETE", token })).ok;
+}
+
+// The calendar file for Google / Apple / Outlook; null = unknown address or turned off
+export async function getCalendarFeed(feedToken: string): Promise<string | null> {
+    const res = await apiFetch(`/api/calendar/${encodeURIComponent(feedToken)}`);
+    return res.ok ? res.text() : null;
+}

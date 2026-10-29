@@ -153,3 +153,21 @@
         display: none;
     }
 }
+
+/* A new notification: the bell swings for a moment (not with "reduce motion") */
+@media (prefers-reduced-motion: no-preference) {
+    .ringing {
+        display: inline-block;
+        transform-origin: 50% 10%;
+        animation: ring 0.9s ease-in-out;
+    }
+}
+
+@keyframes ring {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(18deg); }
+    30% { transform: rotate(-15deg); }
+    45% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    75% { transform: rotate(3deg); }
+}
