@@ -298,3 +298,13 @@
     border: 1px solid var(--color-input-border);
     border-radius: 8px;
 }
+
+/* "Pro · gratis i beta" under the period buttons when 90 days or 12 months is chosen */
+.proNote {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: -8px 0 20px;
+    color: var(--color-muted);
+}

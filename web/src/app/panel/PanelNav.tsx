@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ProBadge from "@/components/ProBadge/ProBadge";
 import styles from "./page.module.css";
 
 // The top bar of the panel: title, Kalender / Liste / Statistikk and the settings pages
@@ -16,7 +17,9 @@ export default function PanelNav({ title }: { title: string }) {
                 <Link href="/panel/profil" className={styles.secondaryButton}>Profil</Link>
                 <Link href="/panel/galleri" className={styles.secondaryButton}>Galleri</Link>
                 <Link href="/panel/vurderinger" className={styles.secondaryButton}>Vurderinger</Link>
-                <Link href="/panel/stempelkort" className={styles.secondaryButton}>Stempelkort</Link>
+                <Link href="/panel/stempelkort" className={styles.secondaryButton}>
+                    Stempelkort&nbsp;<ProBadge short/>
+                </Link>
                 <Link href="/panel/apningstider" className={styles.secondaryButton}>Åpningstider</Link>
                 <Link href="/panel/del" className={styles.secondaryButton}>Del og få kunder</Link>
             </nav>

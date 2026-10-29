@@ -5,6 +5,7 @@ import { getPanelStats } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { StatsNumbers } from "@/lib/types";
 import { todayInOslo } from "@/lib/format";
+import ProBadge from "@/components/ProBadge/ProBadge";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
@@ -14,11 +15,12 @@ import styles from "./page.module.css";
 
 export const metadata: Metadata = { title: "Statistikk" };
 
+// 90 days and 12 months become part of BESTI Pro when payments start (free in the beta)
 const periods = [
-    { days: 7, label: "7 dager" },
-    { days: 30, label: "30 dager" },
-    { days: 90, label: "90 dager" },
-    { days: 365, label: "12 måneder" },
+    { days: 7, label: "7 dager", pro: false },
+    { days: 30, label: "30 dager", pro: false },
+    { days: 90, label: "90 dager", pro: true },
+    { days: 365, label: "12 måneder", pro: true },
 ];
 
 const weekdayShort = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
@@ -94,9 +96,15 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                           className={p.days === days ? `${styles.period} ${styles.periodActive}` : styles.period}
                           aria-current={p.days === days ? "page" : undefined}>
                         {p.label}
+                        {p.pro && p.days !== days && <>&nbsp;<ProBadge short/></>}
                     </Link>
                 ))}
             </nav>
+            {days > 30 && (
+                <p className={styles.proNote}>
+                    <ProBadge/> Statistikk for mer enn 30 dager blir en del av BESTI Pro når betaling starter.
+                </p>
+            )}
 
             <section className={styles.tiles} aria-label={`Siste ${periodName}`}>
                 <div className={styles.tile}>
@@ -222,6 +230,25 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                         </section>
                     ))}
             </div>
+
+            <section className={`${panel.card} ${styles.pro}`} aria-labelledby="pro-beta">
+                <h2 id="pro-beta" className={styles.heading}>Dette er BESTI Pro <ProBadge/></h2>
+                <p className={styles.tipText}>
+                    Disse funksjonene er gratis for alle i beta. Når betaling starter, blir de en del av BESTI Pro.
+                    Du får beskjed på e-post minst 30 dager før, og ingenting koster noe uten at du har sagt ja.
+                </p>
+                <ul className={styles.proList}>
+                    <li><strong>Venteliste og «Ledig i dag».</strong> Blir en time ledig, får kundene på ventelisten
+                        beskjed med en gang, så tomme timer fylles.</li>
+                    <li><strong>«Tid for ny time?»</strong> Kundene får en påminnelse når det er tid for neste besøk.</li>
+                    <li><strong>Stempelkort.</strong> Faste kunder samler stempler og kommer tilbake.</li>
+                    <li><strong>Statistikk for 90 dager og 12 måneder.</strong></li>
+                </ul>
+                <p className={styles.tipText}>
+                    Alt annet (kalender, nettbestilling, kunder, ansatte, varsler, BESTI sammen og ukerapporten)
+                    er med i grunnpakken.
+                </p>
+            </section>
 
             {pro.length > 0 && (
                 <section className={`${panel.card} ${styles.pro}`} aria-labelledby="pro">
