@@ -1,18 +1,22 @@
 using besti2.Application.Accounts;
+using besti2.Application.Admin;
 using besti2.Application.Bookings;
 using besti2.Application.Businesses;
 using besti2.Application.Email;
+using besti2.Application.Favorites;
 using besti2.Application.Geocoding;
 using besti2.Application.Images;
 using besti2.Application.Invites;
 using besti2.Application.Notifications;
 using besti2.Application.Reviews;
+using besti2.Application.Statistics;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services;
 using besti2.Infrastructure.Services.Bookings;
 using besti2.Infrastructure.Services.Email;
 using besti2.Infrastructure.Services.Invites;
+using besti2.Infrastructure.Services.Statistics;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -104,6 +108,15 @@ public static class DependencyInjection
         services.AddScoped<ITimeOffService, TimeOffService>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IBusinessStatsService, BusinessStatsService>();
+        services.AddScoped<IWeeklyReportService>(provider => new WeeklyReportService(
+            provider.GetRequiredService<AppDbContext>(),
+            provider.GetRequiredService<IBusinessStatsService>(),
+            provider.GetRequiredService<IEmailService>(),
+            provider.GetRequiredService<ILogger<WeeklyReportService>>(),
+            webBaseUrl));
+        services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IFavoriteService, FavoriteService>();
         services.AddScoped<IBusinessVerifier>(provider => new BusinessVerifier(
             provider.GetRequiredService<AppDbContext>(),
             provider.GetRequiredService<IBusinessRegistry>(),

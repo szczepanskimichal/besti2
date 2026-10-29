@@ -311,11 +311,13 @@ public class InviteService(
         if (withInviter)
         {
             newBookings.Add(NewBooking(invite, employees[0], endUtc, inviter.FullName, inviter.Email,
-                invite.InviterPhone, invite.InviterNote, invite.InviterUserId, autoConfirm, nowUtc));
+                invite.InviterPhone, invite.InviterNote, invite.InviterUserId, autoConfirm, nowUtc,
+                BookingRules.PriceFor(service, invite.Units)));
         }
 
         var friendBooking = NewBooking(invite, employees[^1], endUtc, friend.FullName, friend.Email,
-            request.Phone.Trim(), request.Note, friendUserId, autoConfirm, nowUtc);
+            request.Phone.Trim(), request.Note, friendUserId, autoConfirm, nowUtc,
+            BookingRules.PriceFor(service, invite.Units));
         newBookings.Add(friendBooking);
         dbContext.Bookings.AddRange(newBookings);
 
@@ -694,7 +696,8 @@ public class InviteService(
     }
 
     private static Booking NewBooking(BookingInvite invite, Guid employeeId, DateTime endUtc, string? name,
-        string? email, string phone, string? note, string userId, bool autoConfirm, DateTime nowUtc) => new()
+        string? email, string phone, string? note, string userId, bool autoConfirm, DateTime nowUtc,
+        decimal? priceNok) => new()
     {
         Id = Guid.NewGuid(),
         ServiceId = invite.ServiceId,
@@ -708,7 +711,8 @@ public class InviteService(
         CustomerUserId = userId,
         Status = autoConfirm ? BookingStatus.Bekreftet : BookingStatus.Venter,
         CreatedUtc = nowUtc,
-        InviteId = invite.Id
+        InviteId = invite.Id,
+        PriceNok = priceNok
     };
 
     // Phone and message are only needed until the inviter's own visit is booked or the group is closed

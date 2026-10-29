@@ -57,6 +57,21 @@ public class Business
     // reads the bookings from; null = turned off. A new one makes the old address stop working
     public string? CalendarFeedToken { get; set; }
 
+    // When the business signed up (businesses from before this was saved got their approval time)
+    public DateTime CreatedUtc { get; set; }
+
+    // "Ukerapport": a short e-mail every Monday with last week's numbers; the owner can turn it off
+    public bool WeeklyReportOff { get; set; }
+
+    // When the last Ukerapport was sent (one per week)
+    public DateTime? WeeklyReportSentUtc { get; set; }
+
+    // The owner pressed "Jeg er interessert" for BESTI Pro (so BESTI knows who to ask first)
+    public DateTime? ProInterestUtc { get; set; }
+
+    // BESTI's own note about the business (admin only, never shown to the business or customers)
+    public string? AdminNote { get; set; }
+
     // New online bookings are confirmed at once (false = the business presses "Bekreft" on each one)
     public bool AutoConfirm { get; set; }
 

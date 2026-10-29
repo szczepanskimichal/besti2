@@ -5,6 +5,7 @@ import styles from "./MinBestiTabs.module.css";
 
 const tabs = [
     { href: "/min-besti", label: "Bestillinger" },
+    { href: "/min-besti/favoritter", label: "Favoritter" },
     { href: "/min-besti/vurderinger", label: "Vurderinger" },
     { href: "/min-besti/profil", label: "Profil" },
 ];

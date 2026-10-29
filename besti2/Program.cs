@@ -1,4 +1,5 @@
 using besti2.Endpoints;
+using besti2.Endpoints.Admin;
 using besti2.Endpoints.Panel;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
@@ -24,8 +25,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 // Add authentication and authorization
 builder.Services.AddAuthorization(options =>
-    options.AddPolicy(PanelBusiness.Policy, policy => policy.AddRequirements(new BusinessOwnerRequirement())));
+{
+    options.AddPolicy(PanelBusiness.Policy, policy => policy.AddRequirements(new BusinessOwnerRequirement()));
+    options.AddPolicy(AdminEmails.Policy, policy => policy.AddRequirements(new AdminRequirement()));
+});
 builder.Services.AddScoped<IAuthorizationHandler, BusinessOwnerHandler>();
+builder.Services.AddSingleton<AdminEmails>();
+builder.Services.AddScoped<IAuthorizationHandler, AdminHandler>();
 // Login only after the email is confirmed (business owners are confirmed at registration)
 builder.Services.AddIdentityApiEndpoints<AppUser>(options =>
     {
@@ -46,6 +52,7 @@ builder.Services.AddHostedService<BusinessVerificationJob>();
 builder.Services.AddHostedService<PushSenderJob>();
 builder.Services.AddHostedService<WaitlistJob>();
 builder.Services.AddHostedService<RebookReminderJob>();
+builder.Services.AddHostedService<WeeklyReportJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
 // The web server tells us the visitor's IP in X-Forwarded-For. Only callers on this machine are trusted
@@ -179,8 +186,10 @@ app.MapNotificationEndpoints();
 app.MapPushEndpoints();
 app.MapWaitlistEndpoints();
 app.MapRebookReminderEndpoints();
+app.MapFavoriteEndpoints();
 app.MapCalendarFeedEndpoints();
 app.MapPanelEndpoints();
+app.MapAdminEndpoints();
 app.MapAuthEndpoints();
 
 

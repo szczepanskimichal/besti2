@@ -2,7 +2,8 @@ import { Metadata } from "next";
 import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusinessBySlug, getBusinessReviews } from "@/lib/api";
+import { getBusinessBySlug, getBusinessReviews, getMe, getMyFavoriteIds } from "@/lib/api";
+import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatPrice } from "@/lib/format";
 import { freeCancelText } from "@/lib/freeCancel";
@@ -10,6 +11,7 @@ import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
+import FavoriteButton from "./FavoriteButton";
 
 import styles from "./page.module.css";
 
@@ -45,7 +47,13 @@ export default async function BusinessPage({ params }: Props) {
         notFound();
     }
 
-    const reviews = await getBusinessReviews(business.id);
+    const token = await getToken();
+    const [reviews, me] = await Promise.all([
+        getBusinessReviews(business.id),
+        token ? getMe(token).catch(() => null) : null,
+    ]);
+    // The heart is for customers; a business account has no Min Besti
+    const saved = me && token ? (await getMyFavoriteIds(token)).includes(business.id) : null;
 
     // OpenStreetMap embed: small box around the business with a marker
     const d = 0.005;
@@ -64,6 +72,7 @@ export default async function BusinessPage({ params }: Props) {
                 <div className={styles.top}>
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
+                    {!me?.isBusiness && <FavoriteButton businessId={business.id} slug={business.slug} saved={saved}/>}
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
                 {business.verifiedUtc && (

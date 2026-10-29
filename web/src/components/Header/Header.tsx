@@ -30,6 +30,7 @@ export default async function Header() {
                             ) : (
                                 <>
                                     {firstName && <span className={styles.greeting}>Hei, {firstName}</span>}
+                                    {me.isAdmin && <NextLink href="/admin" className={styles.navLink}>Admin</NextLink>}
                                     <NextLink href="/min-besti" className={styles.navLink}>Min
                                         Besti</NextLink>
                                 </>

@@ -7,3 +7,6 @@ export * from "./panel";
 export * from "./account";
 export * from "./reviews";
 export * from "./notifications";
+export * from "./stats";
+export * from "./favorites";
+export * from "./admin";

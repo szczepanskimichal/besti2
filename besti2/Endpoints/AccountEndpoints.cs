@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using besti2.Application.Accounts;
 using besti2.Application.Businesses;
 using besti2.Application.Reviews;
+using besti2.Endpoints.Admin;
 using besti2.Infrastructure.Identity;
 
 namespace besti2.Endpoints;
@@ -37,14 +38,19 @@ public static class AccountEndpoints
                 : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
         }).RequireRateLimiting("signup");
 
-        // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages
-        group.MapGet("/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager) =>
+        // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages,
+        // isAdmin for the link to /admin
+        group.MapGet("/me", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
+            AdminEmails adminEmails) =>
         {
             var user = await userManager.GetUserAsync(principal);
             return user is null
                 ? Results.Unauthorized()
                 : Results.Ok(new
-                    { user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null });
+                {
+                    user.Email, user.FullName, Phone = user.PhoneNumber, IsBusiness = user.BusinessId is not null,
+                    IsAdmin = adminEmails.IsAdmin(user)
+                });
         }).RequireAuthorization();
 
         // Customer: review a past booking

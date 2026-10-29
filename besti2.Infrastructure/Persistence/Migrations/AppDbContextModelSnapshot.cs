@@ -217,6 +217,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<DateTime?>("PreviousStartUtc")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal?>("PriceNok")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
                     b.Property<int>("ReminderAttempts")
                         .HasColumnType("int");
 
@@ -366,6 +370,10 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("AdminNote")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<string>("ApprovalTokenHash")
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
@@ -389,6 +397,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DataProcessingAcceptedUtc")
                         .HasColumnType("datetime2");
@@ -433,6 +444,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(4)
                         .HasColumnType("nvarchar(4)");
 
+                    b.Property<DateTime?>("ProInterestUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ReferralSource")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -448,6 +462,12 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<string>("Website")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("WeeklyReportOff")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("WeeklyReportSentUtc")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -473,6 +493,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             AutoConfirm = false,
                             Category = "Frisor",
                             City = "Oslo",
+                            CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Hårklipp og farging for hele familien.",
                             Email = "post@klippogstil.example",
                             FreeCancelHours = 24,
@@ -483,7 +504,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             OrgNumber = "999000001",
                             PhoneNumber = "+4722000001",
                             PostalCode = "0154",
-                            Slug = "klipp-og-stil-frisor-oslo"
+                            Slug = "klipp-og-stil-frisor-oslo",
+                            WeeklyReportOff = false
                         },
                         new
                         {
@@ -492,6 +514,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             AutoConfirm = false,
                             Category = "Bygg",
                             City = "Bergen",
+                            CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Befaring og oppussing av bad og kjøkken.",
                             Email = "kontakt@fjordbygg.example",
                             FreeCancelHours = 24,
@@ -502,7 +525,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             OrgNumber = "999000002",
                             PhoneNumber = "+4755000002",
                             PostalCode = "5003",
-                            Slug = "fjord-bygg-as-bergen"
+                            Slug = "fjord-bygg-as-bergen",
+                            WeeklyReportOff = false
                         },
                         new
                         {
@@ -511,6 +535,7 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             AutoConfirm = false,
                             Category = "Helse",
                             City = "Trondheim",
+                            CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Description = "Samtaleterapi for voksne.",
                             Email = "time@nordlyspsykolog.example",
                             FreeCancelHours = 24,
@@ -521,7 +546,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             OrgNumber = "999000003",
                             PhoneNumber = "+4773000003",
                             PostalCode = "7011",
-                            Slug = "nordlys-psykologsenter-trondheim"
+                            Slug = "nordlys-psykologsenter-trondheim",
+                            WeeklyReportOff = false
                         });
                 });
 
@@ -622,6 +648,33 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             LastName = "Nordmann",
                             Name = "Kari"
                         });
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.Favorite", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("UserId", "BusinessId")
+                        .IsUnique();
+
+                    b.ToTable("Favorites");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Notification", b =>
@@ -1361,6 +1414,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
                         .WithMany("Employees")
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.Favorite", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
                         .HasForeignKey("BusinessId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

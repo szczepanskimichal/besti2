@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 
-// The top bar of the panel: title, Kalender / Liste and the settings pages
+// The top bar of the panel: title, Kalender / Liste / Statistikk and the settings pages
 export default function PanelNav({ title }: { title: string }) {
     return (
         <div className={styles.topBar}>
@@ -9,6 +9,7 @@ export default function PanelNav({ title }: { title: string }) {
             <nav className={styles.topActions} aria-label="Panel">
                 <Link href="/panel" className={styles.secondaryButton}>Kalender</Link>
                 <Link href="/panel/liste" className={styles.secondaryButton}>Liste</Link>
+                <Link href="/panel/statistikk" className={styles.secondaryButton}>Statistikk</Link>
                 <Link href="/panel/tjenester" className={styles.secondaryButton}>Tjenester</Link>
                 <Link href="/panel/ansatte" className={styles.secondaryButton}>Ansatte</Link>
                 <Link href="/panel/profil" className={styles.secondaryButton}>Profil</Link>
