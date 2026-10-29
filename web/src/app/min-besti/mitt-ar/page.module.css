@@ -31,7 +31,7 @@
     padding: 28px 20px;
     border-radius: 20px;
     border: 1px solid var(--color-border);
-    background: linear-gradient(135deg, rgba(20, 70, 120, 0.85), rgba(5, 13, 28, 0.85) 60%, rgba(98, 195, 238, 0.25));
+    background: linear-gradient(135deg, rgba(15, 75, 87, 0.85), rgba(5, 13, 28, 0.85) 60%, rgba(114, 214, 189, 0.25));
     backdrop-filter: blur(8px);
     text-align: center;
 }

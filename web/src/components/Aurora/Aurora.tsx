@@ -31,7 +31,7 @@ export default function Aurora() {
             <svg ref={svgRef} width="0" height="0" style={{ position: "absolute" }}>
                 <filter id="besti-warp" x="-10%" y="-10%" width="120%" height="120%">
                     <feTurbulence type="fractalNoise" baseFrequency="0.0025 0.008" numOctaves={2} seed={4} result="n">
-                        <animate attributeName="baseFrequency" dur="18s" values="0.002 0.006;0.0045 0.010;0.002 0.006" repeatCount="indefinite"/>
+                        <animate attributeName="baseFrequency" dur="14s" values="0.002 0.006;0.0045 0.010;0.002 0.006" repeatCount="indefinite"/>
                     </feTurbulence>
                     <feDisplacementMap in="SourceGraphic" in2="n" scale={95} xChannelSelector="R" yChannelSelector="G"/>
                 </filter>

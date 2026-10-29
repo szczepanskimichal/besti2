@@ -406,7 +406,7 @@ a.booking:hover {
     font-size: 0.8rem;
     color: var(--color-muted);
     text-decoration: none;
-    background: repeating-linear-gradient(135deg, rgba(160, 215, 255, 0.06) 0 8px, rgba(160, 215, 255, 0.12) 8px 16px);
+    background: repeating-linear-gradient(135deg, rgba(150, 255, 230, 0.06) 0 8px, rgba(150, 255, 230, 0.12) 8px 16px);
     border-left: 3px solid var(--color-muted);
 }
 
@@ -424,14 +424,14 @@ a.booking:hover {
     padding: 4px 8px;
     font-size: 0.8rem;
     color: var(--color-muted);
-    background: rgba(160, 215, 255, 0.06);
+    background: rgba(150, 255, 230, 0.06);
     border-left: 3px dotted var(--color-muted);
     pointer-events: none;
 }
 
 .phoneCard.phoneBlocked {
     color: var(--color-muted);
-    background: repeating-linear-gradient(135deg, rgba(160, 215, 255, 0.06) 0 8px, rgba(160, 215, 255, 0.12) 8px 16px);
+    background: repeating-linear-gradient(135deg, rgba(150, 255, 230, 0.06) 0 8px, rgba(150, 255, 230, 0.12) 8px 16px);
     border-left-color: var(--color-muted);
 }
 
@@ -525,7 +525,7 @@ a.booking:hover {
 }
 
 .closedDay {
-    background: repeating-linear-gradient(135deg, rgba(160, 215, 255, 0.06) 0 8px, rgba(160, 215, 255, 0.12) 8px 16px);
+    background: repeating-linear-gradient(135deg, rgba(150, 255, 230, 0.06) 0 8px, rgba(150, 255, 230, 0.12) 8px 16px);
 }
 
 .closedLabel {
@@ -540,7 +540,7 @@ a.booking:hover {
     color: var(--color-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
-    background: rgba(160, 215, 255, 0.12);
+    background: rgba(150, 255, 230, 0.12);
     border-radius: 4px;
 }
 

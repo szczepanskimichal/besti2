@@ -53,9 +53,9 @@
     height: 104px;
     border-radius: 50%;
     overflow: hidden;
-    background: #06202f;
+    background: #06201f;
     border: 2px solid var(--color-success);
-    box-shadow: 0 0 24px rgba(98, 195, 238, 0.25);
+    box-shadow: 0 0 24px rgba(114, 214, 189, 0.25);
 }
 
 .orbRight {
@@ -68,7 +68,7 @@
     position: absolute;
     inset: -15%;
     background:
-            radial-gradient(50% 35% at 35% 65%, rgba(98, 195, 238, 0.95), transparent 70%),
+            radial-gradient(50% 35% at 35% 65%, rgba(114, 214, 189, 0.95), transparent 70%),
             radial-gradient(45% 35% at 65% 40%, rgba(60, 200, 210, 0.85), transparent 70%),
             radial-gradient(40% 30% at 50% 85%, rgba(120, 150, 240, 0.7), transparent 70%);
     filter: blur(8px);
@@ -366,9 +366,9 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #06202f;
+    background: #06201f;
     border: 2px solid var(--color-success);
-    box-shadow: 0 0 14px rgba(98, 195, 238, 0.25);
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.25);
     font-weight: 700;
     animation: seatIn 0.5s ease-out;
 }

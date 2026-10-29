@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Poppins } from "next/font/google";
+import { Inter, Lexend } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -8,10 +8,10 @@ import Aurora from "../components/Aurora/Aurora";
 import Analytics from "../components/Analytics/Analytics";
 
 // Headings, buttons and form fields
-const poppins = Poppins({
+const lexend = Lexend({
     subsets: ["latin", "latin-ext"],
-    weight: ["500", "600", "700"],
-    variable: "--font-poppins",
+    weight: ["400", "500", "600", "700"],
+    variable: "--font-lexend",
     display: "swap",
 });
 
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
     robots: ALLOW_INDEXING ? undefined : { index: false, follow: false },
 };
 
-// Colour of the phone's status bar, same as the navy sky
+// Colour of the phone's status bar, same as the night sky
 export const viewport: Viewport = {
-    themeColor: "#050d1c",
+    themeColor: "#04101a",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="nb" className={`${poppins.variable} ${inter.variable}`}>
+        <html lang="nb" className={`${lexend.variable} ${inter.variable}`}>
         <body>
         <Aurora />
         <Header />
