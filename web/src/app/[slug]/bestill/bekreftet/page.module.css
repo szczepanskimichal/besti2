@@ -21,13 +21,13 @@
     margin: 0 auto 16px;
     border-radius: 50%;
     overflow: hidden;
-    background: #06202f;
+    background: #06201f;
 }
 .glow {
     position: absolute;
     inset: -15%;
     background:
-            radial-gradient(50% 35% at 35% 65%, rgba(98, 195, 238, 0.95), transparent 70%),
+            radial-gradient(50% 35% at 35% 65%, rgba(114, 214, 189, 0.95), transparent 70%),
             radial-gradient(45% 35% at 65% 40%, rgba(60, 200, 210, 0.85), transparent 70%),
             radial-gradient(40% 30% at 50% 85%, rgba(120, 150, 240, 0.7), transparent 70%);
     filter: blur(8px);

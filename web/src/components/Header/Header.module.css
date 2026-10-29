@@ -38,7 +38,7 @@
     font-size: 1.55rem;
     letter-spacing: -0.01em;
     color: var(--color-primary);
-    filter: drop-shadow(0 0 8px rgba(98, 195, 238, 0.45));
+    filter: drop-shadow(0 0 8px rgba(114, 214, 189, 0.45));
 }
 /* Small "Beta" badge next to the logo while the first businesses test BESTI */
 .beta {
@@ -81,7 +81,7 @@
     color: var(--color-on-primary);
     font-family: var(--font-heading);
     font-weight: 600;
-    box-shadow: 0 0 10px rgba(98, 195, 238, 0.25);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
     text-decoration: none;
     white-space: nowrap;
 }

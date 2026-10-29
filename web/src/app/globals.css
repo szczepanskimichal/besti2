@@ -1,25 +1,25 @@
 :root {
   color-scheme: dark;
-  /* Approved "granat" look (2026-10-29): navy sky, light blue buttons in one colour */
-  --color-bg: #050d1c;
+  /* Approved look (2026-10-29): dark night sky with green aurora, mint buttons in one colour */
+  --color-bg: #04101a;
   /* Frosted glass cards (blurred by --glass-blur) */
   --color-surface: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 40%), rgba(6, 28, 32, 0.46);
   --glass-blur: blur(20px) saturate(160%);
   --color-text: #eef7f4;
-  --color-heading: #d4eefc;
+  --color-heading: #bff3e3;
   --color-muted: #c3dad3;
-  --color-primary: #62c3ee;
-  --color-on-primary: #06202f;
+  --color-primary: #72d6bd;
+  --color-on-primary: #06201f;
   --radius: 12px;
-  --color-border: rgba(160, 215, 255, 0.26);
+  --color-border: rgba(150, 255, 230, 0.26);
   --color-input-border: rgba(190, 240, 225, 0.38);
   --color-input-bg: rgba(3, 14, 20, 0.5);
-  --color-primary-soft: rgba(98, 195, 238, 0.14);
-  --color-primary-dark: #9ad8f6;
+  --color-primary-soft: rgba(114, 214, 189, 0.14);
+  --color-primary-dark: #7cf5d8;
   --color-success: #8fd6a0;
   --color-warning: #f2c46d;
   --color-danger: #ff9b85;
-  --font-heading: var(--font-poppins), system-ui, sans-serif;
+  --font-heading: var(--font-lexend), system-ui, sans-serif;
   --font-body: var(--font-inter), system-ui, sans-serif;
 }
 
@@ -57,7 +57,7 @@ button:disabled {
   cursor: progress;
 }
 
-/* Headings, buttons and form fields in Poppins, small text in Inter */
+/* Headings, buttons and form fields in Lexend, small text in Inter */
 :where(h1, h2, h3, h4, button, input, select, textarea, label) {
   font-family: var(--font-heading);
 }
@@ -72,7 +72,7 @@ h1 {
   text-shadow: 0 2px 18px rgba(2, 12, 16, 0.55);
 }
 
-/* Links without a style of their own: light blue like the buttons */
+/* Links without a style of their own: mint like the buttons */
 :where(a) {
   color: var(--color-primary-dark);
 }
@@ -99,8 +99,8 @@ input::placeholder, textarea::placeholder {
   :root {
     --color-surface: #071826;
     --glass-blur: none;
-    --color-border: #d4eefc;
-    --color-input-border: #d4eefc;
+    --color-border: #bff3e3;
+    --color-input-border: #bff3e3;
     --color-muted: #eef7f4;
     --color-heading: #eef7f4;
   }
