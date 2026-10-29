@@ -13,7 +13,7 @@ export default function TermsPage() {
     return (
         <main className={styles.main}>
             <h1>Vilkår for bruk</h1>
-            <p className={styles.updated}>Sist oppdatert: 28. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 29. oktober 2026</p>
             <h2>Om tjenesten</h2>
             <p>
                 BESTI er en tjeneste for å finne bedrifter og bestille time på nett. BESTI drives av Michał
@@ -113,6 +113,11 @@ export default function TermsPage() {
                 BESTI er gratis for kunder. For bedrifter er tjenesten gratis i beta-perioden. Innfører vi priser,
                 får bedriftene beskjed på e-post minst 30 dager før, og ingen bedrift betaler noe uten å ha godtatt
                 prisen først.
+            </p>
+            <p>
+                Noen funksjoner i panelet er merket «Pro» (for eksempel venteliste, «Tid for ny time?», stempelkort og
+                statistikk for mer enn 30 dager). De er gratis i beta-perioden, men blir senere en del av en betalt
+                pakke, BESTI Pro. Funksjonene uten Pro-merke er med i grunnpakken.
             </p>
             <h2 id="databehandleravtale">Databehandleravtale</h2>
             <p>

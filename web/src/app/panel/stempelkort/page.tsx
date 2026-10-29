@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getPanelLoyalty } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
+import ProBadge from "@/components/ProBadge/ProBadge";
 import StampCard from "@/components/StampCard/StampCard";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import PanelNav from "../PanelNav";
@@ -40,6 +41,9 @@ export default async function LoyaltyPage({ searchParams }: LoyaltyPageProps) {
             {query.feil && <p className={panel.error} role="alert">{query.feil}</p>}
 
             <section className={panel.card}>
+                <p className={panel.muted}>
+                    <ProBadge/> Gratis i beta. Når betaling starter, blir stempelkort en del av BESTI Pro.
+                </p>
                 <p className={styles.lead}>
                     Gi faste kunder en grunn til å komme tilbake. Hvert besøk som er bestilt på BESTI og gjennomført,
                     gir et stempel av seg selv. Kunden ser kortet på siden din og i Min Besti.
