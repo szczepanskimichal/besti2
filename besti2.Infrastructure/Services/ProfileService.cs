@@ -51,9 +51,11 @@ public class ProfileService(
         var reviews = await dbContext.Reviews.AsNoTracking()
             .Where(r => r.CustomerUserId == userId)
             .OrderBy(r => r.CreatedUtc)
-            .Select(r => new ExportReview(r.CreatedUtc,
-                dbContext.Businesses.Where(x => x.Id == r.BusinessId).Select(x => x.Name).First(),
-                r.Stars, r.Comment, r.BusinessReply))
+            .Select(r => new
+            {
+                r.CreatedUtc, Business = dbContext.Businesses.Where(x => x.Id == r.BusinessId).Select(x => x.Name).First(),
+                r.Stars, r.Comment, r.BusinessReply, r.PhotoFileName, r.HiddenReason
+            })
             .ToListAsync(cancellationToken);
         var notifications = await dbContext.Notifications.AsNoTracking()
             .Where(n => n.UserId == userId)
@@ -71,9 +73,55 @@ public class ProfileService(
             .Select(r => new ExportLoyaltyReward(r.RedeemedUtc, r.Business.Name))
             .ToListAsync(cancellationToken);
 
+        var waitlist = await dbContext.WaitlistEntries.AsNoTracking()
+            .Where(w => w.UserId == userId)
+            .OrderBy(w => w.Date)
+            .Select(w => new ExportWaitlistEntry(w.Date, w.Service.Business.Name, w.Service.Name, w.CreatedUtc,
+                w.NotifiedUtc != null))
+            .ToListAsync(cancellationToken);
+        var rebookReminders = await dbContext.RebookReminders.AsNoTracking()
+            .Where(r => r.UserId == userId)
+            .OrderBy(r => r.CreatedUtc)
+            .Select(r => new ExportRebookReminder(r.Service.Business.Name, r.Service.Name, r.Weeks, r.CreatedUtc))
+            .ToListAsync(cancellationToken);
+        var invites = await dbContext.BookingInvites.AsNoTracking()
+            .Where(i => i.InviterUserId == userId)
+            .OrderBy(i => i.CreatedUtc)
+            .Select(i => new
+            {
+                i.CreatedUtc, Business = i.Business.Name, Service = i.Service.Name, i.StartUtc, i.Persons, i.Status,
+                i.InviterPhone, i.InviterNote
+            })
+            .ToListAsync(cancellationToken);
+        var helpfulVotes = await dbContext.ReviewHelpfuls.AsNoTracking()
+            .Where(h => h.UserId == userId)
+            .OrderBy(h => h.CreatedUtc)
+            .Select(h => new ExportHelpfulVote(h.CreatedUtc,
+                dbContext.Businesses.Where(x => x.Id == h.Review.BusinessId).Select(x => x.Name).First()))
+            .ToListAsync(cancellationToken);
+        var pushDevices = await dbContext.WebPushSubscriptions.AsNoTracking()
+            .Where(d => d.UserId == userId)
+            .OrderBy(d => d.CreatedUtc)
+            .Select(d => new { d.CreatedUtc, d.Endpoint })
+            .ToListAsync(cancellationToken);
+        var staffAccess = await dbContext.Employees.AsNoTracking()
+            .Where(e => e.StaffUserId == userId && !e.IsDeleted)
+            .Select(e => new ExportStaffAccess(e.Business.Name, e.Name + " " + e.LastName))
+            .ToListAsync(cancellationToken);
+
         return new MyDataExport(DateTime.UtcNow,
-            new ExportAccount(user.FullName ?? "", user.Email ?? "", user.PhoneNumber, user.EmailConfirmed),
-            bookings, reviews, notifications, favorites, rewards);
+            new ExportAccount(user.FullName ?? "", user.Email ?? "", user.PhoneNumber, user.EmailConfirmed,
+                !user.ReminderEmailOff, !user.SoonNoticeOff),
+            bookings,
+            reviews.Select(r => new ExportReview(r.CreatedUtc, r.Business, r.Stars, r.Comment, r.BusinessReply,
+                r.PhotoFileName is null ? null : imageStorage?.GetUrl(r.PhotoFileName), r.HiddenReason)).ToList(),
+            notifications, favorites, rewards, waitlist, rebookReminders,
+            invites.Select(i => new ExportInvite(i.CreatedUtc, i.Business, i.Service, i.StartUtc, i.Persons,
+                i.Status.ToString(), i.InviterPhone, i.InviterNote)).ToList(),
+            helpfulVotes,
+            pushDevices.Select(d => new ExportPushDevice(d.CreatedUtc,
+                Uri.TryCreate(d.Endpoint, UriKind.Absolute, out var uri) ? uri.Host : "")).ToList(),
+            staffAccess);
     }
 
     public async Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request,

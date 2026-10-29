@@ -8,9 +8,17 @@ public record MyDataExport(
     IReadOnlyList<ExportReview> Reviews,
     IReadOnlyList<ExportNotification> Notifications,
     IReadOnlyList<ExportFavorite> Favorites,
-    IReadOnlyList<ExportLoyaltyReward> LoyaltyRewards);
+    IReadOnlyList<ExportLoyaltyReward> LoyaltyRewards,
+    IReadOnlyList<ExportWaitlistEntry> Waitlist,
+    IReadOnlyList<ExportRebookReminder> RebookReminders,
+    IReadOnlyList<ExportInvite> Invites,
+    IReadOnlyList<ExportHelpfulVote> HelpfulVotes,
+    IReadOnlyList<ExportPushDevice> PushDevices,
+    IReadOnlyList<ExportStaffAccess> StaffAccess);
 
-public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed);
+// ReminderEmail / SoonNotice: the choices under Varsler
+public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed, bool ReminderEmail,
+    bool SoonNotice);
 
 public record ExportBooking(
     DateTime StartUtc,
@@ -26,10 +34,30 @@ public record ExportBooking(
     bool MarketingConsent,
     DateTime? MarketingConsentUtc);
 
-public record ExportReview(DateTime CreatedUtc, string Business, int Stars, string? Comment, string? BusinessReply);
+public record ExportReview(DateTime CreatedUtc, string Business, int Stars, string? Comment, string? BusinessReply,
+    string? PhotoUrl, string? HiddenReason);
 
 public record ExportNotification(DateTime CreatedUtc, string Text, bool IsRead);
 
 public record ExportFavorite(DateTime CreatedUtc, string Business);
 
 public record ExportLoyaltyReward(DateTime RedeemedUtc, string Business);
+
+// "Si fra hvis det blir ledig"
+public record ExportWaitlistEntry(DateOnly Date, string Business, string Service, DateTime CreatedUtc, bool Notified);
+
+// "Tid for ny time?"
+public record ExportRebookReminder(string Business, string Service, int Weeks, DateTime CreatedUtc);
+
+// BESTI sammen: the invitations the customer sent
+public record ExportInvite(DateTime CreatedUtc, string Business, string Service, DateTime StartUtc, int Persons,
+    string Status, string Phone, string? Note);
+
+// "Nyttig" on other customers' reviews
+public record ExportHelpfulVote(DateTime CreatedUtc, string Business);
+
+// "Varsler på telefonen": which push service each device uses (the address itself is a long secret)
+public record ExportPushDevice(DateTime CreatedUtc, string PushService);
+
+// "/ansatt": the businesses where the account sees its own work calendar
+public record ExportStaffAccess(string Business, string Employee);

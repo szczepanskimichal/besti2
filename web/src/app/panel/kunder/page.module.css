@@ -76,6 +76,12 @@
     gap: 10px;
 }
 
+.noteHint {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+}
+
 .saveButton {
     min-height: 44px;
     padding: 0 18px;

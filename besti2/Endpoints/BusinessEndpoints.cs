@@ -8,6 +8,9 @@ namespace besti2.Endpoints;
 
 public static class BusinessEndpoints
 {
+    // "Vis alle vurderinger" shows at most this many (the newest)
+    private const int MaxReviewsOnPage = 500;
+
     public static void MapBusinessEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api");
@@ -67,10 +70,11 @@ public static class BusinessEndpoints
         }).RequireRateLimiting("signup");
 
         // Public: reviews of a business, newest first, with the average. A logged-in reader also learns
-        // which ones they marked "Nyttig"
-        group.MapGet("/businesses/{id:guid}/reviews", async (Guid id, ClaimsPrincipal principal,
+        // which ones they marked "Nyttig". antall = only the newest ones (the page shows 20 first), max 500
+        group.MapGet("/businesses/{id:guid}/reviews", async (Guid id, int? antall, ClaimsPrincipal principal,
                 UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
             Results.Ok(await reviewService.GetForBusinessAsync(id, viewerUserId: userManager.GetUserId(principal),
+                take: Math.Clamp(antall ?? MaxReviewsOnPage, 1, MaxReviewsOnPage),
                 cancellationToken: cancellationToken)));
         // "Nyttig" on a review (on and off); only for logged-in customers
         group.MapPost("/reviews/{id:guid}/helpful", async (Guid id, ClaimsPrincipal principal,

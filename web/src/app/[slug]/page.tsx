@@ -20,7 +20,11 @@ import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ slug: string }>;
+    searchParams: Promise<{ vurderinger?: string }>;
 };
+
+// The newest reviews first; "Vis alle" shows up to 500 (a page with thousands would be megabytes on a phone)
+const FirstReviews = 20;
 
 // Title, description and link preview per business (for Google, Messenger, SMS)
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,8 +47,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         },
     };
 }
-export default async function BusinessPage({ params }: Props) {
+export default async function BusinessPage({ params, searchParams }: Props) {
     const { slug } = await params;
+    const allReviews = (await searchParams).vurderinger === "alle";
     const business = await getBusinessBySlug(slug);
     if (!business) {
         notFound();
@@ -53,7 +58,7 @@ export default async function BusinessPage({ params }: Props) {
     const token = await getToken();
     const [reviews, me] = await Promise.all([
         // With the login: which reviews the reader already marked "Nyttig"
-        getBusinessReviews(business.id, token),
+        getBusinessReviews(business.id, token, allReviews ? 500 : FirstReviews),
         token ? getMe(token).catch(() => null) : null,
     ]);
     // The heart is for customers; a business account has no Min Besti
@@ -226,6 +231,13 @@ export default async function BusinessPage({ params }: Props) {
                             </li>
                         ))}
                     </ul>
+                )}
+                {reviews.count > reviews.reviews.length && (
+                    <p>
+                        <NextLink href={`/${business.slug}?vurderinger=alle#vurderinger`} scroll={false}>
+                            Vis alle {reviews.count} vurderinger
+                        </NextLink>
+                    </p>
                 )}
             </section>
 

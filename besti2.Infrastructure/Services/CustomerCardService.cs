@@ -18,7 +18,7 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
     public async Task<IReadOnlyList<CustomerRowDto>> ListAsync(Guid businessId, string? q, DateTime nowUtc,
         CancellationToken cancellationToken = default)
     {
-        var groups = Group(await VisitsAsync(businessId, cancellationToken));
+        var groups = Group(await VisitsAsync(businessId, null, cancellationToken));
         var notes = await NoteKeysAsync(businessId, cancellationToken);
         var search = q?.Trim().ToLowerInvariant();
         var searchDigits = string.IsNullOrEmpty(search) ? "" : CustomerKey.Digits(search);
@@ -42,7 +42,7 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
             return null;
         }
 
-        var visits = Group(await VisitsAsync(businessId, cancellationToken))
+        var visits = Group(await VisitsAsync(businessId, key, cancellationToken))
             .FirstOrDefault(g => g.Key == key)?.ToList();
         if (visits is null)
         {
@@ -79,7 +79,7 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
         }
 
         // Only a customer who has booked here
-        if (!Group(await VisitsAsync(businessId, cancellationToken)).Any(g => g.Key == key))
+        if (!Group(await VisitsAsync(businessId, key, cancellationToken)).Any(g => g.Key == key))
         {
             return "Fant ikke kunden.";
         }
@@ -159,14 +159,27 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
             .ToListAsync(cancellationToken))
         .ToHashSet();
 
-    // Every visit of the business with customer data (anonymized ones have no customer any more)
-    private async Task<List<Visit>> VisitsAsync(Guid businessId, CancellationToken cancellationToken) =>
-        await dbContext.Bookings.AsNoTracking()
-            .Where(b => b.Service.BusinessId == businessId && b.CustomerEmail != BookingAnonymizer.AnonymizedEmail)
+    // Every visit of the business with customer data (anonymized ones have no customer any more).
+    // key = only that customer's visits: one card must not read years of the whole salon's history
+    private async Task<List<Visit>> VisitsAsync(Guid businessId, string? key, CancellationToken cancellationToken)
+    {
+        var bookings = dbContext.Bookings.AsNoTracking()
+            .Where(b => b.Service.BusinessId == businessId && b.CustomerEmail != BookingAnonymizer.AnonymizedEmail);
+        if (CustomerKey.Parse(key) is var (userId, phone))
+        {
+            // Phone numbers are saved with or without spaces and +47: the last digits pick them out,
+            // Group then keeps only the exact same customer
+            bookings = userId is not null
+                ? bookings.Where(b => b.CustomerUserId == userId)
+                : bookings.Where(b => b.CustomerUserId == null && b.CustomerPhone.Replace(" ", "").EndsWith(phone!));
+        }
+
+        return await bookings
             .Select(b => new Visit(b.Id, b.CustomerUserId, b.CustomerName, b.CustomerPhone, b.CustomerEmail,
                 b.StartUtc, b.EndUtc, b.Status, b.Service.Name, b.Employee.Name + " " + b.Employee.LastName,
                 b.PriceNok, b.CustomerNote))
             .ToListAsync(cancellationToken);
+    }
 
     private static IEnumerable<IGrouping<string, Visit>> Group(List<Visit> visits) =>
         visits.Select(v => (Key: CustomerKey.For(v.CustomerUserId, v.CustomerPhone), Visit: v))

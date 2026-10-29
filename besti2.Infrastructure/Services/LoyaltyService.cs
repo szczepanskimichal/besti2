@@ -89,6 +89,18 @@ public class LoyaltyService(AppDbContext dbContext) : ILoyaltyService
     public async Task<string?> RedeemAsync(Guid businessId, string customerUserId, DateTime nowUtc,
         CancellationToken cancellationToken = default)
     {
+        // "Belønning gitt" clicked twice (or in two tabs): one at a time, so the card is used up only once
+        // (SQL Server lock; the in-memory test database has no locks)
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null)
+        {
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"EXEC sp_getapplock @Resource = {$"loyalty-{businessId}-{customerUserId}"}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000;",
+                cancellationToken);
+        }
+
         var card = await GetForPanelAsync(businessId, nowUtc, cancellationToken);
         if (card?.Visits is null)
         {
@@ -105,6 +117,11 @@ public class LoyaltyService(AppDbContext dbContext) : ILoyaltyService
             Id = Guid.NewGuid(), BusinessId = businessId, CustomerUserId = customerUserId, RedeemedUtc = nowUtc
         });
         await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
         return null;
     }
 

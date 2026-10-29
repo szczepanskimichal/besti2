@@ -11,7 +11,7 @@ Intern protokoll over behandlingsaktiviteter (GDPR art. 30). Én kilde til sannh
 - endrer hvor lenge noe lagres.
 
 Behandlingsansvarlig: Michał Szczepański (BESTI). Kontakt: personvern@bestiapp.no
-Sist gjennomgått: 2026-10-28
+Sist gjennomgått: 2026-10-29
 
 ## Behandlinger
 
@@ -34,6 +34,20 @@ Sist gjennomgått: 2026-10-28
 | Besøksstatistikk | side (uten søkeparametre, bare utm_), henvisende nettside, land, nettleser, OS, skjermstørrelse; IP bare til land, lagres ikke | besøkende på offentlige sider | se hvilke kanaler som virker | 6.1 f | anonyme tall hos Umami | `components/Analytics` (filtrerer bort innloggede sider), `UMAMI_WEBSITE_ID` |
 | «Hvor hørte du om BESTI?» | svar fra fast liste (valgfritt) | bedrifter | se hvilke kanaler som gir bedrifter | 6.1 f | så lenge bedriften finnes | `Business.ReferralSource`, `ReferralSources` |
 | Innlogging | innloggingstoken i informasjonskapsel | alle | holde brukeren innlogget | 6.1 b | 14 dager; ugyldig straks passordet endres | `Program.cs` (`BearerTokenExpiration`, security stamp), `lib/auth.ts` |
+| Vurderingsbilde | bilde fra besøket (WebP, uten EXIF) | kunder | vises på vurderingen | 6.1 f | slettes med kontoen, 3 år etter timen, eller når admin skjuler med «Bildet passer ikke» | `Review.PhotoFileName`, `ReviewService.SetPhotoAsync`, `AdminService.HideReviewAsync` |
+| «Nyttig» | hvem som markerte hvilken vurdering (bare antall vises) | kunder | vise nyttige vurderinger | 6.1 f | til kontoen slettes | `ReviewHelpful`, `ReviewService.ToggleHelpfulAsync` |
+| Varselvalg | e-post dagen før av/på, «Snart tid!» av/på | kunder | respektere kundens valg | 6.1 b | til kontoen slettes | `AppUser.ReminderEmailOff`, `SoonNoticeOff`, `BookingReminder` |
+| Varsler på telefonen (Web Push) | push-adresse (endpoint), nøkler p256dh/auth | kunder, bedrifter | sende bjellens meldinger til enheten | 6.1 b (brukeren slår det på) | til slått av, utlogging på enheten, konto slettet eller push-tjenesten svarer 404/410 | `WebPushSubscription`, `PushService`, `PushSenderJob`, `LogoutButton` |
+| Favoritter | bedrift, tidspunkt | kunder | rask ny bestilling | 6.1 b | til fjernet / konto slettet | `Favorite`, `FavoriteService` |
+| Venteliste | tjeneste, ansatt, dag, kjente ledige tider | kunder | si fra når en tid blir ledig | 6.1 b | til dagen er over | `WaitlistEntry`, `WaitlistService`, `WaitlistJob` |
+| «Tid for ny time?» | tjeneste, ansatt, antall uker | kunder | påminnelse kunden ba om | 6.1 b | til slått av / konto slettet | `RebookReminder`, `RebookReminderService` |
+| BESTI sammen | invitasjon (tjeneste, tid, antall, telefon, melding), fornavn vises til gruppen | kunder | bestille sammen | 6.1 b | 3 år etter tidspunktet, eller når inviterende konto slettes | `BookingInvite`, `InviteService`, `BookingAnonymizer` |
+| Stempelkort / Mitt BESTI-år | utregnet fra timer; lagret bare utdelt belønning | kunder, bedrifter | lojalitet, oversikt for kunden | 6.1 b | til konto/bedrift slettes | `LoyaltyRedemption`, `LoyaltyService`, `MyYearService` |
+| Kundekort og notater (bedriften) | timer per kunde, bedriftens notat | kunder | bedriften gir bedre time (BESTI er databehandler) | bedriften: 6.1 b/f; ikke helse uten samtykke (art. 9) | notat: 3 år uten besøk, konto slettet eller bedrift slettet | `CustomerNote`, `CustomerCardService`, `BookingAnonymizer` |
+| Ansattes egen innlogging | e-post invitasjonen gikk til, kobling til konto; ansatte ser timer med kundenavn, telefon, melding, notat | ansatte, kunder | ansatt ser egen kalender | bedriften: 6.1 b/f (BESTI databehandler) | til bedriften fjerner tilgangen, den ansatte forlater eller konto slettes | `Employee.StaffEmail`, `StaffUserId`, `StaffService` |
+| Kalender i egen app (.ics) | timer med kundenavn, telefon, melding til bedriftens kalenderleverandør | kunder | bedriften ser timene i Google/Apple/Outlook | bedriften (BESTI databehandler) | hos kalenderleverandøren etter bedriftens avtale; lenken kan byttes / slås av | `Business.CalendarFeedToken`, `CalendarFeedService` |
+| Statistikk og ukerapport | tall per bedrift (besøk, omsetning, nye/faste kunder) | bedrifter | oversikt for bedriften | 6.1 b | beregnes fra timene, lagres ikke | `BusinessStatsService`, `WeeklyReportService` |
+| Administrasjon | admin-e-post, handling, grunn, bedrift | bedrifter, kunder, BESTI-teamet | moderering, support, sporbarhet | 6.1 f | 3 år | `AdminAction`, `AdminService`, `Admin__Emails` |
 | Sikkerhetskopi | hele databasen, bilder, innloggingsnøkler | alle | gjenopprette etter feil eller angrep | 6.1 f | 14 dager (på serveren og i Hetzner Storage Box, Tyskland) | `deploy/backup.sh` |
 
 ## Mottakere og leverandører
@@ -45,6 +59,8 @@ Sist gjennomgått: 2026-10-28
 | Umami Software, Inc. (besøksstatistikk, uten cookies) | side, henvisning, land, nettleser; IP brukes kortvarig til land | USA | DPA hos Umami; ingen personopplysninger lagres |
 | Brevo / Sendinblue SAS (e-post) | e-postadresse, navn, innhold i e-post | EU (Frankrike) | DPA |
 | Cloudflare, Inc. (DNS, beskyttelse, videreformidling av trafikk) | IP-adresse og all trafikk til nettsiden | USA / globalt | DPA, EU–US Data Privacy Framework + standardkontraktsbestemmelser (SCC) |
+| Push-tjenester (Google FCM, Apple, Mozilla, Microsoft), bare når brukeren slår på varsler | kryptert melding (bare enheten kan lese), tidspunkt | EU / USA | nettleserens egne vilkår; vi sender bare til disse vertene (`PushService.AllowedHosts`) |
+| Bedriftens kalenderleverandør (Google, Apple, Microsoft), bare når bedriften slår på kalenderlenken | timer med kundenavn, telefon, melding | EU / USA | bedriftens egen avtale (bedriften er behandlingsansvarlig) |
 | Google Ireland Ltd. (innlogging, bare når brukeren velger det) | Google vet at personen logger inn på BESTI; vi får navn og e-post | EU / USA | Googles egne vilkår (brukeren velger selv) |
 | Kartverket (Geonorge) | bedriftens adresse | Norge | offentlig API, ingen kundedata |
 | Brønnøysundregistrene | bedriftens org.nr | Norge | offentlig API, ingen kundedata |

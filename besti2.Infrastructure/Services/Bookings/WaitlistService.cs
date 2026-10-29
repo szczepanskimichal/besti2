@@ -36,6 +36,18 @@ public class WaitlistService(AppDbContext dbContext, IAvailabilityService availa
             return "Fant ikke den ansatte.";
         }
 
+        // Two clicks at the same moment: one at a time, so the check below sees the first one
+        // (SQL Server lock; the in-memory test database has no locks)
+        await using var transaction = dbContext.Database.IsRelational()
+            ? await dbContext.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        if (transaction is not null)
+        {
+            await dbContext.Database.ExecuteSqlInterpolatedAsync(
+                $"EXEC sp_getapplock @Resource = {$"waitlist-{userId}"}, @LockMode = 'Exclusive', @LockOwner = 'Transaction', @LockTimeout = 10000;",
+                cancellationToken);
+        }
+
         var mine = await dbContext.WaitlistEntries
             .Where(w => w.UserId == userId && w.NotifiedUtc == null && w.Date >= today)
             .ToListAsync(cancellationToken);
@@ -61,6 +73,11 @@ public class WaitlistService(AppDbContext dbContext, IAvailabilityService availa
             KnownFreeTimes = Join(free ?? [])
         });
         await dbContext.SaveChangesAsync(cancellationToken);
+        if (transaction is not null)
+        {
+            await transaction.CommitAsync(cancellationToken);
+        }
+
         return null;
     }
 

@@ -93,6 +93,12 @@ export default function TermsPage() {
                     Si fra til de ansatte at navnet deres vises på siden.</li>
                 <li>Kundeopplysninger du får gjennom BESTI kan bare brukes til å gi kunden timen, ikke til
                     markedsføring uten kundens eget samtykke.</li>
+                <li>Notater om kunder («Kunder») skal være korte og saklige. Skriv ikke helseopplysninger, for eksempel
+                    allergier, uten at kunden selv har sagt ja til det. Kunden kan be deg om innsyn i notatet.</li>
+                <li>Gir du en ansatt egen innlogging, ser den ansatte sine egne timer med kundenes navn, telefon,
+                    melding og notatene dine. Fjern tilgangen når den ansatte slutter. Slår du på kalenderen i egen
+                    kalenderapp, er lenken hemmelig: del den bare med dem som skal se timene, og lag en ny hvis den
+                    kommer på avveie.</li>
                 <li>Du velger selv om nye bestillinger bekreftes automatisk, og setter fristen for gratis
                     avbestilling. Valgene gjelder for alle timer bestilt via BESTI.</li>
                 <li>Registrer «Møtte ikke» bare når kunden faktisk ikke kom. Feil registrering skal rettes med en gang
@@ -130,9 +136,11 @@ export default function TermsPage() {
                     bedriftens ansatte.</li>
                 <li><strong>Hva behandles:</strong> opplysninger om bedriftens kunder i forbindelse med bestillinger
                     (navn, telefon, e-post, tjeneste, ansatt, tidspunkt, status inkludert «møtte ikke», kundens
-                    melding og grunn for avbestilling, varsler om timen) og navn på bedriftens ansatte.</li>
-                <li><strong>Hvor lenge:</strong> bestillinger anonymiseres automatisk 3 år etter timen. Varsler slettes
-                    etter høyst 14 dager. Sikkerhetskopier slettes etter 14 dager.</li>
+                    melding og grunn for avbestilling, varsler om timen), bedriftens kundekort og notater om kunder,
+                    stempelkort, og navn på bedriftens ansatte og e-posten de er invitert med til egen innlogging.</li>
+                <li><strong>Hvor lenge:</strong> bestillinger anonymiseres automatisk 3 år etter timen. Notater om en
+                    kunde slettes når kunden ikke har vært hos bedriften på 3 år, eller sletter kontoen. Varsler
+                    slettes etter høyst 14 dager. Sikkerhetskopier slettes etter 14 dager.</li>
                 <li><strong>Formål:</strong> å ta imot, vise, flytte og avlyse bestillinger og sende bekreftelser,
                     påminnelser og varsler på vegne av bedriften. BESTI bruker ikke opplysningene til egne formål,
                     som markedsføring.</li>

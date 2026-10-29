@@ -14,7 +14,7 @@ public static class BusinessSlug
     [
         "aerlig-booking", "api", "bedrift", "bekreft-epost", "glemt-passord", "godkjenn", "konto-slettet", "logg-inn", "min-besti",
         "ny-tid", "panel", "personvern", "registrer", "registrer-bedrift", "robots.txt", "sitemap.xml", "uploads",
-        "varsler", "vilkar", "kalender", "invitasjon", "favicon.ico", "_next", "health", "om", "hjelp", "kontakt", "admin"
+        "varsler", "vilkar", "kalender", "invitasjon", "favicon.ico", "_next", "health", "om", "hjelp", "kontakt", "admin", "ansatt"
     ];
 
     // "Klipp & Stil Frisør", "Gjøvik" -> "klipp-og-stil-frisor-gjovik"

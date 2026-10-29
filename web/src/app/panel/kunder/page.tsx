@@ -37,7 +37,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                 <button type="submit" className={panel.secondaryButton}>Søk</button>
             </form>
             <p className={panel.muted}>
-                {customers.length} {customers.length === 1 ? "kunde" : "kunder"}. Notatene ser bare dere – aldri kunden.
+                {customers.length} {customers.length === 1 ? "kunde" : "kunder"}. Notatene ser bare dere og de ansatte, ikke kunden i BESTI.
             </p>
             {customers.length === 0 ? (
                 <p className={panel.muted}>{q ? "Ingen treff." : "Ingen kunder ennå. De kommer med den første bestillingen."}</p>

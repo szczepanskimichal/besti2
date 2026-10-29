@@ -83,6 +83,30 @@ public class AdminToolsTests
         Assert.Equal(3, (await reviews.GetForBusinessAsync(KlippOgStil)).Average);
     }
 
+    // check if hiding for "Bildet passer ikke" deletes the photo file, and other reasons keep it
+    [Fact]
+    public async Task HideReview_PhotoReasonDeletesThePhoto()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var withBadPhoto = await AddReviewAsync(db, 4);
+        var rude = await AddReviewAsync(db, 1);
+        withBadPhoto.PhotoFileName = "bad.webp";
+        rude.PhotoFileName = "ok.webp";
+        await db.SaveChangesAsync();
+        var storage = new FakeImageStorage();
+        storage.Files["bad.webp"] = [1];
+        storage.Files["ok.webp"] = [2];
+        var admin = new AdminService(db, storage: storage);
+
+        Assert.Null(await admin.HideReviewAsync(withBadPhoto.Id, AdminService.PhotoReason, Ada));
+        Assert.Null(await admin.HideReviewAsync(rude.Id, AdminService.ReviewReasons[0], Ada));
+
+        Assert.Null((await db.Reviews.FindAsync(withBadPhoto.Id))!.PhotoFileName);
+        Assert.False(storage.Files.ContainsKey("bad.webp"));
+        Assert.Equal("ok.webp", (await db.Reviews.FindAsync(rude.Id))!.PhotoFileName);
+        Assert.True(storage.Files.ContainsKey("ok.webp"));
+    }
+
     // check if a closed business is hidden with the reason, the owner gets an e-mail, and opening it again works
     [Fact]
     public async Task SuspendBusiness_HiddenUntilReopened()

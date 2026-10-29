@@ -15,7 +15,12 @@ export default function CustomerNoteForm({ customerKey, note }: { customerKey: s
             <label className={styles.srOnly} htmlFor="kunde-notat">Notat</label>
             <textarea id="kunde-notat" name="note" rows={4} maxLength={1000}
                       defaultValue={state.values?.note ?? note} className={styles.textarea}
-                      placeholder="F.eks. «Liker det kort i nakken. Allergisk mot ammoniakk. Vil ha te, ikke kaffe.»"/>
+                      placeholder="F.eks. «Liker det kort i nakken. Vil ha te, ikke kaffe.»"/>
+            {/* Allergies and other health details are special category data (GDPR art. 9) */}
+            <p className={styles.noteHint}>
+                Skriv kort og saklig. Ikke skriv helseopplysninger, som allergier, uten at kunden selv har sagt ja
+                til det. Kunden kan be dere om å få se notatet.
+            </p>
             <SubmitButton className={styles.saveButton} pendingText="Lagrer…">Lagre notat</SubmitButton>
         </form>
     );
