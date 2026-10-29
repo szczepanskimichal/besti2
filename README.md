@@ -142,4 +142,4 @@ privacy policy is at [bestiapp.no/personvern](https://bestiapp.no/personvern).
 
 ## Author
 
-Made by Michał Szczepański in Gjøvik, Norway. Questions: post@bestiapp.no
+Made by Michał Szczepański in Fall, Norway. Questions: post@bestiapp.no
