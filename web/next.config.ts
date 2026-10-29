@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
     // Security headers on every page
     async headers() {
         return [
+            // The service worker must never be kept old in a cache, or fixes never reach the phones
+            {
+                source: "/sw.js",
+                headers: [{key: "Cache-Control", value: "no-cache, no-store, must-revalidate"}],
+            },
             {
                 source: "/:path*",
                 headers: [

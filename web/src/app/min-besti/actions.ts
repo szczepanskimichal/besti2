@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { answerMyNewTime, cancelMyBooking, createReview, newInviteLink } from "@/lib/api";
+import { answerMyNewTime, cancelMyBooking, createReview, leaveWaitlist, newInviteLink, removeRebookReminder } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -59,4 +59,24 @@ export async function shareInviteAgainAction(formData: FormData) {
     }
     const result = await newInviteLink(token, String(formData.get("inviteId") ?? ""));
     redirect(result.ok ? `/invitasjon/${result.token}` : "/min-besti?feil=invitasjon");
+}
+
+// "Fjern" on a day in the waitlist
+export async function leaveWaitlistAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn?neste=/min-besti");
+    }
+    await leaveWaitlist(token, String(formData.get("id") ?? ""));
+    redirect("/min-besti");
+}
+
+// "Slå av" on a "Tid for ny time?" reminder
+export async function removeRebookReminderAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn?neste=/min-besti");
+    }
+    await removeRebookReminder(token, String(formData.get("id") ?? ""));
+    redirect("/min-besti");
 }

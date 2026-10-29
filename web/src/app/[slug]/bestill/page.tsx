@@ -7,6 +7,7 @@ import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import InviteForm from "./InviteForm";
+import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
 
 // The biggest group the API takes (InviteRules.MaxPersons)
@@ -221,6 +222,19 @@ export default async function BookingPage({params, searchParams}: Props) {
                         </li>
                     ))}
                 </ul>
+            )}
+            {/* Venteliste: only alone and for customers (a business account cannot book) */}
+            {!together && !chosen && !me?.isBusiness && days && days.length > 0 && (
+                me ? (
+                    <WaitlistForm serviceId={service.id} employeeId={employeeId ?? null}
+                                  days={days.map((d) => d.date)} selectedDay={selected?.date}/>
+                ) : (
+                    <p className={styles.muted}>
+                        Passer ingen av tidene?{" "}
+                        <NextLink href={`/logg-inn?neste=${encodeURIComponent(currentUrl)}`}>Logg inn</NextLink>
+                        {" "}og få beskjed hvis det blir ledig.
+                    </p>
+                )
             )}
             {tid && !chosen && (
                 <p className={styles.error} role="alert">Den valgte tiden er ikke lenger ledig. Velg en annen tid.</p>

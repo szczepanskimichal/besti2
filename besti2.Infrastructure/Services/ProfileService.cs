@@ -185,6 +185,12 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         // 4. The customer's bell
         dbContext.Notifications.RemoveRange(
             await dbContext.Notifications.Where(n => n.UserId == userId).ToListAsync(cancellationToken));
+        dbContext.WebPushSubscriptions.RemoveRange(
+            await dbContext.WebPushSubscriptions.Where(s => s.UserId == userId).ToListAsync(cancellationToken));
+        dbContext.WaitlistEntries.RemoveRange(
+            await dbContext.WaitlistEntries.Where(w => w.UserId == userId).ToListAsync(cancellationToken));
+        dbContext.RebookReminders.RemoveRange(
+            await dbContext.RebookReminders.Where(r => r.UserId == userId).ToListAsync(cancellationToken));
         await dbContext.SaveChangesAsync(cancellationToken);
 
         // 5. The account itself

@@ -2,7 +2,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { changeMyPassword, deleteMyBusiness, getMe, login, updateProfile, uploadLogo } from "@/lib/api";
+import {
+    changeMyPassword, createCalendarFeed, deleteMyBusiness, getMe, login, turnOffCalendarFeed, updateProfile, uploadLogo,
+} from "@/lib/api";
 import { getToken, setToken, TOKEN_COOKIE } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -96,4 +98,16 @@ export async function deleteBusinessAction(_previous: AccountFormState, formData
     const cookieStore = await cookies();
     cookieStore.delete(TOKEN_COOKIE);
     redirect("/konto-slettet?bedrift=1");
+}
+
+// "Kalender på telefonen": on / new address (the old one stops working) / off
+export async function calendarFeedAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const ok = formData.get("action") === "av"
+        ? await turnOffCalendarFeed(token)
+        : await createCalendarFeed(token);
+    redirect(`/panel/profil?kalender=${ok ? "lagret" : "feil"}#kalender`);
 }

@@ -56,3 +56,33 @@
 .delete:focus-visible {
     background: var(--color-border);
 }
+
+/* "Lyd ved nye varsler: På / Av" under the heading */
+.soundToggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    margin: 0 0 12px;
+    padding: 0 16px;
+    border: 1px solid var(--color-input-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.soundToggle[aria-checked="false"] {
+    color: var(--color-muted);
+}
+
+/* "BESTI på telefonen": install and push */
+.phone {
+    margin-bottom: 16px;
+}
+
+.phoneTitle {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+}

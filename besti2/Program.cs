@@ -43,6 +43,9 @@ builder.Services.AddHostedService<BookingAnonymizationJob>();
 builder.Services.AddHostedService<BookingReminderJob>();
 builder.Services.AddHostedService<EmailSenderJob>();
 builder.Services.AddHostedService<BusinessVerificationJob>();
+builder.Services.AddHostedService<PushSenderJob>();
+builder.Services.AddHostedService<WaitlistJob>();
+builder.Services.AddHostedService<RebookReminderJob>();
 // Password reset mails from Identity go through our email service
 builder.Services.AddTransient<IEmailSender<AppUser>, IdentityEmailSender>();
 // The web server tells us the visitor's IP in X-Forwarded-For. Only callers on this machine are trusted
@@ -173,6 +176,10 @@ app.MapInviteEndpoints();
 app.MapAccountEndpoints();
 app.MapGodkjennEndpoints();
 app.MapNotificationEndpoints();
+app.MapPushEndpoints();
+app.MapWaitlistEndpoints();
+app.MapRebookReminderEndpoints();
+app.MapCalendarFeedEndpoints();
 app.MapPanelEndpoints();
 app.MapAuthEndpoints();
 

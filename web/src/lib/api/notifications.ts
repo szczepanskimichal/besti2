@@ -1,5 +1,5 @@
 import type {NotificationList} from "@/lib/types";
-import {API_URL, apiFetch} from "./client";
+import {API_URL, apiFetch, toResult, type ApiResult} from "./client";
 
 // The bell (🔔); null = not logged in or the API failed (the header must never break because of it)
 export async function getNotifications(token: string): Promise<NotificationList | null> {
@@ -40,4 +40,19 @@ export async function openNotificationStream(token: string, signal: AbortSignal)
 export async function getUnreadCount(token: string): Promise<number | null> {
     const res = await apiFetch("/api/notifications/unread", { token });
     return res.ok ? (await res.json()).unread : null;
+}
+
+// "Varsler på telefonen": the server's public VAPID key; null = push is not set up on this server
+export async function getPushPublicKey(): Promise<string | null> {
+    const res = await apiFetch("/api/push/public-key");
+    return res.ok ? (await res.json()).publicKey ?? null : null;
+}
+
+// This device gets push messages for the logged-in person (and the business, for an owner)
+export async function savePushSubscription(token: string, input: { endpoint: string; p256dh: string; auth: string }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/push/subscriptions", { method: "POST", token, body: input }));
+}
+
+export async function removePushSubscription(token: string, endpoint: string): Promise<void> {
+    await apiFetch("/api/push/subscriptions/remove", { method: "POST", token, body: { endpoint } });
 }

@@ -318,3 +318,23 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
 }
+
+/* "Si fra hvis det blir ledig" under the free times */
+.waitlist {
+    margin-top: 24px;
+    padding: 16px;
+    border: 1px dashed var(--color-input-border);
+    border-radius: 12px;
+}
+
+.waitlistForm {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.success {
+    margin: 0;
+    color: var(--color-text);
+}

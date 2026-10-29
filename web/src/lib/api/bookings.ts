@@ -1,4 +1,4 @@
-import type {CreateBookingInput, CustomerBooking, NewTime} from "@/lib/types";
+import type {CreateBookingInput, CustomerBooking, NewTime, RebookReminder, WaitlistEntry} from "@/lib/types";
 import {apiFetch, toResult, type ApiResult} from "./client";
 
 // The customer's bookings: book, Min Besti, cancel, answer a new time
@@ -51,4 +51,33 @@ export async function answerNewTime(token: string, accept: boolean): Promise<Api
 
 export async function answerMyNewTime(token: string, bookingId: string, accept: boolean): Promise<ApiResult> {
     return toResult(await apiFetch(`/api/me/bookings/${bookingId}/ny-tid`, { method: "POST", token, body: { accept } }));
+}
+
+// "Si fra hvis det blir ledig": wait for a free time with this service that day (employeeId null = anyone)
+export async function joinWaitlist(token: string, input: { serviceId: string; employeeId: string | null; date: string }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/waitlist", { method: "POST", token, body: input, forwardIp: true }));
+}
+
+// Min Besti: the days I wait for; empty when the API fails (the page must still show)
+export async function getMyWaitlist(token: string): Promise<WaitlistEntry[]> {
+    const res = await apiFetch("/api/waitlist/mine", { token });
+    return res.ok ? res.json() : [];
+}
+
+export async function leaveWaitlist(token: string, id: string): Promise<void> {
+    await apiFetch(`/api/waitlist/${encodeURIComponent(id)}`, { method: "DELETE", token });
+}
+
+// "Tid for ny time?": weeks = 0 turns it off
+export async function setRebookReminder(token: string, input: { serviceId: string; employeeId: string | null; weeks: number }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/rebook-reminders", { method: "PUT", token, body: input }));
+}
+
+export async function getMyRebookReminders(token: string): Promise<RebookReminder[]> {
+    const res = await apiFetch("/api/rebook-reminders/mine", { token });
+    return res.ok ? res.json() : [];
+}
+
+export async function removeRebookReminder(token: string, id: string): Promise<void> {
+    await apiFetch(`/api/rebook-reminders/${encodeURIComponent(id)}`, { method: "DELETE", token });
 }

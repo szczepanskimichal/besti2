@@ -536,6 +536,9 @@ public class BusinessRegistrationService(
         dbContext.Notifications.RemoveRange(await dbContext.Notifications
             .Where(n => n.BusinessId == business.Id || (n.BookingId != null && bookingIds.Contains(n.BookingId.Value)))
             .ToListAsync(cancellationToken));
+        // The owners' phones stop getting push messages
+        dbContext.WebPushSubscriptions.RemoveRange(await dbContext.WebPushSubscriptions
+            .Where(s => s.BusinessId == business.Id).ToListAsync(cancellationToken));
         await dbContext.SaveChangesAsync(cancellationToken);
 
         foreach (var owner in await dbContext.Users.Where(u => u.BusinessId == business.Id)

@@ -119,3 +119,45 @@
 .back:hover {
     text-decoration: underline;
 }
+
+/* "Tid for ny time?": a row of small pills under the details */
+.rebook {
+    margin: 0 0 16px;
+}
+
+.rebookTitle {
+    margin: 0 0 8px;
+    font-weight: 600;
+}
+
+.rebookChoices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+}
+
+.rebookChoice,
+.rebookNo {
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.rebookChoice {
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary-soft);
+    color: var(--color-text);
+}
+
+.rebookNo {
+    border: 1px solid var(--color-input-border);
+    background: none;
+    color: var(--color-muted);
+}
+
+.rebookSaved {
+    margin: 0 0 16px;
+}

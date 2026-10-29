@@ -22,10 +22,16 @@ public class AppDbContext : IdentityDbContext<AppUser>
             .Select(e => NotificationSignals.Key(e.Entity.UserId, e.Entity.BusinessId))
             .Distinct()
             .ToList();
+        var added = ChangeTracker.Entries<Notification>().Any(e => e.State == EntityState.Added);
         var saved = await base.SaveChangesAsync(cancellationToken);
         foreach (var bell in bells)
         {
             NotificationSignals.Changed(bell);
+        }
+        // A new notification: the push job sends it to the phones at once (see PushSenderJob)
+        if (added)
+        {
+            NotificationSignals.Added();
         }
 
         return saved;
@@ -43,6 +49,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<OutboxEmail> OutboxEmails { get; set; } = null!;
     public DbSet<BookingInvite> BookingInvites { get; set; } = null!;
+    public DbSet<WebPushSubscription> WebPushSubscriptions { get; set; } = null!;
+    public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
+    public DbSet<RebookReminder> RebookReminders { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +75,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.Description).HasMaxLength(1000);
             e.Property(x => x.ApprovalTokenHash).HasMaxLength(64);
             e.HasIndex(x => x.ApprovalTokenHash);
+            e.Property(x => x.CalendarFeedToken).HasMaxLength(64);
+            e.HasIndex(x => x.CalendarFeedToken).IsUnique();
             e.HasData(
                 new Business
                 {
@@ -339,6 +350,40 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.Link).HasMaxLength(300);
             e.Property(x => x.CreatedUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+            // The push job looks for new ones not sent yet
+            e.HasIndex(x => new { x.PushedUtc, x.CreatedUtc });
+        });
+        modelBuilder.Entity<WebPushSubscription>(e =>
+        {
+            e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+            e.HasIndex(x => x.UserId);
+            e.HasIndex(x => x.BusinessId);
+            // 800 characters: still fits in a SQL Server index (the addresses are about 200-500)
+            e.Property(x => x.Endpoint).IsRequired().HasMaxLength(800);
+            e.HasIndex(x => x.Endpoint).IsUnique();
+            e.Property(x => x.P256dh).IsRequired().HasMaxLength(200);
+            e.Property(x => x.Auth).IsRequired().HasMaxLength(100);
+        });
+        modelBuilder.Entity<WaitlistEntry>(e =>
+        {
+            e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+            e.HasIndex(x => x.UserId);
+            // The job looks only at the ones still waiting
+            e.HasIndex(x => x.Date).HasFilter("[NotifiedUtc] IS NULL");
+            e.Property(x => x.KnownFreeTimes).IsRequired().HasMaxLength(4000);
+            // A deleted business takes its services and so the waiting customers with it (one cascade path)
+            e.HasOne(x => x.Service).WithMany()
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<RebookReminder>(e =>
+        {
+            e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+            // One reminder per customer and service
+            e.HasIndex(x => new { x.UserId, x.ServiceId }).IsUnique();
+            e.HasOne(x => x.Service).WithMany()
+                .HasForeignKey(x => x.ServiceId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<OutboxEmail>(e =>
         {

@@ -33,6 +33,17 @@ public static class DependencyInjection
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
         services.AddScoped<IBusinessService, BusinessService>();
         services.AddScoped<IBusinessSearchService, BusinessSearchService>();
+        services.AddScoped<ICalendarFeedService, CalendarFeedService>();
+        // "Varsler på telefonen" (Web Push). VAPID keys from user-secrets / .env; without them push is off
+        services.AddHttpClient<IPushGateway, WebPushGateway>((httpClient, provider) => new WebPushGateway(
+            httpClient,
+            configuration["Push:PublicKey"],
+            configuration["Push:PrivateKey"],
+            configuration["Push:Subject"] ?? "mailto:post@bestiapp.no",
+            provider.GetRequiredService<ILogger<WebPushGateway>>()));
+        services.AddScoped<IPushService, PushService>();
+        services.AddScoped<IWaitlistService, WaitlistService>();
+        services.AddScoped<IRebookReminderService, RebookReminderService>();
         services.AddScoped<IAvailabilityService, AvailabilityService>();
         services.AddScoped<IBookingService>(provider => new BookingService(
             provider.GetRequiredService<AppDbContext>(),
