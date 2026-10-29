@@ -1,0 +1,42 @@
+.stamps {
+    list-style: none;
+    margin: 8px 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.stamp {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px dashed var(--color-input-border);
+    color: var(--color-on-primary);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.filled {
+    border: 2px solid var(--color-primary);
+    background: var(--color-primary);
+}
+
+.reward {
+    border-style: solid;
+    border-color: var(--color-warning);
+}
+
+.reward.filled {
+    background: var(--color-warning);
+    border-color: var(--color-warning);
+}
+
+.small .stamp {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+}

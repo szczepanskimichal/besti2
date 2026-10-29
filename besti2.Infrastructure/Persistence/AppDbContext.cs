@@ -53,6 +53,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
     public DbSet<RebookReminder> RebookReminders { get; set; } = null!;
     public DbSet<Favorite> Favorites { get; set; } = null!;
+    public DbSet<LoyaltyRedemption> LoyaltyRedemptions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -79,6 +80,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.CalendarFeedToken).HasMaxLength(64);
             e.HasIndex(x => x.CalendarFeedToken).IsUnique();
             e.Property(x => x.AdminNote).HasMaxLength(2000);
+            e.Property(x => x.LoyaltyReward).HasMaxLength(100);
             e.HasData(
                 new Business
                 {
@@ -396,6 +398,15 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
             // One heart per customer and business
             e.HasIndex(x => new { x.UserId, x.BusinessId }).IsUnique();
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<LoyaltyRedemption>(e =>
+        {
+            e.Property(x => x.CustomerUserId).IsRequired().HasMaxLength(450);
+            e.HasIndex(x => new { x.BusinessId, x.CustomerUserId });
+            e.HasIndex(x => x.CustomerUserId);
             e.HasOne(x => x.Business).WithMany()
                 .HasForeignKey(x => x.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);

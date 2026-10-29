@@ -1,0 +1,116 @@
+.years {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.yearLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid var(--color-input-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.yearActive {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
+/* The big card at the top: aurora colours, like the rest of BESTI */
+.hero {
+    padding: 28px 20px;
+    border-radius: 20px;
+    border: 1px solid var(--color-border);
+    background: linear-gradient(135deg, rgba(15, 75, 87, 0.85), rgba(4, 20, 28, 0.85) 60%, rgba(120, 90, 200, 0.35));
+    backdrop-filter: blur(8px);
+    text-align: center;
+}
+
+.kicker {
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.big {
+    margin: 8px 0 0;
+    font-size: clamp(3rem, 16vw, 5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    color: var(--color-primary-dark);
+}
+
+.sub {
+    margin: 8px 0 0;
+    color: var(--color-text);
+}
+
+.cta {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 16px;
+    text-decoration: none;
+}
+
+.facts {
+    list-style: none;
+    margin: 16px 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+@media (min-width: 720px) {
+    .facts {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.fact {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+}
+
+.icon {
+    font-size: 1.5rem;
+}
+
+.value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    overflow-wrap: anywhere;
+}
+
+.value a {
+    color: inherit;
+}
+
+.text {
+    font-size: 0.875rem;
+    color: var(--color-muted);
+}
+
+.note {
+    margin: 16px 0 0;
+    font-size: 0.8125rem;
+    color: var(--color-muted);
+}

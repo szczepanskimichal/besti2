@@ -10,3 +10,4 @@ export * from "./notifications";
 export * from "./stats";
 export * from "./favorites";
 export * from "./admin";
+export * from "./loyalty";

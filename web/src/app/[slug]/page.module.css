@@ -306,3 +306,21 @@
 .favoriteForm {
     margin-left: auto;
 }
+
+/* "Stempelkort" box under the contact details */
+.loyalty {
+    margin-top: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--color-warning);
+    border-radius: 12px;
+    background: rgba(242, 196, 109, 0.08);
+}
+
+.loyaltyTitle {
+    margin: 0;
+    font-weight: 700;
+}
+
+.loyalty .muted {
+    margin: 0;
+}

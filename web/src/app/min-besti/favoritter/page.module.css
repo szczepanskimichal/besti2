@@ -66,3 +66,16 @@
     margin: 0 0 8px;
     font-weight: 700;
 }
+
+.section {
+    margin-bottom: 24px;
+}
+
+.heading {
+    font-size: 1.25rem;
+    margin: 0 0 12px;
+}
+
+.ready {
+    border-color: var(--color-warning);
+}

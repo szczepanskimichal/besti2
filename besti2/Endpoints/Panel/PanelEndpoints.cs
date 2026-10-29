@@ -14,5 +14,6 @@ public static class PanelEndpoints
         group.MapPanelShareEndpoints();
         group.MapPanelCalendarFeedEndpoints();
         group.MapPanelStatsEndpoints();
+        group.MapPanelLoyaltyEndpoints();
     }
 }

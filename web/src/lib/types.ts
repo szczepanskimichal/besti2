@@ -74,6 +74,8 @@ export type BusinessDetails = {
     autoConfirm: boolean; // new online bookings are confirmed at once
     // "Verifisert bedrift": when Brønnøysund last said the business is active; null = no badge
     verifiedUtc: string | null;
+    loyaltyVisits: number | null; // "Stempelkort": every N-th visit gives loyaltyReward; null = none
+    loyaltyReward: string | null;
 };
 
 // "Forslag for din bransje" in the panel: a ready service the owner can add with one click
@@ -423,4 +425,49 @@ export type AdminReview = {
     comment: string | null;
     businessReply: string | null;
     createdUtc: string;
+};
+
+// "Stempelkort": stamps on the current round (0..visits); rewardReady = the business can give the reward now
+export type LoyaltyCard = {
+    businessId: string;
+    businessName: string;
+    businessSlug: string;
+    visits: number;
+    reward: string;
+    stamps: number;
+    rewardReady: boolean;
+    rewardsGiven: number;
+};
+
+export type PanelLoyalty = {
+    visits: number | null;
+    reward: string | null;
+    startUtc: string | null;
+    customers: {
+        customerUserId: string;
+        name: string;
+        stamps: number;
+        rewardReady: boolean;
+        lastVisitUtc: string;
+        rewardsGiven: number;
+    }[];
+};
+
+// "Mitt BESTI-år"
+export type MyYear = {
+    year: number;
+    visits: number;
+    businesses: number;
+    minutesOfMeTime: number;
+    spent: number;
+    visitsWithFriends: number;
+    reviewsWritten: number;
+    favoriteBusiness: string | null;
+    favoriteBusinessSlug: string | null;
+    favoriteBusinessVisits: number;
+    favoriteService: string | null;
+    busiestMonth: number | null;
+    firstVisitUtc: string | null;
+    months: number[];
+    years: number[];
 };

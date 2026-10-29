@@ -577,6 +577,8 @@ public class BusinessRegistrationService(
             .ToListAsync(cancellationToken));
         dbContext.Favorites.RemoveRange(await dbContext.Favorites.Where(f => f.BusinessId == business.Id)
             .ToListAsync(cancellationToken));
+        dbContext.LoyaltyRedemptions.RemoveRange(await dbContext.LoyaltyRedemptions
+            .Where(r => r.BusinessId == business.Id).ToListAsync(cancellationToken));
         // The owners' phones stop getting push messages
         dbContext.WebPushSubscriptions.RemoveRange(await dbContext.WebPushSubscriptions
             .Where(s => s.BusinessId == business.Id).ToListAsync(cancellationToken));

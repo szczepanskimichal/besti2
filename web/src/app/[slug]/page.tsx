@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { Fragment } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusinessBySlug, getBusinessReviews, getMe, getMyFavoriteIds } from "@/lib/api";
+import { getBusinessBySlug, getBusinessReviews, getMe, getMyFavoriteIds, getMyLoyalty } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -12,6 +12,7 @@ import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 import FavoriteButton from "./FavoriteButton";
+import StampCard from "@/components/StampCard/StampCard";
 
 import styles from "./page.module.css";
 
@@ -53,7 +54,12 @@ export default async function BusinessPage({ params }: Props) {
         token ? getMe(token).catch(() => null) : null,
     ]);
     // The heart is for customers; a business account has no Min Besti
-    const saved = me && token ? (await getMyFavoriteIds(token)).includes(business.id) : null;
+    const customer = me && token && !me.isBusiness ? token : null;
+    const [favoriteIds, loyaltyCards] = customer
+        ? await Promise.all([getMyFavoriteIds(customer), business.loyaltyVisits ? getMyLoyalty(customer) : []])
+        : [null, []];
+    const saved = favoriteIds ? favoriteIds.includes(business.id) : null;
+    const myCard = loyaltyCards.find((c) => c.businessId === business.id);
 
     // OpenStreetMap embed: small box around the business with a marker
     const d = 0.005;
@@ -112,6 +118,26 @@ export default async function BusinessPage({ params }: Props) {
                     )}
                 </address>
                 <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
+                {business.loyaltyVisits && business.loyaltyReward && (
+                    <div className={styles.loyalty}>
+                        <p className={styles.loyaltyTitle}>
+                            <span aria-hidden="true">🎟️</span> Stempelkort: hvert {business.loyaltyVisits}. besøk gir
+                            «{business.loyaltyReward}»
+                        </p>
+                        {myCard ? (
+                            <>
+                                <StampCard stamps={myCard.stamps} visits={myCard.visits} small/>
+                                <p className={styles.muted}>
+                                    {myCard.rewardReady
+                                        ? "Kortet er fullt! Si fra ved neste besøk, så får du belønningen."
+                                        : `Du har ${myCard.stamps} av ${myCard.visits}. Bestill på BESTI, så kommer stemplene av seg selv.`}
+                                </p>
+                            </>
+                        ) : (
+                            <p className={styles.muted}>Stemplene kommer av seg selv når du bestiller på BESTI og er innlogget.</p>
+                        )}
+                    </div>
+                )}
             </header>
             {business.gallery.length > 0 && (
                 <section>

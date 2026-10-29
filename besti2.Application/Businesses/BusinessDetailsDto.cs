@@ -27,5 +27,8 @@ public record BusinessDetailsDto(
     // New online bookings are confirmed at once (the confirmation page says so)
     bool AutoConfirm,
     // "Verifisert bedrift": when Brønnøysund last said the business is active; null = no badge
-    DateTime? VerifiedUtc = null
+    DateTime? VerifiedUtc = null,
+    // "Stempelkort": every N-th visit gives the reward; null = no stamp card
+    int? LoyaltyVisits = null,
+    string? LoyaltyReward = null
 );

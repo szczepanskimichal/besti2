@@ -76,7 +76,9 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.Website,
                 b.AutoConfirm,
                 // "Verifisert bedrift": only an approved business that Brønnøysund still says is active
-                b.ApprovedUtc != null ? b.VerifiedUtc : null))
+                b.ApprovedUtc != null ? b.VerifiedUtc : null,
+                b.LoyaltyVisits,
+                b.LoyaltyReward))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null

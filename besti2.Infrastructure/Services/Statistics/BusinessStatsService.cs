@@ -37,7 +37,8 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
                 b.WeeklyReportOff,
                 b.ProInterestUtc,
                 HasDescription = b.Description != null && b.Description != "",
-                HasCalendarFeed = b.CalendarFeedToken != null
+                HasCalendarFeed = b.CalendarFeedToken != null,
+                HasLoyalty = b.LoyaltyVisits != null
             })
             .FirstOrDefaultAsync(cancellationToken);
         if (business is null)
@@ -121,7 +122,8 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
             business.HasCalendarFeed,
             business.AutoConfirm,
             business.FreeCancelHours,
-            Employees: employees);
+            Employees: employees,
+            business.HasLoyalty);
 
         return new BusinessStatsDto(
             Days: (int)Math.Round(length.TotalDays),
@@ -328,6 +330,13 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
                 "/panel/apningstider"));
         }
 
+        if (!setup.HasLoyalty && numbers.Visits >= MinVisitsForRates)
+        {
+            tips.Add(new StatsTip("tips", "Belønn faste kunder",
+                "Med stempelkort får kunden for eksempel hvert 10. besøk gratis. Stemplene kommer av seg selv.",
+                "/panel/stempelkort"));
+        }
+
         if (!setup.AutoConfirm)
         {
             tips.Add(new StatsTip("tips", "Bekreft automatisk",
@@ -384,5 +393,6 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
         bool HasCalendarFeed,
         bool AutoConfirm,
         int FreeCancelHours,
-        int Employees);
+        int Employees,
+        bool HasLoyalty);
 }
