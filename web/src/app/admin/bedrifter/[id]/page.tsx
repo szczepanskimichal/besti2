@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getAdminBusiness } from "@/lib/api";
+import { getAdminBusiness, getAdminReasons } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import { decideAction, noteAction } from "../../actions";
+import { decideAction, noteAction, suspendAction } from "../../actions";
 import NoteForm from "./NoteForm";
 import styles from "../../admin.module.css";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Bedrift" };
 
 type AdminBusinessPageProps = {
     params: Promise<{ id: string }>;
-    searchParams: Promise<{ avvis?: string; lagret?: string; godkjent?: string; feil?: string }>;
+    searchParams: Promise<{ avvis?: string; lagret?: string; godkjent?: string; feil?: string; endret?: string; steng?: string }>;
 };
 
 // One business: contact details for a call, what is missing in "Kom i gang", and BESTI's own note
@@ -22,8 +22,10 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
     const { id } = await params;
     const query = await searchParams;
     const token = await getToken();
-    const details = token && /^[0-9a-f-]{36}$/i.test(id) ? await getAdminBusiness(token, id) : null;
-    if (!details) {
+    const [details, reasons] = token && /^[0-9a-f-]{36}$/i.test(id)
+        ? await Promise.all([getAdminBusiness(token, id), getAdminReasons(token)])
+        : [null, null];
+    if (!details || !reasons) {
         notFound();
     }
     const business = details.business;
@@ -40,7 +42,13 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
             </p>
             {query.lagret && <p className={styles.notice} role="status">Notatet er lagret.</p>}
             {query.godkjent && <p className={styles.notice} role="status">Godkjent! Eieren har fått e-post.</p>}
+            {query.endret && <p className={styles.notice} role="status">Lagret. Eieren har fått beskjed.</p>}
             {query.feil && <p className={styles.error} role="alert">{query.feil}</p>}
+            {details.suspendedUtc && (
+                <p className={styles.error} role="status">
+                    Stengt av BESTI {formatDate(details.suspendedUtc)}: {details.suspendedReason}
+                </p>
+            )}
 
             {waiting && (
                 <section className={styles.card}>
@@ -132,6 +140,56 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
                 <h2 className={styles.cardTitle}>Notat (bare for BESTI)</h2>
                 <NoteForm id={business.id} note={details.adminNote ?? ""} action={noteAction}/>
             </section>
+
+            {(business.status === "Synlig" || business.status === "Stengt") && (
+                <section className={styles.card}>
+                    <h2 className={styles.cardTitle}>{business.status === "Stengt" ? "Åpne siden igjen" : "Steng siden"}</h2>
+                    {business.status === "Stengt" ? (
+                        <form action={suspendAction} className={styles.reasonForm}>
+                            <input type="hidden" name="id" value={business.id}/>
+                            <input type="hidden" name="open" value="1"/>
+                            <SubmitButton className={styles.primaryButton} pendingText="Åpner …">Åpne igjen</SubmitButton>
+                        </form>
+                    ) : query.steng ? (
+                        <>
+                            <p>
+                                Kundene finner ikke siden og kan ikke bestille nye timer. Timer som allerede er
+                                bestilt, gjelder fortsatt ({business.upcoming} kommende). Eieren får e-post med grunnen
+                                og kan bruke panelet som før. Det kan angres med «Åpne igjen».
+                            </p>
+                            <form action={suspendAction} className={styles.reasonForm}>
+                                <input type="hidden" name="id" value={business.id}/>
+                                <label className={styles.srOnly} htmlFor="steng-grunn">Grunn</label>
+                                <select id="steng-grunn" name="reason" required defaultValue="" className={styles.select}>
+                                    <option value="" disabled>Velg grunn …</option>
+                                    {reasons.suspend.map((reason) => <option key={reason} value={reason}>{reason}</option>)}
+                                </select>
+                                <SubmitButton className={styles.dangerButton} pendingText="Stenger …">Steng siden</SubmitButton>
+                                <Link href={`/admin/bedrifter/${business.id}`} className={styles.secondaryButton}>Avbryt</Link>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <p className={styles.muted}>For falske bedrifter, mange klager, eller når eieren ber om det.</p>
+                            <Link href={`/admin/bedrifter/${business.id}?steng=1`} className={styles.dangerButton}>Steng siden …</Link>
+                        </>
+                    )}
+                </section>
+            )}
+
+            {details.log && details.log.length > 0 && (
+                <section className={styles.card}>
+                    <h2 className={styles.cardTitle}>Logg</h2>
+                    <ul className={styles.log}>
+                        {details.log.map((entry) => (
+                            <li key={`${entry.createdUtc}-${entry.text}`}>
+                                <span>{entry.text}</span>
+                                <span className={styles.muted}>{formatDateTime(entry.createdUtc)} · {entry.adminEmail}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
         </>
     );
 }

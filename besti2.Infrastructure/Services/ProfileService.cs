@@ -1,6 +1,7 @@
 using besti2.Application.Accounts;
 using besti2.Application.Bookings;
 using besti2.Application.Common;
+using besti2.Application.Images;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Identity;
 using besti2.Infrastructure.Persistence;
@@ -9,7 +10,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
-public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userManager, IBookingService bookingService)
+public class ProfileService(
+    AppDbContext dbContext,
+    UserManager<AppUser> userManager,
+    IBookingService bookingService,
+    IImageStorage? imageStorage = null)
     : IProfileService
 {
     // Shown on reviews of a customer who deleted the account
@@ -25,7 +30,7 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         return user is null || user.BusinessId is not null
             ? null
             : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber,
-                await userManager.HasPasswordAsync(user));
+                await userManager.HasPasswordAsync(user), !user.ReminderEmailOff, !user.SoonNoticeOff);
     }
 
     public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)
@@ -94,6 +99,20 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
 
         user.FullName = name;
         user.PhoneNumber = phone;
+        var result = await userManager.UpdateAsync(user);
+        return result.Succeeded ? null : "Kunne ikke lagre. Prøv igjen.";
+    }
+
+    public async Task<string?> SetNotificationSettingsAsync(string userId, NotificationSettingsRequest request)
+    {
+        var user = await CustomerAsync(userId);
+        if (user is null)
+        {
+            return "Fant ikke kontoen.";
+        }
+
+        user.ReminderEmailOff = !request.ReminderEmail;
+        user.SoonNoticeOff = !request.SoonNotice;
         var result = await userManager.UpdateAsync(user);
         return result.Succeeded ? null : "Kunne ikke lagre. Prøv igjen.";
     }
@@ -182,10 +201,17 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
 
         // 3. Reviews keep their stars and text (the business's rating stays fair), but no longer point to a person
         var reviews = await dbContext.Reviews.Where(r => r.CustomerUserId == userId).ToListAsync(cancellationToken);
+        var photoFiles = new List<string>();
         foreach (var review in reviews)
         {
             review.CustomerName = FormerCustomer;
             review.CustomerUserId = BookingAnonymizer.AnonymizedUserId;
+            // A photo could show the person: it goes with the account (the file is deleted below)
+            if (review.PhotoFileName is not null)
+            {
+                photoFiles.Add(review.PhotoFileName);
+                review.PhotoFileName = null;
+            }
         }
 
         // BESTI sammen: own invitations go (the visits booked from them stay, anonymized above)
@@ -205,6 +231,19 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
             await dbContext.Favorites.Where(f => f.UserId == userId).ToListAsync(cancellationToken));
         dbContext.LoyaltyRedemptions.RemoveRange(
             await dbContext.LoyaltyRedemptions.Where(r => r.CustomerUserId == userId).ToListAsync(cancellationToken));
+        dbContext.ReviewHelpfuls.RemoveRange(
+            await dbContext.ReviewHelpfuls.Where(h => h.UserId == userId).ToListAsync(cancellationToken));
+        // The businesses' own notes about this person ("Kunder")
+        dbContext.CustomerNotes.RemoveRange(
+            await dbContext.CustomerNotes.Where(n => n.CustomerUserId == userId).ToListAsync(cancellationToken));
+        // An employee login ("/ansatt") ends with the account; the employee stays in the business
+        foreach (var employee in await dbContext.Employees.Where(e => e.StaffUserId == userId)
+                     .ToListAsync(cancellationToken))
+        {
+            employee.StaffUserId = null;
+            employee.StaffEmail = null;
+        }
+
         await dbContext.SaveChangesAsync(cancellationToken);
 
         // 5. The account itself
@@ -218,6 +257,18 @@ public class ProfileService(AppDbContext dbContext, UserManager<AppUser> userMan
         if (transaction is not null)
         {
             await transaction.CommitAsync(cancellationToken);
+        }
+
+        foreach (var fileName in photoFiles)
+        {
+            try
+            {
+                await (imageStorage?.DeleteAsync(fileName, cancellationToken) ?? Task.CompletedTask);
+            }
+            catch (Exception)
+            {
+                // The account is deleted anyway; the database no longer points to the file
+            }
         }
 
         return null;

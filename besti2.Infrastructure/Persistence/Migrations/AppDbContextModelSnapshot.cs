@@ -155,6 +155,37 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.AdminAction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("AdminEmail")
+                        .IsRequired()
+                        .HasMaxLength(320)
+                        .HasColumnType("nvarchar(320)");
+
+                    b.Property<Guid?>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BusinessId");
+
+                    b.HasIndex("CreatedUtc");
+
+                    b.ToTable("AdminActions");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Booking", b =>
                 {
                     b.Property<Guid>("Id")
@@ -229,6 +260,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("ServiceId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("SoonNoticeSentUtc")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("StartUtc")
                         .HasColumnType("datetime2");
@@ -466,6 +500,13 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
 
+                    b.Property<string>("SuspendedReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("SuspendedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("VerifiedUtc")
                         .HasColumnType("datetime2");
 
@@ -597,6 +638,46 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.ToTable("BusinessImages");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.CustomerNote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CustomerPhone")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CustomerUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime>("UpdatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CustomerUserId");
+
+                    b.HasIndex("BusinessId", "CustomerPhone")
+                        .IsUnique()
+                        .HasFilter("[CustomerPhone] IS NOT NULL");
+
+                    b.HasIndex("BusinessId", "CustomerUserId")
+                        .IsUnique()
+                        .HasFilter("[CustomerUserId] IS NOT NULL");
+
+                    b.ToTable("CustomerNotes");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Employee", b =>
                 {
                     b.Property<Guid>("Id")
@@ -619,9 +700,28 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<string>("StaffEmail")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime?>("StaffInviteExpiresUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("StaffInviteTokenHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("StaffUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BusinessId");
+
+                    b.HasIndex("StaffInviteTokenHash");
+
+                    b.HasIndex("StaffUserId");
 
                     b.ToTable("Employees");
 
@@ -763,6 +863,12 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<TimeOnly?>("BreakEnd")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly?>("BreakStart")
+                        .HasColumnType("time");
 
                     b.Property<Guid>("BusinessId")
                         .HasColumnType("uniqueidentifier");
@@ -1012,6 +1118,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .HasMaxLength(450)
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<string>("HiddenReason")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime?>("HiddenUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhotoFileName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime?>("RepliedUtc")
                         .HasColumnType("datetime2");
 
@@ -1028,6 +1145,33 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     SqlServerIndexBuilderExtensions.IncludeProperties(b.HasIndex("BusinessId"), new[] { "Stars" });
 
                     b.ToTable("Reviews");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.ReviewHelpful", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("ReviewId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("ReviewId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("ReviewHelpfuls");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Service", b =>
@@ -1290,6 +1434,9 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -1323,8 +1470,14 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("ReminderEmailOff")
+                        .HasColumnType("bit");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SoonNoticeOff")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("bit");
@@ -1446,6 +1599,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.CustomerNote", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
@@ -1510,6 +1674,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Booking");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.ReviewHelpful", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Review", "Review")
+                        .WithMany()
+                        .HasForeignKey("ReviewId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Review");
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Service", b =>

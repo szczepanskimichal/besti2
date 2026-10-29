@@ -68,7 +68,10 @@ public class CustomerAccountService(
         }
 
         // Customer = account without BusinessId; must confirm the email before logging in
-        var user = new AppUser { UserName = email, Email = email, FullName = request.FullName.Trim() };
+        var user = new AppUser
+        {
+            UserName = email, Email = email, FullName = request.FullName.Trim(), CreatedUtc = DateTime.UtcNow
+        };
         var created = await userManager.CreateAsync(user, request.Password);
         if (!created.Succeeded)
         {
@@ -105,6 +108,27 @@ public class CustomerAccountService(
     }
 
     // null when the password follows the rules, otherwise the message for the form
+    public async Task<string?> ResendConfirmationAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+        if (user is null || user.BusinessId is not null)
+        {
+            return "Fant ikke kundekontoen.";
+        }
+
+        if (user.EmailConfirmed)
+        {
+            return "E-posten er allerede bekreftet.";
+        }
+
+        if (!limiter.TryReserve(user.Email!))
+        {
+            return MailLimiter.TryLaterMessage;
+        }
+
+        return await TrySendConfirmationAsync(user, cancellationToken) ? null : "E-posten kunne ikke sendes. Prøv igjen.";
+    }
+
     private async Task<string?> CheckPasswordAsync(string password)
     {
         foreach (var validator in userManager.PasswordValidators)

@@ -15,7 +15,9 @@ public record PanelBookingDto(
     DateTime? PreviousStartUtc = null, // set while a moved visit waits for the customer
     int NoShowCount = 0, // "Møtte ikke" for this customer at this business
     Guid? InviteId = null, // BESTI sammen: all visits of one group share it (👯 in the calendar)
-    PanelGroupDto? Group = null
+    PanelGroupDto? Group = null,
+    string? CustomerKey = null, // "Kunder": the customer's card (null = anonymized)
+    string? SalonNote = null // the business's own note about this customer
 );
 
 // BESTI sammen seen by the business: how many places, how many said yes, until when the others can answer.

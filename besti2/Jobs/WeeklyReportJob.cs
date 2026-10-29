@@ -1,4 +1,5 @@
 using besti2.Application.Statistics;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -21,9 +22,12 @@ public class WeeklyReportJob(IServiceScopeFactory scopeFactory, ILogger<WeeklyRe
                     {
                         logger.LogInformation("Sent {Count} weekly reports", sent);
                     }
+
+                    JobHeartbeats.Ran("Ukerapport", true);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    JobHeartbeats.Ran("Ukerapport", false);
                     logger.LogError(ex, "Sending weekly reports failed");
                 }
             } while (await timer.WaitForNextTickAsync(stoppingToken));

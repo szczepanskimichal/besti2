@@ -59,6 +59,11 @@ const osloDate = new Intl.DateTimeFormat("nb-NO", {
 export function formatDate(utc: string): string {
     return osloDate.format(new Date(utc));
 }
+
+// "torsdag 29. oktober kl. 14:05" (logs and system status, where the time matters)
+export function formatDateTime(utc: string): string {
+    return `${formatDate(utc)} kl. ${formatTime(utc)}`;
+}
 // Values from the address bar can be anything (old, cut-off or edited links): only real values pass
 export function isIsoDate(value: string | undefined): value is string {
 // "2026-02-31" would roll over to March, so the date must come back unchanged

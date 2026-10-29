@@ -15,7 +15,7 @@ export async function updateOpeningHoursAction(_previous: FormState, formData: F
 
     const values: Record<string, string> = {};
     for (const w of weekdays) {
-        for (const field of [`open-${w.day}`, `opensAt-${w.day}`, `closesAt-${w.day}`]) {
+        for (const field of [`open-${w.day}`, `opensAt-${w.day}`, `closesAt-${w.day}`, `breakStart-${w.day}`, `breakEnd-${w.day}`]) {
             values[field] = String(formData.get(field) ?? "");
         }
     }
@@ -27,6 +27,9 @@ export async function updateOpeningHoursAction(_previous: FormState, formData: F
             dayOfWeek: w.day,
             opensAt: values[`opensAt-${w.day}`],
             closesAt: values[`closesAt-${w.day}`],
+            // An empty break = no break that day
+            breakStart: values[`breakStart-${w.day}`] || null,
+            breakEnd: values[`breakEnd-${w.day}`] || null,
         }));
 
     if (days.some((d) => d.opensAt === "" || d.closesAt === "")) {

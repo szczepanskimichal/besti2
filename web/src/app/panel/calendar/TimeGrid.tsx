@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { formatTime, osloMinutes } from "@/lib/format";
+import { clockMinutes, formatTime, osloMinutes, weekdayOf } from "@/lib/format";
+import type { OpeningHours } from "@/lib/types";
 import { customerLabel, statusLabels } from "@/lib/bookingStatus";
 import PendingBadge from "../PendingBadge";
 import calendar from "../calendar.module.css";
 import { PX_PER_MINUTE, type Column, type Range, type Href, type BlockHref, blockMinutes, blockLabel, describeBlock, hourMarks, halfHours, clock } from "./calendarLayout";
 
 // The grid: hours on the left, one column per employee (day) or per day (week)
-export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockHref, newHref }: {
+export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockHref, newHref, openingHours = [] }: {
     columns: Column[]; range: Range; showEmployee: boolean; hrefFor: Href; blockHref: BlockHref;
-    newHref: (column: Column, minute: number) => string;
+    newHref: (column: Column, minute: number) => string; openingHours?: OpeningHours[];
 }) {
     const height = (range.end - range.start) * PX_PER_MINUTE;
     const marks = hourMarks(range);
@@ -39,6 +40,19 @@ export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockH
                                   style={{ top: (minute - range.start) * PX_PER_MINUTE, height: 30 * PX_PER_MINUTE }}
                                   aria-label={`Ny bestilling ${column.title} kl. ${clock(minute)}`}/>
                         ))}
+                        {/* The daily break (lunch): customers cannot book it; a click still reaches the slot below */}
+                        {openingHours.filter((h) => h.dayOfWeek === weekdayOf(column.day) && h.breakStart && h.breakEnd)
+                            .map((h) => {
+                                const start = Math.max(clockMinutes(h.breakStart!), range.start);
+                                const end = Math.min(clockMinutes(h.breakEnd!), range.end);
+                                if (end <= start) return null;
+                                return (
+                                    <div key="pause" className={calendar.breakTime} aria-hidden="true"
+                                         style={{ top: (start - range.start) * PX_PER_MINUTE, height: (end - start) * PX_PER_MINUTE }}>
+                                        Pause
+                                    </div>
+                                );
+                            })}
                         {/* Blocked time: grey, under the visits, over the empty slots */}
                         {column.blocks.map((block) => {
                             const { start, end } = blockMinutes(block, column.day, range);

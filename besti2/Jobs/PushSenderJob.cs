@@ -1,5 +1,6 @@
 using besti2.Application.Notifications;
 using besti2.Infrastructure.Persistence;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -19,9 +20,11 @@ public class PushSenderJob(IServiceScopeFactory scopeFactory, ILogger<PushSender
                     using var scope = scopeFactory.CreateScope();
                     var push = scope.ServiceProvider.GetRequiredService<IPushService>();
                     taken = await push.SendPendingAsync(DateTime.UtcNow, stoppingToken);
+                    JobHeartbeats.Ran("Push", true);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    JobHeartbeats.Ran("Push", false);
                     // The database is down for a moment: never crash the API, try again in 30 seconds
                     logger.LogError(ex, "Sending push messages failed");
                     taken = 0;

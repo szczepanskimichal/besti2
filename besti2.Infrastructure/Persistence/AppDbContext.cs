@@ -54,6 +54,9 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<RebookReminder> RebookReminders { get; set; } = null!;
     public DbSet<Favorite> Favorites { get; set; } = null!;
     public DbSet<LoyaltyRedemption> LoyaltyRedemptions { get; set; } = null!;
+    public DbSet<CustomerNote> CustomerNotes { get; set; } = null!;
+    public DbSet<ReviewHelpful> ReviewHelpfuls { get; set; } = null!;
+    public DbSet<AdminAction> AdminActions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +84,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.HasIndex(x => x.CalendarFeedToken).IsUnique();
             e.Property(x => x.AdminNote).HasMaxLength(2000);
             e.Property(x => x.LoyaltyReward).HasMaxLength(100);
+            e.Property(x => x.SuspendedReason).HasMaxLength(300);
             e.HasData(
                 new Business
                 {
@@ -198,6 +202,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
         {
             e.Property(x => x.Name).IsRequired().HasMaxLength(200);
             e.Property(x => x.LastName).IsRequired().HasMaxLength(200);
+            e.Property(x => x.StaffEmail).HasMaxLength(250);
+            e.Property(x => x.StaffInviteTokenHash).HasMaxLength(64);
+            e.HasIndex(x => x.StaffInviteTokenHash);
+            e.Property(x => x.StaffUserId).HasMaxLength(450);
+            // /ansatt looks up the employees connected to the logged-in account
+            e.HasIndex(x => x.StaffUserId);
             e.HasData(
                 new Employee
                 {
@@ -276,6 +286,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             e.Property(x => x.PendingReminderSentUtc)
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
+            e.Property(x => x.SoonNoticeSentUtc)
+                .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             // BESTI sammen: the business calendar finds the other visit of the same invitation
             e.HasIndex(x => x.InviteId).HasFilter("[InviteId] IS NOT NULL");
         });
@@ -348,6 +360,44 @@ public class AppDbContext : IdentityDbContext<AppUser>
             e.Property(x => x.CustomerName).IsRequired().HasMaxLength(100);
             e.Property(x => x.Comment).HasMaxLength(500);
             e.Property(x => x.BusinessReply).HasMaxLength(500);
+            e.Property(x => x.PhotoFileName).HasMaxLength(100);
+            e.Property(x => x.HiddenReason).HasMaxLength(300);
+        });
+        modelBuilder.Entity<ReviewHelpful>(e =>
+        {
+            e.Property(x => x.UserId).IsRequired().HasMaxLength(450);
+            // One "Nyttig" per review and person
+            e.HasIndex(x => new { x.ReviewId, x.UserId }).IsUnique();
+            e.HasIndex(x => x.UserId);
+            e.HasOne(x => x.Review).WithMany()
+                .HasForeignKey(x => x.ReviewId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+        modelBuilder.Entity<CustomerNote>(e =>
+        {
+            e.Property(x => x.CustomerUserId).HasMaxLength(450);
+            e.Property(x => x.CustomerPhone).HasMaxLength(20);
+            e.Property(x => x.Text).IsRequired().HasMaxLength(1000);
+            // One note per customer in each business
+            e.HasIndex(x => new { x.BusinessId, x.CustomerUserId }).IsUnique()
+                .HasFilter("[CustomerUserId] IS NOT NULL");
+            e.HasIndex(x => new { x.BusinessId, x.CustomerPhone }).IsUnique()
+                .HasFilter("[CustomerPhone] IS NOT NULL");
+            e.HasIndex(x => x.CustomerUserId);
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.UpdatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        });
+        modelBuilder.Entity<AdminAction>(e =>
+        {
+            e.Property(x => x.AdminEmail).IsRequired().HasMaxLength(320);
+            e.Property(x => x.Text).IsRequired().HasMaxLength(500);
+            e.HasIndex(x => x.CreatedUtc);
+            e.HasIndex(x => x.BusinessId);
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         });
         modelBuilder.Entity<Notification>(e =>
         {

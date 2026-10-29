@@ -1,4 +1,4 @@
-import type {BusinessDetails, PanelBooking, ServiceTemplate, TimeOff} from "@/lib/types";
+import type {BusinessDetails, CustomerCard, CustomerRow, PanelBooking, ServiceTemplate, StaffAccess, TimeOff} from "@/lib/types";
 import {API_URL, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
 // The business panel: calendar, blocked time, services, employees, profile, photos
 
@@ -190,4 +190,47 @@ export async function turnOffCalendarFeed(token: string): Promise<boolean> {
 export async function getCalendarFeed(feedToken: string): Promise<string | null> {
     const res = await apiFetch(`/api/calendar/${encodeURIComponent(feedToken)}`);
     return res.ok ? res.text() : null;
+}
+
+// "Kunder": the customers made from the bookings, with history and the business's own note
+export async function getPanelCustomers(token: string, q?: string): Promise<CustomerRow[] | null> {
+    const res = await apiFetch(`/api/panel/customers${q ? `?q=${encodeURIComponent(q)}` : ""}`, { token });
+    if (res.status === 401 || res.status === 403) return null;
+    if (!res.ok) throw new Error(`Kunne ikke hente kundene (${res.status})`);
+    return res.json();
+}
+
+// null = no such customer at this business
+export async function getPanelCustomer(token: string, key: string): Promise<CustomerCard | null> {
+    const res = await apiFetch(`/api/panel/customers/${encodeURIComponent(key)}`, { token });
+    if (res.status === 401 || res.status === 403 || res.status === 404) return null;
+    if (!res.ok) throw new Error(`Kunne ikke hente kunden (${res.status})`);
+    return res.json();
+}
+
+export async function setCustomerNote(token: string, key: string, note: string): Promise<ApiResult> {
+    return toResult(await apiFetch(`/api/panel/customers/${encodeURIComponent(key)}/note`,
+        { method: "PUT", token, body: { note } }));
+}
+
+// The CSV file as the API made it (null = not allowed)
+export async function exportBookingsCsv(token: string, from: string, to: string): Promise<Response | null> {
+    const res = await apiFetch(`/api/panel/export/bookings?from=${from}&to=${to}`, { token });
+    return res.ok ? res : null;
+}
+
+// Panel → Ansatte → "Egen innlogging"
+export async function getStaffAccess(token: string): Promise<StaffAccess[]> {
+    const res = await apiFetch("/api/panel/staff", { token });
+    return res.ok ? res.json() : [];
+}
+
+export async function inviteStaff(token: string, employeeId: string, email: string): Promise<ApiResult> {
+    return toResult(await apiFetch(`/api/panel/employees/${encodeURIComponent(employeeId)}/staff`,
+        { method: "POST", token, body: { email }, forwardIp: true }));
+}
+
+export async function removeStaff(token: string, employeeId: string): Promise<boolean> {
+    const res = await apiFetch(`/api/panel/employees/${encodeURIComponent(employeeId)}/staff`, { method: "DELETE", token });
+    return res.ok;
 }

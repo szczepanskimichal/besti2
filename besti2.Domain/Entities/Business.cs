@@ -81,6 +81,11 @@ public class Business
     // BESTI's own note about the business (admin only, never shown to the business or customers)
     public string? AdminNote { get; set; }
 
+    // Closed by BESTI (fake business, complaints): hidden from customers, no new bookings, the panel still works.
+    // IsHidden is true at the same time, so every customer page treats it like any hidden business
+    public DateTime? SuspendedUtc { get; set; }
+    public string? SuspendedReason { get; set; }
+
     // New online bookings are confirmed at once (false = the business presses "Bekreft" on each one)
     public bool AutoConfirm { get; set; }
 

@@ -1,5 +1,6 @@
 using besti2.Application.Bookings;
 using besti2.Application.Common;
+using besti2.Application.Customers;
 using besti2.Application.Email;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
@@ -306,9 +307,21 @@ public class BookingService(
                 b.EmployeeId,
                 b.PreviousStartUtc,
                 0,
-                b.InviteId))
+                b.InviteId,
+                null,
+                CustomerKey.For(b.CustomerUserId, b.CustomerPhone),
+                null))
             .ToListAsync(cancellationToken);
         bookings = await AddGroupsAsync(bookings, cancellationToken);
+        // "Kunder": the business's own note next to the visit
+        var notes = await new CustomerCardService(dbContext).NotesAsync(businessId,
+            bookings.Where(b => b.CustomerKey != null).Select(b => b.CustomerKey!), cancellationToken);
+        if (notes.Count > 0)
+        {
+            bookings = bookings.Select(b => b.CustomerKey is not null && notes.TryGetValue(b.CustomerKey, out var note)
+                ? b with { SalonNote = note }
+                : b).ToList();
+        }
 
         // "Møtte ikke" for these customers at this business only (other businesses never see it), counted in
         // ONE query for the whole week. Deleted and anonymized customers all share one address: never add them up
@@ -603,6 +616,7 @@ public class BookingService(
         booking.EndUtc = endUtc;
         // A new time gets its own reminder
         booking.ReminderSentUtc = null;
+        booking.SoonNoticeSentUtc = null;
         booking.ReminderAttempts = 0;
         // Ask the customer only when they can get the link (a walk-in without e-mail cannot answer)
         string? token = null;

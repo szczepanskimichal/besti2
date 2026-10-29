@@ -8,7 +8,7 @@ import styles from "../tjenester/page.module.css";
 import dayStyles from "./page.module.css";
 
 type OpeningHoursFormProps = {
-    // The saved hours, e.g. { "open-1": "on", "opensAt-1": "09:00", "closesAt-1": "17:00" }
+    // The saved hours, e.g. { "open-1": "on", "opensAt-1": "09:00", "closesAt-1": "17:00", "breakStart-1": "12:00" }
     initial: Record<string, string>;
 };
 
@@ -39,6 +39,14 @@ export default function OpeningHoursForm({ initial }: OpeningHoursFormProps) {
                     <label className={styles.field}>
                         Til
                         <input type="time" name={`closesAt-${w.day}`} defaultValue={values[`closesAt-${w.day}`] ?? "17:00"} />
+                    </label>
+                    <label className={styles.field}>
+                        Pause fra
+                        <input type="time" name={`breakStart-${w.day}`} defaultValue={values[`breakStart-${w.day}`] ?? ""} />
+                    </label>
+                    <label className={styles.field}>
+                        Pause til
+                        <input type="time" name={`breakEnd-${w.day}`} defaultValue={values[`breakEnd-${w.day}`] ?? ""} />
                     </label>
                 </fieldset>
             ))}

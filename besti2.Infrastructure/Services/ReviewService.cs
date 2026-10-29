@@ -1,3 +1,4 @@
+using besti2.Application.Images;
 using besti2.Application.Reviews;
 using besti2.Domain.Entities;
 using besti2.Domain.Enums;
@@ -6,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace besti2.Infrastructure.Services;
 
-public class ReviewService(AppDbContext dbContext) : IReviewService
+// images/storage: for the photos on reviews (left out in tests that do not need them)
+public class ReviewService(AppDbContext dbContext, IBusinessImageService? images = null, IImageStorage? storage = null)
+    : IReviewService
 {
     private const int MaxLength = 500;
 
@@ -97,18 +100,112 @@ public class ReviewService(AppDbContext dbContext) : IReviewService
         return null;
     }
 
-    public async Task<BusinessReviewsDto> GetForBusinessAsync(Guid businessId,
+    public async Task<string?> SetPhotoAsync(string customerUserId, Guid bookingId, Stream content, long length,
         CancellationToken cancellationToken = default)
     {
-        var reviews = await dbContext.Reviews.AsNoTracking()
-            .Where(r => r.BusinessId == businessId)
+        if (images is null || storage is null)
+        {
+            return "Bilder er ikke tilgjengelig.";
+        }
+
+        // Only the customer's own review, while the visit can still be reviewed
+        var review = await dbContext.Reviews
+            .FirstOrDefaultAsync(r => r.BookingId == bookingId && r.CustomerUserId == customerUserId,
+                cancellationToken);
+        if (review is null)
+        {
+            return "Fant ikke vurderingen.";
+        }
+
+        if (review.CreatedUtc < DateTime.UtcNow.AddDays(-ReviewDays))
+        {
+            return "Du kan legge til bilde innen 30 dager.";
+        }
+
+        var (fileName, error) = await images.SaveReviewPhotoAsync(content, length, cancellationToken);
+        if (fileName is null)
+        {
+            return error;
+        }
+
+        var oldFile = review.PhotoFileName;
+        review.PhotoFileName = fileName;
+        await dbContext.SaveChangesAsync(cancellationToken);
+        // The old file only after the database points to the new one
+        if (oldFile is not null)
+        {
+            await storage.DeleteAsync(oldFile, cancellationToken);
+        }
+
+        return null;
+    }
+
+    public async Task<BusinessReviewsDto> GetForBusinessAsync(Guid businessId, bool includeHidden = false,
+        string? viewerUserId = null, CancellationToken cancellationToken = default)
+    {
+        var rows = await dbContext.Reviews.AsNoTracking()
+            .Where(r => r.BusinessId == businessId && (includeHidden || r.HiddenUtc == null))
             .OrderByDescending(r => r.CreatedUtc)
-            .Select(r => new ReviewDto(r.Id, r.Stars, r.Comment, r.CustomerName, r.CreatedUtc, r.BusinessReply))
+            .Select(r => new
+            {
+                r.Id, r.Stars, r.Comment, r.CustomerName, r.CreatedUtc, r.BusinessReply, r.PhotoFileName,
+                r.HiddenUtc, r.HiddenReason,
+                Helpful = dbContext.ReviewHelpfuls.Count(h => h.ReviewId == r.Id),
+                Marked = viewerUserId != null && dbContext.ReviewHelpfuls.Any(h => h.ReviewId == r.Id
+                    && h.UserId == viewerUserId)
+            })
             .ToListAsync(cancellationToken);
 
-        double? average = reviews.Count == 0 ? null : Math.Round(reviews.Average(r => r.Stars), 1);
+        var reviews = rows.Select(r => new ReviewDto(r.Id, r.Stars, r.Comment, r.CustomerName, r.CreatedUtc,
+                r.BusinessReply,
+                PhotoUrl: r.PhotoFileName is null ? null : storage?.GetUrl(r.PhotoFileName),
+                Helpful: r.Helpful,
+                MarkedHelpful: r.Marked,
+                Hidden: r.HiddenUtc != null,
+                HiddenReason: r.HiddenReason))
+            .ToList();
+        var counted = reviews.Where(r => !r.Hidden).ToList();
+        double? average = counted.Count == 0 ? null : Math.Round(counted.Average(r => r.Stars), 1);
 
-        return new BusinessReviewsDto(average, reviews.Count, reviews);
+        return new BusinessReviewsDto(average, counted.Count, reviews);
+    }
+
+    public async Task<HelpfulResult?> ToggleHelpfulAsync(string userId, Guid reviewId,
+        CancellationToken cancellationToken = default)
+    {
+        var review = await dbContext.Reviews.AsNoTracking()
+            .FirstOrDefaultAsync(r => r.Id == reviewId && r.HiddenUtc == null, cancellationToken);
+        // A customer cannot vote for their own review
+        if (review is null || review.CustomerUserId == userId)
+        {
+            return null;
+        }
+
+        var existing = await dbContext.ReviewHelpfuls
+            .FirstOrDefaultAsync(h => h.ReviewId == reviewId && h.UserId == userId, cancellationToken);
+        if (existing is null)
+        {
+            dbContext.ReviewHelpfuls.Add(new ReviewHelpful
+            {
+                Id = Guid.NewGuid(), ReviewId = reviewId, UserId = userId, CreatedUtc = DateTime.UtcNow
+            });
+        }
+        else
+        {
+            dbContext.ReviewHelpfuls.Remove(existing);
+        }
+
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+        {
+            // Double click: the first one counted
+        }
+
+        var count = await dbContext.ReviewHelpfuls.CountAsync(h => h.ReviewId == reviewId, cancellationToken);
+        return new HelpfulResult(existing is null, count);
     }
 
     public async Task<string?> ReplyAsync(Guid businessId, Guid reviewId, string reply,

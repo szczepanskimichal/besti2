@@ -39,6 +39,9 @@ public class Booking
     // A visit added by the business with "Send bekreftelse på e-post" unchecked: no reminder the day before
     public bool NoReminder { get; set; }
 
+    // When the "Om 2 timer" notice went to the customer's bell and phone (only once)
+    public DateTime? SoonNoticeSentUtc { get; set; }
+
     // When the business was reminded that this booking still waits for "Bekreft" (only once)
     public DateTime? PendingReminderSentUtc { get; set; }
 

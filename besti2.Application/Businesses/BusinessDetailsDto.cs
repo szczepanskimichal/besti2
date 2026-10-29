@@ -30,5 +30,7 @@ public record BusinessDetailsDto(
     DateTime? VerifiedUtc = null,
     // "Stempelkort": every N-th visit gives the reward; null = no stamp card
     int? LoyaltyVisits = null,
-    string? LoyaltyReward = null
+    string? LoyaltyReward = null,
+    // Only in the owner's panel: BESTI has closed the page, and why
+    string? SuspendedReason = null
 );

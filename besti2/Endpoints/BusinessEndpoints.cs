@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
+using besti2.Infrastructure.Identity;
 using besti2.Application.Businesses;
 using besti2.Application.Reviews;
 
@@ -63,10 +66,25 @@ public static class BusinessEndpoints
                 : Results.BadRequest(new { message = result.Error });
         }).RequireRateLimiting("signup");
 
-        // Public: reviews of a business, newest first, with the average
-        group.MapGet("/businesses/{id:guid}/reviews", async (Guid id, IReviewService reviewService,
-                CancellationToken cancellationToken) =>
-            Results.Ok(await reviewService.GetForBusinessAsync(id, cancellationToken)));
+        // Public: reviews of a business, newest first, with the average. A logged-in reader also learns
+        // which ones they marked "Nyttig"
+        group.MapGet("/businesses/{id:guid}/reviews", async (Guid id, ClaimsPrincipal principal,
+                UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
+            Results.Ok(await reviewService.GetForBusinessAsync(id, viewerUserId: userManager.GetUserId(principal),
+                cancellationToken: cancellationToken)));
+        // "Nyttig" on a review (on and off); only for logged-in customers
+        group.MapPost("/reviews/{id:guid}/helpful", async (Guid id, ClaimsPrincipal principal,
+            UserManager<AppUser> userManager, IReviewService reviewService, CancellationToken cancellationToken) =>
+        {
+            var user = await userManager.GetUserAsync(principal);
+            if (user is null || user.BusinessId is not null)
+            {
+                return Results.Forbid();
+            }
+
+            var result = await reviewService.ToggleHelpfulAsync(user.Id, id, cancellationToken);
+            return result is null ? Results.NotFound() : Results.Ok(result);
+        }).RequireAuthorization();
         // Business sign-up: "Hent fra Brønnøysund" – name and address of an active business in the register
         group.MapGet("/brreg/{orgNumber}", async (string orgNumber, IBusinessRegistry registry,
             CancellationToken cancellationToken) =>

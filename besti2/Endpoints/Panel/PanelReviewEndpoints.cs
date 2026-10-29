@@ -9,7 +9,8 @@ public static class PanelReviewEndpoints
         // Business panel: the owner's reviews
         group.MapGet("/reviews", async (PanelBusiness business, IReviewService reviewService,
                 CancellationToken cancellationToken) =>
-            Results.Ok(await reviewService.GetForBusinessAsync(business.Id, cancellationToken)));
+            Results.Ok(await reviewService.GetForBusinessAsync(business.Id, includeHidden: true,
+                cancellationToken: cancellationToken)));
 
         // Business panel: reply to a review (cannot delete it)
         group.MapPost("/reviews/{id:guid}/reply", async (Guid id, ReplyToReviewRequest request,

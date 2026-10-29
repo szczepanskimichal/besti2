@@ -38,7 +38,8 @@ export default async function PanelReviewsPage({ searchParams }: PanelReviewsPag
                     : `Snitt ${data.average.toString().replace(".", ",")} av 5 · ${data.count} ${data.count === 1 ? "vurdering" : "vurderinger"}`}
             </p>
             <p className={styles.muted}>
-                Du kan svare på vurderinger. Svaret vises på bedriftssiden. Vurderinger kan ikke slettes.
+                Du kan svare på vurderinger. Svaret vises på bedriftssiden. Vurderinger kan ikke slettes – men
+                bryter en vurdering reglene (hets, personopplysninger, falsk), skriv til post@bestiapp.no, så ser BESTI på den.
             </p>
 
             {svart && <p className={styles.success} role="status">Svaret er lagret.</p>}
@@ -51,6 +52,16 @@ export default async function PanelReviewsPage({ searchParams }: PanelReviewsPag
                             <Stars value={review.stars}/> <strong>{review.customerName}</strong> · {formatDate(review.createdUtc)}
                         </p>
                         {review.comment && <p>{review.comment}</p>}
+                        {review.photoUrl && (
+                            // eslint-disable-next-line @next/next/no-img-element -- uploaded photo from the API
+                            <img src={review.photoUrl} alt="Bilde fra kunden" className={styles.reviewPhoto} loading="lazy"/>
+                        )}
+                        {review.hidden && (
+                            <p className={styles.error} role="note">
+                                Skjult av BESTI: {review.hiddenReason}. Den vises ikke på siden og teller ikke i stjernene.
+                            </p>
+                        )}
+                        {review.helpful > 0 && <p className={styles.muted}>👍 {review.helpful} syntes den var nyttig</p>}
                         <form action={replyToReviewAction} className={styles.form}>
                             <input type="hidden" name="reviewId" value={review.id}/>
                             <label className={styles.field}>

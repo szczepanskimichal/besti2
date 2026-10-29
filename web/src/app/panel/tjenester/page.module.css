@@ -300,3 +300,12 @@
         padding: 28px 24px;
     }
 }
+
+/* Panel → Vurderinger: the customer's photo from the visit */
+.reviewPhoto {
+    display: block;
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: 10px;
+    object-fit: cover;
+}

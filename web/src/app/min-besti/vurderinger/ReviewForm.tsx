@@ -1,6 +1,7 @@
 "use client";
-import { Fragment, useActionState } from "react";
+import { Fragment, useActionState, useState, type ChangeEvent } from "react";
 import { createReviewAction } from "../actions";
+import { MaxSendBytes, shrinkImage } from "../../panel/profil/LogoUploadForm";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import panelStyles from "../../panel/page.module.css";
@@ -9,6 +10,30 @@ import styles from "./page.module.css";
 // Stars and comment for one visit; the API's own message (e.g. already reviewed) shows here when it fails
 export default function ReviewForm({ bookingId }: { bookingId: string }) {
     const [state, formAction] = useActionState<FormState, FormData>(createReviewAction, {});
+    const [preparing, setPreparing] = useState(false);
+    const [tooBig, setTooBig] = useState(false);
+
+    // A phone photo is shrunk in the browser first, so it fits in one request
+    async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
+        const input = event.currentTarget;
+        const file = input.files?.[0];
+        if (!file) {
+            setTooBig(false);
+            return;
+        }
+        setPreparing(true);
+        try {
+            const smaller = await shrinkImage(file);
+            const transfer = new DataTransfer();
+            transfer.items.add(smaller);
+            input.files = transfer.files;
+        } catch {
+            // Browser could not read the file; send the original and let the API answer
+        } finally {
+            setPreparing(false);
+            setTooBig((input.files?.[0]?.size ?? 0) > MaxSendBytes);
+        }
+    }
 
     return (
         <form action={formAction} className={styles.form}>
@@ -42,7 +67,16 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
                     defaultValue={state.values?.comment}
                 />
             </label>
-            <SubmitButton className={panelStyles.primaryButton} pendingText="Sender…">
+            <label className={styles.label}>
+                Bilde av resultatet (valgfritt)
+                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" onChange={handlePhoto}/>
+            </label>
+            {tooBig && (
+                <p className={panelStyles.error} role="alert">
+                    Bildet er for stort. Velg et bilde under 3,5 MB.
+                </p>
+            )}
+            <SubmitButton className={panelStyles.primaryButton} pendingText="Sender…" disabled={preparing || tooBig}>
                 Send vurdering
             </SubmitButton>
         </form>

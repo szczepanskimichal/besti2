@@ -30,13 +30,18 @@ export default async function OpeningHoursPage({ searchParams }: OpeningHoursPag
         initial[`open-${w.day}`] = hours ? "on" : "";
         initial[`opensAt-${w.day}`] = hours?.opensAt.slice(0, 5) ?? "09:00";
         initial[`closesAt-${w.day}`] = hours?.closesAt.slice(0, 5) ?? "17:00";
+        initial[`breakStart-${w.day}`] = hours?.breakStart?.slice(0, 5) ?? "";
+        initial[`breakEnd-${w.day}`] = hours?.breakEnd?.slice(0, 5) ?? "";
     }
 
     return (
         <main className={styles.main}>
             <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
             <h1 className={styles.title}>Åpningstider</h1>
-            <p className={styles.muted}>Kryss av dagene dere har åpent. Kunder kan bare bestille innenfor disse tidene.</p>
+            <p className={styles.muted}>
+                Kryss av dagene dere har åpent. Kunder kan bare bestille innenfor disse tidene.
+                Har dere lunsj eller en fast pause, fyll ut «Pause fra» og «Pause til»: da kan ingen bestille den tiden.
+            </p>
 
             {lagret && (
                 <p className={styles.success} role="status">

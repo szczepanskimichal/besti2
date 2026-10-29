@@ -1,6 +1,7 @@
 using besti2.Application.Bookings;
 using besti2.Application.Invites;
 using besti2.Infrastructure.Services.Email;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -32,6 +33,9 @@ public class BookingReminderJob(
                     logger.LogInformation("Sent {Count} booking reminders", count);
                 }
 
+                // "Snart tid!" in the customers' bells and on their phones
+                await reminder.SendSoonNoticesAsync(DateTime.UtcNow, stoppingToken);
+
                 // Businesses with new bookings that still wait for "Bekreft"
                 var pending = await reminder.SendPendingRemindersAsync(DateTime.UtcNow, stoppingToken);
                 if (pending > 0)
@@ -47,9 +51,12 @@ public class BookingReminderJob(
                 {
                     logger.LogInformation("Closed {Count} BESTI sammen invitations", closed);
                 }
+
+                JobHeartbeats.Ran("Påminnelser", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                JobHeartbeats.Ran("Påminnelser", false);
                 // Never crash the API because of the reminders; try again in 15 minutes
                 logger.LogError(ex, "Sending booking reminders failed");
                 ok = false;

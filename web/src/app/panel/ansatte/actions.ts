@@ -1,6 +1,6 @@
 "use server";
 import { redirect } from "next/navigation";
-import { addEmployee, deleteEmployee, updateEmployee } from "@/lib/api";
+import { addEmployee, deleteEmployee, inviteStaff, removeStaff, updateEmployee } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -48,4 +48,28 @@ function employeeInput(formData: FormData) {
         name: String(formData.get("name") ?? ""),
         lastName: String(formData.get("lastName") ?? ""),
     };
+}
+
+// "Egen innlogging": the employee gets an e-mail with a link to connect their own BESTI account
+export async function inviteStaffAction(_previous: FormState, formData: FormData): Promise<FormState> {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const email = String(formData.get("email") ?? "");
+    const result = await inviteStaff(token, String(formData.get("employeeId") ?? ""), email);
+    if (!result.ok) {
+        return { error: result.message, values: { email } };
+    }
+    redirect("/panel/ansatte?invitert=1");
+}
+
+// Withdraw the invitation, or take the access away
+export async function removeStaffAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    await removeStaff(token, String(formData.get("employeeId") ?? ""));
+    redirect("/panel/ansatte?tilgang-fjernet=1");
 }

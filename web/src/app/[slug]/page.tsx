@@ -12,6 +12,8 @@ import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 import FavoriteButton from "./FavoriteButton";
+import ShareButton from "@/components/ShareButton/ShareButton";
+import HelpfulButton from "./HelpfulButton";
 import StampCard from "@/components/StampCard/StampCard";
 
 import styles from "./page.module.css";
@@ -50,7 +52,8 @@ export default async function BusinessPage({ params }: Props) {
 
     const token = await getToken();
     const [reviews, me] = await Promise.all([
-        getBusinessReviews(business.id),
+        // With the login: which reviews the reader already marked "Nyttig"
+        getBusinessReviews(business.id, token),
         token ? getMe(token).catch(() => null) : null,
     ]);
     // The heart is for customers; a business account has no Min Besti
@@ -79,6 +82,8 @@ export default async function BusinessPage({ params }: Props) {
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
                     <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                     {!me?.isBusiness && <FavoriteButton businessId={business.id} slug={business.slug} saved={saved}/>}
+                    <ShareButton path={`/${business.slug}`} title={business.name} className={styles.share}
+                                 text={`${business.name} i ${business.city} – bestill time på BESTI`}/>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
                 {business.verifiedUtc && (
@@ -202,10 +207,21 @@ export default async function BusinessPage({ params }: Props) {
                                     <Stars value={review.stars}/> <strong>{review.customerName}</strong>
                                 </p>
                                 {review.comment && <p>{review.comment}</p>}
+                                {review.photoUrl && (
+                                    <a href={review.photoUrl} target="_blank" rel="noopener noreferrer">
+                                        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded photo from the API */}
+                                        <img src={review.photoUrl} alt={`Bilde fra ${review.customerName}`}
+                                             className={styles.reviewPhoto} loading="lazy"/>
+                                    </a>
+                                )}
                                 {review.businessReply && (
                                     <p className={styles.reply}>
                                         <strong>Svar fra {business.name}:</strong> {review.businessReply}
                                     </p>
+                                )}
+                                {!me?.isBusiness && (
+                                    <HelpfulButton reviewId={review.id} slug={business.slug} count={review.helpful}
+                                                   marked={review.markedHelpful} loggedIn={customer !== null}/>
                                 )}
                             </li>
                         ))}
@@ -221,7 +237,14 @@ export default async function BusinessPage({ params }: Props) {
                         return (
                             <Fragment key={w.day}>
                                 <dt>{w.label}</dt>
-                                <dd>{hours ? `${hours.opensAt.slice(0, 5)}–${hours.closesAt.slice(0, 5)}` : "Stengt"}</dd>
+                                <dd>
+                                    {hours ? `${hours.opensAt.slice(0, 5)}–${hours.closesAt.slice(0, 5)}` : "Stengt"}
+                                    {hours?.breakStart && hours.breakEnd && (
+                                        <span className={styles.breakTime}>
+                                            {" "}(pause {hours.breakStart.slice(0, 5)}–{hours.breakEnd.slice(0, 5)})
+                                        </span>
+                                    )}
+                                </dd>
                             </Fragment>
                         );
                     })}

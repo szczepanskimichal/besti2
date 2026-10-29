@@ -11,3 +11,4 @@ export * from "./stats";
 export * from "./favorites";
 export * from "./admin";
 export * from "./loyalty";
+export * from "./staff";

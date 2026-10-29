@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { getPanelStats } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { StatsNumbers } from "@/lib/types";
+import { todayInOslo } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
@@ -261,6 +262,27 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                     <SubmitButton className={panel.secondaryButton} pendingText="Lagrer …">
                         {stats.weeklyReportOn ? "Slå av" : "Slå på"}
                     </SubmitButton>
+                </form>
+            </section>
+
+            <section className={`${panel.card} ${styles.report}`} aria-labelledby="eksport">
+                <div>
+                    <h2 id="eksport" className={styles.tableTitle}>Last ned bestillinger (Excel)</h2>
+                    <p className={styles.tipText}>
+                        Alle timer i perioden som en CSV-fil: dato, tjeneste, ansatt, kunde, status og pris.
+                        Fint for regnskapsføreren.
+                    </p>
+                </div>
+                <form method="get" action="/panel/eksport" className={styles.exportForm}>
+                    <label>
+                        Fra
+                        <input type="date" name="fra" required defaultValue={`${todayInOslo().slice(0, 4)}-01-01`}/>
+                    </label>
+                    <label>
+                        Til
+                        <input type="date" name="til" required defaultValue={todayInOslo()}/>
+                    </label>
+                    <button type="submit" className={panel.secondaryButton}>Last ned</button>
                 </form>
             </section>
 

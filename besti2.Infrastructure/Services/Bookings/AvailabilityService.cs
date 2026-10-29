@@ -75,7 +75,9 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             hours.ClosesAt,
             minutes,
             busy.Select(b => (b.StartUtc, b.EndUtc)).Concat(blocked.Select(t => (t.StartUtc, t.EndUtc))).ToList(),
-            BookingRules.EarliestStartUtc(DateTime.UtcNow));
+            BookingRules.EarliestStartUtc(DateTime.UtcNow),
+            hours.BreakStart,
+            hours.BreakEnd);
     }
 
     public async Task<IReadOnlyList<FreeDayDto>?> GetFreeDaysAsync(
@@ -208,7 +210,7 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
                     .Concat(blocked.Where(t => t.EmployeeId == null || t.EmployeeId == id)
                         .Select(t => (t.StartUtc, t.EndUtc)))
                     .ToList(),
-                earliestUtc)));
+                earliestUtc, dayHours.BreakStart, dayHours.BreakEnd)));
             var times = SlotCalculator.FreeForPersons(freeByEmployee, persons)
                 // BESTI sammen with a chosen employee: that employee must be one of the free ones
                 .Where(t => employeeId is null || t.EmployeeIds.Contains(employeeId.Value))

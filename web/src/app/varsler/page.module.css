@@ -77,6 +77,17 @@
     color: var(--color-muted);
 }
 
+/* Reminders before a visit (customers only) */
+.reminders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 8px;
+}
+
+.off {
+    color: var(--color-muted);
+}
+
 /* "BESTI på telefonen": install and push */
 .phone {
     margin-bottom: 16px;

@@ -80,7 +80,8 @@ public class GoogleLoginService(UserManager<AppUser> userManager, IGoogleTokenVa
             UserName = email,
             Email = email,
             EmailConfirmed = true,
-            FullName = name.Length > 100 ? name[..100] : name
+            FullName = name.Length > 100 ? name[..100] : name,
+            CreatedUtc = DateTime.UtcNow
         };
         if (!(await userManager.CreateAsync(user)).Succeeded
             || !(await userManager.AddLoginAsync(user, new UserLoginInfo(Provider, google.Subject, Provider)))

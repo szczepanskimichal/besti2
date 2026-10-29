@@ -12,9 +12,15 @@ public record AdminOverviewDto(
     int ReviewsLast30Days,
     int ProInterested,
     IReadOnlyList<AdminBusinessRow> Waiting,
-    IReadOnlyList<AdminBusinessRow> NeedHelp);
+    IReadOnlyList<AdminBusinessRow> NeedHelp,
+    IReadOnlyList<AdminWeekDto> Weeks,
+    IReadOnlyList<AdminBusinessRow> ProLeads);
 
-// Status: "Venter" (waits for approval), "Synlig", "Ubekreftet" (the owner never confirmed the e-mail), "Skjult".
+// "Utvikling": one row per week (Monday in Oslo), the newest last
+public record AdminWeekDto(DateOnly WeekStart, int NewBusinesses, int NewCustomers, int Bookings);
+
+// Status: "Venter" (waits for approval), "Synlig", "Ubekreftet" (the owner never confirmed the e-mail),
+// "Stengt" (closed by BESTI), "Skjult".
 // SetupDone of SetupTotal: the "Kom i gang" steps the business has done
 public record AdminBusinessRow(
     Guid Id,
@@ -50,7 +56,10 @@ public record AdminBusinessDetailsDto(
     bool WeeklyReportOn,
     int ReviewCount,
     DateTime? LastBookingCreatedUtc,
-    IReadOnlyList<AdminSetupStep> Setup);
+    IReadOnlyList<AdminSetupStep> Setup,
+    DateTime? SuspendedUtc = null,
+    string? SuspendedReason = null,
+    IReadOnlyList<AdminActionDto>? Log = null);
 
 public record AdminReviewDto(
     Guid Id,
@@ -61,6 +70,53 @@ public record AdminReviewDto(
     int Stars,
     string? Comment,
     string? BusinessReply,
-    DateTime CreatedUtc);
+    DateTime CreatedUtc,
+    string? PhotoUrl = null,
+    DateTime? HiddenUtc = null,
+    string? HiddenReason = null);
 
 public record AdminNoteRequest(string? Note);
+
+// Hide a review / close a business: one of the fixed reasons (see AdminService), shown to the people it concerns
+public record AdminReasonRequest(string? Reason);
+
+// "Kunder" in /admin, for support ("jeg fikk aldri e-posten"). Only found by the exact e-mail or phone number:
+// there is no list of all customers
+public record AdminCustomerDto(
+    string Id,
+    string Email,
+    string? FullName,
+    string? Phone,
+    bool EmailConfirmed,
+    bool HasPassword,
+    bool HasGoogle,
+    DateTime? CreatedUtc,
+    int Visits,
+    int Reviews,
+    IReadOnlyList<AdminCustomerBookingDto> Upcoming,
+    IReadOnlyList<AdminMailDto> WaitingMails,
+    IReadOnlyList<string> StaffAt);
+
+public record AdminCustomerBookingDto(Guid Id, string BusinessName, string ServiceName, DateTime StartUtc,
+    string Status);
+
+// An e-mail still in the outbox (not sent yet, or failing)
+public record AdminMailDto(string To, string Subject, DateTime CreatedUtc, int Attempts, DateTime NextAttemptUtc);
+
+// "Systemstatus"
+public record AdminHealthDto(
+    string? Version,
+    DateTime StartedUtc,
+    bool DatabaseOk,
+    double? DatabaseSizeMb,
+    DateTime? LastBackupUtc,
+    int MailsWaiting,
+    int MailsFailing,
+    IReadOnlyList<AdminMailDto> FailingMails,
+    int PushDevices,
+    IReadOnlyList<AdminJobDto> Jobs);
+
+public record AdminJobDto(string Name, DateTime LastRunUtc, bool Ok);
+
+// "Logg": what the BESTI team did
+public record AdminActionDto(DateTime CreatedUtc, string AdminEmail, string Text, Guid? BusinessId);

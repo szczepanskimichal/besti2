@@ -13,6 +13,9 @@ public interface IProfileService
 
     Task<string?> ChangePasswordAsync(string userId, ChangePasswordRequest request);
 
+    // "Varsler": which reminders the customer wants
+    Task<string?> SetNotificationSettingsAsync(string userId, NotificationSettingsRequest request);
+
     // "Slett konto": future visits cancelled (the business is told), all visits anonymised, reviews kept as
     // "Tidligere kunde", notifications removed, the account deleted
     Task<string?> DeleteAsync(string userId, DeleteAccountRequest request,

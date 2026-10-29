@@ -85,6 +85,34 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
             {overview.needHelp.length === 0
                 ? <p className={styles.muted}>Alle ser bra ut.</p>
                 : <BusinessRows rows={overview.needHelp}/>}
+
+            <h2 className={styles.heading}>Utvikling</h2>
+            <p className={styles.muted}>Nye bedrifter, nye kundekontoer og bestillinger laget per uke (mandag–søndag).</p>
+            <div className={`${styles.card} ${styles.tableWrap}`}>
+                <table className={styles.weeks}>
+                    <thead>
+                        <tr><th scope="col">Uke fra</th><th scope="col">Bedrifter</th><th scope="col">Kunder</th><th scope="col">Bestillinger</th></tr>
+                    </thead>
+                    <tbody>
+                        {overview.weeks.map((week) => (
+                            <tr key={week.weekStart}>
+                                <td>{formatDate(`${week.weekStart}T12:00:00Z`)}</td>
+                                <td>{week.newBusinesses}</td>
+                                <td>{week.newCustomers}</td>
+                                <td>{week.bookings}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            <h2 className={styles.heading}>Interessert i Pro</h2>
+            <p className={styles.muted}>
+                Trykket «Jeg er interessert» under Statistikk. De første å spørre når Pro starter.
+            </p>
+            {overview.proLeads.length === 0
+                ? <p className={styles.muted}>Ingen ennå.</p>
+                : <BusinessRows rows={overview.proLeads}/>}
         </>
     );
 }

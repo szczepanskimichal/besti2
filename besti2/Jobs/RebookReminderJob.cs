@@ -1,4 +1,5 @@
 using besti2.Application.Bookings;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -22,9 +23,12 @@ public class RebookReminderJob(IServiceScopeFactory scopeFactory, ILogger<Rebook
                     {
                         logger.LogInformation("Sent {Count} Tid for ny time reminders", sent);
                     }
+
+                    JobHeartbeats.Ran("Tid for ny time", true);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    JobHeartbeats.Ran("Tid for ny time", false);
                     logger.LogError(ex, "Sending Tid for ny time reminders failed");
                 }
             } while (await timer.WaitForNextTickAsync(stoppingToken));

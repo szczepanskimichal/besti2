@@ -62,6 +62,7 @@ export type Me = {
     phone: string | null; // from "Min profil"; fills in the booking form
     isBusiness: boolean;
     isAdmin: boolean; // the BESTI team: the header shows a link to /admin
+    isStaff: boolean; // an employee with their own login: the header shows "Min arbeidsplan" (/ansatt)
 };
 
 // null = not logged in (401/403). Other errors (API down) are thrown, so a logged-in business
@@ -75,7 +76,11 @@ export const getMe = cache(async (token: string): Promise<Me | null> => {
 
 // "Min profil" (customer)
 // hasPassword = false for an account made with "Fortsett med Google"
-export type MyProfile = { fullName: string; email: string; phone: string | null; hasPassword: boolean };
+// reminderEmail / soonNotice: the choices under Varsler
+export type MyProfile = {
+    fullName: string; email: string; phone: string | null; hasPassword: boolean;
+    reminderEmail: boolean; soonNotice: boolean;
+};
 
 export async function getMyProfile(token: string): Promise<MyProfile | null> {
     const res = await apiFetch("/api/me/profile", { token });
@@ -84,6 +89,10 @@ export async function getMyProfile(token: string): Promise<MyProfile | null> {
 
 export async function updateMyProfile(token: string, input: { fullName: string; phone: string | null }): Promise<ApiResult> {
     return toResult(await apiFetch("/api/me/profile", { method: "PUT", token, body: input }));
+}
+
+export async function setNotificationSettings(token: string, input: { reminderEmail: boolean; soonNotice: boolean }): Promise<ApiResult> {
+    return toResult(await apiFetch("/api/me/notification-settings", { method: "PUT", token, body: input }));
 }
 
 export async function changeMyPassword(token: string, input: { currentPassword: string; newPassword: string }): Promise<ApiResult> {

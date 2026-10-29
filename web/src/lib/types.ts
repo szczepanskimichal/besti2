@@ -46,6 +46,8 @@ export type OpeningHours = {
     dayOfWeek: number;
     opensAt: string;
     closesAt: string;
+    breakStart?: string | null; // a daily break nobody can book (lunch); both null = no break
+    breakEnd?: string | null;
 };
 
 export type BusinessDetails = {
@@ -76,6 +78,7 @@ export type BusinessDetails = {
     verifiedUtc: string | null;
     loyaltyVisits: number | null; // "Stempelkort": every N-th visit gives loyaltyReward; null = none
     loyaltyReward: string | null;
+    suspendedReason?: string | null; // only in the panel: BESTI has closed the page, and why
 };
 
 // "Forslag for din bransje" in the panel: a ready service the owner can add with one click
@@ -131,6 +134,8 @@ export type PanelBooking = {
     noShowCount: number; // "Møtte ikke" for this customer at this business
     inviteId: string | null; // BESTI sammen: all visits of one group share it (👯)
     group: PanelGroup | null;
+    customerKey: string | null; // "Kunder": the customer's card (null = anonymized)
+    salonNote: string | null; // the business's own note about this customer
 };
 
 // BESTI sammen seen by the business: places, how many said yes, until when; open = more may still join
@@ -244,6 +249,11 @@ export type Review = {
     customerName: string;
     createdUtc: string;
     businessReply: string | null;
+    photoUrl: string | null; // the customer's photo from the visit
+    helpful: number; // how many found it "Nyttig"
+    markedHelpful: boolean; // the logged-in reader did
+    hidden: boolean; // hidden by BESTI (only in the panel)
+    hiddenReason: string | null;
 };
 
 export type BusinessReviews = {
@@ -372,7 +382,7 @@ export type AdminBusinessRow = {
     slug: string;
     city: string;
     category: string;
-    status: "Venter" | "Synlig" | "Ubekreftet" | "Skjult";
+    status: "Venter" | "Synlig" | "Ubekreftet" | "Stengt" | "Skjult";
     createdUtc: string;
     ownerEmail: string | null;
     phoneNumber: string;
@@ -397,7 +407,14 @@ export type AdminOverview = {
     proInterested: number;
     waiting: AdminBusinessRow[];
     needHelp: AdminBusinessRow[];
+    weeks: AdminWeek[];
+    proLeads: AdminBusinessRow[];
 };
+
+// "Utvikling": one row per week (Monday), the newest last
+export type AdminWeek = { weekStart: string; newBusinesses: number; newCustomers: number; bookings: number };
+
+export type AdminAction = { createdUtc: string; adminEmail: string; text: string; businessId: string | null };
 
 export type AdminBusinessDetails = {
     business: AdminBusinessRow;
@@ -413,6 +430,43 @@ export type AdminBusinessDetails = {
     reviewCount: number;
     lastBookingCreatedUtc: string | null;
     setup: { title: string; done: boolean }[];
+    suspendedUtc: string | null;
+    suspendedReason: string | null;
+    log: AdminAction[] | null;
+};
+
+export type AdminReasons = { review: string[]; suspend: string[] };
+
+export type AdminMail = { to: string; subject: string; createdUtc: string; attempts: number; nextAttemptUtc: string };
+
+// /admin/kunder: one customer, found by the exact e-mail or phone number
+export type AdminCustomer = {
+    id: string;
+    email: string;
+    fullName: string | null;
+    phone: string | null;
+    emailConfirmed: boolean;
+    hasPassword: boolean;
+    hasGoogle: boolean;
+    createdUtc: string | null;
+    visits: number;
+    reviews: number;
+    upcoming: { id: string; businessName: string; serviceName: string; startUtc: string; status: string }[];
+    waitingMails: AdminMail[];
+    staffAt: string[];
+};
+
+export type AdminHealth = {
+    version: string | null;
+    startedUtc: string;
+    databaseOk: boolean;
+    databaseSizeMb: number | null;
+    lastBackupUtc: string | null;
+    mailsWaiting: number;
+    mailsFailing: number;
+    failingMails: AdminMail[];
+    pushDevices: number;
+    jobs: { name: string; lastRunUtc: string; ok: boolean }[];
 };
 
 export type AdminReview = {
@@ -425,6 +479,48 @@ export type AdminReview = {
     comment: string | null;
     businessReply: string | null;
     createdUtc: string;
+    photoUrl: string | null;
+    hiddenUtc: string | null;
+    hiddenReason: string | null;
+};
+
+// "Kunder" in the panel. key: "k-…" (customer account) or "t-…" (phone number)
+export type CustomerRow = {
+    key: string;
+    name: string;
+    phone: string;
+    email: string | null;
+    hasAccount: boolean;
+    visits: number;
+    noShows: number;
+    lastVisitUtc: string | null;
+    nextVisitUtc: string | null;
+    hasNote: boolean;
+};
+
+export type CustomerCard = {
+    customer: CustomerRow;
+    note: string | null;
+    noteUpdatedUtc: string | null;
+    spentNok: number;
+    visits: { id: string; startUtc: string; serviceName: string; employeeName: string; status: string;
+        priceNok: number | null; customerNote: string | null }[];
+};
+
+// Panel → Ansatte: who has their own login (connected = accepted)
+export type StaffAccess = { employeeId: string; email: string | null; connected: boolean; inviteExpiresUtc: string | null };
+
+export type StaffInviteInfo = { businessName: string; employeeName: string; email: string };
+
+// /ansatt: one place of work with the employee's own visits
+export type StaffPlace = {
+    employeeId: string;
+    businessName: string;
+    businessSlug: string;
+    employeeName: string;
+    bookings: { id: string; startUtc: string; endUtc: string; status: string; serviceName: string;
+        customerName: string; customerPhone: string; customerNote: string | null; salonNote: string | null }[];
+    blocks: { startUtc: string; endUtc: string; reason: string | null }[];
 };
 
 // "Stempelkort": stamps on the current round (0..visits); rewardReady = the business can give the reward now

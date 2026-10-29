@@ -75,7 +75,7 @@ public class FavoriteService(AppDbContext dbContext, IImageStorage imageStorage)
             .ToListAsync(cancellationToken);
         var ids = favorites.Select(f => f.BusinessId).ToList();
 
-        var ratings = await dbContext.Reviews.Where(r => ids.Contains(r.BusinessId))
+        var ratings = await dbContext.Reviews.Where(r => ids.Contains(r.BusinessId) && r.HiddenUtc == null)
             .GroupBy(r => r.BusinessId)
             .Select(g => new { g.Key, Average = g.Average(r => r.Stars), Count = g.Count() })
             .ToDictionaryAsync(g => g.Key, cancellationToken);

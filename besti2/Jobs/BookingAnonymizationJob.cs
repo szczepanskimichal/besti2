@@ -1,5 +1,6 @@
 using besti2.Application.Bookings;
 using besti2.Application.Notifications;
+using besti2.Infrastructure.Services;
 
 namespace besti2.Jobs;
 
@@ -31,9 +32,12 @@ public class BookingAnonymizationJob(IServiceScopeFactory scopeFactory, ILogger<
                 {
                     logger.LogInformation("Deleted {Count} old notifications", deleted);
                 }
+
+                JobHeartbeats.Ran("Anonymisering", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
+                JobHeartbeats.Ran("Anonymisering", false);
                 // Never crash the API because of the cleanup; try again tomorrow
                 logger.LogError(ex, "Anonymizing old bookings failed");
             }

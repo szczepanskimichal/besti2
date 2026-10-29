@@ -14,6 +14,7 @@ const filters = [
     { value: "Venter", label: "Venter" },
     { value: "Synlig", label: "Synlige" },
     { value: "Ubekreftet", label: "Ikke bekreftet" },
+    { value: "Stengt", label: "Stengt" },
 ];
 
 type BusinessesPageProps = {
