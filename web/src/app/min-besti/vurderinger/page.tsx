@@ -10,6 +10,7 @@ import ReviewForm from "./ReviewForm";
 // Same cards and buttons as the rest of Min Besti
 import panelStyles from "../../panel/page.module.css";
 import styles from "./page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = {
     title: "Vurderinger",
@@ -45,9 +46,9 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
                 Hvordan var timen? Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
             </p>
             {visits.length === 0 ? (
-                <p className={panelStyles.muted}>
-                    Ingen timer å vurdere akkurat nå. <Link href="/">Finn en bedrift</Link>
-                </p>
+                <EmptyState icon="⭐" title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
+                    Etter et besøk kan du gi stjerner og et bilde her. Bare ekte besøk kan vurderes.
+                </EmptyState>
             ) : (
                 <ul className={panelStyles.list}>
                     {visits.map((booking) => (

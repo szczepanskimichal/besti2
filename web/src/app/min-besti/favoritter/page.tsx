@@ -12,6 +12,7 @@ import Stars from "@/components/Stars/Stars";
 import { toggleFavoriteAction } from "./actions";
 import panel from "../../panel/page.module.css";
 import styles from "./page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = { title: "Favoritter" };
 
@@ -63,14 +64,10 @@ export default async function FavoritesPage({ searchParams }: FavoritesPageProps
             {cards.length > 0 && <h2 className={styles.heading}>Favoritter <span aria-hidden="true">♥</span></h2>}
 
             {favorites.length === 0 ? (
-                <div className={panel.card}>
-                    <p className={styles.emptyTitle}>Ingen favoritter ennå <span aria-hidden="true">♡</span></p>
-                    <p className={panel.muted}>
-                        Trykk på «Lagre» på siden til en bedrift du liker. Da finner du den her, og kan bestille
-                        samme tjeneste igjen med ett trykk.
-                    </p>
-                    <Link href="/" className={panel.primaryButton + " " + styles.linkButton}>Finn en bedrift</Link>
-                </div>
+                <EmptyState icon="♡" title="Ingen favoritter ennå" action={{ href: "/", label: "Finn en bedrift" }}>
+                    Trykk på «Lagre» på siden til en bedrift du liker. Da finner du den her, og kan bestille
+                    samme tjeneste igjen med ett trykk.
+                </EmptyState>
             ) : (
                 <ul className={styles.grid}>
                     {favorites.map((favorite) => {

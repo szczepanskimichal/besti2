@@ -35,6 +35,29 @@
     outline-offset: 3px;
 }
 
+/* Nordlys / Lys */
+.styles {
+    display: inline-flex;
+    padding: 3px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+}
+
+.styles a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.styles a[aria-current="page"] {
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+}
+
 .hint {
     flex-basis: 100%;
     margin: 0;
@@ -86,6 +109,7 @@
     font-size: clamp(1.5rem, 7vw, 2.3rem);
     line-height: 1.15;
     color: #0f4b57;
+    text-shadow: none;
 }
 
 .qr {
@@ -113,6 +137,63 @@
     padding-top: 4%;
     font-size: clamp(0.75rem, 3vw, 0.9rem);
     color: #4a5a6a;
+}
+
+/* BESTI's look: the aurora photo, mint heading and the Besti lettering. The QR code sits on a white card */
+.aurora {
+    position: relative;
+    background: #04101a url("/bg/sky-mobil-1400.jpg") center top / cover no-repeat;
+    color: #eef7f4;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    overflow: hidden;
+}
+
+.aurora::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(2, 12, 18, 0.35), rgba(2, 12, 18, 0.15) 40%, rgba(2, 12, 18, 0.7));
+}
+
+.aurora > * {
+    position: relative;
+}
+
+.brandLogo {
+    width: 34%;
+    height: auto;
+}
+
+.aurora .name {
+    color: #eef7f4;
+}
+
+.aurora .heading {
+    color: #bff3e3;
+    font-family: var(--font-heading);
+    text-shadow: 0 2px 18px rgba(2, 12, 18, 0.6);
+}
+
+.aurora .qr {
+    width: 56%;
+    padding: 4%;
+    margin-top: auto;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 0 0 3px rgba(114, 214, 189, 0.8), 0 0 28px rgba(90, 240, 180, 0.45);
+}
+
+.aurora .scan {
+    color: #eef7f4;
+}
+
+.aurora .link {
+    color: #72d6bd;
+}
+
+.aurora .footer {
+    color: #c3dad3;
 }
 
 @media print {

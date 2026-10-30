@@ -1,11 +1,50 @@
 .box {
+    position: relative;
     margin: 0 0 16px;
-    padding: 16px;
+    padding: 20px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
     -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
-    border-radius: 12px;
+    border-radius: 16px;
+    box-shadow: 0 0 32px rgba(90, 240, 180, 0.08);
+}
+
+.wave {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: radial-gradient(circle, rgba(114, 214, 189, 0.22), rgba(114, 214, 189, 0.04) 70%);
+    font-size: 1.5rem;
+}
+
+.intro {
+    margin: -4px 0 12px;
+    color: var(--color-muted);
+    font-family: var(--font-small);
+    font-weight: 500;
+}
+
+/* How far the business has come, as a mint bar */
+.progress {
+    height: 8px;
+    margin: 0 0 16px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.progress span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #5af05e, #28c9e8);
+    transition: width 0.4s ease;
 }
 
 .head {

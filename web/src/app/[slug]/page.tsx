@@ -78,19 +78,45 @@ export default async function BusinessPage({ params, searchParams }: Props) {
             ? `https://www.openstreetmap.org/export/embed.html?bbox=${[lon - d, lat - d, lon + d, lat + d].join(",")}&layer=mapnik&marker=${lat},${lon}`
             : null;
 
+    // The first gallery photo is the big picture at the top, like a cover on Instagram
+    const cover = business.gallery[0]?.url;
+    const hoursList = (
+        <dl className={styles.hours}>
+            {weekdays.map((w) => {
+                const hours = business.openingHours.find((h) => h.dayOfWeek === w.day);
+                return (
+                    <Fragment key={w.day}>
+                        <dt>{w.label}</dt>
+                        <dd>
+                            {hours ? `${hours.opensAt.slice(0, 5)}–${hours.closesAt.slice(0, 5)}` : "Stengt"}
+                            {hours?.breakStart && hours.breakEnd && (
+                                <span className={styles.breakTime}>
+                                    {" "}(pause {hours.breakStart.slice(0, 5)}–{hours.breakEnd.slice(0, 5)})
+                                </span>
+                            )}
+                        </dd>
+                    </Fragment>
+                );
+            })}
+        </dl>
+    );
+
     return (
         <main className={styles.main}>
             <NextLink href="/" className={styles.back}>← Tilbake til alle bedrifter</NextLink>
 
-            <header className={styles.header}>
+            <header className={cover ? `${styles.hero} ${styles.heroPhoto}` : styles.hero}
+                    style={cover ? { backgroundImage: `url("${cover}")` } : undefined}>
                 <div className={styles.top}>
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
-                    <span className={styles.category}>{getCategoryLabel(business.category)}</span>
                     {!me?.isBusiness && <FavoriteButton businessId={business.id} slug={business.slug} saved={saved}/>}
                     <ShareButton path={`/${business.slug}`} title={business.name} className={styles.share}
                                  text={`${business.name} i ${business.city} – bestill time på BESTI`}/>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
+                <p className={styles.city}>
+                    <span className={styles.category}>{getCategoryLabel(business.category)}</span> {business.city}
+                </p>
                 {business.verifiedUtc && (
                     <p className={styles.verified}>
                         <VerifiedBadge href="/aerlig-booking#verifisert"/>
@@ -109,170 +135,173 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                         Ny på Besti{reviews.count > 0 && ` · ${reviews.count} ${reviews.count === 1 ? "vurdering" : "vurderinger"}`}
                     </a>
                 )}
-                {business.description && <p className={styles.muted}>{business.description}</p>}
-                <address className={styles.contact}>
-                    <span>{business.address}, {business.postalCode} {business.city}</span>
-                    <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${business.address}, ${business.postalCode} ${business.city}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Vis vei 🧭
-                    </a>
-                    <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
-                    {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
-                    {business.website && (
-                        <a href={business.website} target="_blank" rel="noopener noreferrer nofollow">
-                            {business.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                        </a>
-                    )}
-                </address>
-                <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
-                {business.loyaltyVisits && business.loyaltyReward && (
-                    <div className={styles.loyalty}>
-                        <p className={styles.loyaltyTitle}>
-                            <span aria-hidden="true">🎟️</span> Stempelkort: hvert {business.loyaltyVisits}. besøk gir
-                            «{business.loyaltyReward}»
-                        </p>
-                        {myCard ? (
-                            <>
-                                <StampCard stamps={myCard.stamps} visits={myCard.visits} small/>
-                                <p className={styles.muted}>
-                                    {myCard.rewardReady
-                                        ? "Kortet er fullt! Si fra ved neste besøk, så får du belønningen."
-                                        : `Du har ${myCard.stamps} av ${myCard.visits}. Bestill på BESTI, så kommer stemplene av seg selv.`}
-                                </p>
-                            </>
-                        ) : (
-                            <p className={styles.muted}>Stemplene kommer av seg selv når du bestiller på BESTI og er innlogget.</p>
-                        )}
-                    </div>
+                {business.description && <p className={styles.description}>{business.description}</p>}
+                {business.services.length > 0 && (
+                    <a href="#tjenester" className={styles.heroButton}>Se tjenester og bestill</a>
                 )}
             </header>
-            {business.gallery.length > 0 && (
-                <section>
-                    <h2 className={styles.sectionTitle}>Bilder</h2>
-                    <ul className={styles.gallery}>
-                        {business.gallery.map((image) => (
-                            <li key={image.id}>
-                                {/* Opens the full photo in a new tab */}
-                                <a href={image.url} target="_blank" rel="noreferrer">
-                                    {/* eslint-disable-next-line @next/next/no-img-element -- our own resized WebP from the API */}
-                                    <img src={image.url} alt={`Bilde fra ${business.name}`} loading="lazy" className={styles.galleryImage}/>
-                                </a>
-                            </li>
-                        ))}
-                    </ul>
-                </section>
-            )}
-            <section>
-                <h2 className={styles.sectionTitle}>Tjenester</h2>
-                <ul className={styles.list}>
-                    {business.services.map((service) => (
-                        <li key={service.id} className={styles.service}>
-                            <div>
-                                <h3 className={styles.serviceName}>{service.name}</h3>
-                                {service.description && <p className={styles.muted}>{service.description}</p>}
-                            </div>
-                            <div className={styles.serviceMeta}>
-                                <span className={styles.price}>{formatPrice(service.priceNok, service.priceType)}</span>
-                                <span className={styles.muted}>{service.durationMinutes} min</span>
-                                <NextLink
-                                    href={`/${business.slug}/bestill?tjeneste=${service.id}`}
-                                    className={styles.bookButton}
-                                >
-                                    Bestill
+
+            {/* Computer: services and reviews on the left, address and opening hours on the right.
+                Phone: one column, in the order set by the "order" classes */}
+            <div className={styles.layout}>
+                <div className={styles.content}>
+                    {business.gallery.length > 1 && (
+                        <section className={styles.orderGallery}>
+                            <h2 className={styles.sectionTitle}>Bilder</h2>
+                            <ul className={styles.gallery}>
+                                {business.gallery.map((image) => (
+                                    <li key={image.id}>
+                                        {/* Opens the full photo in a new tab */}
+                                        <a href={image.url} target="_blank" rel="noreferrer">
+                                            {/* eslint-disable-next-line @next/next/no-img-element -- our own resized WebP from the API */}
+                                            <img src={image.url} alt={`Bilde fra ${business.name}`} loading="lazy" className={styles.galleryImage}/>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
+                    <section id="tjenester" className={styles.orderServices}>
+                        <h2 className={styles.sectionTitle}>Tjenester</h2>
+                        <ul className={styles.list}>
+                            {business.services.map((service) => (
+                                <li key={service.id} className={styles.service}>
+                                    <div className={styles.serviceText}>
+                                        <h3 className={styles.serviceName}>{service.name}</h3>
+                                        {service.description && <p className={styles.muted}>{service.description}</p>}
+                                    </div>
+                                    <div className={styles.serviceMeta}>
+                                        <span className={styles.price}>{formatPrice(service.priceNok, service.priceType)}</span>
+                                        <span className={styles.duration}>{service.durationMinutes} min</span>
+                                        <NextLink
+                                            href={`/${business.slug}/bestill?tjeneste=${service.id}`}
+                                            className={styles.bookButton}
+                                        >
+                                            Bestill
+                                        </NextLink>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+
+                    <section className={styles.orderStaff}>
+                        <h2 className={styles.sectionTitle}>Ansatte</h2>
+                        <ul className={styles.staff}>
+                            {business.employees.map((employee) => (
+                                <li key={employee.id} className={styles.employee}>
+                                    <span className={styles.initials} aria-hidden="true">
+                                        {employee.name.charAt(0)}{employee.lastName.charAt(0)}
+                                    </span>
+                                    {employee.name} {employee.lastName}
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+
+                    <section id="vurderinger" className={styles.orderReviews}>
+                        <h2 className={styles.sectionTitle}>Vurderinger</h2>
+                        {reviews.count === 0 ? (
+                            <p className={styles.emptyBox}>
+                                Ingen vurderinger ennå. Bare kunder som har vært her, kan gi vurdering, så alt du leser
+                                på BESTI kommer fra ekte besøk.
+                            </p>
+                        ) : (
+                            <ul className={styles.reviews}>
+                                {reviews.reviews.map((review) => (
+                                    <li key={review.id} className={styles.review}>
+                                        <p className={styles.reviewHead}>
+                                            <Stars value={review.stars}/> <strong>{review.customerName}</strong>
+                                        </p>
+                                        {review.comment && <p>{review.comment}</p>}
+                                        {review.photoUrl && (
+                                            <a href={review.photoUrl} target="_blank" rel="noopener noreferrer">
+                                                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded photo from the API */}
+                                                <img src={review.photoUrl} alt={`Bilde fra ${review.customerName}`}
+                                                     className={styles.reviewPhoto} loading="lazy"/>
+                                            </a>
+                                        )}
+                                        {review.businessReply && (
+                                            <p className={styles.reply}>
+                                                <strong>Svar fra {business.name}:</strong> {review.businessReply}
+                                            </p>
+                                        )}
+                                        {!me?.isBusiness && (
+                                            <HelpfulButton reviewId={review.id} slug={business.slug} count={review.helpful}
+                                                           marked={review.markedHelpful} loggedIn={customer !== null}/>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {reviews.count > reviews.reviews.length && (
+                            <p>
+                                <NextLink href={`/${business.slug}?vurderinger=alle#vurderinger`} scroll={false}>
+                                    Vis alle {reviews.count} vurderinger
                                 </NextLink>
-                            </div>
-                        </li>
-                    ))}
-                </ul>
-            </section>
+                            </p>
+                        )}
+                    </section>
+                </div>
 
-            <section>
-                <h2 className={styles.sectionTitle}>Ansatte</h2>
-                <ul className={styles.list}>
-                    {business.employees.map((employee) => (
-                        <li key={employee.id} className={styles.employee}>
-                            {employee.name} {employee.lastName}
-                        </li>
-                    ))}
-                </ul>
-            </section>
-
-            <section id="vurderinger">
-                <h2 className={styles.sectionTitle}>Vurderinger</h2>
-                {reviews.count === 0 ? (
-                    <p className={styles.muted}>Ingen vurderinger ennå. Bare kunder som har vært her, kan gi vurdering.</p>
-                ) : (
-                    <ul className={styles.reviews}>
-                        {reviews.reviews.map((review) => (
-                            <li key={review.id} className={styles.review}>
-                                <p className={styles.reviewHead}>
-                                    <Stars value={review.stars}/> <strong>{review.customerName}</strong>
-                                </p>
-                                {review.comment && <p>{review.comment}</p>}
-                                {review.photoUrl && (
-                                    <a href={review.photoUrl} target="_blank" rel="noopener noreferrer">
-                                        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded photo from the API */}
-                                        <img src={review.photoUrl} alt={`Bilde fra ${review.customerName}`}
-                                             className={styles.reviewPhoto} loading="lazy"/>
-                                    </a>
-                                )}
-                                {review.businessReply && (
-                                    <p className={styles.reply}>
-                                        <strong>Svar fra {business.name}:</strong> {review.businessReply}
+                <aside className={styles.side}>
+                    <section className={`${styles.infoCard} ${styles.orderInfo}`}>
+                        <h2 className={styles.cardTitle}>Kontakt</h2>
+                        <address className={styles.contact}>
+                            <span>{business.address}, {business.postalCode} {business.city}</span>
+                            <a
+                                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${business.address}, ${business.postalCode} ${business.city}`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                Vis vei 🧭
+                            </a>
+                            <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
+                            {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
+                            {business.website && (
+                                <a href={business.website} target="_blank" rel="noopener noreferrer nofollow">
+                                    {business.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                                </a>
+                            )}
+                        </address>
+                        <p className={styles.cancel}>{freeCancelText(business.freeCancelHours)}.</p>
+                    </section>
+                    {business.loyaltyVisits && business.loyaltyReward && (
+                        <div className={`${styles.loyalty} ${styles.orderLoyalty}`}>
+                            <p className={styles.loyaltyTitle}>
+                                <span aria-hidden="true">🎟️</span> Stempelkort: hvert {business.loyaltyVisits}. besøk gir
+                                «{business.loyaltyReward}»
+                            </p>
+                            {myCard ? (
+                                <>
+                                    <StampCard stamps={myCard.stamps} visits={myCard.visits} small/>
+                                    <p className={styles.muted}>
+                                        {myCard.rewardReady
+                                            ? "Kortet er fullt! Si fra ved neste besøk, så får du belønningen."
+                                            : `Du har ${myCard.stamps} av ${myCard.visits}. Bestill på BESTI, så kommer stemplene av seg selv.`}
                                     </p>
-                                )}
-                                {!me?.isBusiness && (
-                                    <HelpfulButton reviewId={review.id} slug={business.slug} count={review.helpful}
-                                                   marked={review.markedHelpful} loggedIn={customer !== null}/>
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                )}
-                {reviews.count > reviews.reviews.length && (
-                    <p>
-                        <NextLink href={`/${business.slug}?vurderinger=alle#vurderinger`} scroll={false}>
-                            Vis alle {reviews.count} vurderinger
-                        </NextLink>
-                    </p>
-                )}
-            </section>
-
-            <section>
-                <h2 className={styles.sectionTitle}>Åpningstider</h2>
-                <dl className={styles.hours}>
-                    {weekdays.map((w) => {
-                        const hours = business.openingHours.find((h) => h.dayOfWeek === w.day);
-                        return (
-                            <Fragment key={w.day}>
-                                <dt>{w.label}</dt>
-                                <dd>
-                                    {hours ? `${hours.opensAt.slice(0, 5)}–${hours.closesAt.slice(0, 5)}` : "Stengt"}
-                                    {hours?.breakStart && hours.breakEnd && (
-                                        <span className={styles.breakTime}>
-                                            {" "}(pause {hours.breakStart.slice(0, 5)}–{hours.breakEnd.slice(0, 5)})
-                                        </span>
-                                    )}
-                                </dd>
-                            </Fragment>
-                        );
-                    })}
-                </dl>
-            </section>
-            {mapUrl && (
-                <section>
-                    <h2 className={styles.sectionTitle}>Kart</h2>
-                    <iframe
-                        title={`Kart som viser ${business.name}`}
-                        src={mapUrl}
-                        className={styles.map}
-                        loading="lazy"
-                    />
-                </section>
-            )}
+                                </>
+                            ) : (
+                                <p className={styles.muted}>Stemplene kommer av seg selv når du bestiller på BESTI og er innlogget.</p>
+                            )}
+                        </div>
+                    )}
+                    <section className={`${styles.infoCard} ${styles.orderHours}`}>
+                        <h2 className={styles.cardTitle}>Åpningstider</h2>
+                        {hoursList}
+                    </section>
+                    {mapUrl && (
+                        <section className={styles.orderMap}>
+                            <iframe
+                                title={`Kart som viser ${business.name}`}
+                                src={mapUrl}
+                                className={styles.map}
+                                loading="lazy"
+                            />
+                        </section>
+                    )}
+                </aside>
+            </div>
         </main>
     );
 }

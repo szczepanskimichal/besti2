@@ -8,6 +8,7 @@ import ServiceForm from "./ServiceForm";
 import ServiceSuggestions from "./ServiceSuggestions";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 
 type ServicesPageProps = {
@@ -67,10 +68,10 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             )}
 
             {business.services.length === 0 ? (
-                <p className={styles.muted}>
-                    Ingen tjenester ennå. {templates.length > 0 ? "Velg fra forslagene over, eller legg" : "Legg"} til
+                <EmptyState icon="✂️" title="Ingen tjenester ennå">
+                    Uten tjenester kan ingen bestille. {templates.length > 0 ? "Velg fra forslagene over, eller legg" : "Legg"} til
                     din egen under.
-                </p>
+                </EmptyState>
             ) : (
                 <ul className={styles.list}>
                     {business.services.map((service) => (
