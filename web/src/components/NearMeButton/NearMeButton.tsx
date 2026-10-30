@@ -38,7 +38,7 @@ export default function NearMeButton() {
                     <>
                         {/* The pin from the Besti logo */}
                         {/* eslint-disable-next-line @next/next/no-img-element -- small icon, next/image not needed */}
-                        <img src="/logo/besti-pin.png" alt="" width={32} height={30} className={styles.pin}/>
+                        <img src="/logo/besti-pin.png" alt="" width={26} height={30} className={styles.pin}/>
                         Nær meg
                     </>
                 )}
