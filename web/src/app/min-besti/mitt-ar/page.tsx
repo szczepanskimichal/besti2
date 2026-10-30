@@ -42,7 +42,7 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
     const firstName = me?.fullName?.split(" ")[0];
     const facts = [
         year.minutesOfMeTime > 0 && { icon: "⏳", value: formatLength(year.minutesOfMeTime), text: "tid til deg selv" },
-        { icon: "📍", value: String(year.businesses), text: year.businesses === 1 ? "sted" : "forskjellige steder" },
+        { icon: <CrystalIcon name="pinne"/>, value: String(year.businesses), text: year.businesses === 1 ? "sted" : "forskjellige steder" },
         year.favoriteBusiness && {
             icon: "💛",
             value: year.favoriteBusiness,

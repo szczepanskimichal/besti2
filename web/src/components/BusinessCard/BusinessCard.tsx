@@ -6,6 +6,7 @@ import styles from "./BusinessCard.module.css";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 
 type Props = {
@@ -30,7 +31,7 @@ export default function BusinessCard({ business, persons = 1 }: Props) {
                 </div>
                 <h2 className={styles.name}>{business.name}</h2>
                 <p className={styles.city}>
-                    <span aria-hidden="true">📍</span> {business.city}
+                    <CrystalIcon name="pinne"/> {business.city}
                     {business.distanceKm != null && ` · ${formatDistance(business.distanceKm)} unna`}
                 </p>
                 {business.averageRating !== null ? (

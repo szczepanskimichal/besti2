@@ -116,7 +116,7 @@ export default async function Home({searchParams}: HomeProps) {
             <h2 className={styles.listTitle}>Lokale Besti-bedrifter</h2>
             {lat && lng && (
                 <p className={styles.subtitle}>
-                    📍 {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}
+                    <CrystalIcon name="pinne"/> {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}
                     <Link href={searchHref(search, {lat: undefined, lng: undefined, km: undefined})}>Vis alle</Link>
                 </p>
             )}

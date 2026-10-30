@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import styles from "./NearMeButton.module.css";
 
@@ -34,14 +34,20 @@ export default function NearMeButton() {
     return (
         <div className={styles.wrapper}>
             <button type="button" onClick={findMe} className={styles.button} disabled={status === "finding"}>
-                {status === "finding" ? "Finner deg …" : (
-                    <>
-                        {/* The pin from the Besti logo */}
-                        {/* eslint-disable-next-line @next/next/no-img-element -- small icon, next/image not needed */}
-                        <img src="/logo/besti-pin.png" alt="" width={26} height={30} className={styles.pin}/>
-                        Nær meg
-                    </>
-                )}
+                {/* Ada's crystal pin: a soft twinkle now and then, and a pop with sparks when tapped */}
+                <span className={status === "finding" ? `${styles.pin} ${styles.finding}` : styles.pin} aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- static SVG with the glow baked in */}
+                    <img src="/ikoner/pinne.svg" alt="" width={40} height={40}/>
+                    <span className={styles.glint}/>
+                    {status === "finding" && (
+                        <span className={styles.sparks}>
+                            {[0, 1, 2, 3, 4, 5].map((k) => (
+                                <i key={k} style={{ "--a": `${k * 60 - 60}deg` } as CSSProperties}>{k % 2 ? "✦" : "✧"}</i>
+                            ))}
+                        </span>
+                    )}
+                </span>
+                {status === "finding" ? "Finner deg …" : "Nær meg"}
             </button>
             {status === "denied" && (
                 <p className={styles.denied} role="alert">
