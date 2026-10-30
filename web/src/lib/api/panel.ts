@@ -1,4 +1,4 @@
-import type {BusinessDetails, CustomerCard, CustomerRow, PanelBooking, ServiceTemplate, StaffAccess, TimeOff} from "@/lib/types";
+import type {BookingDayCount, BusinessDetails, CustomerCard, CustomerRow, PanelBooking, ServiceTemplate, StaffAccess, TimeOff} from "@/lib/types";
 import {API_URL, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
 // The business panel: calendar, blocked time, services, employees, profile, photos
 
@@ -14,6 +14,16 @@ export async function getPanelBookings(token: string, from?: string, to?: string
         throw new Error(`Kunne ikke hente bestillinger (${res.status})`);
     }
     return res.json();
+}
+
+// "År": visits per day in one year (only one employee's with employeeId)
+export async function getPanelBookingCounts(token: string, year: string, employeeId?: string): Promise<BookingDayCount[]> {
+    const params = new URLSearchParams({ year });
+    if (employeeId) {
+        params.set("employeeId", employeeId);
+    }
+    const res = await apiFetch(`/api/panel/bookings/counts?${params}`, { token });
+    return res.ok ? res.json() : [];
 }
 
 // Business adds a visit itself (phone call, walk-in); date and time in Oslo

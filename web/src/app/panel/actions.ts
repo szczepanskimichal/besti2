@@ -37,10 +37,10 @@ export async function noShowAction(formData: FormData) {
     await changeStatus(formData, "motte-ikke");
 }
 
-// Back to the same view (week or month) after saving
+// Back to the same view (year, month, week or plan) after saving
 function viewParam(formData: FormData): string {
     const view = formData.get("visning");
-    return view === "uke" || view === "maned" ? `&visning=${view}` : "";
+    return view === "ar" || view === "uke" || view === "maned" || view === "plan" ? `&visning=${view}` : "";
 }
 
 const MANUAL_FIELDS = ["serviceId", "employeeId", "date", "time", "customerName", "customerPhone", "customerEmail",

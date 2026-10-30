@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBookings, getPanelBusiness, getPanelTimeOff } from "@/lib/api";
+import { getPanelBookingCounts, getPanelBookings, getPanelBusiness, getPanelTimeOff } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDay, formatTime, isIsoDate, osloDay, shiftDay, todayInOslo, weekdayOf } from "@/lib/format";
 import MoveBookingForm from "./MoveBookingForm";
@@ -16,10 +16,14 @@ import { employeeColumns, dayColumns, blocksOn, visibleRange, clock } from "./ca
 import { shortDay, weekDays, mondayOf, lastDayOfMonth, shiftMonth, monthTitle, isoWeek } from "./calendar/calendarDates";
 import TimeGrid from "./calendar/TimeGrid";
 import MonthGrid from "./calendar/MonthGrid";
+import YearGrid from "./calendar/YearGrid";
 import PhoneList from "./calendar/PhoneList";
 import BookingDetails, { allowedActions } from "./calendar/BookingDetails";
 import { GroupStrip } from "./calendar/GroupSummary";
 import TimeOffDetails from "./calendar/TimeOffDetails";
+
+// "Plan": the next two weeks as one list
+const PLAN_DAYS = 14;
 
 type CalendarPageProps = {
     searchParams: Promise<{
@@ -28,7 +32,8 @@ type CalendarPageProps = {
     }>;
 };
 
-// The business calendar: one day with a column per employee, or one week with a column per day
+// The business calendar: one day with a column per employee, one week with a column per day, a month,
+// a whole year as a heat map, or a plan of the next two weeks as a list
 export default async function CalendarPage({ searchParams }: CalendarPageProps) {
     const token = await getToken();
     if (!token) {
@@ -39,20 +44,26 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const day = isIsoDate(query.dag) ? query.dag : todayInOslo();
     const week = query.visning === "uke";
     const month = query.visning === "maned";
-    const view = week ? "uke" : month ? "maned" : undefined;
-    // Week = Monday to Sunday around the chosen day; month = whole weeks from the 1st to the last day
+    const year = query.visning === "ar";
+    const plan = query.visning === "plan";
+    const view = week ? "uke" : month ? "maned" : year ? "ar" : plan ? "plan" : undefined;
+    // Week = Monday to Sunday around the chosen day; month = whole weeks from the 1st to the last day;
+    // plan = two weeks from the chosen day; year = only the counts per day (the visits of the day itself are fetched)
     const monthStart = `${day.slice(0, 7)}-01`;
     const first = week ? mondayOf(day) : month ? mondayOf(monthStart) : day;
-    const last = week ? shiftDay(first, 6) : month ? shiftDay(mondayOf(lastDayOfMonth(day)), 6) : day;
+    const last = week ? shiftDay(first, 6) : month ? shiftDay(mondayOf(lastDayOfMonth(day)), 6)
+        : plan ? shiftDay(day, PLAN_DAYS - 1) : day;
+    const employeeAsked = view ? query.ansatt : undefined;
 
-    const [business, allBookings, allBlocks] = await Promise.all([
+    const [business, allBookings, allBlocks, counts] = await Promise.all([
         getPanelBusiness(token), getPanelBookings(token, first, last), getPanelTimeOff(token, first, last),
+        year ? getPanelBookingCounts(token, day.slice(0, 4), employeeAsked) : [],
     ]);
     if (!business || !allBookings || !allBlocks) {
         redirect("/logg-inn");
     }
 
-    const employeeFilter = (week || month) && business.employees.some((e) => e.id === query.ansatt) ? query.ansatt : undefined;
+    const employeeFilter = view && business.employees.some((e) => e.id === employeeAsked) ? employeeAsked : undefined;
     const bookings = allBookings
         // Cancelled visits are gone from the calendar (a link from a notification can still open one)
         .filter((b) => b.status !== "Avlyst")
@@ -71,10 +82,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
         }
         return `/panel?${params}`;
     };
-    const step = week ? 7 : 1;
-    const previous = month ? shiftMonth(day, -1) : shiftDay(day, -step);
-    const next = month ? shiftMonth(day, 1) : shiftDay(day, step);
-    const unit = month ? "måned" : week ? "uke" : "dag";
+    const step = week ? 7 : plan ? PLAN_DAYS : 1;
+    const previous = year ? `${Number(day.slice(0, 4)) - 1}${day.slice(4)}` : month ? shiftMonth(day, -1) : shiftDay(day, -step);
+    const next = year ? `${Number(day.slice(0, 4)) + 1}${day.slice(4)}` : month ? shiftMonth(day, 1) : shiftDay(day, step);
+    const unit = year ? "år" : month ? "måned" : week ? "uke" : plan ? "periode" : "dag";
     // The visit opened in the details window (also a cancelled one, even when those are hidden)
     const selected = allBookings.find((b) => b.id === query.bestilling);
     const moving = allBookings.find((b) => b.id === query.flytt && allowedActions(b).canMove);
@@ -125,9 +136,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <div className={calendar.toolbar}>
                 <div className={calendar.segmented} role="group" aria-label="Visning">
-                    <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={view ? undefined : "page"}>Dag</Link>
-                    <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
+                    <Link href={link({ visning: "ar" })} aria-current={year ? "page" : undefined}>År</Link>
                     <Link href={link({ visning: "maned" })} aria-current={month ? "page" : undefined}>Måned</Link>
+                    <Link href={link({ visning: "uke" })} aria-current={week ? "page" : undefined}>Uke</Link>
+                    <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={view ? undefined : "page"}>Dag</Link>
+                    <Link href={link({ visning: "plan" })} aria-current={plan ? "page" : undefined}>Plan</Link>
                 </div>
                 <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
                 <Link href={link({ blokker: "1" })} scroll={false} className={styles.secondaryButton}>Blokker tid</Link>
@@ -135,7 +148,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
                 <Link href={link({ dag: next })} className={styles.secondaryButton} aria-label={`Neste ${unit}`}>→</Link>
                 <h2 className={calendar.dayTitle}>
-                    {month ? monthTitle(day)
+                    {year ? day.slice(0, 4) : plan ? `${shortDay(first)} – ${shortDay(last)}` : month ? monthTitle(day)
                         : week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
                 </h2>
                 <form method="get" className={calendar.datePicker}>
@@ -174,7 +187,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <GroupStrip bookings={bookings} hrefFor={(booking) => link({ bestilling: booking.id })}/>
 
-            {month ? (
+            {year ? (
+                <YearGrid year={day.slice(0, 4)} counts={counts}
+                          dayHref={(date) => link({ dag: date, visning: undefined, ansatt: undefined })}
+                          monthHref={(date) => link({ dag: date, visning: "maned" })}/>
+            ) : plan ? null : month ? (
                 <MonthGrid days={columns} month={day.slice(0, 7)} business={business}
                            dayHref={(date) => link({ dag: date, visning: undefined, ansatt: undefined })}
                            newHref={(date) => link({ dag: date, ny: "1" })}
@@ -191,11 +208,13 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                           })}/>
             )}
 
-            {/* Phone: the same visits as a simple list (the grid is too narrow there) */}
-            <PhoneList columns={month ? columns.filter((c) => c.day.startsWith(day.slice(0, 7)))
-                : week ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
-                       hrefFor={(booking) => link({ bestilling: booking.id })}
-                       blockHref={(block) => link({ blokkering: block.id })}/>
+            {/* Phone: the same visits as a simple list (the grid is too narrow there). Plan: the list everywhere */}
+            {!year && (
+                <PhoneList columns={month ? columns.filter((c) => c.day.startsWith(day.slice(0, 7)))
+                    : week || plan ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
+                           hrefFor={(booking) => link({ bestilling: booking.id })}
+                           blockHref={(block) => link({ blokkering: block.id })} always={plan}/>
+            )}
 
             {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}
                                          members={members}/>}

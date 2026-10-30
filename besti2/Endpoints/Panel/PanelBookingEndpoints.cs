@@ -22,6 +22,12 @@ public static class PanelBookingEndpoints
             return Results.Ok(await bookingService.GetForBusinessAsync(business.Id, from, to, cancellationToken));
         });
 
+        // "År": visits per day in one year, for the year view of the calendar
+        group.MapGet("/bookings/counts", async (int year, Guid? employeeId, PanelBusiness business,
+                IBookingService bookingService, CancellationToken cancellationToken) =>
+            Results.Ok(await bookingService.GetDayCountsForBusinessAsync(business.Id, year, employeeId,
+                cancellationToken)));
+
         // Business panel: the business adds a visit itself (phone call, walk-in); confirmed at once
         group.MapPost("/bookings", async (CreateManualBookingRequest request, PanelBusiness business,
             IBookingService bookingService, CancellationToken cancellationToken) =>

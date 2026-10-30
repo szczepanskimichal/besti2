@@ -834,3 +834,131 @@ a.booking:hover {
 .groupChip:focus-visible {
     border-color: var(--color-text, currentColor);
 }
+
+/* View switch: the chosen view glows like the rest of BESTI */
+.segmented a[aria-current="page"] {
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.5);
+}
+
+/* "Plan": the list of the next two weeks on every screen */
+.planList {
+    display: block;
+    max-width: 760px;
+}
+
+/* ---------- "År": twelve small months, every day coloured by how busy it is ---------- */
+.year {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+}
+
+.yearMonth {
+    padding: 12px;
+    border-radius: 18px;
+    border: 1px solid rgba(150, 255, 230, 0.16);
+    background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.yearNow {
+    border-color: rgba(114, 214, 189, 0.6);
+    box-shadow: 0 0 18px rgba(114, 214, 189, 0.18);
+}
+
+.yearName {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 700;
+    color: var(--color-heading);
+    text-decoration: none;
+    text-transform: capitalize;
+}
+
+.yearName:hover {
+    color: var(--color-primary);
+}
+
+.yearTotal {
+    font-family: var(--font-small);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    text-transform: none;
+}
+
+.yearDays {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 3px;
+}
+
+.yearDay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    font-family: var(--font-small);
+    font-size: 0.72rem;
+    color: rgba(232, 255, 247, 0.7);
+    text-decoration: none;
+}
+
+.yearDay:hover {
+    outline: 1px solid var(--color-primary);
+}
+
+.yearToday {
+    outline: 2px solid var(--color-primary);
+}
+
+.heat1 {
+    background: rgba(114, 214, 189, 0.22);
+    color: #e8fff7;
+}
+
+.heat2 {
+    background: rgba(114, 214, 189, 0.45);
+    color: #e8fff7;
+}
+
+.heat3 {
+    background: rgba(114, 214, 189, 0.75);
+    color: var(--color-on-primary);
+    font-weight: 700;
+}
+
+.heat4 {
+    background: linear-gradient(135deg, #7cf5d8, #28c9e8);
+    color: var(--color-on-primary);
+    font-weight: 700;
+    box-shadow: 0 0 8px rgba(40, 200, 232, 0.6);
+}
+
+.heatLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    font-family: var(--font-small);
+    font-size: 0.8rem;
+    color: var(--color-muted);
+}
+
+.heatLegend li {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.heatLegend span {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+}

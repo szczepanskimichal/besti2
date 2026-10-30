@@ -29,6 +29,10 @@ public interface IBookingService
     Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default);
 
+    // "År" in the panel: visits per day in one year (employeeId = only that employee's), days without visits left out
+    Task<IReadOnlyList<BookingDayCountDto>> GetDayCountsForBusinessAsync(
+        Guid businessId, int year, Guid? employeeId = null, CancellationToken cancellationToken = default);
+
     // message = optional text for the customer in the "avlyst" e-mail
     Task<UpdateBookingStatusOutcome> UpdateStatusAsync(
         Guid bookingId, Guid businessId, BookingStatus newStatus, string? message = null,

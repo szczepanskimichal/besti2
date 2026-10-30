@@ -272,6 +272,34 @@ public class BookingService(
             new BookingCreatedDto(booking.Id, booking.StartUtc, booking.EndUtc, booking.Status.ToString()));
     }
 
+    public async Task<IReadOnlyList<BookingDayCountDto>> GetDayCountsForBusinessAsync(
+        Guid businessId, int year, Guid? employeeId = null, CancellationToken cancellationToken = default)
+    {
+        if (year is < 2000 or > 2100)
+        {
+            return [];
+        }
+
+        var fromUtc = SlotCalculator.ToUtc(new DateOnly(year, 1, 1), TimeOnly.MinValue);
+        var toUtc = SlotCalculator.ToUtc(new DateOnly(year + 1, 1, 1), TimeOnly.MinValue);
+        // Only the start times: a year of a busy salon is a few thousand small rows, counted per Oslo day here
+        var starts = await dbContext.Bookings
+            .AsNoTracking()
+            .Where(b => b.Service.BusinessId == businessId
+                        && b.Status != BookingStatus.Avlyst
+                        && b.StartUtc >= fromUtc
+                        && b.StartUtc < toUtc
+                        && (employeeId == null || b.EmployeeId == employeeId))
+            .Select(b => b.StartUtc)
+            .ToListAsync(cancellationToken);
+
+        return starts
+            .GroupBy(start => DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(start, SlotCalculator.Oslo)))
+            .OrderBy(day => day.Key)
+            .Select(day => new BookingDayCountDto(day.Key, day.Count()))
+            .ToList();
+    }
+
     public async Task<IReadOnlyList<PanelBookingDto>> GetForBusinessAsync(
         Guid businessId, DateOnly? from = null, DateOnly? to = null, CancellationToken cancellationToken = default)
     {
