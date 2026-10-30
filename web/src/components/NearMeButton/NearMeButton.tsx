@@ -36,18 +36,9 @@ export default function NearMeButton() {
             <button type="button" onClick={findMe} className={styles.button} disabled={status === "finding"}>
                 {status === "finding" ? "Finner deg …" : (
                     <>
-                        {/* Neon map pin, same green to turquoise as the button outlines */}
-                        <svg className={styles.pin} viewBox="0 0 24 30" width="20" height="25" aria-hidden="true">
-                            <defs>
-                                <linearGradient id="besti-pin-gradient" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0" stopColor="#5af05e"/>
-                                    <stop offset="1" stopColor="#28c9e8"/>
-                                </linearGradient>
-                            </defs>
-                            <path d="M12 2.2c-4.9 0-8.8 3.8-8.8 8.6 0 5.9 6.5 12.1 8 14.1.4.5 1.2.5 1.6 0 1.5-2 8-8.2 8-14.1 0-4.8-3.9-8.6-8.8-8.6z"
-                                  fill="none" stroke="url(#besti-pin-gradient)" strokeWidth="2.2" strokeLinejoin="round"/>
-                            <circle cx="12" cy="10.8" r="3.4" fill="none" stroke="url(#besti-pin-gradient)" strokeWidth="2.2"/>
-                        </svg>
+                        {/* The pin from the Besti logo */}
+                        {/* eslint-disable-next-line @next/next/no-img-element -- small icon, next/image not needed */}
+                        <img src="/logo/besti-pin.png" alt="" width={32} height={30} className={styles.pin}/>
                         Nær meg
                     </>
                 )}

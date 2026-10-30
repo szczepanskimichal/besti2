@@ -24,6 +24,7 @@
   --neon-glow: 0 0 10px rgba(90, 240, 120, 0.45), 0 0 22px rgba(40, 200, 232, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
   --font-heading: var(--font-syne), system-ui, sans-serif;
   --font-body: var(--font-syne), system-ui, sans-serif;
+  --font-small: var(--font-inter), system-ui, sans-serif;
 }
 
 *, *::before, *::after {

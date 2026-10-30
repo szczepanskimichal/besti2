@@ -21,7 +21,7 @@ export default function MonthGrid({ days, month, business, dayHref, newHref, hre
         weeks.push(days.slice(i, i + 7));
     }
     return (
-        <div className={calendar.scroller}>
+        <div className={calendar.monthWrap}>
             <div className={calendar.month}>
                 <div className={calendar.corner}/>
                 {["man.", "tir.", "ons.", "tor.", "fre.", "lør.", "søn."].map((name) => (
