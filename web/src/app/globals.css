@@ -29,6 +29,13 @@
   --font-small: var(--font-inter), system-ui, sans-serif;
 }
 
+/* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */
+@media (max-width: 640px) {
+  :root {
+    --glass-blur: blur(12px) saturate(150%);
+  }
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }

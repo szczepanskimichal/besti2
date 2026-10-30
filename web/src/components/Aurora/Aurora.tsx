@@ -14,20 +14,43 @@ type Size = { w: number; h: number };
 
 export default function Aurora() {
     const svgRef = useRef<SVGSVGElement>(null);
+    const skyRef = useRef<HTMLDivElement>(null);
     // Unknown on the server, so the stars appear right after the page loads
     const [size, setSize] = useState<Size | null>(null);
 
     useEffect(() => {
         // The SVG wave animation is not CSS, so it is paused by hand for people who turn off motion
-        if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) svgRef.current?.pauseAnimations();
-        const resize = () => setSize({ w: window.innerWidth, h: window.innerHeight });
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reducedMotion) svgRef.current?.pauseAnimations();
+        // Phones resize the window while scrolling (the address bar hides), so only a new width moves the stars
+        const resize = () => setSize((old) => old?.w === window.innerWidth ? old : { w: window.innerWidth, h: window.innerHeight });
         resize();
+        // The sky stands still while the page scrolls: old phones cannot redraw the moving sky
+        // behind the frosted cards and scroll smoothly at the same time
+        let timer: number | undefined;
+        const scroll = () => {
+            if (timer === undefined) {
+                skyRef.current?.classList.add(styles.scrolling);
+                if (!reducedMotion) svgRef.current?.pauseAnimations();
+            }
+            window.clearTimeout(timer);
+            timer = window.setTimeout(() => {
+                timer = undefined;
+                skyRef.current?.classList.remove(styles.scrolling);
+                if (!reducedMotion) svgRef.current?.unpauseAnimations();
+            }, 250);
+        };
         window.addEventListener("resize", resize);
-        return () => window.removeEventListener("resize", resize);
+        window.addEventListener("scroll", scroll, { passive: true });
+        return () => {
+            window.removeEventListener("resize", resize);
+            window.removeEventListener("scroll", scroll);
+            window.clearTimeout(timer);
+        };
     }, []);
 
     return (
-        <div className={styles.sky} aria-hidden="true">
+        <div ref={skyRef} className={styles.sky} aria-hidden="true">
             <svg ref={svgRef} width="0" height="0" style={{ position: "absolute" }}>
                 <filter id="besti-warp" x="-10%" y="-10%" width="120%" height="120%">
                     <feTurbulence type="fractalNoise" baseFrequency="0.0025 0.008" numOctaves={2} seed={4} result="n">
