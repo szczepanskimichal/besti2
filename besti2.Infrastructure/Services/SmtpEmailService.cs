@@ -1,4 +1,5 @@
 using besti2.Application.Email;
+using besti2.Infrastructure.Services.Email;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
@@ -15,7 +16,10 @@ public class SmtpEmailService(IConfiguration configuration, ILogger<SmtpEmailSer
         message.From.Add(MailboxAddress.Parse(configuration["Smtp:From"]!));
         message.To.Add(MailboxAddress.Parse(to));
         message.Subject = subject;
-        message.Body = new TextPart("plain") { Text = body };
+        // Plain text for every mail program, and the same text in BESTI's look for those that show HTML
+        var webBaseUrl = configuration["WebBaseUrl"] ?? "http://localhost:3000";
+        message.Body = new BodyBuilder { TextBody = body, HtmlBody = EmailHtml.Render(subject, body, webBaseUrl) }
+            .ToMessageBody();
 
         // Max 10 s per step: a slow mail server must not keep a booking "loading" for 2 minutes
         using var client = new SmtpClient { Timeout = 10_000 };

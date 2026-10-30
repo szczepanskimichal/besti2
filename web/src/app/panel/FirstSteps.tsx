@@ -57,9 +57,22 @@ export default function FirstSteps({ business }: { business: BusinessDetails }) 
 
     return (
         <section className={styles.box} aria-labelledby="kom-i-gang">
+            {/* Welcome for a new business; after the first steps it is just "Kom i gang" */}
+            <span className={styles.wave} aria-hidden="true">👋</span>
             <div className={styles.head}>
-                <h2 id="kom-i-gang" className={styles.title}>Kom i gang</h2>
+                <h2 id="kom-i-gang" className={styles.title}>
+                    {doneCount <= 1 ? `Velkommen til BESTI, ${business.name}!` : "Kom i gang"}
+                </h2>
                 <span className={styles.count}>{doneCount} av {steps.length} klare</span>
+            </div>
+            {doneCount <= 1 && (
+                <p className={styles.intro}>
+                    Fem korte steg, så er siden din klar for kunder. Det tar rundt 10 minutter.
+                </p>
+            )}
+            <div className={styles.progress} role="progressbar" aria-label="Kom i gang" aria-valuemin={0}
+                 aria-valuemax={steps.length} aria-valuenow={doneCount}>
+                <span style={{ width: `${(doneCount / steps.length) * 100}%` }}/>
             </div>
             <ol className={styles.steps}>
                 {steps.map((step) => (

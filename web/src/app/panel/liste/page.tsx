@@ -9,6 +9,7 @@ import PanelNav from "../PanelNav";
 import { NoShowButtons, NoShowCount } from "../NoShow";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "../page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 type PanelPageProps = {
     searchParams: Promise<{ feil?: string }>;
@@ -42,7 +43,10 @@ export default async function PanelListPage({ searchParams }: PanelPageProps) {
             )}
 
             {upcoming.length === 0 ? (
-                <p className={styles.muted}>Ingen kommende bestillinger.</p>
+                <EmptyState icon="🗓️" title="Ingen kommende bestillinger"
+                            action={{ href: "/panel/del", label: "Del lenken din" }}>
+                    Når kundene bestiller, kommer timene her. Del lenken eller heng opp plakaten, så finner de deg.
+                </EmptyState>
             ) : (
                 <ul className={styles.list}>
                     {upcoming.map((booking) => (

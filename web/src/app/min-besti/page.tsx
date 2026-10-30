@@ -17,6 +17,7 @@ import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 import waitlistStyles from "./waitlist.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = {
     title: "Min Besti",
@@ -160,9 +161,9 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             )}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
-                <p className={styles.muted}>
-                    Du har ingen kommende bestillinger. <Link href="/">Finn en bedrift</Link>
-                </p>
+                <EmptyState icon="✨" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
+                    Når du bestiller, ser du timen her, med nedtelling, veibeskrivelse og avbestilling.
+                </EmptyState>
             ) : (
                 <ul className={styles.list}>
                     {upcoming.map((booking) => (

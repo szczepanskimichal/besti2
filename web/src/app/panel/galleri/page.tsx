@@ -7,6 +7,7 @@ import GalleryUploadForm from "./GalleryUploadForm";
 import DeleteImageForm from "./DeleteImageForm";
 import panelStyles from "../tjenester/page.module.css";
 import styles from "./page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = {
     title: "Galleri",
@@ -37,7 +38,10 @@ export default async function GalleryPage({ searchParams }: GalleryPageProps) {
             {slettet && <p className={panelStyles.success} role="status">Bildet er slettet.</p>}
             {business.gallery.length < 12 && <GalleryUploadForm/>}
             {business.gallery.length === 0 ? (
-                <p className={panelStyles.muted}>Ingen bilder ennå.</p>
+                <EmptyState icon="📷" title="Ingen bilder ennå">
+                    Bilder av lokalet eller arbeidet ditt gir kundene tillit. Det første bildet blir det store
+                    bildet øverst på siden din.
+                </EmptyState>
             ) : (
                 <ul className={styles.grid}>
                     {business.gallery.map((image) => (

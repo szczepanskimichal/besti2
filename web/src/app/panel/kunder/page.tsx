@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/format";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
 import styles from "./page.module.css";
+import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = { title: "Kunder" };
 
@@ -40,7 +41,11 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                 {customers.length} {customers.length === 1 ? "kunde" : "kunder"}. Notatene ser bare dere og de ansatte, ikke kunden i BESTI.
             </p>
             {customers.length === 0 ? (
-                <p className={panel.muted}>{q ? "Ingen treff." : "Ingen kunder ennå. De kommer med den første bestillingen."}</p>
+                q ? <p className={panel.muted}>Ingen treff.</p> : (
+                    <EmptyState icon="👥" title="Ingen kunder ennå">
+                        Kundene kommer hit av seg selv med den første bestillingen, med historikk og plass til notater.
+                    </EmptyState>
+                )
             ) : (
                 <ul className={panel.list}>
                     {customers.map((customer) => (
