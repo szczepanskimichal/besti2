@@ -1,5 +1,5 @@
 .main {
-    max-width: 800px;
+    max-width: var(--page-width);
     margin: 0 auto;
     padding: 24px 16px 48px;
 }
@@ -212,12 +212,6 @@
 .sectionTitle {
     margin: 40px 0 16px;
     font-size: 1.25rem;
-}
-
-@media (min-width: 1200px) {
-    .main {
-        max-width: 960px;
-    }
 }
 /* "Melding til kunden" under "Avlys": a short note that goes into the e-mail */
 .cancelMessage {
