@@ -128,71 +128,75 @@
     color: var(--color-on-primary);
 }
 
-.days {
-    list-style: none;
-    padding: 0 0 4px;
+/* A time that crosses the customer's own visit somewhere else: shown, but not bookable */
+.slotMine,
+.slotMine:hover {
+    border-color: var(--color-border);
+}
+
+.slotMine {
+    opacity: 0.35;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.myVisits {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 111, 181, 0.45);
+    background: linear-gradient(rgba(255, 111, 181, 0.08), rgba(255, 111, 181, 0.08)), var(--color-card-base);
+}
+
+.myVisits ul {
+    margin: 6px 0 8px;
+    padding-left: 18px;
+}
+
+.myVisitsTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin: 0;
-    display: flex;
-    gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    font-weight: 700;
 }
 
-.days > li {
-    flex: 0 0 auto;
+.visitGem {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, #ffd1f0, #ff6fb5 55%, #a77bff);
+    box-shadow: 0 0 8px rgba(255, 111, 181, 0.8);
 }
 
-.day {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 76px;
-    padding: 8px 4px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    color: inherit;
-    text-decoration: none;
+/* Calendar and times: under each other on the phone, side by side on a wide screen */
+.picker {
+    display: grid;
+    gap: 24px;
+    margin-bottom: 16px;
 }
 
-.day:hover {
-    border-color: var(--color-primary);
+.timesTitle {
+    font-size: 1.1rem;
+    margin: 0 0 12px;
 }
 
-.daySelected,
-.daySelected:hover {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: var(--color-on-primary);
+.timesTitle::first-letter {
+    text-transform: uppercase;
 }
 
-.dayEmpty {
-    opacity: 0.45;
+@media (min-width: 900px) {
+    .picker {
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        align-items: start;
+    }
+
+    .times {
+        padding-top: 8px;
+    }
 }
 
-.dayName,
-.dayCount {
-    font-size: 0.8rem;
-}
-
-.dayNumber {
-    font-size: 1.25rem;
-}
-
-.weekNav {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.weekNav a {
-    display: inline-flex;
-    align-items: center;
-    text-decoration: none;
-}
 .error {
     background: linear-gradient(rgba(255, 155, 133, 0.12), rgba(255, 155, 133, 0.12)), var(--color-card-base);
     color: var(--color-danger);

@@ -10,6 +10,9 @@ namespace besti2.Infrastructure.Services.Bookings;
 // Free times for the booking page: opening hours minus visits and blocked time (the maths is in SlotCalculator)
 public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
 {
+    // The month calendar on "Bestill" shows six weeks at most (Monday before the 1st to Sunday after the last)
+    public const int MaxDays = 42;
+
     public async Task<IReadOnlyList<DateTime>?> GetFreeSlotsAsync(
         Guid serviceId, Guid employeeId, DateOnly date, int units = 1, CancellationToken cancellationToken = default)
     {
@@ -145,7 +148,7 @@ public class AvailabilityService(AppDbContext dbContext) : IAvailabilityService
             return [];
         }
 
-        days = Math.Clamp(days, 1, 14); // never more than two weeks in one request
+        days = Math.Clamp(days, 1, MaxDays); // never more than six weeks (one month calendar) in one request
 
         var employeeIds = await dbContext.Employees
             .AsNoTracking()

@@ -1,26 +1,31 @@
 import NextLink from "next/link";
 import {notFound} from "next/navigation";
-import {getBusinessBySlug, getFreeDays, getMe} from "@/lib/api";
+import {getBusinessBySlug, getFreeDays, getMe, getMyBookings} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {formatDay, formatLength, formatPrice, formatTime, formatWeekdayShort, isIsoDate, shiftDay, todayInOslo} from "@/lib/format";
+import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, shiftDay, shiftMonth, todayInOslo, weekdayOf} from "@/lib/format";
 import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import InviteForm from "./InviteForm";
+import MonthCalendar from "./MonthCalendar";
 import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
 
 // The biggest group the API takes (InviteRules.MaxPersons)
 const MAX_PERSONS = 8;
+// How far ahead the month calendar goes
+const MONTHS_AHEAD = 12;
+// Venteliste only for the next 60 days (WaitlistService.MaxDaysAhead)
+const WAITLIST_DAYS = 60;
 
 type Props = {
     params: Promise<{ slug: string }>;
-    searchParams: Promise<{ tjeneste?: string; ansatt?: string; fra?: string; dato?: string; tid?: string; antall?: string; sammen?: string; selv?: string; }>;
+    searchParams: Promise<{ tjeneste?: string; ansatt?: string; maned?: string; fra?: string; dato?: string; tid?: string; antall?: string; sammen?: string; selv?: string; }>;
 };
 
 export default async function BookingPage({params, searchParams}: Props) {
     const {slug} = await params;
-    const {tjeneste, ansatt, fra, dato, tid, antall, sammen, selv} = await searchParams;
+    const {tjeneste, ansatt, maned, fra, dato, tid, antall, sammen, selv} = await searchParams;
 
     const business = await getBusinessBySlug(slug);
     const service = business?.services.find((s) => s.id === tjeneste);
@@ -45,24 +50,66 @@ export default async function BookingPage({params, searchParams}: Props) {
     const units = Math.min(Math.max(Math.floor(Number(antall)) || 1, 1), maxUnits);
     const today = todayInOslo();
     const chosenDay = isIsoDate(dato) && dato >= today ? dato : undefined;
-    // First day of the 7-day strip
-    const start = isIsoDate(fra) && fra >= today ? fra : chosenDay ?? today;
-    // Free times for 7 days and who is booking (null = not logged in), both at the same time
-    const token = await getToken();
-    const [days, me] = await Promise.all([
-        getFreeDays(service.id, employeeId, start, units, persons),
-        token ? getMe(token) : null,
-    ]);
-    // The chosen day, otherwise the first day with free times
-    const selected = days?.find((d) => d.date === chosenDay) ?? days?.find((d) => d.slots.length > 0) ?? days?.[0];
-    // The chosen time must still be free; otherwise the customer picks a new one
-    const chosen = tid ? selected?.slots.find((s) => s.startUtc === tid) : undefined;
-    const chosenEmployee = business.employees.find((e) => e.id === chosen?.employeeId);
-    const previous = shiftDay(start, -7) < today ? today : shiftDay(start, -7);
 
-    // Link to this page with another week, day or time (the employee choice and the group size stay)
-    function bookingUrl(from: string, day?: string, time?: string, group = persons) {
-        const query = new URLSearchParams({tjeneste: service!.id, fra: from});
+    // Whole weeks: from the Monday before the 1st to the Sunday after the last day (max 42 days).
+    // Past days are never free, so the API only counts from today
+    async function loadMonth(inMonth: string) {
+        const firstDay = `${inMonth}-01`;
+        const lastDay = shiftDay(`${shiftMonth(inMonth, 1)}-01`, -1);
+        const gridStart = shiftDay(firstDay, -((weekdayOf(firstDay) + 6) % 7));
+        const gridEnd = shiftDay(lastDay, (7 - weekdayOf(lastDay)) % 7);
+        const from = gridStart < today ? today : gridStart;
+        const days = await getFreeDays(service!.id, employeeId, from, units, persons, daysBetween(from, gridEnd) + 1);
+        return {gridStart, gridEnd, days};
+    }
+
+    // The month in the calendar: from the link (fra = the week start in old links), never in the past
+    // and never more than a year ahead
+    const thisMonth = today.slice(0, 7);
+    const lastMonth = shiftMonth(thisMonth, MONTHS_AHEAD);
+    const wantedMonth = isIsoMonth(maned) ? maned : (chosenDay ?? (isIsoDate(fra) ? fra : today)).slice(0, 7);
+    let month = wantedMonth < thisMonth ? thisMonth : wantedMonth > lastMonth ? lastMonth : wantedMonth;
+    // Free times for the month and who is booking (null = not logged in), both at the same time
+    const token = await getToken();
+    // The customer's own visits (any business) are shown in the calendar, so they do not book on top of them
+    const [firstMonth, me, myBookings] = await Promise.all([
+        loadMonth(month),
+        token ? getMe(token) : null,
+        token ? getMyBookings(token).catch(() => null) : null,
+    ]);
+    let {gridStart, gridEnd, days} = firstMonth;
+    // Late in the month nothing may be left: without a chosen month or day the calendar opens on the next one
+    if (!isIsoMonth(maned) && !chosenDay && month === thisMonth
+        && !days?.some((d) => d.date.startsWith(month) && d.slots.length > 0)) {
+        month = shiftMonth(month, 1);
+        ({gridStart, gridEnd, days} = await loadMonth(month));
+    }
+    const monthDays = days?.filter((d) => d.date.startsWith(month)) ?? [];
+    // The chosen day, otherwise the first day of the month with free times
+    const selected = monthDays.find((d) => d.date === chosenDay) ?? monthDays.find((d) => d.slots.length > 0);
+    // Own visits from now on; the API refuses a booking on top of one (any business), so those times are greyed out.
+    // Only when the customer gets a visit too (an inviter who only sends can be busy)
+    const nowUtc = new Date().toISOString();
+    const myVisits = me && !me.isBusiness && organizerJoins
+        ? (myBookings ?? []).filter((b) => b.status !== "Avlyst" && b.endUtc > nowUtc)
+            .sort((a, b) => a.startUtc.localeCompare(b.startUtc))
+        : [];
+    const visitDays = new Set(myVisits.map((b) => osloDay(b.startUtc)));
+    const visitsOnSelected = myVisits.filter((b) => osloDay(b.startUtc) === selected?.date);
+    const visitMs = units * service.durationMinutes * 60_000;
+    function isMine(startUtc: string) {
+        const end = new Date(Date.parse(startUtc) + visitMs).toISOString();
+        return visitsOnSelected.some((b) => b.startUtc < end && b.endUtc > startUtc);
+    }
+    // The chosen time must still be free; otherwise the customer picks a new one
+    const chosen = tid && !isMine(tid) ? selected?.slots.find((s) => s.startUtc === tid) : undefined;
+    const chosenEmployee = business.employees.find((e) => e.id === chosen?.employeeId);
+    // Venteliste: the days of this month the customer can still wait for
+    const waitlistDays = monthDays.map((d) => d.date).filter((d) => d <= shiftDay(today, WAITLIST_DAYS));
+
+    // Link to this page with another month, day or time (the employee choice and the group size stay)
+    function bookingUrl(inMonth: string, day?: string, time?: string, group = persons) {
+        const query = new URLSearchParams({tjeneste: service!.id, maned: inMonth});
         if (group > 1) {
             query.set("sammen", String(group));
             if (!organizerJoins) {
@@ -84,7 +131,7 @@ export default async function BookingPage({params, searchParams}: Props) {
         return `/${business!.slug}/bestill?${query}`;
     }
 
-    const currentUrl = bookingUrl(start, selected?.date, chosen?.startUtc);
+    const currentUrl = bookingUrl(month, selected?.date, chosen?.startUtc);
 
     return (
         <main className={styles.main}>
@@ -98,12 +145,12 @@ export default async function BookingPage({params, searchParams}: Props) {
             {/* BESTI sammen: book alone or invite friends to the same time (the chosen day stays) */}
             {maxPersons >= 2 && (
                 <nav className={styles.together} aria-label="Hvem bestiller du for?">
-                    <NextLink href={bookingUrl(start, selected?.date, undefined, 1)} scroll={false}
+                    <NextLink href={bookingUrl(month, selected?.date, undefined, 1)} scroll={false}
                               className={together ? styles.togetherOption : `${styles.togetherOption} ${styles.togetherSelected}`}
                               aria-current={together ? undefined : "page"}>
                         Bare meg
                     </NextLink>
-                    <NextLink href={bookingUrl(start, selected?.date, undefined, together ? persons : 2)} scroll={false}
+                    <NextLink href={bookingUrl(month, selected?.date, undefined, together ? persons : 2)} scroll={false}
                               className={together ? `${styles.togetherOption} ${styles.togetherSelected}` : styles.togetherOption}
                               aria-current={together ? "page" : undefined}>
                         Sammen <span aria-hidden="true">👯</span>
@@ -119,7 +166,7 @@ export default async function BookingPage({params, searchParams}: Props) {
 
             <form method="get" className={styles.filters}>
                 <input type="hidden" name="tjeneste" value={service.id}/>
-                <input type="hidden" name="fra" value={start}/>
+                <input type="hidden" name="maned" value={month}/>
                 {selected && <input type="hidden" name="dato" value={selected.date}/>}
 
                 {together && (
@@ -171,63 +218,71 @@ export default async function BookingPage({params, searchParams}: Props) {
             </form>
 
             <h2 className={styles.sectionTitle}>Velg dag</h2>
-            <ul className={styles.days}>
-                {days?.map((day) => (
-                    <li key={day.date}>
-                        {day.slots.length === 0 ? (
-                            <span className={`${styles.day} ${styles.dayEmpty}`}>
-                                <span className={styles.dayName}>{formatWeekdayShort(day.date)}</span>
-                                <strong className={styles.dayNumber}>{Number(day.date.slice(8))}</strong>
-                                <span className={styles.dayCount}>Ingen</span>
-                            </span>
-                        ) : (
-                            <NextLink
-                                href={bookingUrl(start, day.date)}
-                                className={day.date === selected?.date ? `${styles.day} ${styles.daySelected}` : styles.day}
-                                aria-current={day.date === selected?.date ? "date" : undefined}>
-                                <span className={styles.dayName}>{formatWeekdayShort(day.date)}</span>
-                                <strong className={styles.dayNumber}>{Number(day.date.slice(8))}</strong>
-                                <span className={styles.dayCount}>{day.slots.length} ledige</span>
-                            </NextLink>
-                        )}
-                    </li>
-                ))}
-            </ul>
-            <nav className={styles.weekNav} aria-label="Bytt uke">
-                {start > today ? (
-                    <NextLink href={bookingUrl(previous)} className={styles.secondaryButton}>← Forrige</NextLink>
-                ) : <span/>}
-                <NextLink href={bookingUrl(shiftDay(start, 7))} className={styles.secondaryButton}>Neste 7 dager
-                    →</NextLink>
-            </nav>
+            <div className={styles.picker}>
+                <MonthCalendar month={month} gridStart={gridStart} gridEnd={gridEnd} days={days ?? []} today={today}
+                               selectedDay={selected?.date} visitDays={visitDays} dayHref={(day) => bookingUrl(day.slice(0, 7), day)}
+                               previousHref={month > thisMonth ? bookingUrl(shiftMonth(month, -1)) : undefined}
+                               nextHref={month < lastMonth ? bookingUrl(shiftMonth(month, 1)) : undefined}/>
 
-            <h2 className={styles.sectionTitle}>Ledige tider {selected ? formatDay(selected.date) : ""}</h2>
-
-            {!selected || selected.slots.length === 0 ? (
-                <p className={styles.muted}>
-                    {together
-                        ? `Ingen tider for ${persons} samtidig disse dagene. Trykk «Neste 7 dager», velg færre personer eller «Hvem som helst».`
-                        : "Ingen ledige tider disse dagene. Trykk «Neste 7 dager»."}
-                </p>
-            ) : (
-                <ul className={styles.slots}>
-                    {selected.slots.map((slot) => (
-                        <li key={slot.startUtc}>
-                            <NextLink
-                                href={bookingUrl(start, selected.date, slot.startUtc)}
-                                className={slot.startUtc === chosen?.startUtc ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
-                                aria-current={slot.startUtc === chosen?.startUtc ? "true" : undefined}>
-                                {formatTime(slot.startUtc)}
-                            </NextLink>
-                        </li>
-                    ))}
-                </ul>
-            )}
+                <div className={styles.times}>
+                    <h2 className={styles.timesTitle}>
+                        {selected ? `Ledige tider ${formatDay(selected.date)}` : "Ledige tider"}
+                    </h2>
+                    {!selected ? (
+                        <p className={styles.muted}>
+                            {together
+                                ? `Ingen tider for ${persons} samtidig i ${formatMonth(month)}. Prøv neste måned, færre personer eller «Hvem som helst».`
+                                : `Ingen ledige tider i ${formatMonth(month)}.`}
+                            {month < lastMonth && (
+                                <>
+                                    {" "}<NextLink href={bookingUrl(shiftMonth(month, 1))} scroll={false}>Se {formatMonth(shiftMonth(month, 1))} →</NextLink>
+                                </>
+                            )}
+                        </p>
+                    ) : (
+                        <ul className={styles.slots}>
+                            {selected.slots.map((slot) => isMine(slot.startUtc) ? (
+                                <li key={slot.startUtc}>
+                                    <span className={`${styles.slot} ${styles.slotMine}`}
+                                          title="Du har en annen time da">
+                                        {formatTime(slot.startUtc)}
+                                    </span>
+                                </li>
+                            ) : (
+                                <li key={slot.startUtc}>
+                                    <NextLink
+                                        href={bookingUrl(month, selected.date, slot.startUtc)}
+                                        className={slot.startUtc === chosen?.startUtc ? `${styles.slot} ${styles.slotSelected}` : styles.slot}
+                                        aria-current={slot.startUtc === chosen?.startUtc ? "true" : undefined}>
+                                        {formatTime(slot.startUtc)}
+                                    </NextLink>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                    {visitsOnSelected.length > 0 && (
+                        <div className={styles.myVisits}>
+                            <p className={styles.myVisitsTitle}>
+                                <span className={styles.visitGem} aria-hidden="true"/> Du har time denne dagen
+                            </p>
+                            <ul>
+                                {visitsOnSelected.map((b) => (
+                                    <li key={b.id}>
+                                        <strong>{formatTime(b.startUtc)}–{formatTime(b.endUtc)}</strong>{" "}
+                                        {b.serviceName} hos {b.businessName}
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className={styles.muted}>Tider som krysser den er grået ut. <NextLink href="/min-besti">Se Min Besti</NextLink></p>
+                        </div>
+                    )}
+                </div>
+            </div>
             {/* Venteliste: only alone and for customers (a business account cannot book) */}
-            {!together && !chosen && !me?.isBusiness && days && days.length > 0 && (
+            {!together && !chosen && !me?.isBusiness && waitlistDays.length > 0 && (
                 me ? (
-                    <WaitlistForm serviceId={service.id} employeeId={employeeId ?? null}
-                                  days={days.map((d) => d.date)} selectedDay={selected?.date}/>
+                    <WaitlistForm key={month} serviceId={service.id} employeeId={employeeId ?? null}
+                                  days={waitlistDays} selectedDay={selected?.date}/>
                 ) : (
                     <p className={styles.muted}>
                         Passer ingen av tidene?{" "}

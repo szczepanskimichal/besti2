@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace besti2.Tests;
 
-// Free times: one day for one employee (GetFreeSlotsAsync) and the 7-day strip (GetFreeDaysAsync)
+// Free times: one day for one employee (GetFreeSlotsAsync) and the day list for the month calendar (GetFreeDaysAsync)
 public class AvailabilityServiceTests
 {
     // Saturday 3 Jan 2099 (Klipp & Stil 10–15, Sunday closed); far in the future, so the test never gets old
@@ -51,6 +51,21 @@ public class AvailabilityServiceTests
         Assert.Equal(FutureSaturday, days[0].Date);
         Assert.NotEmpty(days[0].Slots);
         Assert.Empty(days[1].Slots); // Sunday
+    }
+
+    // check if the month calendar gets six weeks in one request, and never more
+    [Fact]
+    public async Task GetFreeDaysAsync_MonthCalendar_ReturnsSixWeeksAtMost()
+    {
+        await using var db = await CreateSeededDbAsync();
+
+        var month = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, null, FutureMonday, 42);
+        var tooMany = await new AvailabilityService(db).GetFreeDaysAsync(HerreklippId, null, FutureMonday, 1000);
+
+        Assert.Equal(42, month!.Count);
+        Assert.Equal(FutureMonday.AddDays(41), month[^1].Date);
+        Assert.NotEmpty(month[^2].Slots); // Saturday six weeks later
+        Assert.Equal(AvailabilityService.MaxDays, tooMany!.Count);
     }
 
     // check if "Hvem som helst" still offers 10:00 when Ingrid is busy, because Sofie is free

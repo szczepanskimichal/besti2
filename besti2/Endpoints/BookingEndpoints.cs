@@ -19,14 +19,15 @@ public static class BookingEndpoints
             return slots is null ? Results.NotFound() : Results.Ok(slots);
         }).RequireRateLimiting("search");
 
-        // "Velg dag": free times for 7 days from a date; without employeeId = anyone free;
-        // persons=2 = BESTI sammen (two employees free at the same time)
+        // "Velg dag": free times for 7 days from a date (days=42 = the whole month calendar);
+        // without employeeId = anyone free; persons=2 = BESTI sammen (two employees free at the same time)
         group.MapGet("/availability/days", async (Guid serviceId, Guid? employeeId, DateOnly from,
-            IAvailabilityService availability, CancellationToken cancellationToken, int units = 1, int persons = 1) =>
+            IAvailabilityService availability, CancellationToken cancellationToken, int units = 1, int persons = 1,
+            int days = 7) =>
         {
-            var days = await availability.GetFreeDaysAsync(serviceId, employeeId, from, 7, units, persons,
+            var freeDays = await availability.GetFreeDaysAsync(serviceId, employeeId, from, days, units, persons,
                 cancellationToken);
-            return days is null ? Results.NotFound() : Results.Ok(days);
+            return freeDays is null ? Results.NotFound() : Results.Ok(freeDays);
         }).RequireRateLimiting("search");
         // Create a new booking (customers only; name and email come from the account)
         group.MapPost("/bookings",

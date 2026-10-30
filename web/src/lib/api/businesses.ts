@@ -85,10 +85,11 @@ export async function getCities(): Promise<string[]> {
     return res.json();
 }
 
-// "Velg dag": 7 days of free times from a date; without employeeId = anyone free (Hvem som helst)
+// "Velg dag": free times day by day from a date (7 days, up to 42 for the month calendar);
+// without employeeId = anyone free (Hvem som helst)
 // persons 2-8: BESTI sammen, only times when that many employees are free together
-export async function getFreeDays(serviceId: string, employeeId: string | undefined, from: string, units = 1, persons = 1): Promise<FreeDay[] | null> {
-    const params = new URLSearchParams({serviceId, from, units: String(units), persons: String(persons)});
+export async function getFreeDays(serviceId: string, employeeId: string | undefined, from: string, units = 1, persons = 1, days = 7): Promise<FreeDay[] | null> {
+    const params = new URLSearchParams({serviceId, from, units: String(units), persons: String(persons), days: String(days)});
     if (employeeId) {
         params.set("employeeId", employeeId);
     }

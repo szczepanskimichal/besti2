@@ -121,12 +121,30 @@ export function formatDay(date: string): string {
     return dayHeading.format(new Date(`${date}T12:00:00Z`));
 }
 
-const shortWeekday = new Intl.DateTimeFormat("nb-NO", {
+// "2026-11" (the month calendar on Bestill); edited links like "2026-13" do not pass
+export function isIsoMonth(value: string | undefined): value is string {
+    return !!value && /^\d{4}-(0[1-9]|1[0-2])$/.test(value);
+}
+
+// "2026-11" + 2 -> "2027-01"
+export function shiftMonth(month: string, months: number): string {
+    const day = new Date(`${month}-15T12:00:00Z`);
+    day.setUTCMonth(day.getUTCMonth() + months);
+    return day.toISOString().slice(0, 7);
+}
+
+// Whole days from one date to another: "2026-11-01" -> "2026-11-03" = 2
+export function daysBetween(from: string, to: string): number {
+    return Math.round((Date.parse(to) - Date.parse(from)) / 86_400_000);
+}
+
+const monthHeading = new Intl.DateTimeFormat("nb-NO", {
     timeZone: "UTC",
-    weekday: "short",
+    month: "long",
+    year: "numeric",
 });
 
-// "2026-10-27" -> "tir." (for the day strip)
-export function formatWeekdayShort(date: string): string {
-    return shortWeekday.format(new Date(`${date}T12:00:00Z`));
+// "2026-11" -> "november 2026"
+export function formatMonth(month: string): string {
+    return monthHeading.format(new Date(`${month}-15T12:00:00Z`));
 }
