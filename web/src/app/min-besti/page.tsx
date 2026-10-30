@@ -8,6 +8,7 @@ import { formatDate, formatDay, formatTime } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
 import type { CustomerBooking } from "@/lib/types";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { answerMyNewTimeAction, leaveWaitlistAction, removeRebookReminderAction, shareInviteAgainAction } from "./actions";
 import { withdrawInviteAction } from "../invitasjon/actions";
 import CancelBookingForm from "./CancelBookingForm";
@@ -123,13 +124,13 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             {toReview > 0 && (
                 <p>
                     <Link href="/min-besti/vurderinger">
-                        Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere ⭐
+                        Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere <CrystalIcon name="stjerne"/>
                     </Link>
                 </p>
             )}
             {waitlist.length > 0 && (
                 <>
-                    <h2>Venteliste <span aria-hidden="true">🔔</span></h2>
+                    <h2>Venteliste <CrystalIcon name="bjelle"/></h2>
                     <ul className={styles.list}>
                         {waitlist.map((entry) => {
                             const times = `/${entry.businessSlug}/bestill?${new URLSearchParams({

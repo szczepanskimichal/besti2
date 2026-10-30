@@ -23,7 +23,7 @@
 }
 
 .error {
-    background: rgba(255, 155, 133, 0.12);
+    background: linear-gradient(rgba(255, 155, 133, 0.12), rgba(255, 155, 133, 0.12)), var(--color-card-base);
     color: var(--color-danger);
     border: 1px solid var(--color-danger);
     border-radius: 8px;
@@ -36,6 +36,8 @@
     margin: 0;
     padding: 0;
     display: grid;
+    /* minmax(0, …): a wide form field inside a card must not push the card past the screen edge */
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
 }
 
@@ -66,17 +68,17 @@
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(242, 196, 109, 0.14);
+    background: linear-gradient(rgba(242, 196, 109, 0.14), rgba(242, 196, 109, 0.14)), var(--color-card-base);
     color: var(--color-warning);
 }
 
 .Bekreftet {
-    background: rgba(143, 214, 160, 0.14);
+    background: linear-gradient(rgba(143, 214, 160, 0.14), rgba(143, 214, 160, 0.14)), var(--color-card-base);
     color: var(--color-success);
 }
 
 .Avlyst {
-    background: var(--color-border);
+    background: linear-gradient(var(--color-border), var(--color-border)), var(--color-card-base);
     color: var(--color-muted);
 }
 
@@ -191,7 +193,7 @@
     margin: 0;
     padding: 8px 12px;
     border-left: 3px solid var(--color-primary);
-    background: var(--color-primary-soft);
+    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     border-radius: 4px;
     white-space: pre-line;
     overflow-wrap: anywhere;
@@ -233,11 +235,11 @@
 }
 /* Status badge for a moved visit waiting for the customer */
 .VenterKunde {
-    background: var(--color-primary-soft);
+    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     color: var(--color-primary-dark);
 }
 .MotteIkke {
-    background: rgba(255, 155, 133, 0.14);
+    background: linear-gradient(rgba(255, 155, 133, 0.14), rgba(255, 155, 133, 0.14)), var(--color-card-base);
     color: var(--color-danger);
 }
 

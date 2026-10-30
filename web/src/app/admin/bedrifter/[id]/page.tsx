@@ -6,6 +6,7 @@ import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatDateTime } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { decideAction, noteAction, suspendAction } from "../../actions";
 import NoteForm from "./NoteForm";
 import styles from "../../admin.module.css";
@@ -118,7 +119,7 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
                         <dt>Bestillinger (30 d)</dt>
                         <dd>{business.bookingsLast30Days}, {business.upcoming} kommende</dd>
                         <dt>Vurderinger</dt>
-                        <dd>{details.reviewCount}{business.averageStars !== null ? `, snitt ${business.averageStars.toString().replace(".", ",")} ★` : ""}</dd>
+                        <dd>{details.reviewCount}{business.averageStars !== null && <>, snitt {business.averageStars.toString().replace(".", ",")} <CrystalIcon name="stjerne"/></>}</dd>
                         <dt>Ukerapport</dt>
                         <dd>{details.weeklyReportOn ? "På" : "Slått av"}</dd>
                         <dt>BESTI Pro</dt>

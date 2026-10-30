@@ -1,4 +1,5 @@
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { notificationSettingsAction } from "./actions";
 import styles from "./page.module.css";
 
@@ -19,7 +20,7 @@ export default function ReminderSettings({ reminderEmail, soonNotice }: Props) {
                     <input type="hidden" name="soonNotice"
                            value={String(choice.key === "soonNotice" ? !soonNotice : soonNotice)}/>
                     <SubmitButton className={`${styles.soundToggle} ${choice.on ? "" : styles.off}`} pendingText="Lagrer…">
-                        <span aria-hidden="true">{choice.on ? "🔔" : "🔕"}</span>
+                        <CrystalIcon name="bjelle" off={!choice.on}/>
                         {choice.label}: <strong>{choice.on ? "På" : "Av"}</strong>
                     </SubmitButton>
                 </form>

@@ -79,7 +79,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 b.ApprovedUtc != null ? b.VerifiedUtc : null,
                 b.LoyaltyVisits,
                 b.LoyaltyReward,
-                includeHidden ? b.SuspendedReason : null))
+                includeHidden ? b.SuspendedReason : null,
+                b.ApprovedUtc ?? b.CreatedUtc))
             .FirstOrDefaultAsync(cancellationToken);
 
         return business is null

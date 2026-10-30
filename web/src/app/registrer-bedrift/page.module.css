@@ -15,7 +15,7 @@
 }
 
 .error {
-    background: rgba(255, 155, 133, 0.12);
+    background: linear-gradient(rgba(255, 155, 133, 0.12), rgba(255, 155, 133, 0.12)), var(--color-card-base);
     color: var(--color-danger);
     border: 1px solid var(--color-danger);
     border-radius: 8px;

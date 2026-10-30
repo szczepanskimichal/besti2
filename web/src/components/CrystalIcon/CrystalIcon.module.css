@@ -1,0 +1,13 @@
+/* The SVG has room around the shape for its glow, so it is a bit larger than the text and pulled in at the sides */
+.icon {
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    margin: -0.15em -0.1em;
+    vertical-align: -0.25em;
+}
+
+.off {
+    opacity: 0.4;
+    filter: grayscale(1);
+}

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import styles from "./EmptyState.module.css";
 
 type Props = {
-    icon: string;
+    icon: ReactNode; // an emoji or a CrystalIcon
     title: string;
     children: ReactNode;
     // The one next step, e.g. "Finn en bedrift"

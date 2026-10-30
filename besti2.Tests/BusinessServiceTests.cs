@@ -35,6 +35,30 @@ public class BusinessServiceTests
         Assert.Equal(2, result.Employees.Count);
     }
 
+    // check if JoinedUtc is the approval time, so the "Ny på Besti" stamp counts from when the page went live
+    [Fact]
+    public async Task GetByIdAsync_JoinedUtc_IsApprovalTime()
+    {
+        // Arrange
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var approved = new DateTime(2026, 10, 30, 12, 0, 0, DateTimeKind.Utc);
+        var business = await db.Businesses.SingleAsync(b => b.Id == klippId);
+        business.ApprovedUtc = approved;
+        await db.SaveChangesAsync();
+
+        // Act
+        var result = await service.GetByIdAsync(klippId);
+
+        // Assert
+        Assert.Equal(approved, result!.JoinedUtc);
+    }
+
     // check if GetByIdAsync returns null when the business does not exist - unhappy path
     [Fact]
     public async Task GetByIdAsync_ReturnsNull_WhenBusinessDoesNotExist()

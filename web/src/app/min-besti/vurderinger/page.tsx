@@ -6,6 +6,7 @@ import { getToken } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { bookingsToReview } from "@/lib/minBesti";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import ReviewForm from "./ReviewForm";
 // Same cards and buttons as the rest of Min Besti
 import panelStyles from "../../panel/page.module.css";
@@ -46,7 +47,7 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
                 Hvordan var timen? Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
             </p>
             {visits.length === 0 ? (
-                <EmptyState icon="⭐" title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
+                <EmptyState icon={<CrystalIcon name="stjerne"/>} title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
                     Etter et besøk kan du gi stjerner og et bilde her. Bare ekte besøk kan vurderes.
                 </EmptyState>
             ) : (
