@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Syne } from "next/font/google";
+import { Inter, Syne } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -7,11 +7,19 @@ import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
 import Aurora from "../components/Aurora/Aurora";
 import Analytics from "../components/Analytics/Analytics";
 
-// The only font in BESTI: Syne bold for all text (Ada's final design, 2026-10-30)
+// Syne bold for almost all text (Ada's final design, 2026-10-30)
 const syne = Syne({
     subsets: ["latin", "latin-ext"],
     weight: ["700"],
     variable: "--font-syne",
+    display: "swap",
+});
+
+// Small print where Syne is hard to read: times and weekdays in the calendar, option descriptions
+const inter = Inter({
+    subsets: ["latin", "latin-ext"],
+    weight: ["400", "500", "600"],
+    variable: "--font-inter",
     display: "swap",
 });
 
@@ -35,7 +43,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="nb" className={syne.variable}>
+        <html lang="nb" className={`${syne.variable} ${inter.variable}`}>
         <body>
         <Aurora />
         <Header />

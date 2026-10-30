@@ -6,6 +6,7 @@ import {Suspense} from "react";
 import Form from "next/form";
 import Link from "next/link";
 import NearMeButton from "@/components/NearMeButton/NearMeButton";
+import ForWhomPicker from "@/components/ForWhomPicker/ForWhomPicker";
 import styles from "./page.module.css";
 
 type HomeProps = {
@@ -54,16 +55,7 @@ export default async function Home({searchParams}: HomeProps) {
                             placeholder="Frisør, dekkskift, massasje"
                         />
                     </label>
-                    <label className={styles.field}>
-                        For hvem?
-                        <select name="personer" defaultValue={personer ?? ""}>
-                            <option value="">Bare meg</option>
-                            <option value="2">Meg + en venn 👯</option>
-                            {[3, 4, 5, 6, 7, 8].map((count) => (
-                                <option key={count} value={count}>{count} personer 👯</option>
-                            ))}
-                        </select>
-                    </label>
+                    <ForWhomPicker key={personer ?? ""} persons={personer}/>
                     <label className={styles.field}>
                         Hva vil du finne med Besti?
                         <select name="category" defaultValue={category ?? ""}>
@@ -106,8 +98,6 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <button type="submit" className={styles.searchButton}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed */}
-                        <img src="/logo/besti-kafelek.png" alt="" width={56} height={56} className={styles.searchIcon}/>
                         Finn besti time
                     </button>
                     {lat && lng && (

@@ -22,7 +22,9 @@
 }
 
 .pin {
-    filter: drop-shadow(0 0 5px rgba(60, 230, 170, 0.55));
+    height: 30px;
+    width: auto;
+    filter: drop-shadow(0 0 6px rgba(60, 230, 170, 0.5));
 }
 
 .button:hover {
