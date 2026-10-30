@@ -1,8 +1,8 @@
 import NextLink from "next/link";
 import {notFound} from "next/navigation";
-import {getBusinessBySlug, getFreeDays, getMe} from "@/lib/api";
+import {getBusinessBySlug, getFreeDays, getMe, getMyBookings} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {daysBetween, formatDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, shiftDay, shiftMonth, todayInOslo, weekdayOf} from "@/lib/format";
+import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, shiftDay, shiftMonth, todayInOslo, weekdayOf} from "@/lib/format";
 import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
@@ -71,9 +71,11 @@ export default async function BookingPage({params, searchParams}: Props) {
     let month = wantedMonth < thisMonth ? thisMonth : wantedMonth > lastMonth ? lastMonth : wantedMonth;
     // Free times for the month and who is booking (null = not logged in), both at the same time
     const token = await getToken();
-    const [firstMonth, me] = await Promise.all([
+    // The customer's own visits (any business) are shown in the calendar, so they do not book on top of them
+    const [firstMonth, me, myBookings] = await Promise.all([
         loadMonth(month),
         token ? getMe(token) : null,
+        token ? getMyBookings(token).catch(() => null) : null,
     ]);
     let {gridStart, gridEnd, days} = firstMonth;
     // Late in the month nothing may be left: without a chosen month or day the calendar opens on the next one
@@ -85,8 +87,22 @@ export default async function BookingPage({params, searchParams}: Props) {
     const monthDays = days?.filter((d) => d.date.startsWith(month)) ?? [];
     // The chosen day, otherwise the first day of the month with free times
     const selected = monthDays.find((d) => d.date === chosenDay) ?? monthDays.find((d) => d.slots.length > 0);
+    // Own visits from now on; the API refuses a booking on top of one (any business), so those times are greyed out.
+    // Only when the customer gets a visit too (an inviter who only sends can be busy)
+    const nowUtc = new Date().toISOString();
+    const myVisits = me && !me.isBusiness && organizerJoins
+        ? (myBookings ?? []).filter((b) => b.status !== "Avlyst" && b.endUtc > nowUtc)
+            .sort((a, b) => a.startUtc.localeCompare(b.startUtc))
+        : [];
+    const visitDays = new Set(myVisits.map((b) => osloDay(b.startUtc)));
+    const visitsOnSelected = myVisits.filter((b) => osloDay(b.startUtc) === selected?.date);
+    const visitMs = units * service.durationMinutes * 60_000;
+    function isMine(startUtc: string) {
+        const end = new Date(Date.parse(startUtc) + visitMs).toISOString();
+        return visitsOnSelected.some((b) => b.startUtc < end && b.endUtc > startUtc);
+    }
     // The chosen time must still be free; otherwise the customer picks a new one
-    const chosen = tid ? selected?.slots.find((s) => s.startUtc === tid) : undefined;
+    const chosen = tid && !isMine(tid) ? selected?.slots.find((s) => s.startUtc === tid) : undefined;
     const chosenEmployee = business.employees.find((e) => e.id === chosen?.employeeId);
     // Venteliste: the days of this month the customer can still wait for
     const waitlistDays = monthDays.map((d) => d.date).filter((d) => d <= shiftDay(today, WAITLIST_DAYS));
@@ -204,7 +220,7 @@ export default async function BookingPage({params, searchParams}: Props) {
             <h2 className={styles.sectionTitle}>Velg dag</h2>
             <div className={styles.picker}>
                 <MonthCalendar month={month} gridStart={gridStart} gridEnd={gridEnd} days={days ?? []} today={today}
-                               selectedDay={selected?.date} dayHref={(day) => bookingUrl(day.slice(0, 7), day)}
+                               selectedDay={selected?.date} visitDays={visitDays} dayHref={(day) => bookingUrl(day.slice(0, 7), day)}
                                previousHref={month > thisMonth ? bookingUrl(shiftMonth(month, -1)) : undefined}
                                nextHref={month < lastMonth ? bookingUrl(shiftMonth(month, 1)) : undefined}/>
 
@@ -225,7 +241,14 @@ export default async function BookingPage({params, searchParams}: Props) {
                         </p>
                     ) : (
                         <ul className={styles.slots}>
-                            {selected.slots.map((slot) => (
+                            {selected.slots.map((slot) => isMine(slot.startUtc) ? (
+                                <li key={slot.startUtc}>
+                                    <span className={`${styles.slot} ${styles.slotMine}`}
+                                          title="Du har en annen time da">
+                                        {formatTime(slot.startUtc)}
+                                    </span>
+                                </li>
+                            ) : (
                                 <li key={slot.startUtc}>
                                     <NextLink
                                         href={bookingUrl(month, selected.date, slot.startUtc)}
@@ -236,6 +259,22 @@ export default async function BookingPage({params, searchParams}: Props) {
                                 </li>
                             ))}
                         </ul>
+                    )}
+                    {visitsOnSelected.length > 0 && (
+                        <div className={styles.myVisits}>
+                            <p className={styles.myVisitsTitle}>
+                                <span className={styles.visitGem} aria-hidden="true"/> Du har time denne dagen
+                            </p>
+                            <ul>
+                                {visitsOnSelected.map((b) => (
+                                    <li key={b.id}>
+                                        <strong>{formatTime(b.startUtc)}–{formatTime(b.endUtc)}</strong>{" "}
+                                        {b.serviceName} hos {b.businessName}
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className={styles.muted}>Tider som krysser den er grået ut. <NextLink href="/min-besti">Se Min Besti</NextLink></p>
+                        </div>
                     )}
                 </div>
             </div>

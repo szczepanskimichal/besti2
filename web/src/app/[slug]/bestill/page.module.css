@@ -128,6 +128,48 @@
     color: var(--color-on-primary);
 }
 
+/* A time that crosses the customer's own visit somewhere else: shown, but not bookable */
+.slotMine,
+.slotMine:hover {
+    border-color: var(--color-border);
+}
+
+.slotMine {
+    opacity: 0.35;
+    text-decoration: line-through;
+    cursor: not-allowed;
+}
+
+.myVisits {
+    margin-top: 16px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 111, 181, 0.45);
+    background: linear-gradient(rgba(255, 111, 181, 0.08), rgba(255, 111, 181, 0.08)), var(--color-card-base);
+}
+
+.myVisits ul {
+    margin: 6px 0 8px;
+    padding-left: 18px;
+}
+
+.myVisitsTitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 700;
+}
+
+.visitGem {
+    width: 9px;
+    height: 9px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, #ffd1f0, #ff6fb5 55%, #a77bff);
+    box-shadow: 0 0 8px rgba(255, 111, 181, 0.8);
+}
+
 /* Calendar and times: under each other on the phone, side by side on a wide screen */
 .picker {
     display: grid;
