@@ -5,6 +5,8 @@
   /* Frosted glass cards (blurred by --glass-blur) */
   --color-surface: linear-gradient(160deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02) 40%), rgba(6, 28, 32, 0.46);
   --glass-blur: blur(20px) saturate(160%);
+  /* Max width of the content on all pages (header, footer and the main column) */
+  --page-width: 1280px;
   --color-text: #eef7f4;
   --color-heading: #bff3e3;
   --color-muted: #c3dad3;

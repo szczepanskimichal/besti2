@@ -1,6 +1,6 @@
-/* The calendar needs more width than the other panel pages */
+/* The calendar uses the full page width (same as the other pages since the wider layout) */
 .wide {
-    max-width: 1200px;
+    max-width: var(--page-width);
 }
 
 /* ← I dag → · day title · date picker */
