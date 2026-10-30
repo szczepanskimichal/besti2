@@ -4,15 +4,16 @@ import { redirect } from "next/navigation";
 import { getMe, getMyBookings, getMyInvites, getMyRebookReminders, getMyWaitlist } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
-import { formatDate, formatDay, formatTime } from "@/lib/format";
+import { formatDate, formatDay, formatTime, isIsoDate, osloDay, shiftDay, todayInOslo } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
-import type { CustomerBooking } from "@/lib/types";
+import type { CustomerBooking, RebookReminder } from "@/lib/types";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { answerMyNewTimeAction, leaveWaitlistAction, removeRebookReminderAction, shareInviteAgainAction } from "./actions";
 import { withdrawInviteAction } from "../invitasjon/actions";
 import CancelBookingForm from "./CancelBookingForm";
 import Countdown from "./Countdown";
+import MyCalendar, { type CalendarView, type Suggestion } from "./MyCalendar";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 type MyBookingsPageProps = {
-    searchParams: Promise<{ feil?: string; avbestilt?: string; svar?: string; invitasjon?: string }>;
+    searchParams: Promise<{ feil?: string; avbestilt?: string; svar?: string; invitasjon?: string; visning?: string; dag?: string }>;
 };
 
 // Only the coming visits: past and cancelled ones are gone (past visits can still be reviewed for 30 days)
@@ -44,8 +45,17 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     if (!bookings) {
         redirect("/logg-inn?neste=/min-besti");
     }
-    const { feil, avbestilt, svar, invitasjon } = await searchParams;
+    const { feil, avbestilt, svar, invitasjon, visning, dag } = await searchParams;
     const upcoming = upcomingBookings(bookings);
+    // Min kalender: all visits that were not cancelled (also the past ones, for "Bestill igjen"), soonest first
+    const today = todayInOslo();
+    const view: CalendarView = ["ar", "maned", "uke", "dag", "plan"].includes(visning ?? "") ? visning as CalendarView : "maned";
+    const calendarDay = isIsoDate(dag) ? dag : today;
+    const calendarVisits = bookings.filter((b) => b.status !== "Avlyst")
+        .sort((a, b) => a.startUtc.localeCompare(b.startUtc));
+    const calendarLink = (to: CalendarView, day: string) =>
+        `/min-besti?${new URLSearchParams({ visning: to, dag: day })}`;
+    const suggestions = rebookSuggestions(rebook, calendarVisits, today);
     // BESTI sammen: my invitations others can still join, and who each shared visit is with
     const waiting = (invites ?? []).filter((i) => i.open && i.isInviter);
     const together = new Map((invites ?? []).map((i) => [i.id, i]));
@@ -81,6 +91,8 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             {feil === "invitasjon" && (
                 <p className={styles.error} role="alert">Invitasjonen kunne ikke endres. Kanskje noen nettopp svarte?</p>
             )}
+            <MyCalendar view={view} day={calendarDay} today={today} visits={calendarVisits} waitlist={waitlist}
+                        suggestions={suggestions} link={calendarLink}/>
             {waiting.length > 0 && (
                 <>
                     <h2>Venter på svar <span aria-hidden="true">👯</span></h2>
@@ -134,7 +146,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     <ul className={styles.list}>
                         {waitlist.map((entry) => {
                             const times = `/${entry.businessSlug}/bestill?${new URLSearchParams({
-                                tjeneste: entry.serviceId, fra: entry.date, dato: entry.date,
+                                tjeneste: entry.serviceId, maned: entry.date.slice(0, 7), dato: entry.date,
                                 ...(entry.employeeId ? { ansatt: entry.employeeId } : {}),
                             })}`;
                             return (
@@ -168,7 +180,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             ) : (
                 <ul className={styles.list}>
                     {upcoming.map((booking) => (
-                        <li key={booking.id} className={styles.card}>
+                        <li key={booking.id} id={`time-${booking.id}`} className={styles.card}>
                             <div className={styles.cardHeader}>
                                 <p className={styles.when}>
                                     {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
@@ -278,4 +290,29 @@ function freeCancelUntil(booking: CustomerBooking): string | null {
 // Google Maps route from where you are (opens the Maps app on the phone). Free, no API key
 function directionsUrl(address: string): string {
     return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+}
+
+// "Tid for ny time?" in the calendar: the last visit of the service + the reminder's weeks (today at the earliest),
+// unless a new visit of that service is already booked
+function rebookSuggestions(reminders: RebookReminder[], visits: CustomerBooking[], today: string): Suggestion[] {
+    const nowUtc = new Date().toISOString();
+    return reminders.flatMap((reminder) => {
+        const same = visits.filter((b) => b.serviceId === reminder.serviceId && b.status !== "MotteIkke");
+        const last = same.filter((b) => b.endUtc < nowUtc).at(-1);
+        if (!last || same.some((b) => b.startUtc > nowUtc)) {
+            return [];
+        }
+        const due = shiftDay(osloDay(last.startUtc), reminder.weeks * 7);
+        const date = due < today ? today : due;
+        const query = new URLSearchParams({ tjeneste: reminder.serviceId, maned: date.slice(0, 7), dato: date });
+        if (reminder.employeeId) {
+            query.set("ansatt", reminder.employeeId);
+        }
+        return [{
+            date,
+            serviceName: reminder.serviceName,
+            businessName: reminder.businessName,
+            bookHref: `/${reminder.businessSlug}/bestill?${query}`,
+        }];
+    });
 }

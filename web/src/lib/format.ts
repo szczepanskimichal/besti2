@@ -148,3 +148,13 @@ const monthHeading = new Intl.DateTimeFormat("nb-NO", {
 export function formatMonth(month: string): string {
     return monthHeading.format(new Date(`${month}-15T12:00:00Z`));
 }
+
+// A month calendar in whole weeks: from the Monday before the 1st to the Sunday after the last day (max 42 days)
+export function monthGrid(month: string): { gridStart: string; gridEnd: string } {
+    const firstDay = `${month}-01`;
+    const lastDay = shiftDay(`${shiftMonth(month, 1)}-01`, -1);
+    return {
+        gridStart: shiftDay(firstDay, -((weekdayOf(firstDay) + 6) % 7)),
+        gridEnd: shiftDay(lastDay, (7 - weekdayOf(lastDay)) % 7),
+    };
+}

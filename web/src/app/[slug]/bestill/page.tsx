@@ -2,7 +2,7 @@ import NextLink from "next/link";
 import {notFound} from "next/navigation";
 import {getBusinessBySlug, getFreeDays, getMe, getMyBookings} from "@/lib/api";
 import {getToken} from "@/lib/auth";
-import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, shiftDay, shiftMonth, todayInOslo, weekdayOf} from "@/lib/format";
+import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, monthGrid, shiftDay, shiftMonth, todayInOslo} from "@/lib/format";
 import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
@@ -51,13 +51,9 @@ export default async function BookingPage({params, searchParams}: Props) {
     const today = todayInOslo();
     const chosenDay = isIsoDate(dato) && dato >= today ? dato : undefined;
 
-    // Whole weeks: from the Monday before the 1st to the Sunday after the last day (max 42 days).
-    // Past days are never free, so the API only counts from today
+    // Whole weeks of one month; past days are never free, so the API only counts from today
     async function loadMonth(inMonth: string) {
-        const firstDay = `${inMonth}-01`;
-        const lastDay = shiftDay(`${shiftMonth(inMonth, 1)}-01`, -1);
-        const gridStart = shiftDay(firstDay, -((weekdayOf(firstDay) + 6) % 7));
-        const gridEnd = shiftDay(lastDay, (7 - weekdayOf(lastDay)) % 7);
+        const {gridStart, gridEnd} = monthGrid(inMonth);
         const from = gridStart < today ? today : gridStart;
         const days = await getFreeDays(service!.id, employeeId, from, units, persons, daysBetween(from, gridEnd) + 1);
         return {gridStart, gridEnd, days};
