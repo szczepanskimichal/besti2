@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
 import { getBusinessBySlug } from "@/lib/api";
@@ -10,6 +11,10 @@ type Props = {
     params: Promise<{ slug: string }>;
     searchParams: Promise<{ tjeneste?: string; ansatt?: string; tid?: string }>;
 };
+
+// Twelve sparks fly out around the crystal in Besti colours
+const SPARK_COLORS = ["#ffffff", "#bff8e8", "#72d6bd", "#8fc8ff", "#c9bfff"];
+const SPARKS = Array.from({ length: 12 }, (_, k) => SPARK_COLORS[k % 5]);
 
 export default async function BookingConfirmedPage({ params, searchParams }: Props) {
     const { slug } = await params;
@@ -27,12 +32,24 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
     return (
         <main className={styles.main}>
             <div className={styles.card}>
+                {/* Ada's crystal: pops in with a burst and sparks, the check draws itself, then it glows softly */}
                 <div className={styles.badge} aria-hidden="true">
-                    <span className={styles.glow} />
-                    <svg className={styles.check} viewBox="0 0 92 92">
-                        <circle cx="46" cy="46" r="41" />
-                        <path d="M28 47 l12 12 l24 -26" />
+                    <span className={styles.halo}/>
+                    <span className={styles.burst}/>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- static SVG with the glow baked in */}
+                    <img src="/ikoner/krystall.svg" alt="" className={styles.gem}/>
+                    <svg className={styles.check} viewBox="-10 -10 120 120">
+                        <path d="M37 51 l9 9 l18 -20" pathLength={1}/>
                     </svg>
+                    <span className={styles.sparks}>
+                        {SPARKS.map((color, k) => (
+                            <i key={k} style={{ "--a": `${k * 30 + 10}deg`, "--d": `${70 + (k % 3) * 14}px`, color } as CSSProperties}>
+                                {k % 2 ? "✦" : "✧"}
+                            </i>
+                        ))}
+                    </span>
+                    <span className={styles.glint} style={{ left: "74%", top: "6%" }}/>
+                    <span className={styles.glint} style={{ left: "6%", top: "62%", animationDelay: "2.9s" }}/>
                 </div>
                 <h1 className={styles.title}>Vips! Så var det bestilt.</h1>
                 <p className={styles.muted}>

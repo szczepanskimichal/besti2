@@ -3,9 +3,10 @@ import styles from "./CrystalIcon.module.css";
 const FILES = {
     stjerne: "/ikoner/stjerne-liten.svg",
     bjelle: "/ikoner/bjelle.svg",
+    pinne: "/ikoner/pinne.svg",
 };
 
-// A crystal icon in the aurora colours instead of an emoji (★ 🔔), the size of the text around it.
+// A crystal icon in the aurora colours instead of an emoji (★ 🔔 📍), the size of the text around it.
 // off = greyed out, e.g. a reminder that is turned off
 export default function CrystalIcon({ name, off = false }: { name: keyof typeof FILES; off?: boolean }) {
     // eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed
