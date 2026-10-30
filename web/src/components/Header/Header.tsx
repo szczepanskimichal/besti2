@@ -18,9 +18,9 @@ export default async function Header() {
         <header className={styles.header}>
             <div className={styles.inner}>
                 <NextLink href="/" className={styles.logo} aria-label="BESTI – til forsiden">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG logo, next/image not needed */}
-                    <img src="/logo/besti-pin.svg" alt="" width={42} height={44} className={styles.logoImage}/>
-                    <span className={styles.word}>besti</span>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed */}
+                    <img src="/logo/besti-kafelek.png" alt="" width={56} height={56} className={styles.logoImage}/>
+                    <span className={styles.word}>Besti</span>
                     <span className={styles.beta}>Beta</span>
                 </NextLink>
                 <nav className={styles.nav}>
@@ -45,7 +45,7 @@ export default async function Header() {
                         </>
                     ) : (
                         <>
-                            <NextLink href="/logg-inn" className={styles.navLink}>Logg inn</NextLink>
+                            <NextLink href="/logg-inn" className={styles.loginLink}>Logg inn</NextLink>
                             <NextLink href="/registrer-bedrift" className={styles.ctaLink}>Registrer bedrift</NextLink>
                         </>
                     )}
