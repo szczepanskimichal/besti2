@@ -108,13 +108,13 @@
 }
 
 .notice {
-    background: rgba(143, 214, 160, 0.12);
+    background: linear-gradient(rgba(143, 214, 160, 0.12), rgba(143, 214, 160, 0.12)), var(--color-card-base);
     color: var(--color-success);
     border: 1px solid var(--color-success);
 }
 
 .error {
-    background: rgba(255, 155, 133, 0.12);
+    background: linear-gradient(rgba(255, 155, 133, 0.12), rgba(255, 155, 133, 0.12)), var(--color-card-base);
     color: var(--color-danger);
     border: 1px solid var(--color-danger);
 }
@@ -195,12 +195,12 @@
 }
 
 .Venter {
-    background: rgba(242, 196, 109, 0.14);
+    background: linear-gradient(rgba(242, 196, 109, 0.14), rgba(242, 196, 109, 0.14)), var(--color-card-base);
     color: var(--color-warning);
 }
 
 .Synlig {
-    background: rgba(143, 214, 160, 0.14);
+    background: linear-gradient(rgba(143, 214, 160, 0.14), rgba(143, 214, 160, 0.14)), var(--color-card-base);
     color: var(--color-success);
 }
 

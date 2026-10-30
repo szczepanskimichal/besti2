@@ -78,7 +78,7 @@
 }
 
 .selected {
-    background: rgba(114, 214, 189, 0.14);
+    background: linear-gradient(rgba(114, 214, 189, 0.14), rgba(114, 214, 189, 0.14)), var(--color-card-base);
     border-color: rgba(150, 255, 230, 0.35);
 }
 

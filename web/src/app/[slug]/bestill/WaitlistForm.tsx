@@ -2,6 +2,7 @@
 import { useActionState } from "react";
 import { formatDay } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { joinWaitlistAction, type WaitlistFormState } from "./actions";
 import styles from "./page.module.css";
 
@@ -18,7 +19,7 @@ export default function WaitlistForm({ serviceId, employeeId, days, selectedDay 
 
     return (
         <section className={styles.waitlist}>
-            <h2 className={styles.sectionTitle}>Passer ingen av tidene? <span aria-hidden="true">🔔</span></h2>
+            <h2 className={styles.sectionTitle}>Passer ingen av tidene? <CrystalIcon name="bjelle"/></h2>
             {state.saved ? (
                 <p className={styles.success} role="status">
                     Du står på ventelisten for {formatDay(date)}. Vi sier fra med en gang det blir ledig, i

@@ -1,12 +1,18 @@
 .stars {
-    letter-spacing: 1px;
+    display: inline-flex;
+    gap: 1px;
+    vertical-align: -0.15em;
     white-space: nowrap;
 }
 
-.on {
-    color: #f59e0b;
+/* The glow is drawn inside the SVG file (with a margin around the star), not with a CSS filter,
+   so many stars in a list of businesses do not slow down scrolling on old phones */
+.stars img {
+    width: 1.3em;
+    height: 1.3em;
+    margin: -0.12em -0.14em;
 }
 
 .off {
-    color: rgba(150, 255, 230, 0.3);
+    opacity: 0.8;
 }

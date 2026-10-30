@@ -7,6 +7,7 @@ import Form from "next/form";
 import Link from "next/link";
 import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import ForWhomPicker from "@/components/ForWhomPicker/ForWhomPicker";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./page.module.css";
 
 type HomeProps = {
@@ -147,7 +148,7 @@ export default async function Home({searchParams}: HomeProps) {
                 {/* One click on, one click off */}
                 <Link href={searchHref(search, {stjerner: stjerner ? undefined : "4"})} className={styles.radius}
                       aria-current={stjerner ? "true" : undefined}>
-                    {stjerner ? "✓ " : ""}4★ og over
+                    {stjerner ? "✓ " : ""}4<CrystalIcon name="stjerne"/> og over
                 </Link>
             </p>
             {/* key: every new search shows the skeleton again */}
@@ -194,7 +195,7 @@ async function Results(search: SearchProps) {
         if (stjerner) {
             return (
                 <p className={styles.subtitle}>
-                    Ingen bedrifter med 4★ og over her.{" "}
+                    Ingen bedrifter med 4 stjerner og over her.{" "}
                     <Link href={searchHref(search, {stjerner: undefined})}>Vis alle →</Link>
                 </p>
             );

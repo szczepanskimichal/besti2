@@ -7,6 +7,7 @@ import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatPrice } from "@/lib/format";
 import { freeCancelText } from "@/lib/freeCancel";
+import { isNewOnBesti } from "@/lib/newOnBesti";
 import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
@@ -80,6 +81,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
 
     // The first gallery photo is the big picture at the top, like a cover on Instagram
     const cover = business.gallery[0]?.url;
+    const isNew = isNewOnBesti(business.joinedUtc);
     const hoursList = (
         <dl className={styles.hours}>
             {weekdays.map((w) => {
@@ -105,8 +107,10 @@ export default async function BusinessPage({ params, searchParams }: Props) {
         <main className={styles.main}>
             <NextLink href="/" className={styles.back}>← Tilbake til alle bedrifter</NextLink>
 
-            <header className={cover ? `${styles.hero} ${styles.heroPhoto}` : styles.hero}
+            <header className={[styles.hero, isNew && styles.heroNew, cover && styles.heroPhoto].filter(Boolean).join(" ")}
                     style={cover ? { backgroundImage: `url("${cover}")` } : undefined}>
+                {/* New business: a stamp for the first week after it joined */}
+                {isNew && <span className={styles.stamp}>Ny på<br/>Besti</span>}
                 <div className={styles.top}>
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
                     {!me?.isBusiness && <FavoriteButton businessId={business.id} slug={business.slug} saved={saved}/>}
@@ -114,9 +118,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                                  text={`${business.name} i ${business.city} – bestill time på BESTI`}/>
                 </div>
                 <h1 className={styles.title}>{business.name}</h1>
-                <p className={styles.city}>
-                    <span className={styles.category}>{getCategoryLabel(business.category)}</span> {business.city}
-                </p>
+                <p className={styles.meta}>{getCategoryLabel(business.category)} · {business.city}</p>
                 {business.verifiedUtc && (
                     <p className={styles.verified}>
                         <VerifiedBadge href="/aerlig-booking#verifisert"/>
@@ -125,17 +127,18 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                         </span>
                     </p>
                 )}
-                {/* Average only from 3 reviews (same limit as in the search), before that "Ny på Besti" */}
+                {/* Average only from 3 reviews (same limit as in the search), before that only the count */}
                 {reviews.average !== null && reviews.count >= 3 ? (
                     <a href="#vurderinger" className={styles.rating}>
                         <Stars value={reviews.average}/> {reviews.average.toString().replace(".", ",")} · {reviews.count} vurderinger
                     </a>
                 ) : (
-                    <a href="#vurderinger" className={styles.rating}>
-                        Ny på Besti{reviews.count > 0 && ` · ${reviews.count} ${reviews.count === 1 ? "vurdering" : "vurderinger"}`}
-                    </a>
+                    reviews.count > 0 && (
+                        <a href="#vurderinger" className={styles.rating}>
+                            {reviews.count} {reviews.count === 1 ? "vurdering" : "vurderinger"}
+                        </a>
+                    )
                 )}
-                {business.description && <p className={styles.description}>{business.description}</p>}
                 {business.services.length > 0 && (
                     <a href="#tjenester" className={styles.heroButton}>Se tjenester og bestill</a>
                 )}
@@ -163,6 +166,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                     )}
                     <section id="tjenester" className={styles.orderServices}>
                         <h2 className={styles.sectionTitle}>Tjenester</h2>
+                        {business.description && <p className={styles.description}>{business.description}</p>}
                         <ul className={styles.list}>
                             {business.services.map((service) => (
                                 <li key={service.id} className={styles.service}>

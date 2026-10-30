@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate } from "@/lib/format";
 import type { AdminBusinessRow } from "@/lib/types";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./admin.module.css";
 
 const statusLabels: Record<AdminBusinessRow["status"], string> = {
@@ -29,7 +30,7 @@ export default function BusinessRows({ rows }: { rows: AdminBusinessRow[] }) {
                         <span>Kom i gang {row.setupDone}/{row.setupTotal}</span>
                         <span>{row.bookingsLast30Days} bestillinger (30 d)</span>
                         <span>{row.upcoming} kommende</span>
-                        {row.averageStars !== null && <span>{row.averageStars.toString().replace(".", ",")} ★</span>}
+                        {row.averageStars !== null && <span>{row.averageStars.toString().replace(".", ",")} <CrystalIcon name="stjerne"/></span>}
                         {row.verified && <span>Verifisert</span>}
                         {row.proInterest && <span className={styles.highlight}>Interessert i Pro</span>}
                         {row.hasNote && <span>📝 Notat</span>}

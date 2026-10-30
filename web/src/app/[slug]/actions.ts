@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { toggleHelpful } from "@/lib/api";
 import { getToken } from "@/lib/auth";
@@ -14,5 +15,7 @@ export async function toggleHelpfulAction(formData: FormData) {
         redirect(`/logg-inn?neste=${encodeURIComponent(page)}`);
     }
     await toggleHelpful(token, String(formData.get("reviewId") ?? ""));
+    // The redirect only changes the #, so without this the browser keeps showing the old count
+    revalidatePath(page);
     redirect(`${page}#vurderinger`);
 }

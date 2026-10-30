@@ -79,6 +79,7 @@ export type BusinessDetails = {
     loyaltyVisits: number | null; // "Stempelkort": every N-th visit gives loyaltyReward; null = none
     loyaltyReward: string | null;
     suspendedReason?: string | null; // only in the panel: BESTI has closed the page, and why
+    joinedUtc: string | null; // when the business went live on BESTI ("Ny på Besti" the first week)
 };
 
 // "Forslag for din bransje" in the panel: a ready service the owner can add with one click

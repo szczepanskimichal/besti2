@@ -32,5 +32,7 @@ public record BusinessDetailsDto(
     int? LoyaltyVisits = null,
     string? LoyaltyReward = null,
     // Only in the owner's panel: BESTI has closed the page, and why
-    string? SuspendedReason = null
+    string? SuspendedReason = null,
+    // When the business went live on BESTI (approved, or registered for older ones); "Ny på Besti" the first week
+    DateTime? JoinedUtc = null
 );

@@ -22,12 +22,18 @@
     position: relative;
     margin: 8px 0 8px;
     padding: 24px;
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(255, 255, 255, 0.18);
     border-radius: 20px;
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
+    background: linear-gradient(145deg, rgba(8, 24, 34, 0.8), rgba(2, 8, 14, 0.94));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05), inset 0 -40px 60px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(28px) saturate(1.5) brightness(0.8);
+    -webkit-backdrop-filter: blur(28px) saturate(1.5) brightness(0.8);
     overflow: hidden;
+}
+
+/* New business without a cover photo: room above the logo row for the "Ny på Besti" stamp */
+.heroNew {
+    padding-top: 128px;
 }
 
 .heroPhoto {
@@ -47,16 +53,6 @@
     position: relative;
 }
 
-.city {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: -4px 0 8px;
-    color: var(--color-muted);
-    font-family: var(--font-small);
-    font-weight: 500;
-}
-
 .description {
     max-width: 640px;
     margin: 4px 0 0;
@@ -67,7 +63,10 @@
 }
 
 .heroButton {
-    display: inline-flex;
+    display: flex;
+    width: fit-content;
+    margin-inline: auto;
+    justify-content: center;
     align-items: center;
     min-height: 46px;
     margin-top: 16px;
@@ -88,6 +87,10 @@
 @media (max-width: 480px) {
     .hero {
         padding: 20px 16px;
+    }
+
+    .heroNew {
+        padding-top: 124px;
     }
 
     .heroPhoto {
@@ -203,7 +206,7 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--color-primary-soft);
+    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     border: 1px solid var(--color-border);
     color: var(--color-primary);
     font-size: 0.9rem;
@@ -221,16 +224,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 16px;
-}
-
-.category {
-    display: inline-block;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--color-primary);
-    background: var(--color-primary-soft);
-    padding: 2px 10px;
-    border-radius: 999px;
 }
 
 .title {
@@ -443,6 +436,7 @@
     color: var(--color-text);
     text-decoration: none;
     font-weight: 600;
+    font-family: var(--font-small);
 }
 
 .reviews {
@@ -477,7 +471,7 @@
     margin-top: 8px;
     padding: 8px 12px;
     border-left: 3px solid var(--color-primary);
-    background: var(--color-primary-soft);
+    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     border-radius: 6px;
 }
 
@@ -500,16 +494,7 @@
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-}
-
-.favorite span {
-    font-size: 1.2rem;
-    line-height: 1;
-}
-
-.favoriteSaved {
-    border-color: var(--color-danger);
-    color: var(--color-danger);
+    position: relative;
 }
 
 .favoriteForm {
@@ -588,4 +573,87 @@
 .breakTime {
     color: var(--color-muted);
     font-size: 0.9rem;
+}
+
+/* "Frisør · Oslo": one line, one font */
+.meta {
+    margin: -2px 0 10px;
+    color: var(--color-muted);
+    font-family: var(--font-small);
+    font-size: 0.95rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+/* Stamp for new businesses: round, like a rubber stamp, with a thin neon edge */
+.stamp {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    border: 2px solid #a6f2dd;
+    border-radius: 50%;
+    color: #d9fff2;
+    font-family: var(--font-small);
+    font-size: 0.95rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transform: rotate(12deg);
+    background: radial-gradient(circle, rgba(114, 214, 189, 0.22), rgba(63, 167, 214, 0.08) 70%, rgba(4, 16, 26, 0.3));
+    box-shadow: 0 0 20px rgba(114, 214, 189, 0.6), 0 0 44px rgba(63, 167, 214, 0.3), inset 0 0 14px rgba(114, 214, 189, 0.35);
+    text-shadow: 0 0 6px rgba(114, 214, 189, 0.9), 0 0 16px rgba(114, 214, 189, 0.6);
+}
+
+/* Saved heart: aurora instead of red */
+.favoriteSaved {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    box-shadow: 0 0 16px rgba(114, 214, 189, 0.4);
+}
+.heart {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linejoin: round;
+}
+.favoriteSaved .heart {
+    fill: url(#besti-heart-aurora);
+    stroke: none;
+    filter: drop-shadow(0 0 6px rgba(114, 214, 189, 0.8));
+    animation: heartPop 0.6s ease-out;
+}
+.sparks { position: absolute; left: 24px; top: 50%; width: 0; height: 0; pointer-events: none; }
+.sparks i {
+    position: absolute;
+    font-style: normal;
+    font-size: 0.8rem;
+    color: #bff5e6;
+    text-shadow: 0 0 8px #72d6bd;
+    opacity: 0;
+    animation: spark 0.9s ease-out forwards;
+}
+@keyframes spark {
+    0% { opacity: 0; transform: rotate(var(--a)) translateX(0) scale(0.4); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: rotate(var(--a)) translateX(34px) scale(1.1); }
+}
+@keyframes heartPop {
+    0% { transform: scale(0.6); }
+    50% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .favoriteSaved .heart,
+    .sparks i {
+        animation: none;
+    }
 }

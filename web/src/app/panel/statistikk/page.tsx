@@ -7,6 +7,7 @@ import type { StatsNumbers } from "@/lib/types";
 import { todayInOslo } from "@/lib/format";
 import ProBadge from "@/components/ProBadge/ProBadge";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
 import BarChart from "./BarChart";
@@ -147,7 +148,7 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                 <div className={styles.tile}>
                     <p className={styles.tileLabel}>Vurderinger</p>
                     <p className={styles.tileValue}>
-                        {stats.averageStars === null ? "–" : `${stats.averageStars.toString().replace(".", ",")} ★`}
+                        {stats.averageStars === null ? "–" : <>{stats.averageStars.toString().replace(".", ",")} <CrystalIcon name="stjerne"/></>}
                     </p>
                     <span className={styles.tileNote}>
                         {stats.reviewCount} totalt{stats.newReviews > 0 ? `, ${stats.newReviews} nye` : ""}

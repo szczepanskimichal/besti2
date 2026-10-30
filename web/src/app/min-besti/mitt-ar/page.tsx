@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { getMe, getMyYear } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { formatDate, formatLength } from "@/lib/format";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import BarChart from "../../panel/statistikk/BarChart";
 import panel from "../../panel/page.module.css";
 import styles from "./page.module.css";
@@ -55,12 +57,12 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
             text: year.visitsWithFriends === 1 ? "gang sammen med venner" : "ganger sammen med venner",
         },
         year.reviewsWritten > 0 && {
-            icon: "⭐",
+            icon: <CrystalIcon name="stjerne"/>,
             value: String(year.reviewsWritten),
             text: year.reviewsWritten === 1 ? "vurdering som hjelper andre" : "vurderinger som hjelper andre",
         },
         year.spent > 0 && { icon: "💳", value: `ca. ${kroner.format(year.spent)} kr`, text: "brukt på deg selv" },
-    ].filter((f) => !!f) as { icon: string; value: string; text: string; href?: string }[];
+    ].filter((f) => !!f) as { icon: ReactNode; value: string; text: string; href?: string }[];
 
     return (
         <main className={panel.main}>
