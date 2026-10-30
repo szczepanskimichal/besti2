@@ -41,19 +41,17 @@ export default async function Home({searchParams}: HomeProps) {
         <main className={styles.main}>
             <section className={styles.hero}>
                 <div>
-                    <h1 className={styles.heroTitle}>Bestill time hos lokale bedrifter</h1>
-                    <p className={styles.heroLead}>
-                        Frisør, håndverker eller psykolog – finn ledig tid og bestill på under ett minutt.
-                    </p>
+                    <h1 className={styles.heroTitle}>Magiske opplevelser med din besti.</h1>
+                    <p className={styles.heroLead}>Finn og bestill på under ett minutt.</p>
                 </div>
                 <Form action="/" className={styles.filters}>
                     <label className={styles.field}>
-                        Hva leter du etter?
+                        Hva vil du oppleve med besti?
                         <input
                             name="q"
                             type="search"
                             defaultValue={q ?? ""}
-                            placeholder="F.eks. herreklipp eller fliser"
+                            placeholder="Frisør, dekkskift, massasje"
                         />
                     </label>
                     <label className={styles.field}>
@@ -67,7 +65,7 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <label className={styles.field}>
-                        Kategori
+                        Hva vil du finne med Besti?
                         <select name="category" defaultValue={category ?? ""}>
                             <option value="">Alle kategorier</option>
                             {categoryOptionGroups.map((group) => (
@@ -80,12 +78,12 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <label className={styles.field}>
-                        By
+                        Finn lokale Besti-bedrifter
                         <input
                             name="city"
                             list="city-list"
                             defaultValue={city ?? ""}
-                            placeholder="F.eks. Oslo"
+                            placeholder="Gjøvik, Oslo, Bergen"
                             autoComplete="off"
                         />
                         <datalist id="city-list">
@@ -95,11 +93,11 @@ export default async function Home({searchParams}: HomeProps) {
                         </datalist>
                     </label>
                     <label className={styles.field}>
-                        Når
+                        Når har du tid?
                         <input name="date" type="date" defaultValue={date ?? ""} min={todayInOslo()}/>
                     </label>
                     <label className={styles.field}>
-                        Tid på dagen
+                        Beste tidspunkt
                         <select name="tid" defaultValue={tid ?? ""}>
                             <option value="">Hele dagen</option>
                             <option value="formiddag">Før kl. 12</option>
@@ -108,8 +106,8 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <button type="submit" className={styles.searchButton}>
-                        {/* eslint-disable-next-line @next/next/no-img-element -- small SVG logo, next/image not needed */}
-                        <img src="/logo/besti-pin.svg" alt="" width={28} height={30} className={styles.searchIcon}/>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed */}
+                        <img src="/logo/besti-kafelek.png" alt="" width={56} height={56} className={styles.searchIcon}/>
                         Finn besti time
                     </button>
                     {lat && lng && (
@@ -124,7 +122,7 @@ export default async function Home({searchParams}: HomeProps) {
                     <NearMeButton/>
                 </Form>
             </section>
-            <h2 className={styles.listTitle}>Bedrifter</h2>
+            <h2 className={styles.listTitle}>Lokale Besti-bedrifter</h2>
             {lat && lng && (
                 <p className={styles.subtitle}>
                     📍 {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}
@@ -231,6 +229,9 @@ async function Results(search: SearchProps) {
 
     return (
         <>
+            <p className={styles.count}>
+                {result.totalCount} {result.totalCount === 1 ? "bedrift" : "bedrifter"}{city ? ` i ${city}` : ""}
+            </p>
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>

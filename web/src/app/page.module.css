@@ -60,29 +60,29 @@
 .searchButton {
     font: inherit;
     font-family: var(--font-heading);
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1.1rem;
     letter-spacing: 0.01em;
     margin-top: 4px;
     min-height: 52px;
     padding: 0 24px;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 999px;
-    background: var(--color-primary);
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
     color: var(--color-on-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25) inset, 0 0 14px rgba(114, 214, 189, 0.3), 0 0 36px rgba(114, 214, 189, 0.12);
+    box-shadow: var(--neon-glow);
     cursor: pointer;
 }
 
-/* The logo in the button, dark like the text */
+/* The neon logo tile in the button; its glow may spill over the edges */
 .searchIcon {
-    height: 28px;
-    width: auto;
-    filter: brightness(0) saturate(100%) opacity(0.85);
+    height: 56px;
+    width: 56px;
+    margin: -10px -4px -10px -8px;
 }
 
 /* Title and lead straight on the northern lights, the search card next to it on a computer */
@@ -104,6 +104,12 @@
     margin: 0;
     color: #f4fbf8;
     text-shadow: 0 1px 14px rgba(2, 12, 16, 0.6);
+}
+
+/* "12 bedrifter i Gjøvik" above the cards */
+.count {
+    margin: 0 0 16px;
+    color: #dcebe6;
 }
 
 .listTitle {

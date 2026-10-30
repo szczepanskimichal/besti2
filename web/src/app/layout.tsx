@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Lexend } from "next/font/google";
+import { Syne } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -7,19 +7,11 @@ import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
 import Aurora from "../components/Aurora/Aurora";
 import Analytics from "../components/Analytics/Analytics";
 
-// Headings, buttons and form fields
-const lexend = Lexend({
+// The only font in BESTI: Syne bold for all text (Ada's final design, 2026-10-30)
+const syne = Syne({
     subsets: ["latin", "latin-ext"],
-    weight: ["400", "500", "600", "700"],
-    variable: "--font-lexend",
-    display: "swap",
-});
-
-// Small text and descriptions
-const inter = Inter({
-    subsets: ["latin", "latin-ext"],
-    weight: ["400", "500", "600"],
-    variable: "--font-inter",
+    weight: ["700"],
+    variable: "--font-syne",
     display: "swap",
 });
 
@@ -43,7 +35,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="nb" className={`${lexend.variable} ${inter.variable}`}>
+        <html lang="nb" className={syne.variable}>
         <body>
         <Aurora />
         <Header />

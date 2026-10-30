@@ -19,8 +19,11 @@
   --color-success: #8fd6a0;
   --color-warning: #f2c46d;
   --color-danger: #ff9b85;
-  --font-heading: var(--font-lexend), system-ui, sans-serif;
-  --font-body: var(--font-inter), system-ui, sans-serif;
+  /* Neon outline of the main buttons (green to turquoise) */
+  --neon-border: linear-gradient(180deg, #5af05e, #28c9e8);
+  --neon-glow: 0 0 10px rgba(90, 240, 120, 0.45), 0 0 22px rgba(40, 200, 232, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  --font-heading: var(--font-syne), system-ui, sans-serif;
+  --font-body: var(--font-syne), system-ui, sans-serif;
 }
 
 *, *::before, *::after {
@@ -33,7 +36,7 @@ html {
 body {
   margin: 0;
   font-family: var(--font-body);
-  font-weight: 500;
+  font-weight: 700;
   font-size: 16px;
   line-height: 1.5;
   background-color: var(--color-bg);
@@ -57,18 +60,18 @@ button:disabled {
   cursor: progress;
 }
 
-/* Headings, buttons and form fields in Lexend, small text in Inter */
+/* Headings, buttons and form fields (all text is Syne bold) */
 :where(h1, h2, h3, h4, button, input, select, textarea, label) {
   font-family: var(--font-heading);
 }
 
 h1, h2, h3 {
   color: var(--color-heading);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 h1 {
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
   text-shadow: 0 2px 18px rgba(2, 12, 16, 0.55);
 }
 
