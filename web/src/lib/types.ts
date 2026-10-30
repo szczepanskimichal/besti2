@@ -21,6 +21,12 @@ export type FreeSlot = {
     employeeId: string;
 };
 // One day in the "Velg dag" strip; employeeId = who is free at that time
+// "År" in the panel calendar: visits per day (days without visits are left out)
+export type BookingDayCount = {
+    date: string;
+    count: number;
+};
+
 export type FreeDay = {
     date: string;
     slots: { startUtc: string; employeeId: string }[];

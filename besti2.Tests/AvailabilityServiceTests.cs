@@ -68,6 +68,29 @@ public class AvailabilityServiceTests
         Assert.Equal(AvailabilityService.MaxDays, tooMany!.Count);
     }
 
+    // check if the year view counts the visits per Oslo day, also for one employee only
+    [Fact]
+    public async Task GetDayCountsForBusinessAsync_CountsVisitsPerDay()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = Bookings(db);
+        await service.CreateAsync(new CreateBookingRequest(HerreklippId, IngridId, FutureMondayAt10,
+            "Kari Nordmann", "+4790000000", "kari@test.example", false));
+        await service.CreateAsync(new CreateBookingRequest(HerreklippId, SofieId, FutureMondayAt10,
+            "Ola Nordmann", "+4790000001", "ola@test.example", false));
+        var klippOgStil = new Guid("11111111-1111-1111-1111-111111111111");
+
+        var all = await service.GetDayCountsForBusinessAsync(klippOgStil, 2099);
+        var onlyIngrid = await service.GetDayCountsForBusinessAsync(klippOgStil, 2099, IngridId);
+        var otherYear = await service.GetDayCountsForBusinessAsync(klippOgStil, 2098);
+
+        var day = Assert.Single(all);
+        Assert.Equal(FutureMonday, day.Date);
+        Assert.Equal(2, day.Count);
+        Assert.Equal(1, Assert.Single(onlyIngrid).Count);
+        Assert.Empty(otherYear);
+    }
+
     // check if "Hvem som helst" still offers 10:00 when Ingrid is busy, because Sofie is free
     [Fact]
     public async Task GetFreeDaysAsync_AnyEmployee_OffersTimeWhenOnlyOneIsBusy()

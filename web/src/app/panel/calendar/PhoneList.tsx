@@ -6,11 +6,14 @@ import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
 import { type Column, type Href, type BlockHref, blockLabel, blockHoursOn } from "./calendarLayout";
 
-// Phone: the visits of each day as a list of cards; a tap opens the details window
-export default function PhoneList({ columns, hrefFor, blockHref }: { columns: Column[]; hrefFor: Href; blockHref: BlockHref }) {
+// Phone: the visits of each day as a list of cards; a tap opens the details window.
+// always = also on a big screen ("Plan")
+export default function PhoneList({ columns, hrefFor, blockHref, always = false }: {
+    columns: Column[]; hrefFor: Href; blockHref: BlockHref; always?: boolean;
+}) {
     const days = columns.filter((c) => c.bookings.length > 0 || c.blocks.length > 0);
     return (
-        <div className={calendar.phoneList}>
+        <div className={always ? `${calendar.phoneList} ${calendar.planList}` : calendar.phoneList}>
             {days.length === 0 && <p className={styles.muted}>Ingen bestillinger.</p>}
             {days.map((column) => (
                 <section key={column.id}>
