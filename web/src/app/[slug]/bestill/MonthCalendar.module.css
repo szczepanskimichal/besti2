@@ -1,0 +1,204 @@
+/* Month calendar on Bestill: dark frosted glass like the panel calendar, Syne day numbers,
+   free days with a small aurora dot, the chosen day lit up in mint. Fits a 320px phone without sideways scrolling */
+.calendar {
+    position: relative;
+    overflow: hidden;
+    padding: 14px 10px 12px;
+    border-radius: 24px;
+    border: 1px solid rgba(150, 255, 230, 0.22);
+    background: var(--color-surface);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* A soft aurora shine along the top edge (no animation, so it costs nothing) */
+.calendar::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 90px;
+    background: radial-gradient(60% 100% at 30% 0, rgba(90, 240, 120, 0.16), transparent 70%),
+    radial-gradient(50% 100% at 75% 0, rgba(40, 200, 232, 0.14), transparent 70%);
+    pointer-events: none;
+}
+
+.head {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.month {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--color-heading);
+}
+
+.month::first-letter {
+    text-transform: uppercase;
+}
+
+.arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    color: var(--color-primary);
+    font-size: 1.5rem;
+    line-height: 1;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.arrow:hover {
+    background: var(--color-primary-soft);
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.35);
+}
+
+.arrowOff {
+    opacity: 0.25;
+}
+
+.grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 4px;
+}
+
+.weekday {
+    padding: 6px 0;
+    text-align: center;
+    font-family: var(--font-small);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #cdeee2;
+}
+
+.day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: 48px;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    color: #e8fff7;
+    text-decoration: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+a.day {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+a.day:hover {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(150, 255, 230, 0.3);
+}
+
+.number {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* "5 ledige" only where there is room; the phone gets the dot */
+.count {
+    display: none;
+    font-family: var(--font-small);
+    font-size: 0.72rem;
+    color: var(--color-muted);
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--neon-border);
+    box-shadow: 0 0 8px rgba(90, 240, 120, 0.7);
+}
+
+.full .number {
+    opacity: 0.3;
+}
+
+/* The customer's own visit that day: a small pink crystal in the corner (still on full days) */
+.gem {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    transform: rotate(45deg);
+    background: linear-gradient(135deg, #ffd1f0, #ff6fb5 55%, #a77bff);
+    box-shadow: 0 0 8px rgba(255, 111, 181, 0.8);
+}
+
+.otherMonth .number {
+    color: rgba(232, 255, 247, 0.45);
+}
+
+.today {
+    border-color: rgba(114, 214, 189, 0.6);
+}
+
+a.selected,
+a.selected:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 0 16px rgba(114, 214, 189, 0.6);
+}
+
+.selected .count {
+    color: var(--color-on-primary);
+}
+
+.selected .dot {
+    background: var(--color-on-primary);
+    box-shadow: none;
+}
+
+@media (min-width: 640px) {
+    .calendar {
+        padding: 18px 16px 16px;
+    }
+
+    .grid {
+        gap: 6px;
+    }
+
+    .day {
+        min-height: 64px;
+    }
+
+    .number {
+        font-size: 1.15rem;
+    }
+
+    .count {
+        display: block;
+    }
+
+    .dot {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .day,
+    .arrow {
+        transition: none;
+    }
+}
