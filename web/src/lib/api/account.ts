@@ -51,9 +51,12 @@ export async function registerCustomer(input: { fullName: string; email: string;
     return toResult(await apiFetch("/api/account/register", { method: "POST", body: input, forwardIp: true }));
 }
 
-export async function confirmEmail(userId: string, code: string): Promise<boolean> {
+export type ConfirmedEmail = { firstName: string | null; isBusiness: boolean };
+
+// null = the link is wrong or too old
+export async function confirmEmail(userId: string, code: string): Promise<ConfirmedEmail | null> {
     const res = await apiFetch("/api/account/confirm-email", { method: "POST", body: { userId, code }, forwardIp: true });
-    return res.ok;
+    return res.ok ? res.json() : null;
 }
 
 export type Me = {

@@ -6,7 +6,8 @@ type Props = {
 
 // Shows a rating as crystal stars in the aurora colours; screen readers get "4,5 av 5 stjerner"
 export default function Stars({ value }: Props) {
-    const rounded = Math.round(value);
+    // A star only lights up when it is (almost) earned: 4,6 shows 4 stars, from 4,75 it is 5
+    const rounded = Math.floor(value + 0.25);
     return (
         <span className={styles.stars} role="img" aria-label={`${value.toString().replace(".", ",")} av 5 stjerner`}>
             {[1, 2, 3, 4, 5].map((n) => (
