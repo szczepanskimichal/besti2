@@ -80,9 +80,8 @@
     font-family: var(--font-heading);
     font-size: 1rem;
     font-weight: 700;
-    /* BESTI as a brand mark: the slogan in spaced capitals */
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
+    /* "Bestill med din BESTI": only BESTI in capitals (it is in the text), a little spacing */
+    letter-spacing: 0.04em;
 }
 
 .copy {

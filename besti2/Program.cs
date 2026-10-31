@@ -107,6 +107,17 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 
+    // BESTI-chat: max 20 lines and reactions per minute per account
+    options.AddPolicy("chat", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            "chat:" + (httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous"),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
     // Max 10 image uploads per minute per account (reading a photo is heavy work for the server)
     options.AddPolicy("upload", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(

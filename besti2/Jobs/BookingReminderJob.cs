@@ -52,6 +52,10 @@ public class BookingReminderJob(
                     logger.LogInformation("Closed {Count} BESTI sammen invitations", closed);
                 }
 
+                // BESTI-chat: gone 30 days after the visit
+                await scope.ServiceProvider.GetRequiredService<IInviteService>()
+                    .DeleteOldChatsAsync(DateTime.UtcNow, stoppingToken);
+
                 JobHeartbeats.Ran("Påminnelser", true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)

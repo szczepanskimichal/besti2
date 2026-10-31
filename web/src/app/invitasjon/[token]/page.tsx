@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
@@ -6,9 +7,12 @@ import { getToken } from "@/lib/auth";
 import { formatDate, formatLength, formatPrice, formatTime } from "@/lib/format";
 import { SITE_URL } from "@/lib/site";
 import type { Invite } from "@/lib/types";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import { declineInviteAction, withdrawInviteAction } from "../actions";
+import { withdrawInviteAction } from "../actions";
 import AcceptForm from "./AcceptForm";
+import DeclineForm from "./DeclineForm";
+import InviteChat from "./InviteChat";
 import Countdown from "./Countdown";
 import LiveStatus from "./LiveStatus";
 import ShareInvite from "./ShareInvite";
@@ -16,7 +20,7 @@ import styles from "./page.module.css";
 
 type Props = {
     params: Promise<{ token: string }>;
-    searchParams: Promise<{ ny?: string; svar?: string }>;
+    searchParams: Promise<{ svar?: string }>;
 };
 
 // The card WhatsApp, Messenger and Snap show for the link (the picture is opengraph-image.tsx).
@@ -37,7 +41,7 @@ export async function generateMetadata({ params }: Pick<Props, "params">): Promi
 // live; the others see what, where, when and who is already in, and say "Jeg blir med!" or "Nei takk"
 export default async function InvitePage({ params, searchParams }: Props) {
     const { token } = await params;
-    const { ny, svar } = await searchParams;
+    const { svar } = await searchParams;
     if (!/^[A-Za-z0-9_-]{20,100}$/.test(token)) {
         notFound();
     }
@@ -59,25 +63,30 @@ export default async function InvitePage({ params, searchParams }: Props) {
                         <LiveStatus/>
                         <Badge waiting/>
                         <h1 className={styles.title}>
-                            {invite.joined > 0 ? `${invite.joined} av ${invite.persons} er med` : ny ? "Invitasjonen er klar!" : "Venter på svar"}
+                            {invite.joined > (invite.organizerJoins ? 1 : 0) ? `${invite.joined} av ${invite.persons} er med` : "Invitasjonen er klar!"}
                         </h1>
                         <p className={styles.muted}>
                             {pair
-                                ? "Send lenken til din besti. Så snart hen trykker «Jeg blir med!», er dere begge booket, og du ser det her med en gang."
-                                : "Send lenken til alle du vil ha med, for eksempel i gruppechatten. Hver som trykker «Jeg blir med!» får sin time med en gang, og du ser det her live."}
+                                ? "Så snart din BESTI trykker «Jeg blir med!», er dere begge booket, og du ser det her med en gang."
+                                : "Send den gjerne i gruppechatten. Hver som trykker «Jeg blir med!» får sin time med en gang, og du ser det her live."}
                         </p>
-                        {!pair && <Seats invite={invite}/>}
+                        <FriendMessages invite={invite}/>
                         {!invite.stillFree && <TakenWarning invite={invite}/>}
-                        <p className={styles.timer}>
-                            Svarfrist <Countdown expiresUtc={invite.expiresUtc} className={styles.clock}/>
-                        </p>
-                        <ShareInvite url={`${SITE_URL}${here}`} text={shareText(invite)}/>
+                        <h2 className={styles.sendTitle}>{pair ? "Send invitasjonen til din BESTI" : "Send invitasjonen"}</h2>
+                        {/* "Du venter på svar" shows up once the link is sent (any of the share buttons) */}
+                        <ShareInvite url={`${SITE_URL}${here}`} text={shareText(invite)}>
+                            {!pair && <Seats invite={invite}/>}
+                            <Deadline label="Svarfrist" invite={invite}
+                                      who={pair ? "Du venter på svar fra din BESTI" : "Du venter på svar fra gjengen"}/>
+                        </ShareInvite>
+                        <When invite={invite}/>
                         <Details invite={invite}/>
+                        {invite.chat && <InviteChat token={token} lines={invite.chat} myName={invite.inviterFirstName} pair={pair} poll={false}/>}
                         {invite.status === "Venter" && (
                             <form action={withdrawInviteAction}>
                                 <input type="hidden" name="inviteId" value={invite.id}/>
                                 <input type="hidden" name="token" value={token}/>
-                                <SubmitButton className={styles.textButton} pendingText="Trekker tilbake…">
+                                <SubmitButton className={styles.cancelButton} pendingText="Trekker tilbake…">
                                     Trekk tilbake invitasjonen
                                 </SubmitButton>
                             </form>
@@ -96,23 +105,27 @@ export default async function InvitePage({ params, searchParams }: Props) {
                     <>
                         <Badge waiting/>
                         <h1 className={styles.title}>
-                            {pair ? `${invite.inviterFirstName} inviterer deg!` : `${invite.inviterFirstName} inviterer til ${invite.serviceName}!`}
+                            {pair ? `${invite.inviterFirstName} inviterer deg til BESTI-tid sammen!` : `${invite.inviterFirstName} inviterer til ${invite.serviceName}!`}
                         </h1>
                         <p className={styles.muted}>
                             {pair
-                                ? `Bli med på ${invite.serviceName} samtidig, hver med sin egen ansatt.`
+                                ? `${invite.serviceName} samtidig, hver med sin egen ansatt.`
                                 : `Alle samtidig, hver med sin egen ansatt. ${invite.placesLeft === 1 ? "Én plass" : `${invite.placesLeft} plasser`} igjen, førstemann til mølla!`}
                         </p>
-                        {!pair && <Seats invite={invite}/>}
+                        {invite.payMode === "JegSpanderer" && (
+                            <p className={styles.gift}>
+                                <CrystalIcon name="gave"/> {invite.inviterFirstName} spanderer
+                            </p>
+                        )}
                         {svar === "feil" && (
                             <p className={styles.error} role="alert">Svaret kunne ikke lagres. Prøv igjen.</p>
                         )}
+                        <When invite={invite}/>
                         <Details invite={invite}/>
+                        {!pair && <Seats invite={invite}/>}
                         {invite.stillFree ? (
                             <>
-                                <p className={styles.timer}>
-                                    Svar innen <Countdown expiresUtc={invite.expiresUtc} className={styles.clock}/>
-                                </p>
+                                <Deadline label="Svarfrist" invite={invite} who={`${invite.inviterFirstName} venter på svaret ditt`}/>
                                 {!me && (
                                     <div className={styles.actions}>
                                         <NextLink href={`/logg-inn?neste=${encodeURIComponent(here)}`}
@@ -130,17 +143,12 @@ export default async function InvitePage({ params, searchParams }: Props) {
                                         Du er logget inn som bedrift. Logg inn med en kundekonto for å bli med.
                                     </p>
                                 )}
-                                {me && !me.isBusiness && <AcceptForm token={token} fullName={me.fullName} phone={me.phone}/>}
+                                {me && !me.isBusiness && <AcceptForm token={token} fullName={me.fullName} phone={me.phone} inviter={invite.inviterFirstName}/>}
                             </>
                         ) : (
                             <TakenWarning invite={invite}/>
                         )}
-                        <form action={declineInviteAction}>
-                            <input type="hidden" name="token" value={token}/>
-                            <SubmitButton className={styles.textButton} pendingText="Sender…">
-                                Nei takk, ikke denne gangen
-                            </SubmitButton>
-                        </form>
+                        <DeclineForm token={token} inviter={invite.inviterFirstName}/>
                     </>
                 )}
 
@@ -163,17 +171,21 @@ export default async function InvitePage({ params, searchParams }: Props) {
                                     : `${invite.inviterFirstName} spanderer 🎁. `)}
                             {invite.isMember ? "Timen din ligger i Min BESTI." : "Bedriften har fått beskjed om hvor mange som kommer."}
                         </p>
-                        {!pair && <Seats invite={invite}/>}
+                        {invite.isInviter && <FriendMessages invite={invite}/>}
+                        <Seats invite={invite}/>
                         {open && !pair && (
                             <>
-                                <p className={styles.timer}>
-                                    Flere kan bli med i <Countdown expiresUtc={invite.expiresUtc} className={styles.clock}/>
-                                </p>
+                                <Deadline label="Flere kan bli med i" invite={invite}/>
                                 <ShareInvite url={`${SITE_URL}${here}`} text={shareText(invite)}/>
                             </>
                         )}
+                        <When invite={invite} done/>
                         <Details invite={invite}/>
-                        <NextLink href="/min-besti" className={styles.primaryButton}>Til Min BESTI</NextLink>
+                        {invite.chat && (
+                            <InviteChat token={token} lines={invite.chat} pair={pair} poll={!open}
+                                        myName={invite.isInviter ? invite.inviterFirstName : me?.fullName?.split(" ")[0] ?? "Meg"}/>
+                        )}
+                        <NextLink href="/min-besti" className={styles.primaryButton}>Se timen i Min BESTI</NextLink>
                     </>
                 )}
 
@@ -194,6 +206,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                                     : "Invitasjonen er besvart."}
                             invite={invite}/>
                 )}
+                {invite.status === "Avslatt" && invite.isInviter && <FriendMessages invite={invite}/>}
 
                 {invite.status === "Utlopt" && (
                     <Closed title="Svarfristen er ute"
@@ -227,15 +240,11 @@ function listNames(names: string[]): string {
     return names.length <= 1 ? names.join("") : `${names.slice(0, -1).join(", ")} og ${names[names.length - 1]}`;
 }
 
-// The places as circles: a first letter for everyone booked, an empty circle for each free place
+// The places as crystal circles: a first letter (mint) for everyone booked, a lilac "?" for each place still waiting
 function Seats({ invite }: { invite: Invite }) {
-    const free = Array.from({ length: invite.placesLeft });
+    const free = Array.from({ length: invite.open ? invite.placesLeft : 0 });
     return (
         <div className={styles.seats}>
-            <p className={styles.seatsCount}>
-                <strong>{invite.joined} av {invite.persons}</strong> plasser tatt
-                {!invite.organizerJoins && ` · ${invite.inviterFirstName} inviterer, uten egen time`}
-            </p>
             <ul className={styles.seatList}>
                 {invite.names.map((name, i) => (
                     <li key={`${name}-${i}`} className={styles.seat} title={name}>
@@ -243,13 +252,44 @@ function Seats({ invite }: { invite: Invite }) {
                         <span className={styles.seatName}>{name}</span>
                     </li>
                 ))}
-                {invite.open && free.map((_, i) => (
+                {free.map((_, i) => (
                     <li key={`free-${i}`} className={`${styles.seat} ${styles.seatFree}`}>
-                        <span className={styles.seatCircle} aria-hidden="true">+</span>
-                        <span className={styles.seatName}>Ledig</span>
+                        <span className={styles.seatCircle} aria-hidden="true">?</span>
+                        <span className={styles.seatName}>{invite.persons > 2 ? "Ledig" : invite.isInviter ? "BESTI?" : "Deg?"}</span>
                     </li>
                 ))}
             </ul>
+            {invite.persons > 2 && (
+                <p className={styles.seatsCount}>
+                    <strong>{invite.joined} av {invite.persons}</strong> plasser tatt
+                    {!invite.organizerJoins && ` · ${invite.inviterFirstName} inviterer, uten egen time`}
+                </p>
+            )}
+        </div>
+    );
+}
+
+// Day and time big in a glowing mint frame, like "Ny tid"
+function When({ invite, done = false }: { invite: Invite; done?: boolean }) {
+    return (
+        <div className={done ? `${styles.when} ${styles.whenDone}` : styles.when}>
+            <span className={styles.label}>Når</span>
+            <span className={styles.whenDay}>{formatDate(invite.startUtc)}</span>
+            <span className={styles.whenTime}>kl. {formatTime(invite.startUtc)}</span>
+        </div>
+    );
+}
+
+// "Ada venter på svaret ditt / Svarfrist 23 t 17 min" in a lilac pill (lilac = waiting, the same as the Venter stamp)
+function Deadline({ label, invite, who }: { label: string; invite: Invite; who?: string }) {
+    return (
+        <div className={styles.deadline}>
+            {who && <p className={styles.deadlineWho}>{who}</p>}
+            <p className={styles.deadlineRow}>
+                <span className={styles.deadlineDot} aria-hidden="true"/>
+                <span className={styles.deadlineLabel}>{label}</span>
+                <Countdown expiresUtc={invite.expiresUtc} className={styles.clock}/>
+            </p>
         </div>
     );
 }
@@ -257,27 +297,44 @@ function Seats({ invite }: { invite: Invite }) {
 function Details({ invite }: { invite: Invite }) {
     return (
         <dl className={styles.details}>
-            <dt>Hva</dt>
-            <dd>{invite.serviceName} · {formatLength(invite.visitMinutes)}</dd>
-            <dt>Når</dt>
-            <dd>{formatDate(invite.startUtc)} kl. {formatTime(invite.startUtc)}</dd>
-            <dt>Hvor</dt>
+            <dt>Bedrift</dt>
             <dd>
                 <NextLink href={`/${invite.businessSlug}`}>{invite.businessName}</NextLink>
-                <br/>
-                <span className={styles.muted}>{invite.businessAddress}</span>
             </dd>
+            <dt>Tjeneste</dt>
+            <dd>{invite.serviceName} · {formatLength(invite.visitMinutes)}</dd>
+            <dt>Adresse</dt>
+            <dd>{invite.businessAddress}</dd>
             <dt>Pris</dt>
             <dd>
                 {formatPrice(invite.priceNok, invite.priceType)} per person
                 <br/>
                 <span className={styles.muted}>
                     {invite.payMode === "JegSpanderer"
-                        ? `${invite.isInviter ? "Du" : invite.inviterFirstName} spanderer${invite.persons > 2 ? " for alle" : ""} 🎁`
+                        ? `${invite.isInviter ? "Du" : invite.inviterFirstName} spanderer${invite.persons > 2 ? " for alle" : ""}`
                         : "Hver betaler selv, hos bedriften"}
                 </span>
             </dd>
         </dl>
+    );
+}
+
+// What the friends wrote with their answer, as small lilac-mint speech bubbles (only the inviter sees them)
+function FriendMessages({ invite }: { invite: Invite }) {
+    if (!invite.friendMessages?.length) return null;
+    return (
+        <ul className={styles.friendMessages}>
+            {invite.friendMessages.map((m, i) => (
+                <li key={i} className={m.joined ? styles.bubble : `${styles.bubble} ${styles.bubbleNo}`}>
+                    <span className={styles.bubbleName}>{m.name}{m.joined ? " ble med" : " kan ikke"}</span>
+                    <span className={styles.bubbleText}>
+                        «{m.text}»
+                        {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                        {m.icon && <img src={`/ikoner/${m.icon}.svg`} alt="" aria-hidden="true" className={styles.chipIcon}/>}
+                    </span>
+                </li>
+            ))}
+        </ul>
     );
 }
 
@@ -296,6 +353,7 @@ function Closed({ title, text, invite }: { title: string; text: string; invite: 
         <>
             <h1 className={styles.title}>{title}</h1>
             <p className={styles.muted}>{text}</p>
+            {invite.isInviter && <FriendMessages invite={invite}/>}
             <Details invite={invite}/>
             <NextLink href={`/${invite.businessSlug}`} className={styles.secondaryButton}>
                 Se {invite.businessName}
@@ -304,16 +362,33 @@ function Closed({ title, text, invite }: { title: string; text: string; invite: 
     );
 }
 
-// Two aurora circles side by side (two besties); a check mark draws itself when they are booked
+// Twelve sparks fly out when the two crystals meet (same as the booking confirmation)
+const SPARK_COLORS = ["#ffffff", "#bff8e8", "#72d6bd", "#8fc8ff", "#c9bfff"];
+const SPARKS = Array.from({ length: 12 }, (_, k) => SPARK_COLORS[k % 5]);
+
+// Two crystals, one for each besti. Waiting: a lilac halo and they lean towards each other.
+// Booked: they meet in a mint halo, a check mark draws itself and sparks fly out
 function Badge({ waiting = false }: { waiting?: boolean }) {
     return (
         <div className={waiting ? `${styles.badge} ${styles.badgeWaiting}` : styles.badge} aria-hidden="true">
-            <span className={styles.orb}><span className={styles.glow}/></span>
-            <span className={`${styles.orb} ${styles.orbRight}`}><span className={styles.glow}/></span>
+            <span className={styles.halo}/>
+            {/* eslint-disable-next-line @next/next/no-img-element -- static SVG with the glow baked in */}
+            <img src="/ikoner/krystall.svg" alt="" className={styles.gem}/>
+            {/* eslint-disable-next-line @next/next/no-img-element -- static SVG with the glow baked in */}
+            <img src="/ikoner/krystall.svg" alt="" className={`${styles.gem} ${styles.gemRight}`}/>
             {!waiting && (
-                <svg className={styles.check} viewBox="0 0 92 92">
-                    <path d="M28 47 l12 12 l24 -26"/>
-                </svg>
+                <>
+                    <svg className={styles.check} viewBox="-10 -10 120 120">
+                        <path d="M37 51 l9 9 l18 -20" pathLength={1}/>
+                    </svg>
+                    <span className={styles.sparks}>
+                        {SPARKS.map((color, k) => (
+                            <i key={k} style={{ "--a": `${k * 30 + 10}deg`, "--d": `${80 + (k % 3) * 14}px`, color } as CSSProperties}>
+                                {k % 2 ? "✦" : "✧"}
+                            </i>
+                        ))}
+                    </span>
+                </>
             )}
         </div>
     );

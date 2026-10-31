@@ -15,7 +15,21 @@ public interface IInviteService
         CancellationToken cancellationToken = default);
 
     // "Nei takk" works without login: the link itself is the proof (in a group it only tells the inviter)
-    Task<InviteResult> DeclineAsync(string token, string? userId, CancellationToken cancellationToken = default);
+    Task<InviteResult> DeclineAsync(string token, string? userId, DeclineInviteRequest? request = null,
+        CancellationToken cancellationToken = default);
+
+    // BESTI-chat: the inviter and the friends who joined write, react and delete (own lines; the inviter all)
+    Task<InviteChatOutcome> SendMessageAsync(string token, string userId, SendInviteMessageRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<InviteChatOutcome> ToggleReactionAsync(string token, string userId, Guid messageId,
+        InviteReactionRequest request, CancellationToken cancellationToken = default);
+
+    Task<InviteChatOutcome> DeleteMessageAsync(string token, string userId, Guid messageId,
+        CancellationToken cancellationToken = default);
+
+    // Daily: chats and greetings go 30 days after the visit
+    Task<int> DeleteOldChatsAsync(DateTime nowUtc, CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<CustomerInviteDto>> GetForCustomerAsync(string userId,
         CancellationToken cancellationToken = default);

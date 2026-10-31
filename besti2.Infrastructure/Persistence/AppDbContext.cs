@@ -49,6 +49,8 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<OutboxEmail> OutboxEmails { get; set; } = null!;
     public DbSet<BookingInvite> BookingInvites { get; set; } = null!;
+    public DbSet<InviteMessage> InviteMessages { get; set; } = null!;
+    public DbSet<InviteReaction> InviteReactions { get; set; } = null!;
     public DbSet<WebPushSubscription> WebPushSubscriptions { get; set; } = null!;
     public DbSet<WaitlistEntry> WaitlistEntries { get; set; } = null!;
     public DbSet<RebookReminder> RebookReminders { get; set; } = null!;
@@ -291,6 +293,31 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : v);
             // BESTI sammen: the business calendar finds the other visit of the same invitation
             e.HasIndex(x => x.InviteId).HasFilter("[InviteId] IS NOT NULL");
+        });
+        // BESTI-chat: goes with the invitation (also when the inviter deletes the account)
+        modelBuilder.Entity<InviteMessage>(e =>
+        {
+            e.HasOne(x => x.Invite).WithMany()
+                .HasForeignKey(x => x.InviteId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.InviteId, x.CreatedUtc });
+            e.Property(x => x.UserId).HasMaxLength(450);
+            e.HasIndex(x => x.UserId).HasFilter("[UserId] IS NOT NULL");
+            e.Property(x => x.Kind).HasConversion<string>().HasMaxLength(20);
+            e.Property(x => x.Text).IsRequired().HasMaxLength(500);
+            e.Property(x => x.Icon).HasMaxLength(20);
+            e.Property(x => x.CreatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        });
+        modelBuilder.Entity<InviteReaction>(e =>
+        {
+            e.HasKey(x => new { x.MessageId, x.UserId, x.Kind });
+            e.HasOne(x => x.Message).WithMany(x => x.Reactions)
+                .HasForeignKey(x => x.MessageId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.UserId).HasMaxLength(450);
+            e.HasIndex(x => x.UserId);
+            e.Property(x => x.Kind).HasMaxLength(20);
         });
         modelBuilder.Entity<BookingInvite>(e =>
         {

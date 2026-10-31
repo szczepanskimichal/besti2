@@ -35,8 +35,36 @@ public enum InviteOutcome
 public record InviteResult(InviteOutcome Outcome, string? Token = null, DateTime? ExpiresUtc = null,
     string? Error = null);
 
-// "Jeg blir med!": phone for the visitor's own booking (name and e-mail come from the account)
-public record AcceptInviteRequest(string Phone, string? Note = null);
+// "Jeg blir med!": phone for the visitor's own booking (name and e-mail come from the account).
+// Greeting = "Skriv en liten hilsen" to the inviter (GreetingIcon = the crystal of a ready line)
+public record AcceptInviteRequest(string Phone, string? Note = null, string? Greeting = null,
+    string? GreetingIcon = null);
+
+// "Nei takk", optionally with a greeting to the inviter
+public record DeclineInviteRequest(string? Greeting = null, string? GreetingIcon = null);
+
+// BESTI-chat
+public record SendInviteMessageRequest(string Text);
+
+public record InviteReactionRequest(string Kind);
+
+public enum InviteChatOutcome
+{
+    Done,
+    NotFound,
+    NotAllowed,
+    Invalid
+}
+
+// Names = first names of who reacted; the viewer is "Du"
+public record InviteReactionDto(string Kind, IReadOnlyList<string> Names);
+
+// Mine = written by the viewer; CanDelete = the viewer wrote it or is the inviter
+public record InviteChatLineDto(Guid Id, string Name, string Text, bool Mine, bool CanDelete, DateTime Time,
+    IReadOnlyList<InviteReactionDto> Reactions);
+
+// A greeting sent with the answer (only the inviter gets these)
+public record FriendMessageDto(string Name, string Text, string? Icon, bool Joined);
 
 // What everyone with the link sees on /invitasjon/{token}: first names only, never contact details.
 // Persons = all visits; Joined = booked so far (the inviter's own included); PlacesLeft = places still free
@@ -64,7 +92,9 @@ public record InviteDto(
     bool Open,
     bool IsInviter,
     bool IsMember,
-    bool StillFree);
+    bool StillFree,
+    IReadOnlyList<InviteChatLineDto>? Chat = null, // null = the viewer may not read the chat
+    IReadOnlyList<FriendMessageDto>? FriendMessages = null); // only for the inviter
 
 // One invitation in Min Besti (sent by me, or one I joined)
 public record CustomerInviteDto(
