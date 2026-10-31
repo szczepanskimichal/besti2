@@ -5,6 +5,8 @@ import { getPanelCustomer } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatTime } from "@/lib/format";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import { removeCustomerAction } from "../actions";
 import CustomerNoteForm from "./CustomerNoteForm";
 import panel from "../../page.module.css";
 import styles from "../page.module.css";
@@ -44,7 +46,9 @@ export default async function CustomerPage({ params, searchParams }: CustomerPag
                 <span>{customer.visits} besøk</span>
                 <span>ca. {kroner.format(card.spentNok)} kr totalt</span>
                 {customer.noShows > 0 && <span className={styles.noShow}>Møtte ikke: {customer.noShows}</span>}
-                <span>{customer.hasAccount ? "Har BESTI-konto" : "Lagt inn av dere"}</span>
+                <span>
+                    {customer.hasAccount ? "Har BESTI-konto" : customer.imported ? "Importert fra et annet system" : "Lagt inn av dere"}
+                </span>
             </p>
 
             <section className={panel.card} aria-labelledby="notat">
@@ -54,7 +58,19 @@ export default async function CustomerPage({ params, searchParams }: CustomerPag
                 {card.noteUpdatedUtc && <p className={panel.muted}>Sist endret {formatDate(card.noteUpdatedUtc)}</p>}
             </section>
 
-            <h2 className={panel.sectionTitle}>Timer</h2>
+            {customer.imported ? (
+                <section className={panel.card} aria-labelledby="fjern">
+                    <h2 id="fjern" className={styles.cardTitle}>Ikke bestilt hos dere i BESTI ennå</h2>
+                    <p className={styles.noteHint}>
+                        Kunden kom fra kundelisten dere importerte. Er kunden ikke deres lenger, eller vil kunden
+                        ikke være med, kan dere fjerne kunden og notatet.
+                    </p>
+                    <form action={removeCustomerAction} className={styles.importActions}>
+                        <input type="hidden" name="key" value={customer.key}/>
+                        <SubmitButton className={panel.dangerButton} pendingText="Fjerner…">Fjern fra Kunder</SubmitButton>
+                    </form>
+                </section>
+            ) : <h2 className={panel.sectionTitle}>Timer</h2>}
             <ul className={panel.list}>
                 {card.visits.map((visit) => (
                     <li key={visit.id} className={panel.card}>

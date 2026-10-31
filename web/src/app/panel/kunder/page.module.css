@@ -114,3 +114,139 @@
     clip: rect(0 0 0 0);
     white-space: nowrap;
 }
+
+/* "Importer kunder" */
+.topLinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 12px;
+}
+
+.steps {
+    margin: 0 0 10px;
+    padding-left: 20px;
+    display: grid;
+    gap: 6px;
+}
+
+.importActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+a.saveButton {
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+.saveButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.fileField {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-weight: 600;
+}
+
+.fileField input {
+    font: inherit;
+    font-weight: 400;
+    max-width: 100%;
+}
+
+.checkLine {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0 0 12px;
+    line-height: 1.4;
+}
+
+.checkLine input {
+    width: 20px;
+    height: 20px;
+    margin-top: 1px;
+    flex-shrink: 0;
+    accent-color: var(--color-primary);
+}
+
+.columns {
+    list-style: none;
+    margin: 0 0 12px;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 10px;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+}
+
+.columnLabel {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.columnSample {
+    display: block;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.select {
+    font: inherit;
+    font-family: var(--font-heading);
+    min-height: 44px;
+    margin-top: 4px;
+    padding: 0 10px;
+    color: var(--color-text);
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    border-radius: 8px;
+}
+
+.select:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+.previewTitle {
+    font-size: 1rem;
+    margin: 4px 0 8px;
+}
+
+.preview,
+.problems {
+    margin: 0 0 12px;
+    padding-left: 20px;
+    display: grid;
+    gap: 4px;
+    overflow-wrap: anywhere;
+}
+
+.problems {
+    font-size: 0.9375rem;
+    color: var(--color-warning);
+}
+
+.importFlow {
+    display: grid;
+    gap: 12px;
+}

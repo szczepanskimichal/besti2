@@ -1,4 +1,4 @@
-import type {BookingDayCount, BusinessDetails, CustomerCard, CustomerRow, PanelBooking, ServiceTemplate, StaffAccess, TimeOff} from "@/lib/types";
+import type {BookingDayCount, BusinessDetails, CustomerCard, CustomerImportResult, CustomerRow, PanelBooking, ServiceTemplate, StaffAccess, TimeOff} from "@/lib/types";
 import {API_URL, UPLOAD_TIMEOUT_MS, GENERIC_ERROR, apiFetch, safeFetch, toResult, type ApiResult} from "./client";
 // The business panel: calendar, blocked time, services, employees, profile, photos
 
@@ -221,6 +221,29 @@ export async function getPanelCustomer(token: string, key: string): Promise<Cust
 export async function setCustomerNote(token: string, key: string, note: string): Promise<ApiResult> {
     return toResult(await apiFetch(`/api/panel/customers/${encodeURIComponent(key)}/note`,
         { method: "PUT", token, body: { note } }));
+}
+
+// "Importer kunder": save = false checks the list and counts, nothing is saved
+export async function importCustomers(token: string, rows: { line: number; name: string; phone: string;
+    email: string; note: string }[], save: boolean, confirmed: boolean):
+    Promise<{ ok: true; result: CustomerImportResult } | { ok: false; message: string }> {
+    // Not apiFetch: a list of thousands of customers may take longer than 8 s to save
+    const res = await safeFetch(`${API_URL}/api/panel/customers/import`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ rows, save, confirmed }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(UPLOAD_TIMEOUT_MS),
+    });
+    if (res.ok) return { ok: true, result: await res.json() };
+    const result = await toResult(res);
+    return result.ok ? { ok: false, message: GENERIC_ERROR } : result;
+}
+
+// "Fjern fra Kunder": only an imported customer who has not booked here
+export async function removeImportedCustomer(token: string, key: string): Promise<boolean> {
+    const res = await apiFetch(`/api/panel/customers/${encodeURIComponent(key)}`, { method: "DELETE", token });
+    return res.ok;
 }
 
 // The CSV file as the API made it (null = not allowed)

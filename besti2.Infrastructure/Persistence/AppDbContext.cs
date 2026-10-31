@@ -55,6 +55,7 @@ public class AppDbContext : IdentityDbContext<AppUser>
     public DbSet<Favorite> Favorites { get; set; } = null!;
     public DbSet<LoyaltyRedemption> LoyaltyRedemptions { get; set; } = null!;
     public DbSet<CustomerNote> CustomerNotes { get; set; } = null!;
+    public DbSet<ImportedCustomer> ImportedCustomers { get; set; } = null!;
     public DbSet<ReviewHelpful> ReviewHelpfuls { get; set; } = null!;
     public DbSet<AdminAction> AdminActions { get; set; } = null!;
 
@@ -388,6 +389,21 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 .HasForeignKey(x => x.BusinessId)
                 .OnDelete(DeleteBehavior.Cascade);
             e.Property(x => x.UpdatedUtc)
+                .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
+        });
+        modelBuilder.Entity<ImportedCustomer>(e =>
+        {
+            e.Property(x => x.Name).IsRequired().HasMaxLength(100);
+            e.Property(x => x.Phone).IsRequired().HasMaxLength(20);
+            e.Property(x => x.PhoneKey).IsRequired().HasMaxLength(15);
+            e.Property(x => x.Email).HasMaxLength(250);
+            // One imported customer per phone number in each business
+            e.HasIndex(x => new { x.BusinessId, x.PhoneKey }).IsUnique();
+            e.HasIndex(x => x.ImportedUtc);
+            e.HasOne(x => x.Business).WithMany()
+                .HasForeignKey(x => x.BusinessId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.Property(x => x.ImportedUtc)
                 .HasConversion(v => v, v => DateTime.SpecifyKind(v, DateTimeKind.Utc));
         });
         modelBuilder.Entity<AdminAction>(e =>

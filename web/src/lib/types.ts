@@ -503,6 +503,19 @@ export type CustomerRow = {
     lastVisitUtc: string | null;
     nextVisitUtc: string | null;
     hasNote: boolean;
+    // Brought from the business's old system ("Importer kunder") and not booked here yet
+    imported: boolean;
+};
+
+// "Importer kunder": what the API found in the list (saved = false is only the check before "Importer")
+export type CustomerImportResult = {
+    saved: boolean;
+    added: number;
+    existing: number;
+    duplicates: number;
+    skipped: number;
+    notesAdded: number;
+    problems: { line: number; message: string }[];
 };
 
 export type CustomerCard = {

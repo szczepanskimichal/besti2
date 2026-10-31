@@ -15,8 +15,9 @@ type CustomersPageProps = {
     searchParams: Promise<{ q?: string }>;
 };
 
-// Everyone who has booked here, made from the bookings themselves: visits, last and next time, and the
-// business's own note. Customers who deleted their account (or are older than 3 years) are not here
+// Everyone who has booked here, made from the bookings themselves, and the customers imported from the old
+// system: visits, last and next time, and the business's own note. Customers who deleted their account
+// (or are older than 3 years) are not here
 export default async function CustomersPage({ searchParams }: CustomersPageProps) {
     const token = await getToken();
     if (!token) {
@@ -31,6 +32,9 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
     return (
         <main className={panel.main}>
             <PanelNav title="Kunder"/>
+            <div className={styles.topLinks}>
+                <Link href="/panel/kunder/importer" className={panel.secondaryButton}>Importer kunder fra et annet system</Link>
+            </div>
             <form action="/panel/kunder" className={styles.search} role="search">
                 <label className={styles.srOnly} htmlFor="kunde-sok">Søk etter kunde</label>
                 <input id="kunde-sok" name="q" type="search" defaultValue={q} maxLength={100}
@@ -44,6 +48,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                 q ? <p className={panel.muted}>Ingen treff.</p> : (
                     <EmptyState icon="👥" title="Ingen kunder ennå">
                         Kundene kommer hit av seg selv med den første bestillingen, med historikk og plass til notater.
+                        Eller importer dem fra systemet dere bruker i dag.
                     </EmptyState>
                 )
             ) : (
@@ -61,7 +66,9 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
                                 {customer.lastVisitUtc && <span>Sist {formatDate(customer.lastVisitUtc)}</span>}
                                 {customer.nextVisitUtc && <span className={styles.next}>Neste {formatDate(customer.nextVisitUtc)}</span>}
                                 {customer.noShows > 0 && <span className={styles.noShow}>Møtte ikke: {customer.noShows}</span>}
-                                {!customer.hasAccount && <span>Lagt inn av dere</span>}
+                                {customer.imported
+                                    ? <span>Importert</span>
+                                    : !customer.hasAccount && <span>Lagt inn av dere</span>}
                             </p>
                             <p className={panel.customer}>
                                 <a href={`tel:${customer.phone}`}>{customer.phone}</a>

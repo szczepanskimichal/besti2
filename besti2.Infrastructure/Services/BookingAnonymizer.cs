@@ -128,6 +128,12 @@ public class BookingAnonymizer(AppDbContext dbContext, IImageStorage? storage = 
             count += gone.Count;
         }
 
+        // "Importer kunder": an imported customer is kept 3 years; one who has booked since is in the bookings
+        var oldImported = await dbContext.ImportedCustomers.Where(c => c.ImportedUtc < cutoff)
+            .ToListAsync(cancellationToken);
+        dbContext.ImportedCustomers.RemoveRange(oldImported);
+        count += oldImported.Count;
+
         // The admin log keeps the same 3 years
         dbContext.AdminActions.RemoveRange(await dbContext.AdminActions.Where(a => a.CreatedUtc < cutoff)
             .ToListAsync(cancellationToken));

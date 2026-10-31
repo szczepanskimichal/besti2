@@ -787,6 +787,47 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.ToTable("Favorites");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.ImportedCustomer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("ImportedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("PhoneKey")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImportedUtc");
+
+                    b.HasIndex("BusinessId", "PhoneKey")
+                        .IsUnique();
+
+                    b.ToTable("ImportedCustomers");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.LoyaltyRedemption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1622,6 +1663,17 @@ namespace besti2.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("besti2.Domain.Entities.Favorite", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.Business", "Business")
+                        .WithMany()
+                        .HasForeignKey("BusinessId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Business");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.ImportedCustomer", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
                         .WithMany()
