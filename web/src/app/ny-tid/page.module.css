@@ -1,0 +1,218 @@
+/* "Passer den nye tiden?": built on the booking confirmation card (../[slug]/bestill/bekreftet) */
+
+/* Darker, calmer card like Min BESTI (instead of the lighter confirmation card) */
+div.card {
+    position: relative;
+    background: radial-gradient(120% 80% at 50% 0%, rgba(114, 214, 189, 0.1), rgba(4, 18, 26, 0.88) 60%);
+    border-color: rgba(166, 242, 221, 0.28);
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* The clock in the crystal shows the new time; the minute hand ticks right away and the ring runs down */
+.clock {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 0 3px #bff8e8);
+}
+.clock line {
+    stroke: #ffffff;
+    stroke-linecap: round;
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+}
+.pin {
+    fill: #ffffff;
+}
+.ring {
+    fill: none;
+    stroke: #b8ffe9;
+    stroke-width: 4;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    transform: rotate(-90deg);
+    transform-box: view-box;
+    transform-origin: 50px 50px;
+    filter: drop-shadow(0 0 5px rgba(61, 255, 176, 0.9));
+    animation: countdown 12s linear infinite;
+}
+@keyframes countdown {
+    from { stroke-dashoffset: 0; }
+    to { stroke-dashoffset: -1; }
+}
+.hour {
+    stroke-width: 6;
+    transform: rotate(45deg);
+}
+.minute {
+    stroke-width: 4;
+    animation: tick 12s steps(12) infinite;
+}
+/* One tick per second, a full turn per round of the ring */
+@keyframes tick {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* What happened: the business moved the visit and waits for the customer's answer */
+.info {
+    max-width: 380px;
+    margin: 0 auto;
+    color: #cfe9e2;
+    line-height: 1.5;
+}
+ /* Tilted lavender stamp in the corner, like "Venter på bekreftelse" in Min BESTI */
+.stamp {
+    position: relative;
+    display: block;
+    margin: 18px auto 4px;
+    width: 82px;
+    height: 82px;
+    border: 2px solid #c9bfff;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(189, 176, 255, 0.3), rgba(120, 100, 230, 0.1) 70%, rgba(4, 16, 26, 0.2));
+    box-shadow: 0 0 18px rgba(189, 176, 255, 0.8), 0 0 40px rgba(140, 120, 255, 0.4), inset 0 0 14px rgba(189, 176, 255, 0.45);
+    color: #e6e0ff;
+    pointer-events: none;
+}
+.stamp > span {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    right: 0;
+    color: #f3f0ff;
+    font: 800 0.66rem var(--font-heading);
+    letter-spacing: 0.03em;
+    line-height: 1.15;
+    text-align: center;
+    text-shadow: 0 0 6px rgba(189, 176, 255, 0.95);
+}
+.stamp small {
+    display: block;
+    margin-top: 2px;
+    font-size: 0.52rem;
+    letter-spacing: 0.04em;
+}
+
+/* Old time crossed out above, new time big and glowing below */
+.swap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin: 22px 0 0;
+}
+.swap p {
+    margin: 0;
+}
+.label {
+    display: block;
+    color: #8fb8ae;
+    font-family: var(--font-small);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+/* The old time stays readable under the line */
+.old s {
+    position: relative;
+    z-index: 0;
+    text-shadow: 0 0 6px rgba(4, 16, 26, 0.9);
+    color: #f0f6fa;
+    font-family: var(--font-small);
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+/* Our own glowing lavender line (same colour as the Venter stamp) instead of a plain strike-through */
+.old s::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -4px;
+    right: -4px;
+    top: 52%;
+    height: 2px;
+    border-radius: 2px;
+    background: #b3a4ff;
+    box-shadow: 0 0 5px rgba(189, 176, 255, 0.95), 0 0 12px rgba(140, 120, 255, 0.7);
+}
+/* A small arrow between the two times */
+.old::after {
+    content: "↓";
+    display: block;
+    margin-top: 4px;
+    color: #72d6bd;
+}
+/* Brighter tile, so the new time is the first thing you read */
+.new {
+    min-width: 260px;
+    padding: 16px 28px 18px;
+    border-radius: 20px;
+    background: radial-gradient(120% 90% at 50% 45%, rgba(114, 214, 189, 0.12), rgba(4, 18, 24, 0.94) 60%);
+    border: 3.5px solid #b8ffe9;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.9), 0 0 30px rgba(114, 214, 189, 0.55), inset 0 0 24px rgba(114, 214, 189, 0.25);
+}
+.new .label {
+    color: #d6fff3;
+    font-size: 0.875rem;
+    font-weight: 800;
+}
+.newDate {
+    display: block;
+    margin-top: 2px;
+    color: #ffffff;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+.newTime {
+    display: block;
+    color: #9ff5dc;
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    text-shadow: 0 0 16px rgba(61, 255, 176, 0.55);
+}
+
+/* Yes: the big mint button from the confirmation page; no: Ada's dark blue cancel */
+.yes {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+}
+/* Exactly the Avbestill pill from the visit cards in Min BESTI */
+.no {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    margin: 12px auto 0;
+    padding: 0 14px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+    font: 600 0.875rem var(--font-heading);
+    cursor: pointer;
+}
+.no:hover {
+    filter: brightness(1.1);
+}
+.note {
+    margin: 14px 0 0;
+    color: #9fc9bf;
+    font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .minute,
+    .ring {
+        animation: none;
+    }
+}

@@ -62,7 +62,7 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
             value: String(year.reviewsWritten),
             text: year.reviewsWritten === 1 ? "vurdering som hjelper andre" : "vurderinger som hjelper andre",
         },
-        year.spent > 0 && { icon: <LineIcon name="card"/>, value: `ca. ${kroner.format(year.spent)} kr`, text: "brukt på deg selv" },
+        year.spent > 0 && { icon: <LineIcon name="card"/>, value: `ca. ${kroner.format(year.spent)} kr`, text: "brukt på timene dine" },
     ].filter((f) => !!f) as { icon: ReactNode; value: string; text: string; href?: string }[];
 
     return (

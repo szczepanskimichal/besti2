@@ -228,3 +228,110 @@
     font-size: 0.49rem;
     letter-spacing: 0.04em;
 }
+
+/* A moved visit waiting for the customer: a calm lavender card with only the change and the answer */
+.movedCard {
+    border-color: rgba(189, 176, 255, 0.55);
+    background: linear-gradient(160deg, rgba(70, 50, 150, 0.22), rgba(4, 18, 26, 0.88) 70%);
+    box-shadow: 0 0 14px rgba(189, 176, 255, 0.18), 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.movedTitle {
+    margin: 0;
+    color: #f0edff;
+    font: 700 1.125rem var(--font-heading);
+}
+
+/* The business name in the same mint as on the other cards */
+.movedBusiness {
+    color: #8ff0d4;
+    text-decoration: none;
+}
+
+/* Old time small and crossed out, new time big */
+.movedTimes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 14px;
+}
+
+.movedTimes p {
+    margin: 0;
+}
+
+.movedDay {
+    color: #e6fff6;
+    font: 700 1rem var(--font-heading);
+}
+
+.movedOld {
+    color: #9fb0bf;
+    font-size: 0.9375rem;
+}
+
+.movedOld s {
+    position: relative;
+    z-index: 0;
+    color: #f0f6fa;
+    font-weight: 600;
+    text-decoration: none;
+    text-shadow: 0 0 6px rgba(4, 16, 26, 0.9);
+}
+
+.movedOld s::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: -3px;
+    right: -3px;
+    top: 52%;
+    height: 2px;
+    border-radius: 2px;
+    background: #b3a4ff;
+    box-shadow: 0 0 5px rgba(189, 176, 255, 0.95), 0 0 10px rgba(140, 120, 255, 0.7);
+}
+
+.movedNew {
+    color: #9ff5dc;
+    font: 700 1.5rem var(--font-heading);
+    text-shadow: 0 0 12px rgba(61, 255, 176, 0.45);
+}
+
+.movedNew span {
+    color: #d6fff3;
+    font-size: 0.9375rem;
+}
+
+.movedActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.movedYes {
+    min-height: 44px;
+    padding: 0 20px;
+    border: none;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #9ff5dc, #72d6bd 55%, #4fc3a6);
+    box-shadow: 0 0 0 1.5px rgba(160, 255, 225, 0.7), 0 0 14px rgba(61, 255, 176, 0.3);
+    color: #04101a;
+    font: 800 0.9375rem var(--font-heading);
+    cursor: pointer;
+}
+
+/* Same pill as Avbestill */
+.movedNo {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+    font: 600 0.875rem var(--font-heading);
+    cursor: pointer;
+}

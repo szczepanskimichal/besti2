@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getMe, getMyBookings, getMyInvites, getMyRebookReminders, getMyWaitlist } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { statusLabels } from "@/lib/bookingStatus";
-import { formatDate, formatDay, formatTime, isIsoDate, osloDay, shiftDay, todayInOslo } from "@/lib/format";
+import { formatDate, formatDay, formatTime, isIsoDate, osloDay, sameDay, shiftDay, todayInOslo } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
 import type { CustomerBooking, RebookReminder } from "@/lib/types";
@@ -179,9 +179,14 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                 </EmptyState>
             ) : (
                 <ul className={styles.list}>
-                    {upcoming.map((booking) => (
+                    {upcoming.map((booking) => booking.status === "VenterKunde" ? (
+                        // The business moved the visit: only the change and the answer, nothing else
+                        <li key={booking.id} id={`time-${booking.id}`} className={`${mine.card} ${mine.movedCard}`}>
+                            <MovedVisit booking={booking}/>
+                        </li>
+                    ) : (
                         <li key={booking.id} id={`time-${booking.id}`} className={mine.card}>
-                            <div className={booking.status === "VenterKunde" ? "" : mine.besideStamp}>
+                            <div className={mine.besideStamp}>
                                 <p className={mine.date}>{formatDate(booking.startUtc)}</p>
                                 <div className={mine.timeRow}>
                                     <span className={mine.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
@@ -201,29 +206,6 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 <p className={styles.muted}>
                                     <span aria-hidden="true">👯</span> Sammen med {others(together.get(booking.inviteId)!.names)}
                                 </p>
-                            )}
-                            {/* The business moved the visit: the customer accepts or declines the new time */}
-                            {booking.status === "VenterKunde" && (
-                                <div className={styles.note}>
-                                    <p>
-                                        Bedriften ønsker å flytte timen
-                                        {booking.previousStartUtc &&
-                                            ` fra ${formatDate(booking.previousStartUtc)} kl. ${formatTime(booking.previousStartUtc)}`}.
-                                        Passer den nye tiden?
-                                    </p>
-                                    <div className={styles.actions}>
-                                        <form action={answerMyNewTimeAction}>
-                                            <input type="hidden" name="bookingId" value={booking.id}/>
-                                            <input type="hidden" name="svar" value="ja"/>
-                                            <SubmitButton className={styles.primaryButton} pendingText="Lagrer…">Godta ny tid</SubmitButton>
-                                        </form>
-                                        <form action={answerMyNewTimeAction}>
-                                            <input type="hidden" name="bookingId" value={booking.id}/>
-                                            <input type="hidden" name="svar" value="nei"/>
-                                            <SubmitButton className={styles.dangerButton} pendingText="Lagrer…">Passer ikke</SubmitButton>
-                                        </form>
-                                    </div>
-                                </div>
                             )}
                             <p className={mine.links}>
                                 <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
@@ -316,11 +298,52 @@ function rebookSuggestions(reminders: RebookReminder[], visits: CustomerBooking[
     });
 }
 
-// Bekreftet and Venter as a tilted glowing stamp in the corner; "Svar ønskes" stays a pink label, the note below asks
+// A visit the business moved: the change in short and the two answers. The rest of the card
+// (countdown, address, calendar, Avbestill) comes back once the customer has answered
+function MovedVisit({ booking }: { booking: CustomerBooking }) {
+    const before = booking.previousStartUtc;
+    const same = !!before && sameDay(before, booking.startUtc);
+    return (
+        <>
+            <StatusStamp status={booking.status}/>
+            <div className={mine.besideStamp}>
+                <p className={mine.movedTitle}>
+                    <Link href={`/${booking.businessSlug}`} className={mine.movedBusiness}>{booking.businessName}</Link> vil flytte timen
+                </p>
+                <p className={mine.service}>
+                    <CrystalIcon name="stjerne"/> {booking.serviceName} hos {booking.employeeName}
+                </p>
+            </div>
+            <div className={mine.movedTimes}>
+                {same && <p className={mine.movedDay}>{formatDate(booking.startUtc)}</p>}
+                {before && (
+                    <p className={mine.movedOld}>
+                        Før <s>{same ? "" : `${formatDate(before)} `}kl. {formatTime(before)}</s>
+                    </p>
+                )}
+                <p className={mine.movedNew}>
+                    <span>Ny tid</span> {same ? "" : `${formatDate(booking.startUtc)} `}kl. {formatTime(booking.startUtc)}
+                </p>
+            </div>
+            <div className={mine.movedActions}>
+                <form action={answerMyNewTimeAction}>
+                    <input type="hidden" name="bookingId" value={booking.id}/>
+                    <input type="hidden" name="svar" value="ja"/>
+                    <SubmitButton className={mine.movedYes} pendingText="Lagrer…">Ja, det passer</SubmitButton>
+                </form>
+                <form action={answerMyNewTimeAction}>
+                    <input type="hidden" name="bookingId" value={booking.id}/>
+                    <input type="hidden" name="svar" value="nei"/>
+                    <SubmitButton className={mine.movedNo} pendingText="Lagrer…">Passer ikke</SubmitButton>
+                </form>
+            </div>
+        </>
+    );
+}
+
+// Every status as a tilted glowing stamp in the corner: mint = confirmed, lavender = waiting
+// (for the business, or for the customer's answer to a new time)
 function StatusStamp({ status }: { status: string }) {
-    if (status === "VenterKunde") {
-        return <span className={`${styles.status} ${styles.VenterKunde}`}>Svar ønskes</span>;
-    }
     const waiting = status !== "Bekreftet";
     return (
         <span className={`${mine.stamp} ${waiting ? mine.stampWaiting : ""}`} role="img"
@@ -328,7 +351,9 @@ function StatusStamp({ status }: { status: string }) {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 {waiting ? <><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v4.8l3.2 2"/></> : <path d="M5 12.5l4.5 4.5L19 7.5"/>}
             </svg>
-            <span aria-hidden="true">{waiting ? <>VENTER PÅ<small>BEKREFTELSE</small></> : "BEKREFTET"}</span>
+            <span aria-hidden="true">
+                {!waiting ? "BEKREFTET" : status === "VenterKunde" ? <>VENTER PÅ<small>SVARET DITT</small></> : <>VENTER PÅ<small>BEKREFTELSE</small></>}
+            </span>
         </span>
     );
 }

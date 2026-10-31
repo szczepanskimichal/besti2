@@ -183,9 +183,10 @@
     --tone-bg: rgba(169, 160, 255, 0.2);
 }
 
+/* Waiting for the customer's answer: lavender like every "waiting" in BESTI */
 .VenterKunde {
-    --tone: #ff6fb5;
-    --tone-bg: rgba(255, 111, 181, 0.2);
+    --tone: #bdb0ff;
+    --tone-bg: rgba(169, 160, 255, 0.2);
 }
 
 .past {
