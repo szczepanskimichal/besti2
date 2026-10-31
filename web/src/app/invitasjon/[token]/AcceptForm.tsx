@@ -26,6 +26,7 @@ export default function AcceptForm({ token, fullName, phone }: { token: string; 
             <label className={styles.field}>
                 Melding til bedriften (valgfritt)
                 <textarea name="note" maxLength={500} rows={2} defaultValue={value("note")}/>
+                <span className={styles.fieldHint}>Bare bedriften ser dette.</span>
             </label>
             <p className={styles.muted}>
                 Ved å bli med godtar du <NextLink href="/vilkar">vilkårene</NextLink> og
