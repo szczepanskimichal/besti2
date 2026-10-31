@@ -14,5 +14,7 @@ export async function replyToReviewAction(formData: FormData) {
         String(formData.get("reviewId") ?? ""),
         String(formData.get("reply") ?? ""),
     );
-    redirect(result.ok ? "/panel/vurderinger?svart=1" : "/panel/vurderinger?feil=1");
+    // Stay on the full list when the reply was written there
+    const all = formData.get("alle") === "1" ? "&alle=1" : "";
+    redirect(result.ok ? `/panel/vurderinger?svart=1${all}` : `/panel/vurderinger?feil=1${all}`);
 }
