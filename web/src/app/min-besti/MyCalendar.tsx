@@ -181,7 +181,6 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                         <ul className={styles.legend} aria-label="Forklaring">
                             <li><span className={`${styles.swatch} ${styles.Bekreftet}`}/> Bekreftet</li>
                             <li><span className={`${styles.swatch} ${styles.Venter}`}/> Venter</li>
-                            <li><span className={`${styles.swatch} ${styles.VenterKunde}`}/> Svar ønskes</li>
                             <li><span className={styles.ring}/> Tid for ny time?</li>
                         </ul>
                     </>

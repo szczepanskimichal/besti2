@@ -64,6 +64,11 @@ const osloWeekday = new Intl.DateTimeFormat("nb-NO", { timeZone: "Europe/Oslo", 
 
 // How long ago, like a phone: "for 18 min siden", "for 2 timer siden", "i går kl. 23:16", "onsdag kl. 03:16",
 // and the full date after a week
+// Both times on the same day in Oslo, e.g. a visit moved from 11:30 to 13:30 (then the date is shown once)
+export function sameDay(a: string, b: string): boolean {
+    return osloDay(a) === osloDay(b);
+}
+
 export function formatAgo(utc: string, now = new Date()): string {
     const minutes = Math.floor((now.getTime() - new Date(utc).getTime()) / 60000);
     if (minutes < 1) {
