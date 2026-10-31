@@ -212,6 +212,7 @@
     margin: 0;
     color: var(--color-muted);
     font-size: 0.8rem;
+    font-weight: 400;
     overflow-wrap: anywhere;
     user-select: all;
 }
@@ -403,4 +404,11 @@
     .seatCircle {
         animation: none;
     }
+}
+
+/* Small note under the message field: friends must not mistake it for a reply to the organizer */
+.fieldHint {
+    font-size: 0.8rem;
+    font-weight: 400;
+    color: var(--color-muted);
 }
