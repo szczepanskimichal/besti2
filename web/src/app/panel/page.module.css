@@ -255,3 +255,149 @@
     white-space: pre-line;
     overflow-wrap: anywhere;
 }
+
+/* Panel pages as tabs with a line icon; the open page glows mint like the view switch */
+.navTab {
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 14px;
+    color: var(--color-text);
+    text-decoration: none;
+}
+.navTab svg {
+    flex: none;
+    color: #bff8e8;
+}
+.navTab[aria-current="page"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.5);
+}
+.navTab[aria-current="page"] svg {
+    color: var(--color-on-primary);
+}
+
+/* Title on the left, today's date on the right (Ada 2026-10-31) */
+.titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    width: 100%;
+}
+.today {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.55);
+    border-radius: 999px;
+    background: rgba(3, 14, 20, 0.62);
+    color: #bff8e8;
+    font: 700 clamp(0.95rem, 3.6vw, 1.15rem) var(--font-heading);
+    box-shadow: 0 0 12px rgba(114, 214, 189, 0.25);
+    backdrop-filter: var(--glass-blur);
+    white-space: nowrap;
+}
+.srOnlyToday {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+}
+/* The aurora a bit calmer behind the panel: the owner works here for hours */
+.calmSky {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(3, 12, 18, 0.5), rgba(3, 12, 18, 0.62));
+}
+
+/* ================= Panel menu as tiles (Ada 2026-10-31 17:40) =================
+   All pages in one dark glass box: icon over the name, even grid, the open page lit in mint.
+   Phone: 4 per row (3 rows, nothing hidden); laptop: 6 per row (2 rows). */
+.topActions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    overflow: visible;
+    padding: 8px;
+    border: 1px solid rgba(191, 248, 232, 0.2);
+    border-radius: 22px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.navTab {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    min-height: 64px;
+    padding: 8px 4px;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    color: var(--color-text);
+    font: 600 0.6875rem/1.15 var(--font-heading);
+    text-align: center;
+    text-decoration: none;
+    white-space: normal;
+}
+.navTab:hover {
+    border-color: rgba(191, 248, 232, 0.3);
+    background: rgba(114, 214, 189, 0.08);
+}
+.navTab svg {
+    flex: none;
+    color: #bff8e8;
+}
+.navTab[aria-current="page"] {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.5);
+}
+.navTab[aria-current="page"] svg {
+    color: var(--color-on-primary);
+}
+.navPro {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 0.75rem;
+}
+
+@media (min-width: 900px) {
+    .topActions {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    .navTab {
+        flex-direction: row;
+        gap: 10px;
+        min-height: 52px;
+        font-size: 0.9375rem;
+    }
+    .navPro {
+        position: static;
+    }
+}
+
+
+/* Phone: the Pro badge sits on the tile's top edge, like a sticker, so it never covers the icon */
+.navPro {
+    top: -12px;
+    right: -6px;
+    transform: none;
+}
+@media (min-width: 900px) {
+    .navPro {
+        transform: none;
+    }
+
+}

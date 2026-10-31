@@ -22,6 +22,8 @@ import PhoneList from "./calendar/PhoneList";
 import BookingDetails, { allowedActions } from "./calendar/BookingDetails";
 import { GroupStrip } from "./calendar/GroupSummary";
 import TimeOffDetails from "./calendar/TimeOffDetails";
+import DaySummary from "./calendar/DaySummary";
+import DateJump from "./calendar/DateJump";
 
 // "Plan": the next two weeks as one list
 const PLAN_DAYS = 14;
@@ -140,7 +142,20 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 </p>
             )}
 
-            <div className={calendar.toolbar}>
+            <div className={calendar.controlBar}>
+                <div className={calendar.dateGroup}>
+                    <div className={calendar.dayNav}>
+                        <Link href={link({ dag: previous })} className={calendar.arrow} aria-label={`Forrige ${unit}`}>←</Link>
+                        <DateJump day={day} view={view} employee={employeeFilter}>
+                            <span className={calendar.dayTitle} role="heading" aria-level={2}>
+                                {year ? day.slice(0, 4) : plan ? `${shortDay(first)} – ${shortDay(last)}` : month ? monthTitle(day)
+                                    : week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
+                            </span>
+                        </DateJump>
+                        <Link href={link({ dag: next })} className={calendar.arrow} aria-label={`Neste ${unit}`}>→</Link>
+                    </div>
+                    {day !== todayInOslo() && <Link href={link({ dag: todayInOslo() })} className={calendar.todayLink}>I dag</Link>}
+                </div>
                 <div className={calendar.segmented} role="group" aria-label="Visning">
                     <Link href={link({ visning: "ar" })} aria-current={year ? "page" : undefined}>År</Link>
                     <Link href={link({ visning: "maned" })} aria-current={month ? "page" : undefined}>Måned</Link>
@@ -148,24 +163,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                     <Link href={link({ visning: undefined, ansatt: undefined })} aria-current={view ? undefined : "page"}>Dag</Link>
                     <Link href={link({ visning: "plan" })} aria-current={plan ? "page" : undefined}>Plan</Link>
                 </div>
-                <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
-                <Link href={link({ blokker: "1" })} scroll={false} className={styles.secondaryButton}>Blokker tid</Link>
-                <Link href={link({ dag: previous })} className={styles.secondaryButton} aria-label={`Forrige ${unit}`}>←</Link>
-                <Link href={link({ dag: todayInOslo() })} className={styles.secondaryButton}>I dag</Link>
-                <Link href={link({ dag: next })} className={styles.secondaryButton} aria-label={`Neste ${unit}`}>→</Link>
-                <h2 className={calendar.dayTitle}>
-                    {year ? day.slice(0, 4) : plan ? `${shortDay(first)} – ${shortDay(last)}` : month ? monthTitle(day)
-                        : week ? `Uke ${isoWeek(first)} · ${shortDay(first)} – ${shortDay(last)}` : formatDay(day)}
-                </h2>
-                <form method="get" className={calendar.datePicker}>
-                    {view && <input type="hidden" name="visning" value={view}/>}
-                    {employeeFilter && <input type="hidden" name="ansatt" value={employeeFilter}/>}
-                    <label>
-                        <span className={calendar.srOnly}>Velg dato</span>
-                        <input type="date" name="dag" defaultValue={day}/>
-                    </label>
-                    <button type="submit" className={styles.secondaryButton}>Vis</button>
-                </form>
+                <div className={calendar.actions}>
+                    <Link href={link({ blokker: "1" })} scroll={false} className={calendar.blockButton}>Blokker tid</Link>
+                    <Link href={link({ ny: "1" })} scroll={false} className={styles.primaryButton}>+ Ny bestilling</Link>
+                </div>
             </div>
 
             {view && (
@@ -189,6 +190,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             {!view && !business.openingHours.some((h) => h.dayOfWeek === weekdayOf(day)) && (
                 <p className={styles.muted}>Stengt denne dagen.</p>
+            )}
+
+            {!view && bookings.length > 0 && (
+                <DaySummary bookings={bookings}/>
             )}
 
             <GroupStrip bookings={bookings} hrefFor={(booking) => link({ bestilling: booking.id })}/>

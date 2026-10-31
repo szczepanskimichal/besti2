@@ -32,7 +32,7 @@ export default async function PanelListPage({ searchParams }: PanelPageProps) {
 
     return (
         <main className={styles.main}>
-            <PanelNav title="Bestillinger"/>
+            <PanelNav title="Bestillinger" active="Liste"/>
 
             {feil && (
                 <p className={styles.error} role="alert">

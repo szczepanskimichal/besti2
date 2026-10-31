@@ -2,7 +2,7 @@ import Link from "next/link";
 import { clockMinutes, formatTime, osloMinutes, weekdayOf } from "@/lib/format";
 import type { OpeningHours } from "@/lib/types";
 import { customerLabel, statusLabels } from "@/lib/bookingStatus";
-import PendingBadge from "../PendingBadge";
+import PendingBadge, { OkStamp } from "../PendingBadge";
 import calendar from "../calendar.module.css";
 import { PX_PER_MINUTE, type Column, type Range, type Href, type BlockHref, blockMinutes, blockLabel, describeBlock, hourMarks, halfHours, clock } from "./calendarLayout";
 
@@ -15,7 +15,7 @@ export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockH
     const marks = hourMarks(range);
     return (
         <div className={calendar.scroller}>
-            <div className={calendar.grid} style={{ gridTemplateColumns: `56px repeat(${columns.length}, minmax(140px, 1fr))` }}>
+            <div className={calendar.grid} style={{ gridTemplateColumns: `64px repeat(${columns.length}, minmax(140px, 1fr))` }}>
                 <div className={calendar.corner}/>
                 {columns.map((column) => (
                     <div key={column.id} className={calendar.columnHead}>{column.title}</div>
@@ -73,14 +73,19 @@ export default function TimeGrid({ columns, range, showEmployee, hrefFor, blockH
                                     key={booking.id}
                                     href={hrefFor(booking)}
                                     scroll={false}
-                                    className={`${calendar.booking} ${calendar[booking.status] ?? ""}`}
-                                    style={{ top: (start - range.start) * PX_PER_MINUTE, height: Math.max(end - start, 15) * PX_PER_MINUTE }}
+                                    className={`${calendar.booking} ${calendar[booking.status] ?? ""} ${(end - start) * PX_PER_MINUTE < 80 ? calendar.shortVisit : ""}`}
+                                    style={{
+                                        top: (start - range.start) * PX_PER_MINUTE,
+                                        height: Math.max(end - start, 15) * PX_PER_MINUTE,
+                                        // The round stamp fits inside the visit: smaller on short visits
+                                        ["--stamp" as string]: `${Math.min(84, Math.max(end - start, 15) * PX_PER_MINUTE - 12)}px`,
+                                    }}
                                     title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName} (${statusLabels[booking.status] ?? booking.status})`}
                                 >
                                     <span className={calendar.time}>
                                         {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
-                                        <PendingBadge status={booking.status}/>
                                     </span>
+                                    {booking.status === "Bekreftet" ? <OkStamp/> : <PendingBadge status={booking.status}/>}
                                     <span className={calendar.customer}>{customerLabel(booking)}</span>
                                     <span className={calendar.service}>
                                         {showEmployee ? `${booking.employeeName} · ${booking.serviceName}` : booking.serviceName}

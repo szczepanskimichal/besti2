@@ -955,3 +955,789 @@ a.booking:hover {
     height: 12px;
     border-radius: 4px;
 }
+
+/* ================= Ada's panel (2026-10-31): the same crystal look as the customer side =================
+   Colour rule from the rest of BESTI: mint = confirmed, lilac = waiting (for the business or the customer),
+   blue = cancelled. No yellow anywhere. */
+
+/* The day at a glance: three numbers + who is next */
+.summary {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding: 16px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 22px;
+    background: linear-gradient(160deg, rgba(114, 214, 189, 0.12), rgba(63, 143, 214, 0.08) 60%, rgba(3, 14, 22, 0.6));
+    box-shadow: 0 0 22px rgba(114, 214, 189, 0.12);
+    backdrop-filter: var(--glass-blur);
+}
+.summaryStats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.summaryStats p {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    padding: 10px 4px;
+    border-radius: 16px;
+    background: rgba(3, 14, 20, 0.55);
+    text-align: center;
+}
+.summaryStats strong {
+    color: #bff8e8;
+    font: 700 1.75rem/1.1 var(--font-heading);
+    text-shadow: 0 0 14px rgba(114, 214, 189, 0.55);
+}
+.summaryStats span {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    line-height: 1.2;
+}
+.summaryStats .summaryWaiting {
+    box-shadow: inset 0 0 0 1.5px #c9bfff, 0 0 12px rgba(201, 191, 255, 0.35);
+}
+.summaryWaiting strong {
+    color: #e6e0ff;
+    text-shadow: 0 0 14px rgba(201, 191, 255, 0.6);
+}
+.summaryNext {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 16px;
+    background: rgba(3, 14, 20, 0.55);
+    color: inherit;
+    text-decoration: none;
+}
+.summaryNextLabel {
+    color: var(--color-primary);
+    font: 700 0.75rem var(--font-heading);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.summaryNextTime {
+    color: #ffffff;
+    font: 700 1.5rem var(--font-heading);
+}
+.summaryNextWho {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    font-weight: 700;
+}
+.summaryNextWho small {
+    overflow: hidden;
+    color: var(--color-muted);
+    font-weight: 400;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Visit card on the phone: time in big Syne on the left, a glowing line in the status colour, a stamp on the right */
+.phoneCard {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px 12px 16px;
+    border: 1px solid rgba(191, 248, 232, 0.18);
+    border-left: 0;
+    border-radius: 18px;
+    background: var(--color-surface);
+    box-shadow: inset 4px 0 0 var(--card-line, #72d6bd), -2px 0 12px -4px var(--card-line, #72d6bd);
+    backdrop-filter: var(--glass-blur);
+}
+.phoneCard.Bekreftet {
+    --card-line: #72d6bd;
+    background: var(--color-surface);
+    border-left: 0;
+}
+.phoneCard.Venter,
+.phoneCard.VenterKunde {
+    --card-line: #c9bfff;
+    border: 1px dashed rgba(201, 191, 255, 0.55);
+    border-left: 0;
+    background: linear-gradient(rgba(150, 128, 255, 0.1), rgba(150, 128, 255, 0.1)), var(--color-card-base);
+}
+.phoneCard.MotteIkke {
+    --card-line: #7fb2ff;
+    border-left: 0;
+}
+.cardTime {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-right: 10px;
+    border-right: 1px solid rgba(191, 248, 232, 0.18);
+}
+.cardTime strong {
+    color: #ffffff;
+    font: 700 1.2rem var(--font-heading);
+}
+.cardTime small {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+.cardBody {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+.cardWho {
+    overflow: hidden;
+    font: 700 1rem var(--font-heading);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.cardEmployee {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 3px;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(191, 248, 232, 0.6);
+    border-radius: 50%;
+    background: rgba(114, 214, 189, 0.15);
+    color: #bff8e8;
+    font: 700 0.6875rem var(--font-heading);
+}
+.cardStamp {
+    align-self: start;
+}
+.stampOk {
+    display: inline-block;
+    padding: 2px 8px;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 999px;
+    color: var(--color-primary);
+    font: 700 0.6875rem var(--font-heading);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transform: rotate(4deg);
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.35);
+}
+/* Waiting = lilac (was yellow), same stamp shape */
+.pending,
+.VenterKunde .pending {
+    margin-left: 0;
+    padding: 2px 8px;
+    border: 1.5px solid #c9bfff;
+    background: rgba(150, 128, 255, 0.14);
+    color: #e6e0ff;
+    font: 700 0.6875rem var(--font-heading);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transform: rotate(4deg);
+    box-shadow: 0 0 8px rgba(201, 191, 255, 0.35);
+}
+.pendingIcon,
+.VenterKunde .pendingIcon {
+    color: #c9bfff;
+}
+.booking.Venter,
+.monthVisit.Venter,
+.booking.VenterKunde,
+.monthVisit.VenterKunde {
+    border-color: #c9bfff;
+    background: linear-gradient(rgba(150, 128, 255, 0.14), rgba(150, 128, 255, 0.14)), var(--color-card-base);
+}
+.phoneDay {
+    margin: 22px 0 10px;
+    color: #bff8e8;
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+}
+
+/* Phone toolbar: view switch over the whole width, then ← day →, then I dag + Blokker tid, then + Ny bestilling */
+@media (max-width: 767px) {
+    .toolbar {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 10px;
+    }
+    .toolbar > * {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+    .segmented {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        order: 0;
+        padding: 3px;
+        border-color: rgba(191, 248, 232, 0.35);
+        background: rgba(3, 14, 20, 0.55);
+    }
+    .segmented a {
+        justify-content: center;
+        min-height: 38px;
+        padding: 0;
+        border-radius: 999px;
+        font-size: 0.875rem;
+    }
+    .segmented {
+        grid-row: 1;
+    }
+    .toolbar > a[aria-label^="Forrige"] {
+        grid-row: 2;
+        grid-column: 1;
+        padding: 0;
+    }
+    .dayTitle {
+        grid-row: 2;
+        grid-column: 2 / 6;
+        align-self: center;
+        margin: 0;
+        font-family: var(--font-heading);
+        font-size: 1.1rem;
+        text-align: center;
+    }
+    .toolbar > a[aria-label^="Neste"] {
+        grid-row: 2;
+        grid-column: 6;
+        padding: 0;
+    }
+    .toolbar > a:nth-of-type(4) {
+        grid-row: 3;
+        grid-column: 1 / 4;
+    }
+    .toolbar > a:nth-of-type(2) {
+        grid-row: 3;
+        grid-column: 4 / -1;
+    }
+    .toolbar > a:nth-of-type(1) {
+        grid-row: 4;
+        box-shadow: 0 0 16px rgba(114, 214, 189, 0.45);
+    }
+    .toolbar > .datePicker {
+        display: none;
+    }
+}
+/* Bigger screens: the three numbers and "Neste" side by side */
+@media (min-width: 768px) {
+    .summary {
+        flex-direction: row;
+        align-items: stretch;
+    }
+    .summaryStats {
+        flex: 0 1 460px;
+    }
+    .summaryNext {
+        flex: 1;
+    }
+}
+
+/* ================= Ada round 2 (2026-10-31 17:12) ================= */
+/* Bigger names over the columns and bigger hours on the left */
+.columnHead {
+    font: 700 1.15rem var(--font-heading);
+    color: #bff8e8;
+}
+.hours {
+    font: 700 0.95rem var(--font-heading);
+    color: #dff7f0;
+}
+/* View switch (År Måned Uke Dag Plan) on a darker glass, like the other buttons */
+.segmented {
+    border-color: rgba(191, 248, 232, 0.35);
+    background: rgba(3, 14, 20, 0.62);
+    backdrop-filter: var(--glass-blur);
+}
+/* Visits framed like the stamps: one even neon line in the status colour + a soft glow */
+.booking {
+    left: 6px;
+    right: 6px;
+    border: 1.5px solid var(--color-primary);
+    border-radius: 12px;
+    background: linear-gradient(rgba(114, 214, 189, 0.1), rgba(114, 214, 189, 0.1)), var(--color-card-base);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.booking.Venter,
+.booking.VenterKunde {
+    border: 1.5px solid #c9bfff;
+    background: linear-gradient(rgba(150, 128, 255, 0.14), rgba(150, 128, 255, 0.14)), var(--color-card-base);
+    box-shadow: 0 0 10px rgba(201, 191, 255, 0.4);
+}
+.booking.MotteIkke {
+    border-color: #7fb2ff;
+    box-shadow: 0 0 10px rgba(127, 178, 255, 0.35);
+}
+.booking.Avlyst {
+    border-color: rgba(191, 248, 232, 0.25);
+    box-shadow: none;
+}
+.phoneCard,
+.phoneCard.Bekreftet,
+.phoneCard.Venter,
+.phoneCard.VenterKunde,
+.phoneCard.MotteIkke {
+    border: 1.5px solid var(--card-line, #72d6bd);
+    box-shadow: 0 0 10px color-mix(in srgb, var(--card-line, #72d6bd) 40%, transparent);
+}
+/* The three numbers: each one glows in its own colour */
+.summaryStats .summaryVisits {
+    box-shadow: inset 0 0 0 1.5px #bff8e8, 0 0 12px rgba(191, 248, 232, 0.35);
+    background: linear-gradient(rgba(191, 248, 232, 0.1), rgba(191, 248, 232, 0.1)), rgba(3, 14, 20, 0.55);
+}
+.summaryStats .summaryWaiting {
+    box-shadow: inset 0 0 0 1.5px #c9bfff, 0 0 14px rgba(201, 191, 255, 0.5);
+    background: linear-gradient(rgba(150, 128, 255, 0.2), rgba(150, 128, 255, 0.2)), rgba(3, 14, 20, 0.55);
+}
+.summaryStats .summaryBooked {
+    background: linear-gradient(135deg, #8ff0d6, var(--color-primary));
+    box-shadow: 0 0 16px rgba(114, 214, 189, 0.55);
+}
+.summaryStats .summaryBooked strong {
+    color: var(--color-on-primary);
+    text-shadow: none;
+}
+.summaryStats .summaryBooked span {
+    color: var(--color-on-primary);
+    font-weight: 600;
+}
+/* The lilac stamp sits a bit away from the time, tilted to the right like the mint one */
+.booking .pending {
+    margin-left: 10px;
+    vertical-align: 1px;
+}
+/* ================= Ada round 3 (17:24): round stamps, darker summary bar ================= */
+/* Stamps are round like a real rubber stamp: double ring, icon on top, text in the middle, tilted right */
+.stampOk,
+.pending,
+.VenterKunde .pending {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 76px;
+    height: 76px;
+    margin: 0;
+    padding: 6px;
+    border-radius: 50%;
+    font: 700 0.5625rem/1.1 var(--font-heading);
+    letter-spacing: 0.04em;
+    text-align: center;
+    text-transform: uppercase;
+    white-space: normal;
+    transform: rotate(10deg);
+}
+.stampOk {
+    border: 2px solid var(--color-primary);
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: inset 0 0 0 3px rgba(3, 14, 20, 0.9), inset 0 0 0 4px rgba(114, 214, 189, 0.7), 0 0 12px rgba(114, 214, 189, 0.45);
+}
+.pending,
+.VenterKunde .pending {
+    border: 2px solid #c9bfff;
+    background: rgba(150, 128, 255, 0.16);
+    color: #e6e0ff;
+    box-shadow: inset 0 0 0 3px rgba(3, 14, 20, 0.9), inset 0 0 0 4px rgba(201, 191, 255, 0.75), 0 0 12px rgba(201, 191, 255, 0.5);
+}
+.stampOk svg,
+.pending svg {
+    flex-shrink: 0;
+}
+/* Week and day grid: the stamp sits in the top right corner of the visit */
+.booking {
+    overflow: visible;
+}
+.booking .stampOk,
+.booking .pending {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    width: 64px;
+    height: 64px;
+    font-size: 0.5rem;
+    margin: 0;
+}
+/* Phone card: stamp on the right, in the middle of the card */
+.phoneCard {
+    grid-template-columns: 62px 1fr auto;
+}
+.phoneCard .cardStamp {
+    align-self: center;
+}
+/* The bar with the three numbers: dark like the calendar, the colours only in the numbers' frames */
+.summary {
+    border-color: rgba(191, 248, 232, 0.2);
+    background: rgba(5, 17, 24, 0.82);
+    box-shadow: none;
+}
+/* Wide enough for the longest word (BEKREFTELSE) inside the double ring */
+.stampOk,
+.pending,
+.VenterKunde .pending {
+    width: 90px;
+    height: 90px;
+    padding: 8px;
+    font-size: 0.5625rem;
+    letter-spacing: 0.01em;
+}
+.booking .stampOk,
+.booking .pending {
+    top: 4px;
+    width: 84px;
+    height: 84px;
+    padding: 8px;
+    font-size: 0.5rem;
+}
+.pending,
+.VenterKunde .pending {
+    padding: 10px;
+    font-size: 0.5rem;
+    letter-spacing: 0;
+}
+/* Round 4: the three numbers over the whole width; stamps sized to the visit frame */
+@media (min-width: 768px) {
+    .summaryStats {
+        flex: 1;
+    }
+    .summaryStats p {
+        flex-direction: row;
+        justify-content: center;
+        align-items: baseline;
+        gap: 10px;
+        padding: 14px 8px;
+    }
+    .summaryStats strong {
+        font-size: 2rem;
+    }
+    .summaryStats span {
+        font-size: 1rem;
+    }
+}
+.booking .stampOk,
+.booking .pending {
+    top: 6px;
+    right: 10px;
+    width: var(--stamp, 84px);
+    height: var(--stamp, 84px);
+    padding: calc(var(--stamp, 84px) * 0.1);
+    font-size: calc(var(--stamp, 84px) * 0.095);
+    gap: 1px;
+}
+.booking .stampOk svg,
+.booking .pending svg {
+    width: calc(var(--stamp, 84px) * 0.16);
+    height: calc(var(--stamp, 84px) * 0.16);
+}
+/* Short visits: the small stamp keeps only its icon (the status is still in the colour and the title) */
+.shortVisit .stampOk,
+.shortVisit .pending {
+    font-size: 0;
+}
+.shortVisit .stampOk svg,
+.shortVisit .pending svg {
+    width: 45%;
+    height: 45%;
+}
+.booking .pending {
+    font-size: calc(var(--stamp, 84px) * 0.085);
+    letter-spacing: 0;
+}
+
+/* ================= Control bar (Ada 17:40, variant A) =================
+   One dark glass bar: day with arrows + I dag + small calendar on the left, view switch in the middle,
+   actions on the right (+ Ny bestilling mint, the most important). */
+.controlBar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 16px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
+    border: 1px solid rgba(191, 248, 232, 0.2);
+    border-radius: 22px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.controlBar a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+.dayNav {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.dayNav .dayTitle {
+    min-width: 13ch;
+    margin: 0 4px;
+    color: #bff8e8;
+    font: 700 1.25rem var(--font-heading);
+    text-align: center;
+}
+.arrow {
+    width: 40px;
+    height: 40px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 50%;
+    color: #bff8e8;
+    font-size: 1.1rem;
+}
+.arrow:hover,
+.todayLink:hover,
+.dateJump label:hover {
+    background: rgba(114, 214, 189, 0.12);
+}
+.todayLink {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    color: var(--color-text);
+    font: 600 0.9375rem var(--font-heading);
+}
+.dateJump label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 10px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    color: #bff8e8;
+    cursor: pointer;
+}
+.dateJump input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.dateJumpText {
+    display: none;
+    font: 600 0.9375rem var(--font-heading);
+    color: var(--color-text);
+}
+.controlBar .segmented {
+    border-color: rgba(191, 248, 232, 0.25);
+    background: rgba(3, 14, 20, 0.7);
+}
+.controlBar .segmented a {
+    min-height: 40px;
+}
+.actions {
+    display: flex;
+    gap: 8px;
+}
+.actions a {
+    min-height: 44px;
+}
+.actions a:last-child {
+    box-shadow: 0 0 16px rgba(114, 214, 189, 0.45);
+}
+/* Phone: day with arrows on top, I dag + Velg dato, view switch, then the two actions */
+@media (max-width: 767px) {
+    .controlBar {
+        display: grid;
+        grid-template-columns: 1fr;
+        padding: 12px;
+    }
+    .dayNav {
+        display: grid;
+        grid-template-columns: 44px 1fr 1fr 44px;
+        gap: 8px;
+    }
+    .dayNav .arrow {
+        grid-row: 1;
+        width: 44px;
+        height: 44px;
+    }
+    .dayNav .arrow:first-child {
+        grid-column: 1;
+    }
+    .dayNav .dayTitle {
+        grid-row: 1;
+        grid-column: 2 / 4;
+        min-width: 0;
+        font-size: 1.1rem;
+    }
+    .dayNav .arrow:nth-of-type(2) {
+        grid-column: 4;
+    }
+    .todayLink {
+        grid-row: 2;
+        grid-column: 1 / 3;
+        min-height: 44px;
+    }
+    .dateJump {
+        grid-row: 2;
+        grid-column: 3 / 5;
+    }
+    .dateJump label {
+        width: 100%;
+        height: 44px;
+    }
+    .dateJumpText {
+        display: inline;
+    }
+    .actions {
+        display: grid;
+        grid-template-columns: 1fr 1.4fr;
+    }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+    .actions {
+        margin-left: auto;
+    }
+}
+
+/* ================= Control bar simplified (Ada 18:01) =================
+   Every control the same height (44px), the same thin light line and the same dark inside;
+   only "+ Ny bestilling" is mint. The date sits between the arrows in one pill and opens the day picker. */
+.dateGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.dayNav,
+.controlBar .segmented,
+.todayLink,
+.actions .blockButton {
+    height: 44px;
+    border: 1px solid rgba(191, 248, 232, 0.3);
+    border-radius: 999px;
+    background: rgba(3, 14, 20, 0.7);
+}
+.dayNav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 2px;
+}
+.arrow {
+    width: 40px;
+    height: 40px;
+    border: 0;
+}
+.dateJump label {
+    height: 40px;
+    gap: 8px;
+    padding: 0 10px;
+    border: 0;
+}
+.dayNav .dayTitle {
+    min-width: 0;
+    margin: 0;
+    font-size: 1.125rem;
+    white-space: nowrap;
+}
+.dateJump svg {
+    opacity: 0.8;
+}
+.todayLink {
+    min-height: 0;
+    padding: 0 16px;
+}
+.controlBar .segmented {
+    padding: 2px;
+}
+.controlBar .segmented a {
+    min-height: 38px;
+    border-radius: 999px;
+}
+.actions .blockButton {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 18px;
+    color: var(--color-text);
+    font: 600 1rem var(--font-heading);
+}
+@media (max-width: 767px) {
+    .dateGroup {
+        display: grid;
+        grid-template-columns: 1fr auto;
+    }
+    .dateGroup:not(:has(.todayLink)) {
+        grid-template-columns: 1fr;
+    }
+    .dayNav {
+        display: grid;
+        grid-template-columns: 40px 1fr 40px;
+    }
+    .dayNav .arrow {
+        width: 40px;
+        height: 40px;
+    }
+    .dateJump label {
+        width: 100%;
+        height: 40px;
+    }
+    .dayNav .dayTitle {
+        font-size: 1.05rem;
+    }
+    .todayLink {
+        grid-row: auto;
+        grid-column: auto;
+        min-height: 0;
+    }
+    .controlBar .segmented {
+        height: auto;
+    }
+}
+@media (max-width: 767px) {
+    .controlBar {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .controlBar > * {
+        min-width: 0;
+    }
+    .dateGroup {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .dayNav {
+        grid-template-columns: 40px minmax(0, 1fr) 40px;
+    }
+    .dayNav .arrow:first-child {
+        grid-column: 1;
+    }
+    .dayNav .dateJump {
+        grid-row: 1;
+        grid-column: 2;
+        min-width: 0;
+    }
+    .dayNav .arrow:nth-of-type(2) {
+        grid-column: 3;
+    }
+    .todayLink {
+        white-space: nowrap;
+    }
+}
+@media (max-width: 767px) {
+    /* Phone: the date gets the whole width; "I dag" (only when another day is open) goes under it */
+    .dateGroup,
+    .dateGroup:not(:has(.todayLink)) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .dayNav .dayTitle {
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

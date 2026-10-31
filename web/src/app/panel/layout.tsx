@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getMe } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { privatePage } from "@/lib/site";
+import styles from "./page.module.css";
 
 export const metadata: Metadata = { title: "Bedriftspanel", robots: privatePage };
 
@@ -16,5 +17,10 @@ export default async function PanelLayout({ children }: { children: React.ReactN
     if (!me.isBusiness) {
         redirect("/min-besti");
     }
-    return children;
+    return (
+        <>
+            <div className={styles.calmSky} aria-hidden="true"/>
+            {children}
+        </>
+    );
 }
