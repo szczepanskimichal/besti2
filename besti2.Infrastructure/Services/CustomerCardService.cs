@@ -18,18 +18,28 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
     public async Task<IReadOnlyList<CustomerRowDto>> ListAsync(Guid businessId, string? q, DateTime nowUtc,
         CancellationToken cancellationToken = default)
     {
-        var groups = Group(await VisitsAsync(businessId, null, cancellationToken));
+        var visits = await VisitsAsync(businessId, null, cancellationToken);
         var notes = await NoteKeysAsync(businessId, cancellationToken);
+        var imported = await ImportedAsync(businessId, null, cancellationToken);
         var search = q?.Trim().ToLowerInvariant();
         var searchDigits = string.IsNullOrEmpty(search) ? "" : CustomerKey.Digits(search);
 
-        return groups
-            .Select(g => Row(g.Key, g.ToList(), nowUtc, notes.Contains(g.Key)))
+        var rows = Group(visits)
+            .Select(g => WithImportedEmail(Row(g.Key, g.ToList(), nowUtc, notes.Contains(g.Key)), imported))
+            .ToList();
+        // An imported customer who has booked since is already in the list through the bookings
+        var bookedPhones = visits.Select(v => CustomerKey.Digits(v.CustomerPhone)).ToHashSet();
+        rows.AddRange(imported.Values
+            .Where(c => !bookedPhones.Contains(c.PhoneKey))
+            .Select(c => ImportedRow(c, notes.Contains($"t-{c.PhoneKey}"))));
+
+        return rows
             .Where(r => string.IsNullOrEmpty(search)
                         || r.Name.ToLowerInvariant().Contains(search)
                         || (r.Email?.ToLowerInvariant().Contains(search) ?? false)
                         || (searchDigits.Length >= 3 && CustomerKey.Digits(r.Phone).Contains(searchDigits)))
             .OrderByDescending(r => r.NextVisitUtc ?? r.LastVisitUtc)
+            .ThenBy(r => r.Name)
             .Take(MaxRows)
             .ToList();
     }
@@ -44,13 +54,22 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
 
         var visits = Group(await VisitsAsync(businessId, key, cancellationToken))
             .FirstOrDefault(g => g.Key == key)?.ToList();
+        var imported = await ImportedAsync(businessId, key, cancellationToken);
         if (visits is null)
         {
-            return null;
+            // Imported from the old system and not booked here yet: contact and note only
+            if (imported.Count == 0)
+            {
+                return null;
+            }
+
+            var importedNote = await FindNoteAsync(businessId, key, cancellationToken);
+            return new CustomerCardDto(ImportedRow(imported.Values.Single(), importedNote is not null),
+                importedNote?.Text, importedNote?.UpdatedUtc, 0, []);
         }
 
         var note = await FindNoteAsync(businessId, key, cancellationToken);
-        var row = Row(key, visits, nowUtc, note is not null);
+        var row = WithImportedEmail(Row(key, visits, nowUtc, note is not null), imported);
         return new CustomerCardDto(
             row,
             note?.Text,
@@ -78,8 +97,9 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
             return $"Notatet kan være maks {NoteMaxLength} tegn.";
         }
 
-        // Only a customer who has booked here
-        if (!Group(await VisitsAsync(businessId, key, cancellationToken)).Any(g => g.Key == key))
+        // Only a customer who has booked here or was imported
+        if (!Group(await VisitsAsync(businessId, key, cancellationToken)).Any(g => g.Key == key)
+            && (await ImportedAsync(businessId, key, cancellationToken)).Count == 0)
         {
             return "Fant ikke kunden.";
         }
@@ -180,6 +200,34 @@ public class CustomerCardService(AppDbContext dbContext) : ICustomerCardService
                 b.PriceNok, b.CustomerNote))
             .ToListAsync(cancellationToken);
     }
+
+    // The imported customers by phone digits; key = only that customer ("t-" keys only, never an account)
+    private async Task<Dictionary<string, ImportedCustomer>> ImportedAsync(Guid businessId, string? key,
+        CancellationToken cancellationToken)
+    {
+        var customers = dbContext.ImportedCustomers.AsNoTracking().Where(c => c.BusinessId == businessId);
+        if (key is not null)
+        {
+            if (CustomerKey.Parse(key) is not (null, { } phone))
+            {
+                return [];
+            }
+
+            customers = customers.Where(c => c.PhoneKey == phone);
+        }
+
+        return await customers.ToDictionaryAsync(c => c.PhoneKey, cancellationToken);
+    }
+
+    private static CustomerRowDto ImportedRow(ImportedCustomer customer, bool hasNote) =>
+        new($"t-{customer.PhoneKey}", customer.Name, customer.Phone, customer.Email, HasAccount: false,
+            Visits: 0, NoShows: 0, LastVisitUtc: null, NextVisitUtc: null, hasNote, Imported: true);
+
+    // A visit added by phone often has no e-mail: the imported one is shown instead
+    private static CustomerRowDto WithImportedEmail(CustomerRowDto row, Dictionary<string, ImportedCustomer> imported) =>
+        row.Email is null && row.Key.StartsWith("t-") && imported.TryGetValue(row.Key[2..], out var customer)
+            ? row with { Email = customer.Email }
+            : row;
 
     private static IEnumerable<IGrouping<string, Visit>> Group(List<Visit> visits) =>
         visits.Select(v => (Key: CustomerKey.For(v.CustomerUserId, v.CustomerPhone), Visit: v))

@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { setCustomerNote } from "@/lib/api";
+import { removeImportedCustomer, setCustomerNote } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 
@@ -18,4 +18,15 @@ export async function customerNoteAction(_previous: FormState, formData: FormDat
         return { error: result.message, values: { note } };
     }
     redirect(`/panel/kunder/${encodeURIComponent(key)}?lagret=1`);
+}
+
+// "Fjern fra Kunder": an imported customer who has not booked here, with the note
+export async function removeCustomerAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const key = String(formData.get("key") ?? "");
+    const removed = await removeImportedCustomer(token, key);
+    redirect(removed ? "/panel/kunder" : `/panel/kunder/${encodeURIComponent(key)}`);
 }

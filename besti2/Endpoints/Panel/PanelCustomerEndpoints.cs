@@ -4,7 +4,8 @@ using besti2.Application.Customers;
 
 namespace besti2.Endpoints.Panel;
 
-// "Kunder": the business's customers with history and the business's own note, and the CSV export
+// "Kunder": the business's customers with history and the business's own note, the import from another
+// system and the CSV export
 public static class PanelCustomerEndpoints
 {
     public static void MapPanelCustomerEndpoints(this RouteGroupBuilder group)
@@ -26,6 +27,19 @@ public static class PanelCustomerEndpoints
             var error = await customers.SetNoteAsync(business.Id, key, request.Note, cancellationToken);
             return error is null ? Results.NoContent() : Results.BadRequest(new { message = error });
         });
+
+        // "Importer kunder": Save = false is the preview with the counts, nothing is saved
+        group.MapPost("/customers/import", async (CustomerImportRequest request, PanelBusiness business,
+            ICustomerImportService import, CancellationToken cancellationToken) =>
+        {
+            var (result, error) = await import.ImportAsync(business.Id, request, cancellationToken);
+            return result is null ? Results.BadRequest(new { message = error }) : Results.Ok(result);
+        });
+
+        // "Fjern fra Kunder": only an imported customer; one who has booked stays through the bookings
+        group.MapDelete("/customers/{key}", async (string key, PanelBusiness business, ICustomerImportService import,
+                CancellationToken cancellationToken) =>
+            await import.RemoveAsync(business.Id, key, cancellationToken) ? Results.NoContent() : Results.NotFound());
 
         // from/to = days in Oslo (yyyy-MM-dd); a file with a BOM, so Excel shows æ, ø and å right
         group.MapGet("/export/bookings", async (DateOnly from, DateOnly to, PanelBusiness business,

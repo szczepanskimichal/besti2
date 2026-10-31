@@ -120,6 +120,7 @@ public static class DependencyInjection
             webBaseUrl));
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<ICustomerCardService, CustomerCardService>();
+        services.AddScoped<ICustomerImportService, CustomerImportService>();
         services.AddScoped<IBookingExportService, BookingExportService>();
         services.AddScoped<IStaffService>(provider => new StaffService(
             provider.GetRequiredService<AppDbContext>(),
