@@ -155,7 +155,7 @@ export default async function BookingPage({params, searchParams}: Props) {
             )}
             {together && (
                 <p className={styles.muted}>
-                    Bestill med din besti, eller med hele gjengen: velg en tid der alle får hver sin ansatt samtidig.
+                    Bestill med din BESTI, eller med hele gjengen: velg en tid der alle får hver sin ansatt samtidig.
                     De andre får én lenke og svarer med ett trykk. Ingenting bestilles før noen sier ja.
                 </p>
             )}
@@ -293,7 +293,7 @@ export default async function BookingPage({params, searchParams}: Props) {
 
             {chosen && selected && (
                 <section>
-                    <h2 className={styles.sectionTitle}>{!together ? "Dine opplysninger" : persons === 2 ? "Inviter din besti" : "Inviter gjengen"}</h2>
+                    <h2 className={styles.sectionTitle}>{!together ? "Dine opplysninger" : persons === 2 ? "Inviter din BESTI" : "Inviter gjengen"}</h2>
                     <p className={styles.muted}>
                         {formatDay(selected.date)} kl. {formatTime(chosen.startUtc)}
                         {/* Together: the others get other employees, so only a chosen employee is named */}

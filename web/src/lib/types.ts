@@ -216,7 +216,16 @@ export type Invite = {
     isInviter: boolean; // the logged-in visitor sent it
     isMember: boolean; // the logged-in visitor is booked in it
     stillFree: boolean; // a place for the visitor is still free right now
+    // Short notes the friends wrote to the inviter with their answer ("Takk for at du tenkte på meg!"); only the inviter gets them
+    friendMessages?: { name: string; text: string; icon: ReactionKind | null; joined: boolean }[] | null;
+    // BESTI-chat: the inviter and the friends who joined (mine = written by the logged-in visitor,
+    // canDelete = mine, or the visitor is the inviter); null = the visitor may not read it
+    chat?: { id: string; name: string; text: string; mine: boolean; canDelete: boolean; time: string; reactions: ChatReaction[] }[] | null;
 };
+
+// Crystal reactions on a BESTI-chat message, in the house style instead of emoji
+export type ReactionKind = "hjerte" | "tommel" | "latter" | "trist" | "stjerne" | "feiring";
+export type ChatReaction = { kind: ReactionKind; names: string[] }; // first names, the visitor included as "Du"
 
 // One invitation in Min Besti
 export type CustomerInvite = {

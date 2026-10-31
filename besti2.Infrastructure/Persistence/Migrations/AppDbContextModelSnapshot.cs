@@ -828,6 +828,72 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.ToTable("ImportedCustomers");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.InviteMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("InviteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Joined")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .HasFilter("[UserId] IS NOT NULL");
+
+                    b.HasIndex("InviteId", "CreatedUtc");
+
+                    b.ToTable("InviteMessages");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.InviteReaction", b =>
+                {
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("MessageId", "UserId", "Kind");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("InviteReactions");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.LoyaltyRedemption", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1684,6 +1750,28 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("Business");
                 });
 
+            modelBuilder.Entity("besti2.Domain.Entities.InviteMessage", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.BookingInvite", "Invite")
+                        .WithMany()
+                        .HasForeignKey("InviteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Invite");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.InviteReaction", b =>
+                {
+                    b.HasOne("besti2.Domain.Entities.InviteMessage", "Message")
+                        .WithMany("Reactions")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("besti2.Domain.Entities.LoyaltyRedemption", b =>
                 {
                     b.HasOne("besti2.Domain.Entities.Business", "Business")
@@ -1788,6 +1876,11 @@ namespace besti2.Infrastructure.Persistence.Migrations
                     b.Navigation("OpeningHours");
 
                     b.Navigation("Services");
+                });
+
+            modelBuilder.Entity("besti2.Domain.Entities.InviteMessage", b =>
+                {
+                    b.Navigation("Reactions");
                 });
 #pragma warning restore 612, 618
         }

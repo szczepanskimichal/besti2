@@ -43,12 +43,12 @@ export default async function Home({searchParams}: HomeProps) {
         <main className={styles.main}>
             <section className={styles.hero}>
                 <div>
-                    <h1 className={styles.heroTitle}>Magiske opplevelser med din besti.</h1>
+                    <h1 className={styles.heroTitle}>Magiske opplevelser med din BESTI.</h1>
                     <p className={styles.heroLead}>Finn og bestill på under ett minutt.</p>
                 </div>
                 <Form action="/" className={styles.filters}>
                     <label className={styles.field}>
-                        Hva vil du oppleve med besti?
+                        Hva vil du oppleve med BESTI?
                         <input
                             name="q"
                             type="search"
@@ -99,7 +99,7 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <button type="submit" className={styles.searchButton}>
-                        Finn besti time
+                        Finn BESTI-time
                     </button>
                     {lat && lng && (
                         <>

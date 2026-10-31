@@ -18,7 +18,7 @@ namespace besti2.Infrastructure.Services.Invites;
 // (the inviter's own visit together with the first yes). The group closes when it is full or the answer time is
 // up; then the business gets the final count. A waiting invitation runs out "lazily" when someone reads it,
 // and the job every 15 minutes closes the rest
-public class InviteService(
+public partial class InviteService(
     AppDbContext dbContext,
     IEmailService emailService,
     ILogger<InviteService> logger,
@@ -167,6 +167,7 @@ public class InviteService(
         var placesLeft = PlacesLeft(invite, members);
         var open = IsOpen(invite, members);
         var isMember = viewerUserId is not null && members.Contains(viewerUserId);
+        var isInviter = viewerUserId is not null && viewerUserId == invite.InviterUserId;
 
         // Can the visitor still join? Their place (and the inviter's before the first yes) must be free now
         var stillFree = open && (await availability.GetFreeEmployeesAsync(invite.ServiceId, null, invite.StartUtc,
@@ -192,9 +193,11 @@ public class InviteService(
             members.Count,
             placesLeft,
             open,
-            viewerUserId is not null && viewerUserId == invite.InviterUserId,
+            isInviter,
             isMember,
-            stillFree);
+            stillFree,
+            isInviter || isMember ? await ChatAsync(invite, viewerUserId!, isInviter, cancellationToken) : null,
+            isInviter ? await GreetingsAsync(invite.Id, cancellationToken) : null);
     }
 
     public async Task<InviteResult> AcceptAsync(string token, string friendUserId, AcceptInviteRequest request,
@@ -208,6 +211,11 @@ public class InviteService(
         if (request.Note is { Length: > 500 })
         {
             return Invalid("Meldingen kan være maks 500 tegn.");
+        }
+
+        if (GreetingError(request.Greeting, request.GreetingIcon) is { } greetingError)
+        {
+            return greetingError;
         }
 
         var invite = await FindByTokenAsync(token, cancellationToken);
@@ -344,6 +352,8 @@ public class InviteService(
             ForgetContactDetails(invite); // now on the bookings, no need to keep it twice
         }
 
+        AddGreeting(invite, friendUserId, request.Greeting, request.GreetingIcon, joined: true);
+
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -371,9 +381,14 @@ public class InviteService(
         return new InviteResult(InviteOutcome.Accepted);
     }
 
-    public async Task<InviteResult> DeclineAsync(string token, string? userId,
+    public async Task<InviteResult> DeclineAsync(string token, string? userId, DeclineInviteRequest? request = null,
         CancellationToken cancellationToken = default)
     {
+        if (GreetingError(request?.Greeting, request?.GreetingIcon) is { } greetingError)
+        {
+            return greetingError;
+        }
+
         var invite = await FindByTokenAsync(token, cancellationToken);
         if (invite is null)
         {
@@ -412,6 +427,7 @@ public class InviteService(
         AddNotification(invite.InviterUserId, null,
             $"{who} kan dessverre ikke denne gangen ({serviceName} {OsloTime.Format(invite.StartUtc)}).",
             "/min-besti", null);
+        AddGreeting(invite, userId, request?.Greeting, request?.GreetingIcon, joined: false);
         await dbContext.SaveChangesAsync(cancellationToken);
         return new InviteResult(InviteOutcome.Declined);
     }

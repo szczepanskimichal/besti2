@@ -14,7 +14,8 @@ public record MyDataExport(
     IReadOnlyList<ExportInvite> Invites,
     IReadOnlyList<ExportHelpfulVote> HelpfulVotes,
     IReadOnlyList<ExportPushDevice> PushDevices,
-    IReadOnlyList<ExportStaffAccess> StaffAccess);
+    IReadOnlyList<ExportStaffAccess> StaffAccess,
+    IReadOnlyList<ExportInviteMessage>? InviteMessages = null);
 
 // ReminderEmail / SoonNotice: the choices under Varsler
 public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed, bool ReminderEmail,
@@ -61,3 +62,6 @@ public record ExportPushDevice(DateTime CreatedUtc, string PushService);
 
 // "/ansatt": the businesses where the account sees its own work calendar
 public record ExportStaffAccess(string Business, string Employee);
+
+// BESTI-chat lines and greetings I wrote in invitations (Kind = Chat or Hilsen)
+public record ExportInviteMessage(DateTime CreatedUtc, string Kind, string Business, string Service, string Text);

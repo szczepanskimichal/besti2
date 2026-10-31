@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
-// "Svar innen 27:13": ticks every second; at 0 the page asks the server again (the invitation runs out)
+// "Svar innen 27:13" (or "23 t 17 min"): ticks every second; at 0 the page asks the server again (the invitation runs out)
 export default function Countdown({ expiresUtc, className }: { expiresUtc: string; className?: string }) {
     const router = useRouter();
     const end = new Date(expiresUtc).getTime();
@@ -30,11 +30,14 @@ export default function Countdown({ expiresUtc, className }: { expiresUtc: strin
     const totalSeconds = Math.ceil(left / 1000);
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
+    // A deadline can be up to 24 hours: "23 t 17 min" instead of "1396:30"; seconds only in the last hour
+    const hours = Math.floor(minutes / 60);
+    const shown = hours > 0 ? `${hours} t ${minutes % 60} min` : `${minutes}:${String(seconds).padStart(2, "0")}`;
     // Screen readers get whole minutes only (a new number every second would never stop talking)
     return (
         <span className={className}>
-            <span aria-hidden="true">{minutes}:{String(seconds).padStart(2, "0")}</span>
-            <span className={styles.srOnly}>{minutes < 1 ? "under ett minutt" : `${minutes} minutter`}</span>
+            <span aria-hidden="true">{shown}</span>
+            <span className={styles.srOnly}>{minutes < 1 ? "under ett minutt" : hours > 0 ? `${hours} timer og ${minutes % 60} minutter` : `${minutes} minutter`}</span>
         </span>
     );
 }

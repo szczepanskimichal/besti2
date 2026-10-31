@@ -9,7 +9,7 @@ type Choice = "egentid" | "duo" | "team" | "gave";
 // Gave waits for gavekort, so it is shown but cannot be picked yet.
 const options: { value: Choice; title: string; text: string; icon: React.ReactNode; soon?: boolean }[] = [
     {
-        value: "egentid", title: "BESTI Egentid", text: "Vær din egen besti: bestill tid for deg selv",
+        value: "egentid", title: "BESTI Egentid", text: "Vær din egen BESTI: bestill tid for deg selv",
         icon: <><circle cx="16" cy="9" r="4.5"/><path d="M7 28c0-6 4-10 9-10s9 4 9 10"/></>,
     },
     {

@@ -41,7 +41,7 @@ export default async function ConfirmEmailPage({ searchParams }: Props) {
     }
     return (
         <Welcome big title={confirmed.firstName ? `Velkommen, ${confirmed.firstName}!` : "Velkommen!"}
-                 text="Nå er du en besti">
+                 text="Nå er du en BESTI">
             <NextLink href={`/logg-inn?neste=${encodeURIComponent(next ?? "/")}`} className={welcome.go}>
                 {next ? "Fortsett bestillingen" : "Finn din første time"}
             </NextLink>

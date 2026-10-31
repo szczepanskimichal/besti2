@@ -94,6 +94,12 @@ public class ProfileService(
                 i.InviterPhone, i.InviterNote
             })
             .ToListAsync(cancellationToken);
+        var inviteMessages = await dbContext.InviteMessages.AsNoTracking()
+            .Where(m => m.UserId == userId)
+            .OrderBy(m => m.CreatedUtc)
+            .Select(m => new ExportInviteMessage(m.CreatedUtc, m.Kind.ToString(), m.Invite.Business.Name,
+                m.Invite.Service.Name, m.Text))
+            .ToListAsync(cancellationToken);
         var helpfulVotes = await dbContext.ReviewHelpfuls.AsNoTracking()
             .Where(h => h.UserId == userId)
             .OrderBy(h => h.CreatedUtc)
@@ -122,7 +128,8 @@ public class ProfileService(
             helpfulVotes,
             pushDevices.Select(d => new ExportPushDevice(d.CreatedUtc,
                 Uri.TryCreate(d.Endpoint, UriKind.Absolute, out var uri) ? uri.Host : "")).ToList(),
-            staffAccess);
+            staffAccess,
+            inviteMessages);
     }
 
     public async Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request,
@@ -262,6 +269,12 @@ public class ProfileService(
                 review.PhotoFileName = null;
             }
         }
+
+        // BESTI-chat: what I wrote and my reactions in the others' invitations go too
+        dbContext.InviteMessages.RemoveRange(
+            await dbContext.InviteMessages.Where(m => m.UserId == userId).ToListAsync(cancellationToken));
+        dbContext.InviteReactions.RemoveRange(
+            await dbContext.InviteReactions.Where(r => r.UserId == userId).ToListAsync(cancellationToken));
 
         // BESTI sammen: own invitations go (the visits booked from them stay, anonymized above)
         dbContext.BookingInvites.RemoveRange(await dbContext.BookingInvites.Where(i => i.InviterUserId == userId)

@@ -478,4 +478,142 @@ public class InviteServiceTests
 
         Assert.Equal(InviteOutcome.SlotTaken, result.Outcome);
     }
+
+
+    // BESTI-chat (2026-10-31): a group of three with Ola booked, Per only has the link
+    private static async Task<string> GroupWithOlaAsync(AppDbContext db)
+    {
+        var token = (await Invites(db).CreateAsync(Request(persons: 3), KariId)).Token!;
+        Assert.Equal(InviteOutcome.Accepted,
+            (await Invites(db).AcceptAsync(token, OlaId, new AcceptInviteRequest("91234567"))).Outcome);
+        return token;
+    }
+
+    // check if the inviter and a friend who joined can chat, and the others get one bell
+    [Fact]
+    public async Task Chat_InviterAndMemberWrite_BothSeeIt()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+
+        Assert.Equal(InviteChatOutcome.Done,
+            await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest("Hvem tar med kake?")));
+        Assert.Equal(InviteChatOutcome.Done,
+            await Invites(db).SendMessageAsync(token, OlaId, new SendInviteMessageRequest(" Jeg! ")));
+
+        var forOla = (await Invites(db).GetAsync(token, OlaId))!.Chat!;
+        Assert.Equal(["Hvem tar med kake?", "Jeg!"], forOla.Select(l => l.Text));
+        Assert.Equal("Kari", forOla[0].Name);
+        Assert.False(forOla[0].Mine);
+        Assert.False(forOla[0].CanDelete);
+        Assert.True(forOla[1].Mine);
+        Assert.True((await Invites(db).GetAsync(token, KariId))!.Chat!.All(l => l.CanDelete));
+        Assert.Contains(db.Notifications, n => n.UserId == OlaId && n.Text.Contains("Hvem tar med kake?"));
+        Assert.Contains(db.Notifications, n => n.UserId == KariId && n.Text.Contains("Jeg!"));
+    }
+
+    // check if someone with only the link can neither read nor write, and the business sees nothing
+    [Fact]
+    public async Task Chat_NotMember_NoAccess()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+        await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest("Hemmelig"));
+
+        Assert.Null((await Invites(db).GetAsync(token, PerId))!.Chat);
+        Assert.Null((await Invites(db).GetAsync(token, null))!.Chat);
+        Assert.Equal(InviteChatOutcome.NotAllowed,
+            await Invites(db).SendMessageAsync(token, PerId, new SendInviteMessageRequest("Hei")));
+        Assert.Equal(InviteChatOutcome.NotFound,
+            await Invites(db).SendMessageAsync("feil-lenke", KariId, new SendInviteMessageRequest("Hei")));
+        Assert.Equal(InviteChatOutcome.Invalid,
+            await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest(new string('x', 501))));
+        Assert.DoesNotContain(db.Notifications, n => n.BusinessId != null && n.Text.Contains("Hemmelig"));
+    }
+
+    // check if a lively chat rings the bell only once per 10 minutes
+    [Fact]
+    public async Task Chat_ManyLines_OneBell()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+
+        for (var i = 0; i < 5; i++)
+        {
+            await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest($"Melding {i}"));
+        }
+
+        Assert.Equal(1, await db.Notifications.CountAsync(n => n.UserId == OlaId && n.Text.StartsWith("💬")));
+    }
+
+    // check if a reaction is added, shown with "Du" for the viewer, and taken back by a second tap
+    [Fact]
+    public async Task Chat_Reaction_Toggles()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+        await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest("Gleder meg!"));
+        var id = (await db.InviteMessages.SingleAsync()).Id;
+
+        Assert.Equal(InviteChatOutcome.Done,
+            await Invites(db).ToggleReactionAsync(token, OlaId, id, new InviteReactionRequest("hjerte")));
+        var reaction = (await Invites(db).GetAsync(token, KariId))!.Chat![0].Reactions.Single();
+        Assert.Equal("hjerte", reaction.Kind);
+        Assert.Equal(["Ola"], reaction.Names);
+        Assert.Equal(["Du"], (await Invites(db).GetAsync(token, OlaId))!.Chat![0].Reactions.Single().Names);
+
+        await Invites(db).ToggleReactionAsync(token, OlaId, id, new InviteReactionRequest("hjerte"));
+        Assert.Empty((await Invites(db).GetAsync(token, KariId))!.Chat![0].Reactions);
+        Assert.Equal(InviteChatOutcome.Invalid,
+            await Invites(db).ToggleReactionAsync(token, OlaId, id, new InviteReactionRequest("bombe")));
+    }
+
+    // check if a friend deletes only their own lines, and the inviter may delete any
+    [Fact]
+    public async Task Chat_Delete_OwnOrInviter()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+        await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest("Fra Kari"));
+        await Invites(db).SendMessageAsync(token, OlaId, new SendInviteMessageRequest("Fra Ola"));
+        var fromKari = (await db.InviteMessages.SingleAsync(m => m.Text == "Fra Kari")).Id;
+        var fromOla = (await db.InviteMessages.SingleAsync(m => m.Text == "Fra Ola")).Id;
+
+        Assert.Equal(InviteChatOutcome.NotAllowed, await Invites(db).DeleteMessageAsync(token, OlaId, fromKari));
+        Assert.Equal(InviteChatOutcome.Done, await Invites(db).DeleteMessageAsync(token, KariId, fromOla));
+        Assert.Equal(["Fra Kari"], await db.InviteMessages.Select(m => m.Text).ToListAsync());
+    }
+
+    // check if greetings with "Jeg blir med!" and "Nei takk" reach only the inviter
+    [Fact]
+    public async Task Greeting_OnlyInviterSeesIt()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = (await Invites(db).CreateAsync(Request(persons: 3), KariId)).Token!;
+
+        await Invites(db).AcceptAsync(token, OlaId,
+            new AcceptInviteRequest("91234567", Greeting: "Takk for at du tenkte på meg!", GreetingIcon: "hjerte"));
+        await Invites(db).DeclineAsync(token, PerId, new DeclineInviteRequest("Neste gang er jeg med!", "tommel"));
+
+        var forKari = (await Invites(db).GetAsync(token, KariId))!.FriendMessages!;
+        Assert.Equal([("Ola", true, "hjerte"), ("Per", false, "tommel")],
+            forKari.Select(m => (m.Name, m.Joined, m.Icon)));
+        Assert.Null((await Invites(db).GetAsync(token, OlaId))!.FriendMessages);
+        Assert.Empty((await Invites(db).GetAsync(token, OlaId))!.Chat!);
+        Assert.Equal(InviteOutcome.Invalid, (await Invites(db).DeclineAsync(token, LiseId,
+            new DeclineInviteRequest("Hei", "bombe"))).Outcome);
+    }
+
+    // check if chats go 30 days after the visit, and newer ones stay
+    [Fact]
+    public async Task DeleteOldChats_After30Days()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await GroupWithOlaAsync(db);
+        await Invites(db).SendMessageAsync(token, KariId, new SendInviteMessageRequest("Hei"));
+
+        Assert.Equal(0, await Invites(db).DeleteOldChatsAsync(FutureMondayAt10.AddDays(29)));
+        Assert.Equal(1, await Invites(db).DeleteOldChatsAsync(FutureMondayAt10.AddDays(31)));
+        Assert.Empty(db.InviteMessages);
+    }
 }

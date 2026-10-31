@@ -38,7 +38,7 @@ export default async function ProfilePage() {
                 <div>
                     <p className={styles.hello}>Hei, {firstName}! <CrystalIcon name="stjerne"/></p>
                     {profile.createdUtc && (
-                        <p className={styles.since}>Din besti siden {formatMonth(osloDay(profile.createdUtc).slice(0, 7))}</p>
+                        <p className={styles.since}>Din BESTI siden {formatMonth(osloDay(profile.createdUtc).slice(0, 7))}</p>
                     )}
                     <p className={styles.email}>{profile.email}</p>
                 </div>

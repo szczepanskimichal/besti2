@@ -13,7 +13,7 @@ export default function PrivacyPage() {
     return (
         <main className={styles.main}>
             <h1>Personvernerklæring</h1>
-            <p className={styles.updated}>Sist oppdatert: 29. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 31. oktober 2026</p>
 
             <p className={styles.intro}>
                 Her forklarer vi hvilke personopplysninger BESTI behandler, hvorfor, hvor lenge og hvilke rettigheter
@@ -58,7 +58,9 @@ export default function PrivacyPage() {
                         bedt om. Dette ser bare du.</li>
                     <li><strong>BESTI sammen:</strong> når du inviterer venner, lagrer vi invitasjonen (bedrift, tjeneste,
                         tid, antall personer, telefonnummeret ditt og meldingen din). De som åpner lenken, ser fornavnet
-                        ditt, og du ser fornavnene til dem som blir med.</li>
+                        ditt, og du ser fornavnene til dem som blir med. I BESTI-chatten i invitasjonen lagrer vi
+                        meldingene og reaksjonene dine. Chatten ser bare den som inviterte og de som er med, og en
+                        hilsen du sender med svaret ditt ser bare den som inviterte. Bedriften ser ingen av delene.</li>
                     <li><strong>Stempelkort og «Mitt BESTI-år»:</strong> regnes ut fra timene du har hatt. Vi lagrer bare
                         når en bedrift har gitt deg belønningen.</li>
                     <li><strong>Bedriftens kundekort:</strong> bedriften ser en oversikt over dine timer hos den (antall
@@ -166,12 +168,13 @@ export default function PrivacyPage() {
                         av, logger ut på enheten eller nettleseren melder at adressen ikke virker lenger.</li>
                     <li><strong>Bilder i vurderinger:</strong> slettes når du sletter kontoen, 3 år etter timen, eller
                         når BESTI fjerner bildet fordi det bryter vilkårene.</li>
-                    <li><strong>BESTI sammen:</strong> invitasjonen slettes 3 år etter tidspunktet. Bedriftens notat om
+                    <li><strong>BESTI sammen:</strong> invitasjonen slettes 3 år etter tidspunktet, BESTI-chatten og
+                        hilsenene 30 dager etter tidspunktet. Du kan selv slette dine egne meldinger. Bedriftens notat om
                         deg slettes når du ikke har vært hos bedriften på 3 år, når du sletter kontoen, eller når
                         bedriften slettes. Loggen over administrasjon slettes etter 3 år.</li>
                     <li><strong>Kundekonto:</strong> til du sletter den. Når du sletter kontoen, blir kommende timer
                         avlyst (bedriften får beskjed), tidligere timer anonymiseres med en gang, varslene, favorittene,
-                        ventelisten, påminnelsene, invitasjonene, bildene og bedriftenes notater om deg slettes, og
+                        ventelisten, påminnelsene, invitasjonene, chatmeldingene, bildene og bedriftenes notater om deg slettes, og
                         vurderingene dine blir stående som «Tidligere kunde» uten navnet ditt.</li>
                     <li><strong>Bedriftskonto:</strong> til bedriften sletter den i panelet (Bedriftsprofil → «Slett
                         bedrift»). Da slettes bedriften, de ansatte, bildene, alle timer og vurderinger hos bedriften og

@@ -11,7 +11,7 @@ export const alt = "Invitasjon fra BESTI";
 export default async function Image({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
     const invite = /^[A-Za-z0-9_-]{20,100}$/.test(token) ? await getInvite(token).catch(() => null) : null;
-    const title = invite ? `${invite.inviterFirstName} inviterer deg` : "Bestill med din besti";
+    const title = invite ? `${invite.inviterFirstName} inviterer deg` : "Bestill med din BESTI";
     const what = invite ? `${invite.serviceName} hos ${invite.businessName}` : "BESTI sammen";
     const group = invite && (invite.persons > 2 || !invite.organizerJoins);
     const places = group && invite.open ? ` · ${invite.placesLeft} av ${invite.persons} plasser ledige` : "";
@@ -40,7 +40,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
                 <div style={{ fontSize: 76, fontWeight: 800, color: "#eef7f4" }}>{title}</div>
                 <div style={{ marginTop: 20 }}>{what}</div>
                 {when && <div style={{ marginTop: 8, color: "#c3dad3" }}>{when}</div>}
-                <div style={{ marginTop: "auto", fontSize: 32, color: "#72d6bd" }}>bestiapp.no · Bestill med din besti</div>
+                <div style={{ marginTop: "auto", fontSize: 32, color: "#72d6bd" }}>bestiapp.no · Bestill med din BESTI</div>
             </div>
         ),
         size,

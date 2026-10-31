@@ -31,18 +31,41 @@ export async function getInvite(inviteToken: string, token?: string): Promise<In
     return res.json();
 }
 
+// A short greeting to the inviter with the answer ("Skriv en liten hilsen"); icon = the crystal of a ready line
+export type Greeting = { greeting: string; greetingIcon: string };
+
 // "Jeg blir med!": both visits are booked now
-export async function acceptInvite(inviteToken: string, token: string, phone: string, note: string): Promise<ApiResult> {
+export async function acceptInvite(inviteToken: string, token: string, phone: string, note: string,
+                                   greeting: Greeting): Promise<ApiResult> {
     const res = await apiFetch(`/api/invites/${encodeURIComponent(inviteToken)}/accept`,
-        { method: "POST", token, body: { phone, note }, forwardIp: true });
+        { method: "POST", token, body: { phone, note, ...greeting }, forwardIp: true });
     return toResult(res);
 }
 
 // "Nei takk" also works without login
-export async function declineInvite(inviteToken: string, token?: string): Promise<ApiResult> {
+export async function declineInvite(inviteToken: string, token: string | undefined, greeting: Greeting): Promise<ApiResult> {
     const res = await apiFetch(`/api/invites/${encodeURIComponent(inviteToken)}/decline`,
-        { method: "POST", token, forwardIp: true });
+        { method: "POST", token, body: greeting, forwardIp: true });
     return toResult(res);
+}
+
+// BESTI-chat: write, delete, and a crystal reaction (the same kind again takes it back)
+export async function sendInviteMessage(inviteToken: string, token: string, text: string): Promise<ApiResult> {
+    return toResult(await apiFetch(`/api/invites/${encodeURIComponent(inviteToken)}/messages`,
+        { method: "POST", token, body: { text } }));
+}
+
+export async function deleteInviteMessage(inviteToken: string, token: string, messageId: string): Promise<ApiResult> {
+    return toResult(await apiFetch(
+        `/api/invites/${encodeURIComponent(inviteToken)}/messages/${encodeURIComponent(messageId)}`,
+        { method: "DELETE", token }));
+}
+
+export async function reactToInviteMessage(inviteToken: string, token: string, messageId: string,
+                                           kind: string): Promise<ApiResult> {
+    return toResult(await apiFetch(
+        `/api/invites/${encodeURIComponent(inviteToken)}/messages/${encodeURIComponent(messageId)}/reactions`,
+        { method: "POST", token, body: { kind } }));
 }
 
 // Min Besti: invitations I sent or answered; null = not logged in

@@ -51,13 +51,47 @@ public static class InviteEndpoints
             return result.Outcome == InviteOutcome.Accepted ? Results.NoContent() : Problem(result);
         }).RequireAuthorization().RequireRateLimiting("booking");
 
-        // "Nei takk": no login needed
-        group.MapPost("/invites/{token}/decline", async (string token, ClaimsPrincipal principal,
-            UserManager<AppUser> userManager, IInviteService inviteService, CancellationToken cancellationToken) =>
+        // "Nei takk": no login needed (a greeting to the inviter is optional)
+        group.MapPost("/invites/{token}/decline", async (string token, DeclineInviteRequest? request,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IInviteService inviteService,
+            CancellationToken cancellationToken) =>
         {
-            var result = await inviteService.DeclineAsync(token, userManager.GetUserId(principal), cancellationToken);
+            var result = await inviteService.DeclineAsync(token, userManager.GetUserId(principal), request,
+                cancellationToken);
             return result.Outcome == InviteOutcome.Declined ? Results.NoContent() : Problem(result);
         }).RequireRateLimiting("booking");
+
+        // BESTI-chat: only the inviter and the friends who joined (the business never sees it)
+        group.MapPost("/invites/{token}/messages", async (string token, SendInviteMessageRequest request,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IInviteService inviteService,
+            CancellationToken cancellationToken) =>
+        {
+            var userId = userManager.GetUserId(principal);
+            return userId is null
+                ? Results.Unauthorized()
+                : Chat(await inviteService.SendMessageAsync(token, userId, request, cancellationToken));
+        }).RequireAuthorization().RequireRateLimiting("chat");
+
+        group.MapDelete("/invites/{token}/messages/{id:guid}", async (string token, Guid id,
+            ClaimsPrincipal principal, UserManager<AppUser> userManager, IInviteService inviteService,
+            CancellationToken cancellationToken) =>
+        {
+            var userId = userManager.GetUserId(principal);
+            return userId is null
+                ? Results.Unauthorized()
+                : Chat(await inviteService.DeleteMessageAsync(token, userId, id, cancellationToken));
+        }).RequireAuthorization().RequireRateLimiting("chat");
+
+        // A crystal reaction: the same kind again takes it back
+        group.MapPost("/invites/{token}/messages/{id:guid}/reactions", async (string token, Guid id,
+            InviteReactionRequest request, ClaimsPrincipal principal, UserManager<AppUser> userManager,
+            IInviteService inviteService, CancellationToken cancellationToken) =>
+        {
+            var userId = userManager.GetUserId(principal);
+            return userId is null
+                ? Results.Unauthorized()
+                : Chat(await inviteService.ToggleReactionAsync(token, userId, id, request, cancellationToken));
+        }).RequireAuthorization().RequireRateLimiting("chat");
 
         // Min Besti: invitations I sent or answered
         group.MapGet("/me/invites", async (ClaimsPrincipal principal, UserManager<AppUser> userManager,
@@ -99,6 +133,16 @@ public static class InviteEndpoints
                 : Problem(result);
         }).RequireAuthorization().RequireRateLimiting("booking");
     }
+
+    private static IResult Chat(InviteChatOutcome outcome) => outcome switch
+    {
+        InviteChatOutcome.Done => Results.NoContent(),
+        InviteChatOutcome.Invalid => Results.BadRequest(
+            new { message = $"Skriv en melding på maks {InviteChatRules.MaxMessageLength} tegn." }),
+        InviteChatOutcome.NotAllowed => Results.Json(
+            new { message = "Bare de som er med i gruppa kan skrive her." }, statusCode: StatusCodes.Status403Forbidden),
+        _ => NotFound()
+    };
 
     private static IResult NotFound() =>
         Results.NotFound(new { message = "Invitasjonen finnes ikke. Kanskje lenken er gammel?" });
