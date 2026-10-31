@@ -23,20 +23,23 @@ public static class AccountEndpoints
             return error is null ? Results.Created() : Results.BadRequest(new { message = error });
         }).RequireRateLimiting("signup");
 
-        // Customer clicks the link in the mail; the web page sends the id and code here
+        // Customer clicks the link in the mail; the web page sends the id and code here.
+        // Answers with the first name, so the page can say "Velkommen, Ida!"
         group.MapPost("/account/confirm-email", async (ConfirmEmailRequest request,
-            ICustomerAccountService accountService, IBusinessRegistrationService registrationService) =>
+            ICustomerAccountService accountService, IBusinessRegistrationService registrationService,
+            UserManager<AppUser> userManager) =>
         {
             var confirmed = await accountService.ConfirmEmailAsync(request);
-            if (confirmed)
+            if (!confirmed)
             {
-                // A business owner: the business now shows up for customers
-                await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
+                return Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
             }
 
-            return confirmed
-                ? Results.NoContent()
-                : Results.BadRequest(new { message = "Lenken er ugyldig eller utløpt." });
+            // A business owner: the business now shows up for customers
+            await registrationService.ShowBusinessOfOwnerAsync(request.UserId);
+            var user = await userManager.FindByIdAsync(request.UserId);
+            var firstName = user?.FullName?.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            return Results.Ok(new { FirstName = firstName, IsBusiness = user?.BusinessId is not null });
         }).RequireRateLimiting("signup");
 
         // Who is logged in: the web uses isBusiness to choose between /panel and the customer pages,

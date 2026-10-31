@@ -74,7 +74,19 @@
     animation: up 0.7s ease-out both 1.25s;
 }
 
+.big {
+    max-width: none;
+    font-size: 25px;
+    font-weight: 700;
+}
+
+.action {
+    animation: up 0.7s ease-out both 1.5s;
+}
+
+/* The button (a link or a form button) */
 .go {
+    display: inline-block;
     padding: 16px 30px;
     border: 0;
     border-radius: 999px;
@@ -84,8 +96,8 @@
     color: #04101a;
     background: linear-gradient(135deg, #9ff5dc, #72d6bd 55%, #4fc3a6);
     box-shadow: 0 0 0 1.5px rgba(160, 255, 225, 0.8), 0 0 22px rgba(61, 255, 176, 0.45);
+    text-decoration: none;
     cursor: pointer;
-    animation: up 0.7s ease-out both 1.5s;
 }
 
 .go:hover {
@@ -125,7 +137,7 @@
 
 /* No movement for people who turned animations off: everything is simply there */
 @media (prefers-reduced-motion: reduce) {
-    .star, .halo, .burst, .spark, .title, .info, .go {
+    .star, .halo, .burst, .spark, .title, .info, .action {
         animation: none;
     }
 

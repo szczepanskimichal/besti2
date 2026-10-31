@@ -3,6 +3,8 @@ import NextLink from "next/link";
 import { cookies } from "next/headers";
 import { NEXT_COOKIE } from "@/lib/auth";
 import { confirmEmail } from "@/lib/api";
+import Welcome from "@/components/Welcome/Welcome";
+import welcome from "@/components/Welcome/Welcome.module.css";
 import styles from "../logg-inn/page.module.css";
 import { privatePage } from "@/lib/site";
 
@@ -13,23 +15,36 @@ type Props = {
 };
 
 // The link in the confirmation mail opens this page; it confirms the email right away
+// and welcomes the new besti with the crystal star (only here, so it is seen once)
 export default async function ConfirmEmailPage({ searchParams }: Props) {
     const { id, kode } = await searchParams;
-    const confirmed = id && kode ? await confirmEmail(id, kode) : false;
-    // Signed up during a booking (same browser): "Logg inn" goes back to the chosen time
+    const confirmed = id && kode ? await confirmEmail(id, kode) : null;
+    if (!confirmed) {
+        return (
+            <main className={styles.main}>
+                <h1 className={styles.title}>Lenken virker ikke</h1>
+                <p className={styles.muted}>
+                    Lenken er ugyldig eller utløpt. Prøv å registrere deg på nytt, eller kontakt oss.
+                </p>
+            </main>
+        );
+    }
+
+    // Signed up during a booking (same browser): back to the chosen time after logging in
     const next = (await cookies()).get(NEXT_COOKIE)?.value;
-    const loginHref = next ? `/logg-inn?neste=${encodeURIComponent(next)}` : "/logg-inn";
+    if (confirmed.isBusiness) {
+        return (
+            <Welcome title="Velkommen til BESTI!" text="E-posten er bekreftet. Logg inn for å sette opp bedriften.">
+                <NextLink href="/logg-inn" className={welcome.go}>Logg inn</NextLink>
+            </Welcome>
+        );
+    }
     return (
-        <main className={styles.main}>
-            <h1 className={styles.title}>{confirmed ? "E-posten er bekreftet" : "Lenken virker ikke"}</h1>
-            <p className={styles.muted}>
-                {confirmed
-                    ? "Takk! Nå kan du logge inn."
-                    : "Lenken er ugyldig eller utløpt. Prøv å registrere deg på nytt, eller kontakt oss."}
-            </p>
-            {confirmed && (
-                <NextLink href={loginHref} className={styles.primaryButton}>Logg inn</NextLink>
-            )}
-        </main>
+        <Welcome big title={confirmed.firstName ? `Velkommen, ${confirmed.firstName}!` : "Velkommen!"}
+                 text="Nå er du en besti">
+            <NextLink href={`/logg-inn?neste=${encodeURIComponent(next ?? "/")}`} className={welcome.go}>
+                {next ? "Fortsett bestillingen" : "Finn din første time"}
+            </NextLink>
+        </Welcome>
     );
 }
