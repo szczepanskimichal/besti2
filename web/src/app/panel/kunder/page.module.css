@@ -123,6 +123,13 @@
     margin: 0 0 12px;
 }
 
+/* The long "Importer kunder ..." button wraps onto two lines on a small phone instead of sticking out */
+.topLinks a {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+}
+
 .steps {
     margin: 0 0 10px;
     padding-left: 20px;
@@ -248,5 +255,7 @@ a.saveButton {
 
 .importFlow {
     display: grid;
+    /* minmax(0, 1fr): the file field must not stretch the cards wider than a phone */
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
 }
