@@ -158,6 +158,24 @@
         font-size: 0.82rem;
     }
 }
+/* The smallest phones (320 px): Logg inn and Registrer bedrift still fit next to the logo */
+@media (max-width: 360px) {
+    .logoImage {
+        height: 38px;
+    }
+
+    .nav {
+        gap: 4px;
+    }
+
+    .ctaLink,
+    .primaryLink,
+    .secondaryLink {
+        padding: 0 8px;
+        font-size: 0.76rem;
+    }
+}
+
 /* Logged in: links in a row on a computer, behind the ☰ button on a phone */
 .desktopLinks {
     display: flex;

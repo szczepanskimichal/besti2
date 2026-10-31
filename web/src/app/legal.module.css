@@ -2,6 +2,9 @@
     max-width: 760px;
     margin: 0 auto;
     padding: 32px 16px 48px;
+    /* Long Norwegian words (Informasjonskapsler, databehandleravtale) break instead of sticking out on a 320 px phone */
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .main h1 {
