@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { formatTime } from "@/lib/format";
 import { customerLabel } from "@/lib/bookingStatus";
-import PendingBadge from "../PendingBadge";
+import PendingBadge, { OkStamp } from "../PendingBadge";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
 import { type Column, type Href, type BlockHref, blockLabel, blockHoursOn } from "./calendarLayout";
@@ -31,12 +31,22 @@ export default function PhoneList({ columns, hrefFor, blockHref, always = false 
                             <li key={booking.id}>
                                 <Link href={hrefFor(booking)} scroll={false}
                                       className={`${calendar.phoneCard} ${calendar[booking.status] ?? ""}`}>
-                                    <span className={calendar.time}>
-                                        {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
-                                        <PendingBadge status={booking.status}/>
+                                    <span className={calendar.cardTime}>
+                                        <strong>{formatTime(booking.startUtc)}</strong>
+                                        <small>{formatTime(booking.endUtc)}</small>
                                     </span>
-                                    <span>{customerLabel(booking)}</span>
-                                    <span className={calendar.service}>{booking.serviceName} hos {booking.employeeName}</span>
+                                    <span className={calendar.cardBody}>
+                                        <span className={calendar.cardWho}>{customerLabel(booking)}</span>
+                                        <span className={calendar.service}>{booking.serviceName}</span>
+                                        <span className={calendar.cardEmployee}>
+                                            <span className={calendar.avatar} aria-hidden="true">{booking.employeeName.charAt(0)}</span>
+                                            {booking.employeeName}
+                                        </span>
+                                    </span>
+                                    <span className={calendar.cardStamp}>
+                                        {booking.status === "Bekreftet" ? <OkStamp/>
+                                            : <PendingBadge status={booking.status}/>}
+                                    </span>
                                 </Link>
                             </li>
                         ))}
