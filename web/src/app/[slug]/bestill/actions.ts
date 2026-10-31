@@ -108,7 +108,7 @@ export async function joinWaitlistAction(_previous: WaitlistFormState, formData:
     return result.ok ? { saved: true, values: { date } } : { error: result.message, values: { date } };
 }
 
-// "Tid for ny time?" on the Vips! page: saved = the chosen number of weeks (0 = Nei takk)
+// "Tid for ny time?" on the confirmation page: saved = the chosen number of weeks (0 = Nei takk)
 export type RebookFormState = FormState & { weeks?: number };
 
 export async function setRebookReminderAction(_previous: RebookFormState, formData: FormData): Promise<RebookFormState> {

@@ -86,6 +86,19 @@ public class RebookReminderServiceTests
         Assert.Empty(await db.Notifications.ToListAsync());
     }
 
+    // "Velg selv": any number of weeks from 1 to 26 is fine, e.g. 5
+    [Fact]
+    public async Task SetAsync_ChosenWeeks_IsSaved()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var service = new RebookReminderService(db);
+
+        Assert.Null(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, 5), Now));
+        Assert.Null(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, 26), Now));
+
+        Assert.Equal(26, (await db.RebookReminders.SingleAsync()).Weeks);
+    }
+
     // check if 0 weeks turns it off, a wrong number is refused, and one reminder per service
     [Fact]
     public async Task SetAsync_UpdatesTurnsOffAndChecks()
@@ -93,7 +106,8 @@ public class RebookReminderServiceTests
         await using var db = await CreateSeededDbAsync();
         var service = new RebookReminderService(db);
 
-        Assert.NotNull(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, 5), Now));
+        Assert.NotNull(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, 27), Now));
+        Assert.NotNull(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, -1), Now));
         Assert.NotNull(await service.SetAsync("kunde-1", new SetRebookReminderRequest(Guid.NewGuid(), null, 6), Now));
         await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, null, 4), Now);
         await service.SetAsync("kunde-1", new SetRebookReminderRequest(Herreklipp, Ingrid, 8), Now);

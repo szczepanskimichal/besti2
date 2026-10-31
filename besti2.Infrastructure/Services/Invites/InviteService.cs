@@ -95,7 +95,7 @@ public class InviteService(
         if (waiting >= MaxWaitingPerCustomer)
         {
             return Invalid($"Du har allerede {MaxWaitingPerCustomer} åpne invitasjoner. " +
-                           "Vent på svar eller trekk en tilbake i Min Besti.");
+                           "Vent på svar eller trekk en tilbake i Min BESTI.");
         }
 
         // All places must be free now (nothing is held, but an invitation nobody can accept helps no one)
@@ -691,7 +691,7 @@ public class InviteService(
                                                                 && b.StartUtc > nowUtc, cancellationToken);
         return upcoming >= BookingRules.MaxUpcomingPerBusiness
             ? Invalid($"Du har allerede {BookingRules.MaxUpcomingPerBusiness} kommende timer hos denne bedriften. " +
-                      "Avbestill en av dem i Min Besti, eller ring bedriften.")
+                      "Avbestill en av dem i Min BESTI, eller ring bedriften.")
             : null;
     }
 

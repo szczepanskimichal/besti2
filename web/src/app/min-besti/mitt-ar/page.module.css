@@ -14,7 +14,6 @@
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     font-weight: 600;
     text-decoration: none;
@@ -26,36 +25,155 @@
     color: var(--color-on-primary);
 }
 
-/* The big card at the top: aurora colours, like the rest of BESTI */
+/* The big card at the top: a thick glowing mint ring around a dark middle */
 .hero {
+    position: relative;
+    overflow: hidden;
     padding: 28px 20px;
-    border-radius: 20px;
-    border: 1px solid var(--color-border);
-    background: linear-gradient(135deg, rgba(15, 75, 87, 0.85), rgba(5, 13, 28, 0.85) 60%, rgba(114, 214, 189, 0.25));
-    backdrop-filter: blur(8px);
+    border-radius: 24px;
+    border: 2px solid #a6f2dd;
+    background: radial-gradient(120% 90% at 50% 45%, rgba(114, 214, 189, 0.09), rgba(4, 18, 24, 0.96) 55%, rgba(3, 12, 18, 0.97));
+    box-shadow: 0 0 26px rgba(114, 214, 189, 0.55), 0 0 60px rgba(114, 214, 189, 0.25), inset 0 0 28px rgba(114, 214, 189, 0.22);
     text-align: center;
 }
 
 .kicker {
     margin: 0;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    font-size: 0.875rem;
-    color: var(--color-muted);
+    font-family: var(--font-heading);
+    font-size: 26px;
+    line-height: 1.2;
+    color: #bff8e8;
+    text-shadow: 0 0 16px rgba(125, 255, 200, 0.55), 0 0 32px rgba(114, 214, 189, 0.25);
 }
 
-.big {
+.number {
+    position: relative;
     margin: 8px 0 0;
-    font-size: clamp(3rem, 16vw, 5rem);
-    font-weight: 800;
-    line-height: 1.05;
-    color: var(--color-primary-dark);
 }
 
+/* The number is drawn as an outline first, then filled */
+.big {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 200px;
+    max-width: 100%;
+    height: 110px;
+    margin: 0 auto;
+    overflow: visible;
+}
+
+.big text {
+    font-family: var(--font-heading);
+    font-size: 104px;
+    font-weight: 800;
+    fill: #bff8e8;
+    fill-opacity: 0;
+    stroke: #bff8e8;
+    stroke-width: 2.2;
+    stroke-dasharray: 600;
+    stroke-dashoffset: 600;
+    filter: drop-shadow(0 0 8px rgba(125, 255, 200, 0.9));
+    animation: draw 1.3s ease-out forwards, fill 0.6s 1.15s ease-out forwards;
+}
+
+.aurora {
+    position: absolute;
+    z-index: 0;
+    left: 50%;
+    top: 50%;
+    width: 300px;
+    height: 150px;
+    margin: -75px 0 0 -150px;
+    border-radius: 50%;
+    background: radial-gradient(ellipse at 40% 50%, rgba(114, 214, 189, 0.35), transparent 60%),
+        radial-gradient(ellipse at 65% 45%, rgba(63, 167, 214, 0.22), transparent 60%);
+    filter: blur(18px);
+    opacity: 0;
+    animation: aurora 3.2s 1s ease-in-out forwards;
+}
+
+.dust {
+    position: absolute;
+    z-index: 2;
+    border-radius: 50%;
+    background: #eafff8;
+    box-shadow: 0 0 10px 3px rgb(159, 245, 220);
+    opacity: 0;
+    pointer-events: none;
+    animation-name: dust;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+}
+
+@keyframes draw {
+    to { stroke-dashoffset: 0; }
+}
+
+@keyframes fill {
+    to {
+        fill-opacity: 1;
+        filter: drop-shadow(0 0 18px rgba(125, 255, 200, 0.9)) drop-shadow(0 0 36px rgba(114, 214, 189, 0.5));
+    }
+}
+
+@keyframes aurora {
+    0% { opacity: 0; transform: scaleX(0.6); }
+    40% { opacity: 1; transform: scaleX(1.1); }
+    100% { opacity: 0.45; transform: scaleX(1); }
+}
+
+@keyframes dust {
+    0% { opacity: 0; transform: translate(0, 0); }
+    25% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)); }
+}
+
+/* No movement: the number is simply there with its glow */
+@media (prefers-reduced-motion: reduce) {
+    .big text {
+        animation: none;
+        fill-opacity: 1;
+        stroke-dashoffset: 0;
+    }
+
+    .aurora {
+        animation: none;
+        opacity: 0.45;
+    }
+
+    .dust {
+        display: none;
+    }
+}
+
+.big + .sub,
 .sub {
     margin: 8px 0 0;
-    color: var(--color-text);
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: #dffcf3;
+}
+
+.first {
+    display: block;
+    margin-top: 8px;
+    font-family: var(--font-small);
+    font-size: 15px;
+    font-weight: 500;
+    color: #a9cfc6;
+}
+
+/* "Ingen besøk ennå" when the year is empty */
+p.big {
+    width: auto;
+    height: auto;
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 7vw, 2.2rem);
+    font-weight: 800;
+    color: #bff8e8;
 }
 
 .cta {
@@ -85,31 +203,56 @@
     flex-direction: column;
     gap: 2px;
     padding: 14px;
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    background: rgba(4, 18, 26, 0.84);
+    border: 1px solid rgba(166, 242, 221, 0.28);
+    border-radius: 20px;
 }
 
+/* Mint line icon (or a crystal one) in a glowing ring, like a stamp */
 .icon {
-    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 6px;
+    border-radius: 50%;
+    border: 2px solid #a6f2dd;
+    background: radial-gradient(circle, rgba(114, 214, 189, 0.22), rgba(63, 167, 214, 0.08) 70%, rgba(4, 16, 26, 0.3));
+    box-shadow: 0 0 12px rgba(114, 214, 189, 0.55), inset 0 0 10px rgba(114, 214, 189, 0.3);
+    color: #bff8e8;
+}
+
+.icon svg {
+    width: 29px;
+    height: 29px;
+    filter: drop-shadow(0 0 5px rgba(125, 255, 200, 0.75));
+}
+
+.icon img {
+    width: 28px;
+    height: 28px;
+    margin: 0;
 }
 
 .value {
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--color-primary-dark);
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 800;
+    color: #f2fffb;
     overflow-wrap: anywhere;
 }
 
 .value a {
     color: inherit;
+    text-decoration: none;
 }
 
 .text {
-    font-size: 0.875rem;
-    color: var(--color-muted);
+    font-family: var(--font-small);
+    font-size: 14px;
+    font-weight: 500;
+    color: #a9cfc6;
 }
 
 .note {

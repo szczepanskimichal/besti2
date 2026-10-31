@@ -6,24 +6,23 @@ export default function Footer() {
 
     return (
         <footer className={styles.footer}>
-            <div className={styles.inner}>
+            {/* Two columns with Vilkår in the middle, like Ada's mockup */}
+            <nav aria-label="Bunntekst" className={styles.links}>
+                <NextLink href="/" className={styles.topLeft}>Finn bedrift</NextLink>
+                <NextLink href="/aerlig-booking" className={styles.bottomLeft}>Ærlig booking</NextLink>
+                <NextLink href="/vilkar" className={styles.middle}>Vilkår</NextLink>
+                <NextLink href="/personvern" className={styles.topRight}>Personvern</NextLink>
+                <NextLink href="/registrer-bedrift" className={styles.bottomRight}>Registrer bedrift</NextLink>
+            </nav>
+            <div className={styles.brand}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed */}
+                <img src="/logo/besti-b-pin.png" alt="BESTI" width={29} height={44} className={styles.pin}/>
                 <div>
-                    <p className={styles.brand}>BESTI</p>
-                    <p className={styles.muted}>Finn og bestill time hos lokale bedrifter.</p>
+                    <p className={styles.slogan}>Bestill med din besti</p>
+                    {/* The photo credit is required for the northern lights photo in the background */}
+                    <p className={styles.copy}>© {year} BESTI · Foto: Tomáš Malík / Unsplash</p>
                 </div>
-                <nav aria-label="Bunntekst" className={styles.links}>
-                    <NextLink href="/">Finn bedrift</NextLink>
-                    <NextLink href="/registrer-bedrift">Registrer bedrift</NextLink>
-                    <NextLink href="/aerlig-booking">Ærlig booking</NextLink>
-                    <NextLink href="/personvern">Personvern</NextLink>
-                    <NextLink href="/vilkar">Vilkår</NextLink>
-                </nav>
             </div>
-            <p className={styles.copy}>
-                <span>© {year} BESTI · Bestill med din besti</span>
-                {/* Required credit for the northern lights photo in the background */}
-                <span>Foto: Tomáš Malík / Unsplash</span>
-            </p>
         </footer>
     );
 }

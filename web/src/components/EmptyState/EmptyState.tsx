@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import styles from "./EmptyState.module.css";
 
 type Props = {
-    icon: ReactNode; // an emoji or a CrystalIcon
+    icon: ReactNode | "sparkles"; // an emoji, a CrystalIcon or three crystal sparkles in a neon ring
     title: string;
     children: ReactNode;
     // The one next step, e.g. "Finn en bedrift"
@@ -15,7 +15,18 @@ type Props = {
 export default function EmptyState({ icon, title, children, action }: Props) {
     return (
         <div className={styles.box}>
-            <span className={styles.icon} aria-hidden="true">{icon}</span>
+            {icon === "sparkles" ? (
+                <span className={styles.ring} aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                    <img src="/ikoner/iskra.svg" alt="" className={`${styles.sparkle} ${styles.big}`}/>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                    <img src="/ikoner/iskra.svg" alt="" className={`${styles.sparkle} ${styles.small}`}/>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                    <img src="/ikoner/iskra.svg" alt="" className={`${styles.sparkle} ${styles.tiny}`}/>
+                </span>
+            ) : (
+                <span className={styles.icon} aria-hidden="true">{icon}</span>
+            )}
             <p className={styles.title}>{title}</p>
             <p className={styles.text}>{children}</p>
             {action && <Link href={action.href} className={styles.action}>{action.label}</Link>}

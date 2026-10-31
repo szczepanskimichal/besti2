@@ -9,7 +9,8 @@ import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
 import TimeOffForm from "./TimeOffForm";
 import FirstSteps from "./FirstSteps";
-import { FIRST_STEPS_COOKIE } from "./firstStepsCookie";
+import { FIRST_STEPS_COOKIE, WELCOME_COOKIE } from "./firstStepsCookie";
+import BusinessWelcome from "./BusinessWelcome";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
 import { employeeColumns, dayColumns, blocksOn, visibleRange, clock } from "./calendar/calendarLayout";
@@ -62,6 +63,11 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     if (!business || !allBookings || !allBlocks) {
         redirect("/logg-inn");
     }
+    const jar = await cookies();
+    // A brand new business (no services yet) is welcomed once before the calendar
+    if (business.services.length === 0 && !jar.has(WELCOME_COOKIE)) {
+        return <BusinessWelcome name={business.name} waiting={business.isHidden}/>;
+    }
 
     const employeeFilter = view && business.employees.some((e) => e.id === employeeAsked) ? employeeAsked : undefined;
     const bookings = allBookings
@@ -103,7 +109,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const selectedBlock = allBlocks.find((t) => t.id === query.blokkering);
     // Visits already in a time that was just blocked (they are kept)
     const overlapping = Number(query.varsel);
-    const firstStepsHidden = (await cookies()).has(FIRST_STEPS_COOKIE);
+    const firstStepsHidden = jar.has(FIRST_STEPS_COOKIE);
 
     return (
         <main className={`${styles.main} ${calendar.wide}`}>

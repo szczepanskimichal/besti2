@@ -7,7 +7,7 @@ export async function createBooking(input: CreateBookingInput, token: string): P
     const res = await apiFetch("/api/bookings", { method: "POST", token, body: input, forwardIp: true });
     // No answer in time: the booking may still have been saved, so do not just say "try again"
     if (res.status === 503) {
-        return { ok: false, message: "Vi fikk ikke svar i tide. Sjekk Min Besti om timen er bestilt før du prøver igjen." };
+        return { ok: false, message: "Vi fikk ikke svar i tide. Sjekk Min BESTI om timen er bestilt før du prøver igjen." };
     }
     return toResult(res);
 }

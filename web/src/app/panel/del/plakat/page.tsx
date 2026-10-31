@@ -43,7 +43,7 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
                     <p className={styles.brand}>BESTI</p>
                 ) : (
                     // eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed
-                    <img src="/logo/besti-napis.png" alt="Besti" className={styles.brandLogo}/>
+                    <img src="/logo/besti-napis.png" alt="BESTI" className={styles.brandLogo}/>
                 )}
                 {business.logoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- our own resized WebP from the API

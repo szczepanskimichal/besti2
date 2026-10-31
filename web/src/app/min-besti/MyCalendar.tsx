@@ -79,7 +79,7 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                     <span className={styles.nextLabel}>Neste time</span>
                     <strong className={styles.nextWhen}>{formatDay(osloDay(next.startUtc))} kl. {formatTime(next.startUtc)}</strong>
                     <span className={styles.nextWhat}>{next.serviceName} hos {next.businessName}</span>
-                    <Countdown startUtc={next.startUtc} freeCancelUntilUtc={null}/>
+                    <span><Countdown startUtc={next.startUtc}/></span>
                 </Link>
             )}
 
@@ -298,7 +298,7 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                                     <span className={styles.status}>
                                         {b.status === "VenterKunde" ? "Svar ønskes" : statusLabels[b.status] ?? b.status}
                                     </span>
-                                    {!compact && <Countdown startUtc={b.startUtc} freeCancelUntilUtc={null}/>}
+                                    {!compact && <p className={styles.countdown}><Countdown startUtc={b.startUtc}/></p>}
                                     <p className={styles.links}>
                                         <a href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(b.businessAddress)}`}
                                            target="_blank" rel="noopener noreferrer">Veibeskrivelse</a>

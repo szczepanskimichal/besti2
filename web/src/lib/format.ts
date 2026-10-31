@@ -60,6 +60,33 @@ export function formatDate(utc: string): string {
     return osloDate.format(new Date(utc));
 }
 
+const osloWeekday = new Intl.DateTimeFormat("nb-NO", { timeZone: "Europe/Oslo", weekday: "long" });
+
+// How long ago, like a phone: "for 18 min siden", "for 2 timer siden", "i går kl. 23:16", "onsdag kl. 03:16",
+// and the full date after a week
+export function formatAgo(utc: string, now = new Date()): string {
+    const minutes = Math.floor((now.getTime() - new Date(utc).getTime()) / 60000);
+    if (minutes < 1) {
+        return "nå nettopp";
+    }
+    if (minutes < 60) {
+        return `for ${minutes} min siden`;
+    }
+    const today = osloDay(now.toISOString());
+    const day = osloDay(utc);
+    if (day === today) {
+        const hours = Math.floor(minutes / 60);
+        return `for ${hours} ${hours === 1 ? "time" : "timer"} siden`;
+    }
+    if (day === shiftDay(today, -1)) {
+        return `i går kl. ${formatTime(utc)}`;
+    }
+    if (day > shiftDay(today, -7)) {
+        return `${osloWeekday.format(new Date(utc))} kl. ${formatTime(utc)}`;
+    }
+    return formatDateTime(utc);
+}
+
 // "torsdag 29. oktober kl. 14:05" (logs and system status, where the time matters)
 export function formatDateTime(utc: string): string {
     return `${formatDate(utc)} kl. ${formatTime(utc)}`;

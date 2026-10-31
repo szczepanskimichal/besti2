@@ -68,6 +68,20 @@ public class ProfileServiceTests
         Assert.Equal("kari@test.example", shown.Email);
     }
 
+    // check if "Din besti siden" gets the day the account was made
+    [Fact]
+    public async Task Get_ShowsWhenTheAccountWasMade()
+    {
+        var (profile, users, _, _) = await CreateAsync();
+        var kari = await KariAsync(users);
+        kari.CreatedUtc = new DateTime(2026, 10, 2, 9, 0, 0, DateTimeKind.Utc);
+        await users.UpdateAsync(kari);
+
+        var shown = await profile.GetAsync(kari.Id);
+
+        Assert.Equal(new DateTime(2026, 10, 2, 9, 0, 0, DateTimeKind.Utc), shown!.CreatedUtc);
+    }
+
     // check if the password changes only with the right current password
     [Fact]
     public async Task ChangePassword_NeedsTheCurrentOne()

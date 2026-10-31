@@ -7,6 +7,8 @@ import { getToken } from "@/lib/auth";
 import { formatDate, formatLength } from "@/lib/format";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import LineIcon from "../../varsler/LineIcon";
+import DrawnNumber from "./DrawnNumber";
 import BarChart from "../../panel/statistikk/BarChart";
 import panel from "../../panel/page.module.css";
 import styles from "./page.module.css";
@@ -39,20 +41,19 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
     }
     const thisYear = new Date().getFullYear();
     const soFar = year.year === thisYear;
-    const firstName = me?.fullName?.split(" ")[0];
     const facts = [
-        year.minutesOfMeTime > 0 && { icon: "⏳", value: formatLength(year.minutesOfMeTime), text: "tid til deg selv" },
+        year.minutesOfMeTime > 0 && { icon: <LineIcon name="hourglass"/>, value: formatLength(year.minutesOfMeTime), text: "tid du har booket" },
         { icon: <CrystalIcon name="pinne"/>, value: String(year.businesses), text: year.businesses === 1 ? "sted" : "forskjellige steder" },
         year.favoriteBusiness && {
-            icon: "💛",
+            icon: <CrystalIcon name="hjerte"/>,
             value: year.favoriteBusiness,
             text: `din favoritt, ${year.favoriteBusinessVisits} ${year.favoriteBusinessVisits === 1 ? "gang" : "ganger"}`,
             href: year.favoriteBusinessSlug ? `/${year.favoriteBusinessSlug}` : undefined,
         },
-        year.favoriteService && { icon: "✂️", value: year.favoriteService, text: "det du bestilte mest" },
-        year.busiestMonth && { icon: "📅", value: monthNames[year.busiestMonth - 1], text: "din travleste måned" },
+        year.favoriteService && { icon: <LineIcon name="scissors"/>, value: year.favoriteService, text: "det du bestilte mest" },
+        year.busiestMonth && { icon: <LineIcon name="calendar"/>, value: monthNames[year.busiestMonth - 1], text: "din travleste måned" },
         year.visitsWithFriends > 0 && {
-            icon: "👯",
+            icon: <LineIcon name="people"/>,
             value: String(year.visitsWithFriends),
             text: year.visitsWithFriends === 1 ? "gang sammen med venner" : "ganger sammen med venner",
         },
@@ -61,12 +62,12 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
             value: String(year.reviewsWritten),
             text: year.reviewsWritten === 1 ? "vurdering som hjelper andre" : "vurderinger som hjelper andre",
         },
-        year.spent > 0 && { icon: "💳", value: `ca. ${kroner.format(year.spent)} kr`, text: "brukt på deg selv" },
+        year.spent > 0 && { icon: <LineIcon name="card"/>, value: `ca. ${kroner.format(year.spent)} kr`, text: "brukt på deg selv" },
     ].filter((f) => !!f) as { icon: ReactNode; value: string; text: string; href?: string }[];
 
     return (
         <main className={panel.main}>
-            <h1 className={panel.title}>Min Besti</h1>
+            <h1 className={panel.title}>Min BESTI</h1>
             <MinBestiTabs/>
 
             {year.years.length > 1 && (
@@ -82,7 +83,7 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
             )}
 
             <section className={styles.hero}>
-                <p className={styles.kicker}>{firstName ? `${firstName}s` : "Ditt"} {year.year} med BESTI</p>
+                <h2 className={styles.kicker}>Ditt BESTI-år {year.year}</h2>
                 {year.visits === 0 ? (
                     <>
                         <p className={styles.big}>Ingen besøk {soFar ? "ennå" : `i ${year.year}`}</p>
@@ -93,10 +94,12 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
                     </>
                 ) : (
                     <>
-                        <p className={styles.big}>{year.visits}</p>
+                        <DrawnNumber value={year.visits}/>
                         <p className={styles.sub}>
-                            besøk {soFar ? "så langt i år" : `i ${year.year}`}
-                            {year.firstVisitUtc && ` · det første ${formatDate(year.firstVisitUtc)}`}
+                            {year.visits === 1 ? "bestilling" : "bestillinger"} med BESTI {soFar ? "i år" : `i ${year.year}`}
+                            {year.firstVisitUtc && (
+                                <span className={styles.first}>Første gang: {formatDate(year.firstVisitUtc)}</span>
+                            )}
                         </p>
                     </>
                 )}
@@ -115,7 +118,7 @@ export default async function MyYearPage({ searchParams }: MyYearPageProps) {
                             </li>
                         ))}
                     </ul>
-                    <BarChart title={`Besøk per måned i ${year.year}`} bars={year.months.map((count, i) => ({
+                    <BarChart glow title={`Besøk per måned i ${year.year}`} bars={year.months.map((count, i) => ({
                         label: monthNames[i].slice(0, 3),
                         value: count,
                         detail: `${monthNames[i]}: ${count} besøk`,

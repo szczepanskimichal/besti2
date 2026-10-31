@@ -110,7 +110,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
             <header className={[styles.hero, isNew && styles.heroNew, cover && styles.heroPhoto].filter(Boolean).join(" ")}
                     style={cover ? { backgroundImage: `url("${cover}")` } : undefined}>
                 {/* New business: a stamp for the first week after it joined */}
-                {isNew && <span className={styles.stamp}>Ny på<br/>Besti</span>}
+                {isNew && <span className={styles.stamp}>Ny på<br/>BESTI</span>}
                 <div className={styles.top}>
                     <BusinessLogo name={business.name} category={business.category} logoUrl={business.logoUrl} size="large" />
                     {!me?.isBusiness && <FavoriteButton businessId={business.id} slug={business.slug} saved={saved}/>}

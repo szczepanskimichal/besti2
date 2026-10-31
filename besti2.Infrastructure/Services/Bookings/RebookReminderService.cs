@@ -8,7 +8,9 @@ namespace besti2.Infrastructure.Services.Bookings;
 
 public class RebookReminderService(AppDbContext dbContext) : IRebookReminderService
 {
-    public static readonly int[] WeekOptions = [3, 4, 6, 8, 12];
+    // "Velg selv" on the confirmation page: any whole number of weeks, at most half a year
+    public const int MinWeeks = 1;
+    public const int MaxWeeks = 26;
 
     // Never at night: only from 9 to 20 in Oslo (the job runs every hour)
     private const int FirstHour = 9;
@@ -28,7 +30,7 @@ public class RebookReminderService(AppDbContext dbContext) : IRebookReminderServ
             }
             return null;
         }
-        if (!WeekOptions.Contains(request.Weeks))
+        if (request.Weeks is < MinWeeks or > MaxWeeks)
         {
             return "Velg hvor mange uker.";
         }

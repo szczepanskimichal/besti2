@@ -118,7 +118,7 @@ public static class InviteEndpoints
         InviteOutcome.CustomerBusy => Results.Conflict(
             new { message = "Du har allerede en time på dette tidspunktet.", outcome = "CustomerBusy" }),
         InviteOutcome.AlreadyJoined => Results.Conflict(
-            new { message = "Du er allerede med i gruppa. Timen din ligger i Min Besti.", outcome = "AlreadyJoined" }),
+            new { message = "Du er allerede med i gruppa. Timen din ligger i Min BESTI.", outcome = "AlreadyJoined" }),
         InviteOutcome.Full => Results.Conflict(
             new { message = "Gruppa er dessverre full.", outcome = "Full" }),
         _ => NotFound()

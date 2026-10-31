@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getMe, getMyProfile, getNotifications, getPushPublicKey } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { formatDate, formatTime } from "@/lib/format";
+import { formatAgo } from "@/lib/format";
 import { privatePage } from "@/lib/site";
-import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { deleteNotificationAction, markAllReadAction } from "./actions";
+import LineIcon, { type LineIconName } from "./LineIcon";
 import PhoneApp from "./PhoneApp";
 import ReminderSettings from "./ReminderSettings";
 import SoundToggle from "./SoundToggle";
@@ -35,42 +36,69 @@ export default async function NotificationsPage() {
     return (
         <main className={panelStyles.main}>
             <div className={styles.head}>
-                <h1 className={panelStyles.title}>Varsler</h1>
+                <h1 className={styles.title}>Varsler</h1>
                 {notifications.unread > 0 && (
                     <form action={markAllReadAction}>
-                        <SubmitButton className={panelStyles.secondaryButton} pendingText="Lagrer…">
-                            Merk alle som lest
-                        </SubmitButton>
+                        <button type="submit" className={styles.markAll}>Merk alle som lest</button>
                     </form>
                 )}
             </div>
-            <SoundToggle/>
-            {profile && <ReminderSettings reminderEmail={profile.reminderEmail} soonNotice={profile.soonNotice}/>}
-            <PhoneApp publicKey={pushKey}/>
             {notifications.items.length === 0 ? (
                 <p className={panelStyles.muted}>Du har ingen varsler.</p>
             ) : (
                 <ul className={panelStyles.list}>
-                    {notifications.items.map((item) => (
-                        <li key={item.id} className={`${panelStyles.card} ${styles.item} ${item.isRead ? "" : styles.unread}`}>
-                            <div className={styles.body}>
-                                <p className={styles.when}>
-                                    {formatDate(item.createdUtc)} kl. {formatTime(item.createdUtc)}
-                                    {!item.isRead && <span className={styles.newLabel}>Ny</span>}
-                                </p>
-                                {/* A plain link, not NextLink: prefetching would mark it as read before the click */}
-                                <a href={`/varsler/${item.id}`}>{item.text}</a>
-                            </div>
+                    {notifications.items.map((item) => {
+                        const kind = kindOf(item.text);
+                        return (
+                        <li key={item.id} className={`${styles.item} ${item.isRead ? "" : styles.unread}`}>
+                            <span className={styles.icon}>
+                                {kind === "review" ? <CrystalIcon name="stjerne"/> : <LineIcon name={kind}/>}
+                            </span>
+                            {/* The whole card is the link. A plain link, not NextLink: prefetching would mark it as read before the click */}
+                            <a href={`/varsler/${item.id}`} className={styles.body}>
+                                <span className={styles.when}>
+                                    {!item.isRead && <span className={styles.dot} aria-label="Ny"/>}
+                                    {formatAgo(item.createdUtc)}
+                                </span>
+                                <span className={styles.text}>{item.text}</span>
+                            </a>
                             <form action={deleteNotificationAction}>
                                 <input type="hidden" name="id" value={item.id}/>
                                 <button type="submit" className={styles.delete} aria-label="Slett varselet" title="Slett">
-                                    🗑️
+                                    <LineIcon name="bin"/>
                                 </button>
                             </form>
                         </li>
-                    ))}
+                        );
+                    })}
                 </ul>
             )}
+            {/* Settings at the bottom, closed: most visits are about the notifications themselves */}
+            <details className={styles.settings}>
+                <summary>
+                    <span className={styles.icon}><LineIcon name="gear"/></span>
+                    Innstillinger for varsler
+                </summary>
+                <div className={styles.settingsBody}>
+                    <SoundToggle/>
+                    {profile && <ReminderSettings reminderEmail={profile.reminderEmail} soonNotice={profile.soonNotice}/>}
+                    <PhoneApp publicKey={pushKey}/>
+                </div>
+            </details>
         </main>
     );
+}
+
+// The icon from what the notification says (the API stores only the text)
+function kindOf(text: string): LineIconName | "review" {
+    if (/vurdering/i.test(text)) {
+        return "review";
+    }
+    if (/bekreft/i.test(text)) {
+        return "ok";
+    }
+    if (/ledig/i.test(text)) {
+        return "calendar";
+    }
+    return "bell";
 }

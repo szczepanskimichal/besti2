@@ -43,7 +43,7 @@ export default function BusinessCard({ business, persons = 1 }: Props) {
                 ) : (
                     // The API hides the average before 3 reviews, so one bad review cannot sink a new business
                     <p className={styles.rating}>
-                        Ny på Besti{business.reviewCount > 0 && ` · ${business.reviewCount} ${business.reviewCount === 1 ? "vurdering" : "vurderinger"}`}
+                        Ny på BESTI{business.reviewCount > 0 && ` · ${business.reviewCount} ${business.reviewCount === 1 ? "vurdering" : "vurderinger"}`}
                     </p>
                 )}
                 {business.description && <p className={styles.description}>{business.description}</p>}

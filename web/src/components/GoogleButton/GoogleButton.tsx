@@ -4,7 +4,7 @@ import styles from "./GoogleButton.module.css";
 
 // "Fortsett med Google" on Logg inn and Opprett konto; nothing at all while Google login is not set up.
 // A plain link: the route sends the visitor on to Google
-export default function GoogleButton({ next }: { next?: string }) {
+export default function GoogleButton({ next, signup = false }: { next?: string; signup?: boolean }) {
     if (!GOOGLE_LOGIN_ENABLED) {
         return null;
     }
@@ -22,10 +22,12 @@ export default function GoogleButton({ next }: { next?: string }) {
                 Fortsett med Google
             </a>
             <p className={styles.terms}>
-                Er du ny, lager vi en kundekonto med navnet og e-posten fra Google. Da godtar du{" "}
-                <Link href="/vilkar">vilkårene</Link> og har lest <Link href="/personvern">personvernerklæringen</Link>.
+                {signup
+                    ? "Med Google lager vi en kundekonto med navnet og e-posten din, og du godtar"
+                    : "Logger du inn med Google første gang, lager vi en kundekonto og du godtar"}{" "}
+                <Link href="/vilkar">vilkårene</Link> og <Link href="/personvern">personvernet</Link>.
             </p>
-            <p className={styles.divider}><span>eller med e-post</span></p>
+            <p className={styles.divider}>eller med e-post</p>
         </>
     );
 }

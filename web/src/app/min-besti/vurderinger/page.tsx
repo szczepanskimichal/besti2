@@ -37,14 +37,18 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
     const visits = bookingsToReview(bookings);
     return (
         <main className={panelStyles.main}>
-            <h1 className={panelStyles.title}>Min Besti</h1>
+            <h1 className={panelStyles.title}>Min BESTI</h1>
             <MinBestiTabs/>
             {takk && <p className={styles.success} role="status">Takk for vurderingen! 💙</p>}
             {bilde === "feil" && (
                 <p className={panelStyles.error} role="alert">Vurderingen er lagret, men bildet kunne ikke lastes opp.</p>
             )}
-            <p className={panelStyles.muted}>
-                Hvordan var timen? Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
+            <h2 className={styles.question}>Hvordan var timen?</h2>
+            <p className={styles.share}>
+                Del erfaringen din på BESTI og hjelp andre å velge <CrystalIcon name="hjerte"/>
+            </p>
+            <p className={styles.info}>
+                Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
             </p>
             {visits.length === 0 ? (
                 <EmptyState icon={<CrystalIcon name="stjerne"/>} title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
@@ -54,11 +58,14 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
                 <ul className={panelStyles.list}>
                     {visits.map((booking) => (
                         <li key={booking.id} id={`v-${booking.id}`} className={panelStyles.card}>
-                            <p className={panelStyles.when}>{formatDate(booking.startUtc)}</p>
-                            <p className={panelStyles.service}>
-                                {booking.serviceName} hos{" "}
-                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
-                            </p>
+                            {/* The visit: the business, where, when and what */}
+                            <div className={styles.visit}>
+                                <p className={styles.visitLabel}>Timen du hadde</p>
+                                <Link href={`/${booking.businessSlug}`} className={styles.salon}>{booking.businessName}</Link>
+                                <span>{booking.businessAddress}</span>
+                                <span>{formatDate(booking.startUtc)}</span>
+                                <span className={styles.serviceName}><CrystalIcon name="stjerne"/>{booking.serviceName}</span>
+                            </div>
                             <ReviewForm bookingId={booking.id}/>
                         </li>
                     ))}

@@ -269,7 +269,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                                     </li>
                                 ))}
                             </ul>
-                            <p className={styles.muted}>Tider som krysser den er grået ut. <NextLink href="/min-besti">Se Min Besti</NextLink></p>
+                            <p className={styles.muted}>Tider som krysser den er grået ut. <NextLink href="/min-besti">Se Min BESTI</NextLink></p>
                         </div>
                     )}
                 </div>

@@ -150,7 +150,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                         {open && <LiveStatus/>}
                         <Badge/>
                         <h1 className={styles.title}>
-                            {pair ? "Vips! Dere er booket." : open ? "Vips! Du er med." : "Vips! Gruppa er klar."}
+                            {pair ? "Dere er booket!" : open ? "Du er med!" : "Gruppa er klar!"}
                         </h1>
                         <p className={styles.muted}>
                             {pair
@@ -161,7 +161,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                             {invite.payMode === "JegSpanderer" &&
                                 (invite.isInviter ? (pair ? "Du spanderer 🎁. " : "Du betaler for alle 🎁. ")
                                     : `${invite.inviterFirstName} spanderer 🎁. `)}
-                            {invite.isMember ? "Timen din ligger i Min Besti." : "Bedriften har fått beskjed om hvor mange som kommer."}
+                            {invite.isMember ? "Timen din ligger i Min BESTI." : "Bedriften har fått beskjed om hvor mange som kommer."}
                         </p>
                         {!pair && <Seats invite={invite}/>}
                         {open && !pair && (
@@ -173,7 +173,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                             </>
                         )}
                         <Details invite={invite}/>
-                        <NextLink href="/min-besti" className={styles.primaryButton}>Til Min Besti</NextLink>
+                        <NextLink href="/min-besti" className={styles.primaryButton}>Til Min BESTI</NextLink>
                     </>
                 )}
 

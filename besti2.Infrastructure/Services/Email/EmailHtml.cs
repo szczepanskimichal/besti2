@@ -48,7 +48,7 @@ public static partial class EmailHtml
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#04101a" style="background:#04101a">
             <tr><td align="center" style="padding:24px 12px">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
-            <tr><td style="padding:0 8px 16px"><a href="{Encode(webBaseUrl)}"><img src="{Encode(logo)}" alt="Besti" width="119" height="50" style="display:block;border:0"></a></td></tr>
+            <tr><td style="padding:0 8px 16px"><a href="{Encode(webBaseUrl)}"><img src="{Encode(logo)}" alt="BESTI" width="119" height="50" style="display:block;border:0"></a></td></tr>
             <tr><td bgcolor="#0b1f29" style="background:#0b1f29;border:1px solid #1d4a48;border-radius:16px;padding:28px 24px;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif">
             {html}
             </td></tr>

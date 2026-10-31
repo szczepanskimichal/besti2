@@ -8,7 +8,6 @@
     border: 1px solid rgba(150, 255, 230, 0.22);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 

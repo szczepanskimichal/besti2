@@ -27,7 +27,7 @@ export default async function NewTimePage({ searchParams }: NewTimePageProps) {
             <main className={styles.main}>
                 <h1 className={styles.title}>Ny tid</h1>
                 <p role="status">
-                    {svar === "godtatt" && "Takk! Vi har gitt beskjed til bedriften, og du ser timen i Min Besti."}
+                    {svar === "godtatt" && "Takk! Vi har gitt beskjed til bedriften, og du ser timen i Min BESTI."}
                     {svar === "avslatt" && "Timen er avlyst, og bedriften har fått beskjed. Du kan bestille en ny time når det passer."}
                     {svar === "feil" && "Svaret kunne ikke lagres. Lenken kan være brukt allerede, eller timen har startet."}
                 </p>
@@ -42,7 +42,7 @@ export default async function NewTimePage({ searchParams }: NewTimePageProps) {
             <main className={styles.main}>
                 <h1 className={styles.title}>Ny tid</h1>
                 <p>Lenken er ikke gyldig lenger. Kanskje du allerede har svart, eller bedriften har endret timen igjen.</p>
-                <p><Link href="/min-besti">Se timene dine i Min Besti</Link></p>
+                <p><Link href="/min-besti">Se timene dine i Min BESTI</Link></p>
             </main>
         );
     }

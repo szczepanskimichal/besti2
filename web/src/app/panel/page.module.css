@@ -45,7 +45,6 @@
     padding: 16px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
 }
@@ -128,7 +127,6 @@
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
 }
 
@@ -136,7 +134,6 @@
     border: 1px solid var(--color-danger);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-danger);
 }
 

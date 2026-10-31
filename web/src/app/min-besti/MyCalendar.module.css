@@ -1,24 +1,23 @@
 /* "Min kalender": dark frosted glass like the booking calendar, Syne numbers, the visits as glowing chips.
-   Colours per status: mint = confirmed, gold = waiting, pink = the business asks for an answer, grey = over */
+   Colours per status: mint = confirmed, lavender = waiting, pink = the business asks for an answer, grey = over */
 .wrap {
     display: grid;
     gap: 16px;
     margin-bottom: 32px;
 }
 
-/* "Neste time": the next visit as an aurora card on top */
+/* "Neste time": the next visit as a dark card with a neon frame on top */
 .next {
     position: relative;
     overflow: hidden;
     display: grid;
-    gap: 2px;
-    padding: 18px 20px 12px;
-    border-radius: 24px;
-    border: 1px solid rgba(150, 255, 230, 0.35);
-    background: radial-gradient(80% 140% at 0% 0%, rgba(90, 240, 120, 0.22), transparent 60%),
-    radial-gradient(70% 140% at 100% 0%, rgba(40, 200, 232, 0.22), transparent 60%),
-    var(--color-card-base);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+    justify-items: start;
+    gap: 4px;
+    padding: 18px 20px 16px;
+    border-radius: 22px;
+    border: 1.5px solid rgba(166, 242, 221, 0.6);
+    background: linear-gradient(150deg, rgba(9, 40, 46, 0.88), rgba(5, 22, 30, 0.9));
+    box-shadow: 0 0 18px rgba(114, 214, 189, 0.3), inset 0 0 14px rgba(114, 214, 189, 0.15);
     color: inherit;
     text-decoration: none;
 }
@@ -28,17 +27,17 @@
 }
 
 .nextLabel {
-    font-family: var(--font-small);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--color-primary);
+    color: #8ff0d4;
 }
 
 .nextWhen {
-    font-size: clamp(1.05rem, 4.5vw, 1.3rem);
-    color: var(--color-heading);
+    font-size: 1.1875rem;
+    color: #f2fffb;
 }
 
 .nextWhen::first-letter {
@@ -46,7 +45,9 @@
 }
 
 .nextWhat {
-    color: var(--color-text);
+    color: #bdf5e4;
+    font-family: var(--font-heading);
+    font-weight: 600;
 }
 
 /* År / Måned / Uke / Dag / Plan, like the phone's calendar */
@@ -55,8 +56,8 @@
     gap: 4px;
     padding: 4px;
     border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: var(--color-card-base);
+    border: 1.5px solid rgba(160, 255, 225, 0.35);
+    background: rgba(3, 15, 22, 0.6);
     overflow-x: auto;
     scrollbar-width: none;
 }
@@ -69,7 +70,7 @@
     min-height: 40px;
     padding: 0 14px;
     border-radius: 999px;
-    color: var(--color-muted);
+    color: #d8f5ee;
     font-weight: 600;
     text-decoration: none;
     transition: background 0.2s, color 0.2s;
@@ -82,9 +83,9 @@
 
 .viewActive,
 .viewActive:hover {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
-    box-shadow: 0 0 14px rgba(114, 214, 189, 0.5);
+    background: linear-gradient(135deg, #9ff5dc, #4fc3a6);
+    color: #04101a;
+    box-shadow: 0 0 12px rgba(61, 255, 176, 0.45);
 }
 
 .panel {
@@ -92,10 +93,9 @@
     overflow: hidden;
     padding: 14px 10px 14px;
     border-radius: 24px;
-    border: 1px solid rgba(150, 255, 230, 0.22);
-    background: var(--color-surface);
+    border: 1px solid rgba(166, 242, 221, 0.3);
+    background: rgba(4, 18, 26, 0.82);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
@@ -179,8 +179,8 @@
 }
 
 .Venter {
-    --tone: #f2c46d;
-    --tone-bg: rgba(242, 196, 109, 0.18);
+    --tone: #bdb0ff;
+    --tone-bg: rgba(169, 160, 255, 0.2);
 }
 
 .VenterKunde {
@@ -382,9 +382,10 @@
     margin: 12px 4px 0;
     padding: 0;
     list-style: none;
-    font-family: var(--font-small);
-    font-size: 0.78rem;
-    color: var(--color-muted);
+    font-family: var(--font-heading);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #d8f0ea;
 }
 
 .legend li {
@@ -393,12 +394,14 @@
     gap: 6px;
 }
 
+/* Glowing rings: mint, lavender, pink */
 .swatch {
-    width: 10px;
-    height: 10px;
-    border-radius: 3px;
-    background: var(--tone);
-    box-shadow: 0 0 6px var(--tone);
+    width: 15px;
+    height: 15px;
+    border: 2.5px solid var(--tone);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--tone) 50%, transparent);
+    box-shadow: 0 0 10px var(--tone);
 }
 
 /* "Tid for ny time?": a dashed violet ring */
@@ -553,6 +556,10 @@
     font-family: var(--font-small);
     font-size: 0.78rem;
     font-weight: 600;
+}
+
+.countdown {
+    margin: 4px 0 8px;
 }
 
 .links {

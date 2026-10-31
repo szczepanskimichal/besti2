@@ -46,7 +46,7 @@ export default async function LoyaltyPage({ searchParams }: LoyaltyPageProps) {
                 </p>
                 <p className={styles.lead}>
                     Gi faste kunder en grunn til å komme tilbake. Hvert besøk som er bestilt på BESTI og gjennomført,
-                    gir et stempel av seg selv. Kunden ser kortet på siden din og i Min Besti.
+                    gir et stempel av seg selv. Kunden ser kortet på siden din og i Min BESTI.
                 </p>
                 <p className={panel.muted}>
                     Timer du legger inn selv (telefon, drop-in) teller ikke, og heller ikke «Møtte ikke».

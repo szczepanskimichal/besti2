@@ -2,42 +2,32 @@
     margin-top: auto;
     background: rgba(4, 16, 24, 0.45);
     backdrop-filter: blur(16px) saturate(150%);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
     border-top: 1px solid var(--color-border);
 }
 
-.inner {
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 32px 16px 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-
+/* Left column, Vilkår in the middle over both rows, right column aligned right */
+.links,
 .brand {
-    margin: 0 0 4px;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    color: var(--color-primary);
-}
-
-.muted {
-    margin: 0;
-    color: var(--color-muted);
+    width: calc(100% - 32px);
+    max-width: calc(var(--page-width) - 32px);
+    margin: 0 auto;
 }
 
 .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px 20px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0 12px;
+    padding: 22px 0 6px;
 }
 
 .links a {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    min-height: 44px;
+    min-height: 34px;
     color: var(--color-text);
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -45,22 +35,69 @@
     text-decoration: underline;
 }
 
-.copy {
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 0 16px 24px;
-    font-size: 0.85rem;
-    color: var(--color-muted);
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 4px 12px;
+.topLeft {
+    grid-area: 1 / 1;
 }
 
+.bottomLeft {
+    grid-area: 2 / 1;
+}
+
+.middle {
+    grid-area: 1 / 2 / 3 / 3;
+    justify-self: center;
+}
+
+.topRight {
+    grid-area: 1 / 3;
+    justify-self: end;
+}
+
+.bottomRight {
+    grid-area: 2 / 3;
+    justify-self: end;
+}
+
+/* The B with the pin, the slogan and the small print */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 0 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pin {
+    flex: none;
+    width: auto;
+    height: 44px;
+    filter: drop-shadow(0 0 8px rgba(61, 255, 176, 0.4));
+}
+
+.slogan {
+    margin: 0;
+    color: var(--color-heading);
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    /* BESTI as a brand mark: the slogan in spaced capitals */
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+}
+
+.copy {
+    margin: 3px 0 0;
+    color: var(--color-muted);
+    font-family: var(--font-small);
+    font-size: 0.625rem;
+    font-weight: 500;
+}
+
+/* Wide screens: the links stay together on the left instead of spreading over the whole page */
 @media (min-width: 768px) {
-    .inner {
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: flex-start;
+    .links {
+        grid-template-columns: auto auto auto;
+        justify-content: start;
+        gap: 0 48px;
     }
 }

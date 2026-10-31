@@ -14,6 +14,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
     const [state, formAction] = useActionState<FormState, FormData>(createReviewAction, {});
     const [preparing, setPreparing] = useState(false);
     const [tooBig, setTooBig] = useState(false);
+    const [photoName, setPhotoName] = useState("");
     // The chosen number of stars; burst starts the light-up animation again on every new choice
     const [chosen, setChosen] = useState(Number(state.values?.stars ?? 0));
     const [burst, setBurst] = useState(0);
@@ -22,6 +23,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
     async function handlePhoto(event: ChangeEvent<HTMLInputElement>) {
         const input = event.currentTarget;
         const file = input.files?.[0];
+        setPhotoName(file?.name ?? "");
         if (!file) {
             setTooBig(false);
             return;
@@ -48,7 +50,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
                 </p>
             )}
             <input type="hidden" name="bookingId" value={bookingId}/>
-            <p className={styles.label}>Hvor fornøyd var du?</p>
+            <p className={styles.label}>Gi vurdering</p>
             {/* Stars 1..5 for keyboard and screen readers; the chosen one and those before it light up one after another */}
             <div className={styles.stars} role="radiogroup" aria-label="Antall stjerner">
                 {[1, 2, 3, 4, 5].map((n) => {
@@ -62,7 +64,7 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
                             <label htmlFor={`s${n}-${bookingId}`} title={`${n} av 5`}
                                    className={lit ? styles.lit : undefined} style={delay}>
                                 {/* eslint-disable @next/next/no-img-element -- small SVG icons */}
-                                <img src="/ikoner/stjerne-tom.svg" alt="" className={styles.off}/>
+                                <img src="/ikoner/stjerne-kontur.svg" alt="" className={styles.off}/>
                                 <img key={`on-${burst}`} src="/ikoner/stjerne.svg" alt="" className={styles.on}/>
                                 {/* eslint-enable @next/next/no-img-element */}
                                 {lit && burst > 0 && (
@@ -97,10 +99,21 @@ export default function ReviewForm({ bookingId }: { bookingId: string }) {
                     defaultValue={state.values?.comment}
                 />
             </label>
-            <label className={styles.label}>
+            <div className={styles.label}>
                 Bilde av resultatet (valgfritt)
-                <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" onChange={handlePhoto}/>
-            </label>
+                {/* The browser's own "Choose File" is hidden behind a mint pill with a camera */}
+                <label className={styles.file}>
+                    <input type="file" name="photo" accept="image/png,image/jpeg,image/webp" onChange={handlePhoto}
+                           className={styles.srOnly}/>
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"
+                         strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M4 8h3l2-3h6l2 3h3v11H4z"/>
+                        <circle cx="12" cy="13" r="3.5"/>
+                    </svg>
+                    {photoName ? "Bytt bilde" : "Legg til bilde"}
+                </label>
+                {photoName && <span className={styles.fileName}>{photoName}</span>}
+            </div>
             {tooBig && (
                 <p className={panelStyles.error} role="alert">
                     Bildet er for stort. Velg et bilde under 3,5 MB.

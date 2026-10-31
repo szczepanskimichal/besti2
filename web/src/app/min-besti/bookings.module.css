@@ -1,0 +1,230 @@
+/* Bestillinger in Min Besti: gradient headings, the review card and the visit cards with a status stamp */
+.title {
+    margin: 0 0 12px;
+    background: linear-gradient(100deg, #e9fff8 0%, #9af5dc 45%, #4fe0bd 75%, #7ad0ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 10px rgba(61, 255, 176, 0.45)) drop-shadow(0 1px 1px rgba(0, 20, 30, 0.6));
+    font-size: 2.125rem;
+    text-align: center;
+}
+
+.page h2 {
+    background: linear-gradient(100deg, #f4fffb, #a6f2dd 50%, #72d6bd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 1.625rem;
+}
+
+/* "Du har 1 time du kan vurdere": a card with a neon frame */
+.review {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0;
+    padding: 14px 16px;
+    border: 2px solid #a6f2dd;
+    border-radius: 18px;
+    background: linear-gradient(150deg, rgba(9, 40, 46, 0.88), rgba(5, 22, 30, 0.9));
+    box-shadow: 0 0 16px rgba(114, 214, 189, 0.45), inset 0 0 12px rgba(114, 214, 189, 0.2);
+    color: #bff8e8;
+    font: 700 1rem var(--font-heading);
+    text-decoration: none;
+    text-shadow: 0 0 6px rgba(114, 214, 189, 0.5);
+}
+
+.review img {
+    width: 24px;
+    height: 24px;
+}
+
+.review::after {
+    content: "›";
+    margin-left: auto;
+    color: #9ff5dc;
+    font-size: 1.5rem;
+}
+
+/* One coming visit */
+.card {
+    position: relative;
+    padding: 16px;
+    border: 1px solid rgba(166, 242, 221, 0.28);
+    border-radius: 20px;
+    background: rgba(4, 18, 26, 0.84);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+/* Room on the right for the stamp */
+.besideStamp {
+    padding-right: 84px;
+}
+
+.date {
+    margin: 0;
+    color: #f2fffb;
+    font: 700 1.1875rem var(--font-heading);
+}
+
+.timeRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 8px;
+    margin-top: 4px;
+}
+
+.time {
+    color: #9ff5dc;
+    font: 700 1.0625rem var(--font-heading);
+}
+
+.place {
+    margin: 12px 0 4px;
+    color: #8ff0d4;
+    font: 700 1rem var(--font-heading);
+    overflow-wrap: anywhere;
+}
+
+.place a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.service {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 0;
+    color: #e6fff6;
+    font: 700 1.0625rem var(--font-heading);
+}
+
+.service img {
+    flex: none;
+    width: 20px;
+    height: 20px;
+}
+
+/* Legg til i kalender, Veibeskrivelse as pills */
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+}
+
+.links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid rgba(166, 242, 221, 0.55);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.6);
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.25);
+    color: #dffcf3;
+    font: 600 0.875rem var(--font-heading);
+    text-decoration: none;
+}
+
+/* Avbestill in dark blue, the free-cancel time under it */
+.cancelRow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.cancel summary {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+    font: 600 0.875rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+
+.cancel summary::-webkit-details-marker {
+    display: none;
+}
+
+.cancel p {
+    margin: 10px 0;
+}
+
+/* Status as a tilted glowing stamp in the top right corner */
+.stamp {
+    position: absolute;
+    top: 16px;
+    right: 10px;
+    width: 78px;
+    height: 78px;
+    border: 2px solid #a6f2dd;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(125, 255, 200, 0.32), rgba(63, 167, 214, 0.12) 70%, rgba(4, 16, 26, 0.2));
+    box-shadow: 0 0 18px rgba(114, 214, 189, 0.85), 0 0 44px rgba(63, 167, 214, 0.45), inset 0 0 14px rgba(114, 214, 189, 0.5);
+    color: #bfffe8;
+    transform: rotate(14deg);
+    pointer-events: none;
+}
+
+.stamp svg {
+    position: absolute;
+    top: 36%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    transform: translate(-50%, -50%);
+    filter: drop-shadow(0 0 6px rgba(125, 255, 200, 0.8));
+}
+
+.stamp > span {
+    position: absolute;
+    top: 56%;
+    left: 0;
+    right: 0;
+    color: #f0fffa;
+    font: 800 0.625rem var(--font-heading);
+    letter-spacing: 0.03em;
+    line-height: 1.15;
+    text-align: center;
+    text-shadow: 0 0 6px rgba(125, 255, 200, 0.9);
+}
+
+/* Venter: lavender with a clock */
+.stampWaiting {
+    border-color: #c9bfff;
+    background: radial-gradient(circle, rgba(189, 176, 255, 0.3), rgba(120, 100, 230, 0.1) 70%, rgba(4, 16, 26, 0.2));
+    box-shadow: 0 0 18px rgba(189, 176, 255, 0.8), 0 0 40px rgba(140, 120, 255, 0.4), inset 0 0 14px rgba(189, 176, 255, 0.45);
+    color: #e6e0ff;
+}
+
+.stampWaiting svg {
+    top: 30%;
+    width: 21px;
+    height: 21px;
+    filter: drop-shadow(0 0 6px rgba(189, 176, 255, 0.9));
+}
+
+.stampWaiting > span {
+    top: 47%;
+    color: #f3f0ff;
+    font-size: 0.6rem;
+    text-shadow: 0 0 6px rgba(189, 176, 255, 0.95);
+}
+
+.stampWaiting small {
+    display: block;
+    font-size: 0.49rem;
+    letter-spacing: 0.04em;
+}

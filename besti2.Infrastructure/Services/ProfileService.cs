@@ -30,7 +30,8 @@ public class ProfileService(
         return user is null || user.BusinessId is not null
             ? null
             : new ProfileDto(user.FullName ?? "", user.Email ?? "", user.PhoneNumber,
-                await userManager.HasPasswordAsync(user), !user.ReminderEmailOff, !user.SoonNoticeOff);
+                await userManager.HasPasswordAsync(user), !user.ReminderEmailOff, !user.SoonNoticeOff,
+                user.CreatedUtc);
     }
 
     public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)

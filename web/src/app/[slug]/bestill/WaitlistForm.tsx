@@ -23,7 +23,7 @@ export default function WaitlistForm({ serviceId, employeeId, days, selectedDay 
             {state.saved ? (
                 <p className={styles.success} role="status">
                     Du står på ventelisten for {formatDay(date)}. Vi sier fra med en gang det blir ledig, i
-                    varslene og på telefonen. Du finner den i Min Besti.
+                    varslene og på telefonen. Du finner den i Min BESTI.
                 </p>
             ) : (
                 <form action={action} className={styles.waitlistForm}>

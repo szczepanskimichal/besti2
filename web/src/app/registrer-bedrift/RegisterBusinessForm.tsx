@@ -5,6 +5,7 @@ import { categoryOptionGroups } from "@/lib/categories";
 import { referralSources } from "@/lib/referralSources";
 import { registerAction } from "./actions";
 import type { FormState } from "@/lib/formState";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
 
@@ -86,15 +87,17 @@ export default function RegisterBusinessForm() {
                 Adresse
                 <input name="address" required maxLength={200} autoComplete="street-address" defaultValue={value("address")} />
             </label>
-            <label className={styles.field}>
-                Postnummer
-                <input name="postalCode" required inputMode="numeric" pattern="[0-9]{4}" maxLength={4}
-                       autoComplete="postal-code" defaultValue={value("postalCode")} />
-            </label>
-            <label className={styles.field}>
-                By
-                <input name="city" required autoComplete="address-level2" defaultValue={value("city")} />
-            </label>
+            <div className={styles.pair}>
+                <label className={styles.field}>
+                    Postnummer
+                    <input name="postalCode" required inputMode="numeric" pattern="[0-9]{4}" maxLength={4}
+                           autoComplete="postal-code" defaultValue={value("postalCode")} />
+                </label>
+                <label className={styles.field}>
+                    By
+                    <input name="city" required autoComplete="address-level2" defaultValue={value("city")} />
+                </label>
+            </div>
             <label className={styles.field}>
                 Telefon
                 <input name="phone" type="tel" required maxLength={20} autoComplete="tel" defaultValue={value("phone")} />
@@ -136,7 +139,7 @@ export default function RegisterBusinessForm() {
                 </span>
             </label>
             <SubmitButton className={styles.primaryButton} pendingText="Registrerer…">
-                Registrer bedrift
+                <CrystalIcon name="stjerne"/>Registrer bedrift
             </SubmitButton>
         </form>
     );

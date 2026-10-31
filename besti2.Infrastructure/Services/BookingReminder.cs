@@ -205,7 +205,7 @@ public class BookingReminder(
             $"Adresse: {business.Address}, {business.PostalCode} {business.City}\n\n" +
             $"{CancelRule(booking, business, nowUtc)}\n\n" +
             // Visits added by the business may have no customer account, so no Min Besti for them
-            (booking.CustomerUserId is null ? "" : $"Se timen din i Min Besti: {webBaseUrl}/min-besti\n\n") +
+            (booking.CustomerUserId is null ? "" : $"Se timen din i Min BESTI: {webBaseUrl}/min-besti\n\n") +
             "Velkommen!\n" +
             "Hilsen BESTI";
     }

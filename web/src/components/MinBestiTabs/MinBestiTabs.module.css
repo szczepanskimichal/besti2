@@ -1,30 +1,39 @@
+/* Neon pills, the open page in mint; they wrap on a phone instead of scrolling sideways */
 .tabs {
     display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    margin: 0 0 24px;
-    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 4px 0 18px;
 }
 
 .tab {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    padding: 0 12px;
-    color: var(--color-muted);
+    padding: 0 18px;
+    border: 2px solid #a6f2dd;
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.6);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.45), inset 0 0 8px rgba(114, 214, 189, 0.25);
+    color: #e6fff6;
+    font-family: var(--font-heading);
     font-weight: 600;
     text-decoration: none;
     white-space: nowrap;
-    border-bottom: 3px solid transparent;
-    margin-bottom: -1px;
 }
 
 .tab:hover {
-    color: var(--color-text);
+    background: rgba(8, 34, 40, 0.8);
 }
 
 .active {
-    color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
+    border-color: #c9fff0;
+    background: linear-gradient(135deg, #9ff5dc, #4fc3a6);
+    box-shadow: 0 0 16px rgba(61, 255, 176, 0.65), 0 0 30px rgba(63, 167, 214, 0.3);
+    color: #04101a;
+}
+
+.active:hover {
+    background: linear-gradient(135deg, #9ff5dc, #4fc3a6);
 }

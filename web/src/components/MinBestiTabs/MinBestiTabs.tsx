@@ -14,7 +14,7 @@ const tabs = [
 export default function MinBestiTabs() {
     const pathname = usePathname();
     return (
-        <nav aria-label="Min Besti" className={styles.tabs}>
+        <nav aria-label="Min BESTI" className={styles.tabs}>
             {tabs.map((tab) => {
                 const active = pathname === tab.href;
                 return (

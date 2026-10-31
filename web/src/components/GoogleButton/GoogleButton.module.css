@@ -1,4 +1,4 @@
-/* Google's own look for sign-in buttons: white, the coloured G, dark text */
+/* Dark neon pill with Google's coloured G, like the other Besti buttons */
 .button {
     display: flex;
     align-items: center;
@@ -6,16 +6,18 @@
     gap: 12px;
     min-height: 48px;
     padding: 0 16px;
-    border: 1px solid #747775;
+    border: 1.5px solid #72f2cf;
     border-radius: 999px;
-    background: #fff;
-    color: #1f1f1f;
+    background: rgba(3, 18, 26, 0.85);
+    box-shadow: 0 0 8px rgba(114, 242, 207, 0.6), 0 0 18px rgba(61, 255, 176, 0.3), inset 0 0 8px rgba(114, 242, 207, 0.25);
+    color: var(--color-text);
+    font-family: var(--font-heading);
     font-weight: 600;
     text-decoration: none;
 }
 
 .button:hover {
-    background: #f2f2f2;
+    background: rgba(8, 34, 44, 0.9);
 }
 
 .button:focus-visible {
@@ -29,18 +31,25 @@
 }
 
 .terms {
-    margin: 8px 0 0;
-    color: var(--color-muted);
-    font-size: 0.85rem;
+    margin: 10px 6px 0;
+    color: #c6e3dc;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    text-align: center;
+    /* Readable over the brightest part of the aurora */
+    text-shadow: 0 1px 3px rgba(0, 10, 20, 0.9);
 }
 
 .divider {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin: 20px 0;
-    color: var(--color-muted);
-    font-size: 0.9rem;
+    margin: 14px 0 8px;
+    color: #d5f5ec;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 600;
+    text-shadow: 0 1px 3px rgba(0, 10, 20, 0.9);
 }
 
 .divider::before,
@@ -48,5 +57,5 @@
     content: "";
     flex: 1;
     height: 1px;
-    background: var(--color-border);
+    background: linear-gradient(90deg, transparent, rgba(114, 242, 207, 0.55), transparent);
 }

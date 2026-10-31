@@ -40,3 +40,40 @@
     height: 24px;
     font-size: 0.75rem;
 }
+
+/* Crystal version in mint: glowing rings, a heart for each stamp, a gift as the reward */
+.crystal {
+    gap: 6px;
+}
+
+.crystal .stamp {
+    width: 40px;
+    height: 40px;
+    border: 2px solid rgba(166, 242, 221, 0.45);
+    background: rgba(3, 15, 22, 0.5);
+}
+
+.crystal .stamp img {
+    width: 26px;
+    height: 26px;
+    margin: 0;
+    vertical-align: middle;
+}
+
+.crystal .filled,
+.crystal .reward,
+.crystal .reward.filled {
+    border-color: #a6f2dd;
+    background: radial-gradient(circle, rgba(114, 214, 189, 0.3), rgba(63, 167, 214, 0.1) 70%, rgba(4, 16, 26, 0.3));
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.6), inset 0 0 8px rgba(114, 214, 189, 0.35);
+}
+
+.crystal .reward {
+    border-color: #bff8e8;
+    box-shadow: 0 0 14px rgba(159, 245, 220, 0.8);
+}
+
+.crystal .reward img {
+    width: 30px;
+    height: 30px;
+}

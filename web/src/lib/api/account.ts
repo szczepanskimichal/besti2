@@ -80,6 +80,7 @@ export const getMe = cache(async (token: string): Promise<Me | null> => {
 export type MyProfile = {
     fullName: string; email: string; phone: string | null; hasPassword: boolean;
     reminderEmail: boolean; soonNotice: boolean;
+    createdUtc: string | null; // null for accounts from before it was saved
 };
 
 export async function getMyProfile(token: string): Promise<MyProfile | null> {
