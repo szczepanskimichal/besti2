@@ -1,9 +1,11 @@
 import type { CSSProperties } from "react";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
-import { getBusinessBySlug } from "@/lib/api";
+import { getBusinessBySlug, getPushPublicKey } from "@/lib/api";
 import { formatDate, formatTime } from "@/lib/format";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import ShareButton from "@/components/ShareButton/ShareButton";
+import PushOptIn from "./PushOptIn";
 import RebookReminderForm from "./RebookReminderForm";
 import styles from "./page.module.css";
 
@@ -20,7 +22,7 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
     const { slug } = await params;
     const { tjeneste, ansatt, tid } = await searchParams;
 
-    const business = await getBusinessBySlug(slug);
+    const [business, pushKey] = await Promise.all([getBusinessBySlug(slug), getPushPublicKey()]);
     const service = business?.services.find((s) => s.id === tjeneste);
     const employee = business?.employees.find((e) => e.id === ansatt);
 
@@ -51,24 +53,31 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
                     <span className={styles.glint} style={{ left: "74%", top: "6%" }}/>
                     <span className={styles.glint} style={{ left: "6%", top: "62%", animationDelay: "2.9s" }}/>
                 </div>
-                <h1 className={styles.title}>Vips! Så var det bestilt.</h1>
+                {/* Not "Vips": too close to the Vipps payment app */}
+                <h1 className={styles.title}>Timen er din!</h1>
                 <p className={styles.muted}>
                     {/* With "Bekreft automatisk" the visit is already confirmed */}
-                    Klar for kvalitetstid med din besti? 💖 {business.autoConfirm
-                    ? "Timen er bekreftet"
-                    : `${business.name} bekrefter timen så snart som mulig`}, og du finner den under Min Besti.
+                    {business.autoConfirm ? "Bekreftet og klar" : `${business.name} bekrefter snart`}{" "}
+                    <span className={styles.star}><CrystalIcon name="stjerne"/></span>
                 </p>
 
+                {/* People screenshot this page, so the business name is on it */}
                 <dl className={styles.details}>
+                    <dt>Bedrift</dt>
+                    <dd>{business.name}</dd>
                     <dt>Tjeneste</dt>
                     <dd>{service.name}</dd>
                     <dt>Hos</dt>
                     <dd>{employee.name} {employee.lastName}</dd>
+                    <dt>Dato</dt>
+                    <dd>{formatDate(tid)}</dd>
                     <dt>Tid</dt>
-                    <dd>{formatDate(tid)} kl. {formatTime(tid)}</dd>
+                    <dd>kl. {formatTime(tid)}</dd>
                     <dt>Adresse</dt>
-                    <dd>{business.address}, {business.postalCode} {business.city}</dd>
+                    <dd>{business.address}<br/><span className={styles.nowrap}>{business.postalCode} {business.city}</span></dd>
                 </dl>
+
+                <PushOptIn publicKey={pushKey}/>
 
                 <RebookReminderForm serviceId={service.id} employeeId={employee.id}/>
 
@@ -80,7 +89,8 @@ export default async function BookingConfirmedPage({ params, searchParams }: Pro
                                  className={styles.shareButton}/>
                 </div>
 
-                <NextLink href="/" className={styles.back}>← Tilbake til forsiden</NextLink>
+                <NextLink href="/min-besti" className={styles.minBesti}>Se timen i Min BESTI</NextLink>
+                <NextLink href="/" className={styles.back}>Tilbake til forsiden</NextLink>
             </div>
         </main>
     );

@@ -4,11 +4,12 @@ type Bar = { label: string; value: number; detail: string };
 
 // One series of bars in plain HTML: the height shows the number, the label under each bar says what it is,
 // and every bar has its value as text for screen readers and on hover
-export default function BarChart({ title, bars }: { title: string; bars: Bar[] }) {
+// glow = the darker Min Besti look: a dark glass card and deep teal bars
+export default function BarChart({ title, bars, glow = false }: { title: string; bars: Bar[]; glow?: boolean }) {
     const max = Math.max(1, ...bars.map((b) => b.value));
     const top = bars.reduce((best, b, i) => (b.value > bars[best].value ? i : best), 0);
     return (
-        <figure className={styles.chart}>
+        <figure className={glow ? `${styles.chart} ${styles.glow}` : styles.chart}>
             <figcaption className={styles.chartTitle}>{title}</figcaption>
             <ol className={bars.length > 8 ? `${styles.bars} ${styles.dense}` : styles.bars} style={{ gridTemplateColumns: `repeat(${bars.length}, minmax(0, 1fr))` }}>
                 {bars.map((bar, i) => (

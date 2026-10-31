@@ -57,7 +57,7 @@ public class WaitlistService(AppDbContext dbContext, IAvailabilityService availa
         }
         if (mine.Count >= MaxPerCustomer)
         {
-            return $"Du kan stå på venteliste for høyst {MaxPerCustomer} dager om gangen. Fjern en i Min Besti først.";
+            return $"Du kan stå på venteliste for høyst {MaxPerCustomer} dager om gangen. Fjern en i Min BESTI først.";
         }
 
         // What is free right now is not news: only times that become free later are

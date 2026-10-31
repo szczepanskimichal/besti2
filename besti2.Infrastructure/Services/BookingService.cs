@@ -109,7 +109,7 @@ public class BookingService(
             {
                 return new CreateBookingResult(CreateBookingOutcome.Invalid,
                     Error: $"Du har allerede {BookingRules.MaxUpcomingPerBusiness} kommende timer hos denne bedriften. " +
-                           "Avbestill en av dem i Min Besti, eller ring bedriften.");
+                           "Avbestill en av dem i Min BESTI, eller ring bedriften.");
             }
         }
 

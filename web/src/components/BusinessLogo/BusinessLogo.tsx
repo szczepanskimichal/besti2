@@ -2,7 +2,7 @@ import { getCategoryColor } from "@/lib/categories";
 import styles from "./BusinessLogo.module.css";
 
 // "Klipp & Stil Frisør" -> "KS", "Fjord Bygg AS" -> "FB"
-function getInitials(name: string): string {
+export function getInitials(name: string): string {
     const words = name
         .split(/\s+/)
         .filter((w) => /^[\p{L}\p{N}]/u.test(w) && w.toUpperCase() !== "AS");

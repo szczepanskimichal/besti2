@@ -20,8 +20,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
     return (
         <main className={styles.main}>
-            <h1 className={styles.title}>Logg inn</h1>
-            <p className={styles.muted}>For kunder og bedrifter.</p>
+            <h1 className={styles.welcome}>Velkommen til BESTI</h1>
             {registrert && (
                 <p className={styles.success} role="status">
                     Bedriften er registrert. Sjekk e-posten din og klikk på lenken for å bekrefte, så kan du logge inn.
@@ -36,14 +35,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             {googleError && <p className={styles.error} role="alert">{googleError}</p>}
             <GoogleButton next={neste}/>
             <LoginForm neste={neste ?? ""} />
-            <p className={styles.signup}>
-                Ny kunde? <Link href={`/registrer?neste=${encodeURIComponent(neste ?? "/")}`}>Opprett konto</Link>
+            <p className={styles.sparkleLink}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                <img src="/ikoner/iskra.svg" alt="" className={styles.sparkle}/>
+                Ny på BESTI? <Link href={`/registrer?neste=${encodeURIComponent(neste ?? "/")}`}>Opprett konto</Link>
             </p>
-            <p className={styles.signup}>
-                Har du bedrift? <Link href="/registrer-bedrift">Registrer bedriften din</Link>
-            </p>
-            <p className={styles.signup}>
-                <Link href="/glemt-passord">Glemt passord?</Link>
+            <p className={styles.sparkleLink}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                <img src="/ikoner/iskra.svg" alt="" className={styles.sparkle}/>
+                Har du bedrift? <Link href="/registrer-bedrift">Registrer her</Link>
             </p>
         </main>
     );

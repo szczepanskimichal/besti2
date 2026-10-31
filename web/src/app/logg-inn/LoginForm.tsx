@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useActionState } from "react";
 import { loginAction } from "./actions";
 import type { FormState } from "@/lib/formState";
@@ -25,7 +26,8 @@ export default function LoginForm({ neste }: { neste: string }) {
                 Passord
                 <input name="password" type="password" required autoComplete="current-password" />
             </label>
-            <SubmitButton className={styles.primaryButton} pendingText="Logger inn…">
+            <Link href="/glemt-passord" className={styles.forgot}>Glemt passord?</Link>
+            <SubmitButton className={`${styles.primaryButton} ${styles.loginButton}`} pendingText="Logger inn…">
                 Logg inn
             </SubmitButton>
         </form>

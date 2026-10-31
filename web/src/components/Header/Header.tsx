@@ -5,6 +5,8 @@ import {getToken} from "@/lib/auth";
 import NotificationBell from "@/components/NotificationBell/NotificationBell";
 import LogoutButton from "@/components/Header/LogoutButton";
 import MobileMenu from "@/components/Header/MobileMenu";
+import LoginLink from "@/components/Header/LoginLink";
+import RegisterBusinessLink from "@/components/Header/RegisterBusinessLink";
 
 
 // Server component: reads the login cookie and shows who is logged in
@@ -22,7 +24,7 @@ export default async function Header() {
         <>
             {me.isAdmin && <NextLink href="/admin" className={styles.navLink}>Admin</NextLink>}
             {me.isStaff && <NextLink href="/ansatt" className={styles.navLink} title="Min arbeidsplan">Jobb</NextLink>}
-            <NextLink href="/min-besti" className={styles.navLink}>Min Besti</NextLink>
+            <NextLink href="/min-besti" className={styles.navLink}>Min BESTI</NextLink>
         </>
     ));
     return (
@@ -52,8 +54,8 @@ export default async function Header() {
                         </>
                     ) : (
                         <>
-                            <NextLink href="/logg-inn" className={styles.loginLink}>Logg inn</NextLink>
-                            <NextLink href="/registrer-bedrift" className={styles.ctaLink}>Registrer bedrift</NextLink>
+                            <LoginLink className={styles.primaryLink}/>
+                            <RegisterBusinessLink className={styles.secondaryLink}/>
                         </>
                     )}
                 </nav>

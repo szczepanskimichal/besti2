@@ -32,11 +32,12 @@ export default async function RegisterCustomerPage({ searchParams }: Props) {
     }
     return (
         <main className={styles.main}>
-            <h1 className={styles.title}>Opprett konto</h1>
-            <p className={styles.muted}>Med en konto kan du bestille time og se bestillingene dine.</p>
-            <GoogleButton next={neste}/>
+            <h1 className={`${styles.welcome} ${styles.centered}`}>Bli med i BESTI</h1>
+            <GoogleButton next={neste} signup/>
             <RegisterForm neste={neste ?? ""} />
-            <p className={styles.muted}>
+            <p className={`${styles.sparkleLink} ${styles.bigLink}`}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                <img src="/ikoner/iskra.svg" alt="" className={styles.sparkle}/>
                 Har du allerede konto? <NextLink href={`/logg-inn?neste=${encodeURIComponent(neste ?? "/")}`}>Logg inn</NextLink>
             </p>
         </main>

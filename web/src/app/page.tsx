@@ -58,7 +58,7 @@ export default async function Home({searchParams}: HomeProps) {
                     </label>
                     <ForWhomPicker key={personer ?? ""} persons={personer}/>
                     <label className={styles.field}>
-                        Hva vil du finne med Besti?
+                        Hva vil du finne med BESTI?
                         <select name="category" defaultValue={category ?? ""}>
                             <option value="">Alle kategorier</option>
                             {categoryOptionGroups.map((group) => (
@@ -71,7 +71,7 @@ export default async function Home({searchParams}: HomeProps) {
                         </select>
                     </label>
                     <label className={styles.field}>
-                        Finn lokale Besti-bedrifter
+                        Finn lokale BESTI-bedrifter
                         <input
                             name="city"
                             list="city-list"
@@ -113,7 +113,7 @@ export default async function Home({searchParams}: HomeProps) {
                     <NearMeButton/>
                 </Form>
             </section>
-            <h2 className={styles.listTitle}>Lokale Besti-bedrifter</h2>
+            <h2 className={styles.listTitle}>Lokale BESTI-bedrifter</h2>
             {lat && lng && (
                 <p className={styles.subtitle}>
                     <CrystalIcon name="pinne"/> {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}

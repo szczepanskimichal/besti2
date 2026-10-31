@@ -9,19 +9,19 @@ type Choice = "egentid" | "duo" | "team" | "gave";
 // Gave waits for gavekort, so it is shown but cannot be picked yet.
 const options: { value: Choice; title: string; text: string; icon: React.ReactNode; soon?: boolean }[] = [
     {
-        value: "egentid", title: "Besti Egentid", text: "Vær din egen besti: bestill tid for deg selv",
+        value: "egentid", title: "BESTI Egentid", text: "Vær din egen besti: bestill tid for deg selv",
         icon: <><circle cx="16" cy="9" r="4.5"/><path d="M7 28c0-6 4-10 9-10s9 4 9 10"/></>,
     },
     {
-        value: "duo", title: "Besti Duo", text: "Perfekt for en date eller en tur med en venn",
+        value: "duo", title: "BESTI Duo", text: "Perfekt for en date eller en tur med en venn",
         icon: <><circle cx="11" cy="10" r="4"/><circle cx="21" cy="10" r="4"/><path d="M3 27c0-5 3.5-8 8-8M29 27c0-5-3.5-8-8-8M11 27c0-4 2-6 5-6s5 2 5 6"/></>,
     },
     {
-        value: "team", title: "Besti Team", text: "Gruppebestilling for hele gjengen",
+        value: "team", title: "BESTI Team", text: "Gruppebestilling for hele gjengen",
         icon: <><circle cx="16" cy="9" r="3.6"/><circle cx="6.5" cy="12.5" r="3"/><circle cx="25.5" cy="12.5" r="3"/><path d="M9 27c0-5 3-8 7-8s7 3 7 8M1.5 25c0-4 2-6.5 5-6.5M30.5 25c0-4-2-6.5-5-6.5"/></>,
     },
     {
-        value: "gave", title: "Besti Gave", text: "Bestill eller kjøp en gave til noen", soon: true,
+        value: "gave", title: "BESTI Gave", text: "Bestill eller kjøp en gave til noen", soon: true,
         icon: <><rect x="4" y="12" width="24" height="6" rx="1.5"/><path d="M6 18v9h20v-9M16 12v15M16 12c-2-5-8-5-8-2s5 2 8 2zM16 12c2-5 8-5 8-2s-5 2-8 2z"/></>,
     },
 ];

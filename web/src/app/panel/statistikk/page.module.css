@@ -14,7 +14,6 @@
     border: 1px solid var(--color-input-border);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     color: var(--color-text);
     font-weight: 600;
     text-decoration: none;
@@ -55,7 +54,6 @@
     padding: 14px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
 }
@@ -136,7 +134,6 @@
     padding: 16px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
 }
@@ -313,4 +310,23 @@
     gap: 8px;
     margin: -8px 0 20px;
     color: var(--color-muted);
+}
+
+/* Mitt år: dark glass card, deep teal bars with a soft glow */
+.glow {
+    background: rgba(4, 18, 26, 0.84);
+    border: 1px solid rgba(166, 242, 221, 0.28);
+    border-radius: 20px;
+}
+
+.glow .chartTitle {
+    font-family: var(--font-heading);
+    font-size: 17px;
+    color: #bff8e8;
+}
+
+.glow .bar,
+.glow .barItem:hover .bar {
+    background: linear-gradient(to top, #0f7a70, #3cb8a0);
+    box-shadow: 0 0 8px rgba(60, 184, 160, 0.35);
 }

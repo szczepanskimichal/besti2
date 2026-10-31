@@ -6,10 +6,10 @@
 }
 .card {
     padding: 32px 24px;
-    background: var(--color-surface);
+    /* A bit lighter than other cards, so the crystal and the details stand out */
+    background: linear-gradient(170deg, rgba(40, 90, 100, 0.55), rgba(14, 44, 56, 0.6));
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(160, 255, 225, 0.22);
     border-radius: 16px;
     text-align: center;
 }
@@ -197,6 +197,10 @@
     color: var(--color-muted);
     margin: 0;
 }
+.star {
+    display: inline-block;
+    filter: drop-shadow(0 0 5px rgba(140, 240, 215, 0.8));
+}
 /* Service, employee, time and address as two columns */
 .details {
     display: grid;
@@ -204,26 +208,126 @@
     gap: 8px 16px;
     margin: 24px 0;
     padding: 16px;
-    background: var(--color-bg);
+    background: rgba(4, 20, 28, 0.55);
+    border: 1px solid rgba(160, 255, 225, 0.22);
     border-radius: 12px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     text-align: left;
 }
+/* No colons: quiet labels, bright bold values */
 .details dt {
-    color: var(--color-muted);
+    color: #8fb8ae;
+    font-family: var(--font-small);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding-top: 2px;
 }
 .details dd {
     margin: 0;
-    font-weight: 600;
+    color: #f0fbf8;
+    font-weight: 700;
+}
+.nowrap {
+    white-space: nowrap;
+}
+/* The main next step: mint gradient with a neon ring */
+.minBesti {
+    display: block;
+    max-width: 300px;
+    margin: 26px auto 0;
+    padding: 15px 20px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #9ff5dc, #72d6bd 55%, #4fc3a6);
+    box-shadow: 0 0 0 1.5px rgba(160, 255, 225, 0.7), 0 0 22px rgba(61, 255, 176, 0.35);
+    color: #04101a;
+    font-family: var(--font-heading);
+    font-size: 1.125rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+.minBesti:hover {
+    filter: brightness(1.05);
 }
 .back {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
-    color: var(--color-primary);
+    margin-top: 6px;
+    color: #9fc9bf;
+    font-size: 0.875rem;
     text-decoration: none;
 }
 .back:hover {
     text-decoration: underline;
+}
+
+/* "Få varsel på telefonen": bell, two lines and Ja / Ikke nå */
+.push {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 0 18px;
+    padding: 14px;
+    border: 1.5px solid rgba(160, 255, 225, 0.5);
+    border-radius: 18px;
+    background: rgba(4, 20, 28, 0.6);
+    box-shadow: 0 0 16px rgba(61, 255, 176, 0.22);
+    text-align: left;
+}
+.pushIcon {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1.5px solid rgba(160, 255, 225, 0.55);
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(160, 255, 225, 0.28), rgba(20, 60, 64, 0.5) 70%);
+    box-shadow: 0 0 12px rgba(61, 255, 176, 0.3);
+    color: #bfffe8;
+}
+.pushIcon svg {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 0 3px rgba(125, 255, 200, 0.7));
+}
+.pushTitle {
+    margin: 0 0 3px;
+    color: #e8fff7;
+    font-family: var(--font-heading);
+    font-weight: 700;
+}
+.pushText {
+    margin: 0 0 10px;
+    color: #b9d8d1;
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+.pushButtons {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.pushYes {
+    min-height: 40px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #9ff5dc, #4fc3a6);
+    box-shadow: 0 0 12px rgba(61, 255, 176, 0.4);
+    color: #04101a;
+    font: 800 0.95rem var(--font-heading);
+    cursor: pointer;
+}
+.pushNo {
+    min-height: 40px;
+    padding: 0 4px;
+    border: 0;
+    background: none;
+    color: #9fc2bb;
+    font: inherit;
+    font-size: 0.875rem;
+    cursor: pointer;
 }
 
 /* "Tid for ny time?": a row of small pills under the details */
@@ -236,33 +340,84 @@
     font-weight: 600;
 }
 
+/* 2 x 2: Om 4 uker, Om 6 uker, Velg selv, Nei takk, all in the same neon frame */
 .rebookChoices {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-}
-
-.rebookChoice,
-.rebookNo {
-    min-height: 44px;
-    padding: 0 16px;
-    border-radius: 999px;
-    font: inherit;
-    font-family: var(--font-heading);
-    cursor: pointer;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-width: 320px;
+    margin: 0 auto;
 }
 
 .rebookChoice {
-    border: 1px solid var(--color-primary);
-    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
-    color: var(--color-text);
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid rgba(114, 214, 189, 0.85);
+    border-radius: 999px;
+    background: rgba(4, 20, 28, 0.6);
+    box-shadow: 0 0 8px rgba(61, 255, 176, 0.15);
+    color: #dffaf1;
+    font: inherit;
+    font-family: var(--font-heading);
+    cursor: pointer;
+    transition: box-shadow 0.2s, border-color 0.2s;
 }
 
-.rebookNo {
-    border: 1px solid var(--color-input-border);
+.rebookChoice:hover,
+.rebookOpen {
+    border-color: #9ff5dc;
+    box-shadow: 0 0 0 1.5px #9ff5dc, 0 0 16px rgba(61, 255, 176, 0.4);
+}
+
+/* Velg selv: − N uker + and Lagre */
+.stepper {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid rgba(160, 255, 225, 0.5);
+    border-radius: 22px;
+    background: rgba(4, 16, 26, 0.6);
+    box-shadow: 0 0 16px rgba(61, 255, 176, 0.18);
+}
+
+.stepper b {
+    min-width: 90px;
+    color: #dffaf1;
+    font-family: var(--font-heading);
+    font-size: 1.25rem;
+}
+
+.stepButton {
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-primary);
+    border-radius: 50%;
     background: none;
-    color: var(--color-muted);
+    color: #bff3e3;
+    font: 700 1.375rem var(--font-small);
+    cursor: pointer;
+}
+
+.stepButton:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.stepSave {
+    min-height: 44px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #9ff5dc, #4fc3a6);
+    color: #04101a;
+    font: inherit;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    cursor: pointer;
 }
 
 .rebookSaved {

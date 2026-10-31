@@ -47,7 +47,6 @@
     overflow-x: auto;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border: 1px solid var(--color-border);
     border-radius: 12px;
 }
@@ -64,7 +63,6 @@
     padding: 12px 8px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border-bottom: 1px solid var(--color-border);
     font-weight: 600;
     z-index: 1;
@@ -306,7 +304,6 @@ a.booking:hover {
     padding: 20px 24px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     border-radius: 16px;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
 }
@@ -473,7 +470,6 @@ a.booking:hover {
     border: 1px solid rgba(150, 255, 230, 0.22);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
@@ -505,7 +501,6 @@ a.booking:hover {
     border-left: 0;
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     color: #cdeee2;
     font-size: 0.9rem;
 }
@@ -514,7 +509,6 @@ a.booking:hover {
     position: static;
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: none;
-    -webkit-backdrop-filter: none;
 }
 
 .weekNumber {
@@ -859,7 +853,6 @@ a.booking:hover {
     border: 1px solid rgba(150, 255, 230, 0.16);
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
-    -webkit-backdrop-filter: var(--glass-blur);
 }
 
 .yearNow {

@@ -12,17 +12,18 @@ import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { answerMyNewTimeAction, leaveWaitlistAction, removeRebookReminderAction, shareInviteAgainAction } from "./actions";
 import { withdrawInviteAction } from "../invitasjon/actions";
 import CancelBookingForm from "./CancelBookingForm";
-import Countdown from "./Countdown";
+import Countdown, { FreeCancelLeft } from "./Countdown";
 import MyCalendar, { type CalendarView, type Suggestion } from "./MyCalendar";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
 import styles from "../panel/page.module.css";
 import waitlistStyles from "./waitlist.module.css";
+import mine from "./bookings.module.css";
 import EmptyState from "@/components/EmptyState/EmptyState";
 
 export const metadata: Metadata = {
-    title: "Min Besti",
+    title: "Min BESTI",
 };
 
 type MyBookingsPageProps = {
@@ -70,8 +71,8 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
     };
     const toReview = bookingsToReview(bookings).length;
     return (
-        <main className={styles.main}>
-            <h1 className={styles.title}>Min Besti</h1>
+        <main className={`${styles.main} ${mine.page}`}>
+            <h1 className={mine.title}>Min BESTI</h1>
             <MinBestiTabs/>
             {feil === "ny-tid" && (
                 <p className={styles.error} role="alert">
@@ -134,11 +135,10 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                 </>
             )}
             {toReview > 0 && (
-                <p>
-                    <Link href="/min-besti/vurderinger">
-                        Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere <CrystalIcon name="stjerne"/>
-                    </Link>
-                </p>
+                <Link href="/min-besti/vurderinger" className={mine.review}>
+                    <CrystalIcon name="stjerne"/>
+                    Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere
+                </Link>
             )}
             {waitlist.length > 0 && (
                 <>
@@ -174,37 +174,34 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             )}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
-                <EmptyState icon="✨" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
+                <EmptyState icon="sparkles" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
                     Når du bestiller, ser du timen her, med nedtelling, veibeskrivelse og avbestilling.
                 </EmptyState>
             ) : (
                 <ul className={styles.list}>
                     {upcoming.map((booking) => (
-                        <li key={booking.id} id={`time-${booking.id}`} className={styles.card}>
-                            <div className={styles.cardHeader}>
-                                <p className={styles.when}>
-                                    {formatDate(booking.startUtc)}, {formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}
-                                </p>
-                                <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
-                                    {booking.status === "VenterKunde"
-                                        ? "Svar ønskes"
-                                        : statusLabels[booking.status] ?? booking.status}
-                                </span>
+                        <li key={booking.id} id={`time-${booking.id}`} className={mine.card}>
+                            <div className={booking.status === "VenterKunde" ? "" : mine.besideStamp}>
+                                <p className={mine.date}>{formatDate(booking.startUtc)}</p>
+                                <div className={mine.timeRow}>
+                                    <span className={mine.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                    <Countdown startUtc={booking.startUtc}/>
+                                </div>
                             </div>
-                            <Countdown startUtc={booking.startUtc} freeCancelUntilUtc={freeCancelUntil(booking)}/>
-                            <p className={styles.service}>
-                                {booking.serviceName} hos {booking.employeeName}
+                            <StatusStamp status={booking.status}/>
+                            <p className={mine.place}>
+                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
+                                <br/>
+                                {booking.businessAddress}
+                            </p>
+                            <p className={mine.service}>
+                                <CrystalIcon name="stjerne"/> {booking.serviceName} hos {booking.employeeName}
                             </p>
                             {booking.inviteId && together.has(booking.inviteId) && others(together.get(booking.inviteId)!.names) && (
                                 <p className={styles.muted}>
                                     <span aria-hidden="true">👯</span> Sammen med {others(together.get(booking.inviteId)!.names)}
                                 </p>
                             )}
-                            <p className={styles.customer}>
-                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
-                                <br/>
-                                {booking.businessAddress}
-                            </p>
                             {/* The business moved the visit: the customer accepts or declines the new time */}
                             {booking.status === "VenterKunde" && (
                                 <div className={styles.note}>
@@ -228,23 +225,25 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     </div>
                                 </div>
                             )}
-                            <p>
+                            <p className={mine.links}>
                                 <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
-                                {" · "}
                                 <a href={directionsUrl(booking.businessAddress)} target="_blank" rel="noopener noreferrer">
                                     Veibeskrivelse
                                 </a>
                             </p>
                             {/* After the business's free-cancel deadline: only by phone */}
                             {canCancelOnline(booking) ? (
-                                <details className={styles.actions}>
-                                    <summary>Avbestill</summary>
-                                    <p>
-                                        Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
-                                        Tiden blir ledig for andre.
-                                    </p>
-                                    <CancelBookingForm bookingId={booking.id}/>
-                                </details>
+                                <div className={mine.cancelRow}>
+                                    <details className={mine.cancel}>
+                                        <summary>Avbestill</summary>
+                                        <p>
+                                            Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
+                                            Tiden blir ledig for andre.
+                                        </p>
+                                        <CancelBookingForm bookingId={booking.id}/>
+                                    </details>
+                                    <FreeCancelLeft untilUtc={freeCancelUntil(booking)}/>
+                                </div>
                             ) : (
                                 <p className={styles.muted}>
                                     Fristen for gratis avbestilling er ute.{" "}
@@ -315,4 +314,21 @@ function rebookSuggestions(reminders: RebookReminder[], visits: CustomerBooking[
             bookHref: `/${reminder.businessSlug}/bestill?${query}`,
         }];
     });
+}
+
+// Bekreftet and Venter as a tilted glowing stamp in the corner; "Svar ønskes" stays a pink label, the note below asks
+function StatusStamp({ status }: { status: string }) {
+    if (status === "VenterKunde") {
+        return <span className={`${styles.status} ${styles.VenterKunde}`}>Svar ønskes</span>;
+    }
+    const waiting = status !== "Bekreftet";
+    return (
+        <span className={`${mine.stamp} ${waiting ? mine.stampWaiting : ""}`} role="img"
+              aria-label={`Status: ${statusLabels[status] ?? status}`}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {waiting ? <><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v4.8l3.2 2"/></> : <path d="M5 12.5l4.5 4.5L19 7.5"/>}
+            </svg>
+            <span aria-hidden="true">{waiting ? <>VENTER PÅ<small>BEKREFTELSE</small></> : "BEKREFTET"}</span>
+        </span>
+    );
 }

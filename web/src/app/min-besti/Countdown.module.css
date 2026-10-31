@@ -1,19 +1,16 @@
-.countdown {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    margin: 4px 0 8px;
-}
-
-/* "Om 2 dager" */
+/* "Om 2 dager" with a small crystal star */
 .pill {
-    padding: 2px 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border: 1.5px solid rgba(166, 242, 221, 0.6);
     border-radius: 999px;
-    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
-    color: var(--color-text);
-    font-weight: 600;
-    font-size: 0.9rem;
+    background: rgba(114, 214, 189, 0.14);
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.3);
+    color: #dffcf3;
+    font: 600 0.8125rem var(--font-heading);
+    white-space: nowrap;
 }
 
 /* Less than two hours left: stands out more */
@@ -22,7 +19,30 @@
     color: var(--color-on-primary);
 }
 
+/* Free cancelling: a blue pill with a clock, the time in bold */
 .cancel {
-    color: var(--color-muted);
-    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    padding: 6px 12px;
+    border: 1.5px dashed rgba(80, 130, 230, 0.6);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.4);
+    color: #9cc2ff;
+    font: 700 0.8125rem var(--font-heading);
+}
+
+.cancel svg {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    filter: drop-shadow(0 0 3px rgba(120, 170, 255, 0.7));
+}
+
+.cancel b {
+    margin: 0 1px;
+    color: #a6c8ff;
+    font: 800 0.9rem var(--font-small);
+    text-shadow: 0 0 8px rgba(110, 160, 255, 0.85);
 }

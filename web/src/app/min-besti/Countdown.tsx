@@ -1,25 +1,36 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./Countdown.module.css";
 
-// "Om 2 t 15 min" on each coming visit, and how long free cancelling still lasts. Seeing the time shrink
-// makes people remember the visit or cancel in time, instead of not showing up
-export default function Countdown({ startUtc, freeCancelUntilUtc }: { startUtc: string; freeCancelUntilUtc: string | null }) {
+// "Om 2 dager" on each coming visit. Seeing the time shrink makes people remember the visit or cancel in time
+export default function Countdown({ startUtc }: { startUtc: string }) {
     // Known only in the browser (the server and the phone may disagree by a minute): nothing until then
     const now = useSyncExternalStore(subscribeToMinutes, currentMinute, () => null);
     if (now === null) {
         return null;
     }
     const left = new Date(startUtc).getTime() - now;
-    const cancelLeft = freeCancelUntilUtc ? new Date(freeCancelUntilUtc).getTime() - now : 0;
     return (
-        <p className={styles.countdown}>
-            <span className={`${styles.pill} ${left < 2 * hour ? styles.soon : ""}`}>
-                <span aria-hidden="true">⏳</span> {left <= 0 ? "Nå" : `Om ${formatLeft(left)}`}
-            </span>
-            {cancelLeft > 0 && (
-                <span className={styles.cancel}>Gratis avbestilling i {formatLeft(cancelLeft)} til</span>
-            )}
+        <span className={`${styles.pill} ${left < 2 * hour ? styles.soon : ""}`}>
+            <CrystalIcon name="stjerne"/> {left <= 0 ? "Nå" : `Om ${formatLeft(left)}`}
+        </span>
+    );
+}
+
+// "Gratis avbestilling i 1 dag og 8 t til", under Avbestill; gone when the time is up
+export function FreeCancelLeft({ untilUtc }: { untilUtc: string | null }) {
+    const now = useSyncExternalStore(subscribeToMinutes, currentMinute, () => null);
+    const left = untilUtc && now !== null ? new Date(untilUtc).getTime() - now : 0;
+    if (left <= 0) {
+        return null;
+    }
+    return (
+        <p className={styles.cancel}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/>
+            </svg>
+            <span>Gratis avbestilling i <b>{formatLeft(left)}</b> til</span>
         </p>
     );
 }

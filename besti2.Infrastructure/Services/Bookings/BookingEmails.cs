@@ -114,7 +114,7 @@ public class BookingEmails(
                 $"Tjeneste: {service.Name} hos {employee.Name} {employee.LastName}\n" +
                 $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
                 (answerLink is null
-                    ? "Passer ikke den nye tiden? Ta kontakt med bedriften, eller avbestill i Min Besti.\n\n"
+                    ? "Passer ikke den nye tiden? Ta kontakt med bedriften, eller avbestill i Min BESTI.\n\n"
                     : $"Passer den nye tiden? Svar her: {answerLink}\n\n") +
                 "Hilsen BESTI";
 

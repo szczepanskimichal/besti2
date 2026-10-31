@@ -5,6 +5,7 @@ import {
 } from "@/lib/phoneApp";
 import { removePushAction, savePushAction } from "./actions";
 import panelStyles from "../panel/page.module.css";
+import LineIcon from "./LineIcon";
 import styles from "./page.module.css";
 
 type PushState = "loading" | "on" | "off" | "blocked" | "unsupported";
@@ -64,8 +65,8 @@ export default function PhoneApp({ publicKey }: { publicKey: string | null }) {
         return null;
     }
     return (
-        <section className={`${panelStyles.card} ${styles.phone}`}>
-            <h2 className={styles.phoneTitle}>BESTI på telefonen <span aria-hidden="true">📲</span></h2>
+        <section className={styles.phone}>
+            <h2 className={styles.phoneTitle}><span className={styles.icon}><LineIcon name="phone"/></span>BESTI på telefonen</h2>
             {installable && (
                 <p>
                     <button type="button" onClick={install} className={panelStyles.primaryButton}>
@@ -82,9 +83,10 @@ export default function PhoneApp({ publicKey }: { publicKey: string | null }) {
             {(push === "on" || push === "off") && (
                 <>
                     <button type="button" role="switch" aria-checked={push === "on"} onClick={togglePush}
-                            className={styles.soundToggle}>
-                        <span aria-hidden="true">{push === "on" ? "📳" : "📴"}</span>
-                        Varsler på telefonen: <strong>{push === "on" ? "På" : "Av"}</strong>
+                            className={styles.row}>
+                        <span className={styles.icon}><LineIcon name="bell"/></span>
+                        <span className={styles.rowLabel}>Varsler på telefonen</span>
+                        <span className={styles.switch} aria-hidden="true"/>
                     </button>
                     <p className={panelStyles.muted}>
                         Nye bestillinger, svar og endringer kommer på låseskjermen, også når BESTI er lukket.

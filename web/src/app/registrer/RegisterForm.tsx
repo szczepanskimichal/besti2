@@ -31,12 +31,12 @@ export default function RegisterForm({ neste }: { neste: string }) {
                 Passord
                 <input name="password" type="password" required minLength={6} autoComplete="new-password" />
             </label>
-            <p className={styles.muted}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
-            <p className={styles.muted}>
+            <p className={styles.hint}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
+            <p className={styles.hint}>
                 Ved å opprette konto godtar du <NextLink href="/vilkar">vilkårene</NextLink> og bekrefter at du
                 har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
             </p>
-            <SubmitButton className={styles.primaryButton}>Opprett konto</SubmitButton>
+            <SubmitButton className={`${styles.primaryButton} ${styles.loginButton}`}>Opprett konto</SubmitButton>
         </form>
     );
 }

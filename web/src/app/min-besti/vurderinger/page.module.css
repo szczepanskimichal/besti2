@@ -12,7 +12,10 @@
     gap: 6px;
     width: 100%;
     margin: 0;
-    font-weight: 600;
+    font-family: var(--font-heading);
+    font-size: 15px;
+    font-weight: 700;
+    color: #d8f5ee;
 }
 
 .textarea {
@@ -22,8 +25,10 @@
     width: 100%;
     box-sizing: border-box;
     padding: 10px 12px;
-    border: 1px solid var(--color-input-border);
-    border-radius: var(--radius);
+    background: rgba(2, 10, 16, 0.7);
+    border: 1.5px solid rgba(166, 242, 221, 0.35);
+    border-radius: 14px;
+    color: #eafff8;
     resize: vertical;
 }
 
@@ -50,9 +55,9 @@
 
 .stars label > img {
     position: absolute;
-    inset: 4px;
-    width: 40px;
-    height: 40px;
+    inset: 2px;
+    width: 44px;
+    height: 44px;
 }
 
 /* Crystal stars: an empty glass star until chosen, then it pops in with an aurora glow */
@@ -194,4 +199,113 @@
     background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     color: var(--color-primary-dark);
     font-weight: 600;
+}
+
+/* "Hvordan var timen?" big and mint, with the invitation to share under it */
+.question {
+    font-family: var(--font-heading);
+    font-size: clamp(1.6rem, 7.5vw, 1.9rem);
+    line-height: 1.15;
+    text-align: center;
+    color: #bff8e8;
+    text-shadow: 0 0 16px rgba(125, 255, 200, 0.5), 0 0 32px rgba(114, 214, 189, 0.25);
+    margin: 6px 0 8px;
+}
+
+.share {
+    font-family: var(--font-heading);
+    font-size: 17.5px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    color: #9ff5dc;
+    margin: 0 10px 10px;
+}
+
+.share img {
+    filter: drop-shadow(0 0 8px rgba(125, 255, 200, 0.7));
+}
+
+.info {
+    font-family: var(--font-heading);
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.45;
+    text-align: center;
+    color: #cfe9e2;
+    margin: 0 8px 18px;
+}
+
+/* TIMEN DU HADDE: business, address, date and service in one mint font */
+.visit {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 16px;
+    font-family: var(--font-heading);
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #9ff5dc;
+}
+
+.visitLabel {
+    margin: 0 0 8px;
+    text-align: center;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8ff0d4;
+}
+
+.salon {
+    font-size: 24px;
+    line-height: 1.25;
+    color: #bff8e8;
+    text-decoration: none;
+    text-shadow: 0 0 14px rgba(125, 255, 200, 0.65), 0 0 30px rgba(114, 214, 189, 0.35);
+}
+
+.salon:hover {
+    text-decoration: underline;
+}
+
+.serviceName {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* "Legg til bilde": a mint pill with a camera instead of the browser's file button */
+.file {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    width: fit-content;
+    margin-top: 4px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1.5px solid rgba(166, 242, 221, 0.6);
+    background: rgba(114, 214, 189, 0.12);
+    box-shadow: 0 0 12px rgba(114, 214, 189, 0.3);
+    color: #bff8e8;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.file:hover {
+    background: rgba(114, 214, 189, 0.2);
+}
+
+.file:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+.fileName {
+    font-family: var(--font-small);
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #a9cfc6;
+    overflow-wrap: anywhere;
 }

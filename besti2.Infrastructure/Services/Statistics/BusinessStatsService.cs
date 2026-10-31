@@ -280,7 +280,7 @@ public class BusinessStatsService(AppDbContext dbContext) : IBusinessStatsServic
         if (reviews < 3)
         {
             tips.Add(new StatsTip("tips", "Få dine første vurderinger",
-                "Stjernene vises fra tre vurderinger. Kundene kan vurdere deg i Min Besti etter besøket, " +
+                "Stjernene vises fra tre vurderinger. Kundene kan vurdere deg i Min BESTI etter besøket, " +
                 "så be gjerne fornøyde kunder om det.", "/panel/vurderinger"));
         }
 

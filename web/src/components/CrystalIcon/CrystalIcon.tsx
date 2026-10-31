@@ -4,6 +4,8 @@ const FILES = {
     stjerne: "/ikoner/stjerne-liten.svg",
     bjelle: "/ikoner/bjelle.svg",
     pinne: "/ikoner/pinne.svg",
+    hjerte: "/ikoner/hjerte.svg",
+    gave: "/ikoner/gave.svg",
 };
 
 // A crystal icon in the aurora colours instead of an emoji (★ 🔔 📍), the size of the text around it.
