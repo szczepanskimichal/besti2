@@ -401,3 +401,22 @@
     }
 
 }
+/* Colour rule (Ada 2026-10-31): blue = cancel / did not come, the same dark blue pill as Avbestill in Min BESTI */
+.dangerButton {
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+}
+.noShow {
+    align-self: flex-start;
+    margin: 0;
+    padding: 3px 12px;
+    border: 1px solid rgba(127, 178, 255, 0.6);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.5);
+    color: #cfe0ff;
+    font: 600 0.8125rem var(--font-heading);
+}
