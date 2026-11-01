@@ -34,7 +34,7 @@ public static class InviteEndpoints
         {
             var invite = await inviteService.GetAsync(token, userManager.GetUserId(principal), cancellationToken);
             return invite is null ? NotFound() : Results.Ok(invite);
-        }).RequireRateLimiting("search");
+        }).RequireRateLimiting("invite");
 
         // "Jeg blir med!": both visits are booked now (customers only; name and e-mail come from the account)
         group.MapPost("/invites/{token}/accept", async (string token, AcceptInviteRequest request,

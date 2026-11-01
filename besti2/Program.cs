@@ -107,6 +107,20 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             }));
 
+    // The invitation page asks for news every 4 seconds while it is open (and after every chat line).
+    // Counted per account (per IP only for visitors who are not logged in), so two friends on the same
+    // Wi-Fi or a few open tabs never hit the limit and the page does not break in the middle of a chat
+    options.AddPolicy("invite", httpContext =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            "invite:" + (httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                         ?? httpContext.Connection.RemoteIpAddress?.ToString()),
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 120,
+                Window = TimeSpan.FromMinutes(1),
+                QueueLimit = 0
+            }));
+
     // BESTI-chat: max 20 lines and reactions per minute per account
     options.AddPolicy("chat", httpContext =>
         RateLimitPartition.GetFixedWindowLimiter(
