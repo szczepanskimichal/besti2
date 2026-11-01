@@ -30,10 +30,6 @@
 
 /* Top: one glass card, the logo in a round aurora ring next to the name (Syne, aurora gradient),
    the Verifisert stamp and the Bytt logo pill under the name */
-/* Profil only: the page word bigger, so it holds its own next to the big business name */
-.page h1 {
-    font-size: clamp(2rem, 7vw, 2.75rem);
-}
 .hero {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
