@@ -512,6 +512,8 @@ export type CustomerRow = {
     lastVisitUtc: string | null;
     nextVisitUtc: string | null;
     hasNote: boolean;
+    // The business's own note, shown in the notepad on Kunder (needs the API to send it; null = no note)
+    note?: string | null;
     // Brought from the business's old system ("Importer kunder") and not booked here yet
     imported: boolean;
 };
