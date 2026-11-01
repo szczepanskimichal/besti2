@@ -5,7 +5,7 @@ import type { ServiceTemplate } from "@/lib/types";
 import { formatPrice } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { addSuggestionsAction } from "./actions";
-import styles from "./page.module.css";
+import styles from "./tjenester.module.css";
 
 type Props = {
     templates: ServiceTemplate[];
@@ -21,7 +21,13 @@ export default function ServiceSuggestions({ templates, open }: Props) {
 
     return (
         <details className={styles.suggestions} open={open || !!state.error}>
-            <summary>Forslag for din bransje ({templates.length})</summary>
+            <summary className={styles.addTitle}>
+                <span className={styles.star} aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon */}
+                    <img src="/ikoner/lyspare.svg" alt=""/>
+                </span>
+                Forslag for din bransje ({templates.length})
+            </summary>
             <p className={styles.muted}>
                 Kryss av det dere tilbyr, og endre pris og tid så de passer. Alt kan endres senere.
             </p>

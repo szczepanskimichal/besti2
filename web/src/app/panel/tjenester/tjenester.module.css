@@ -1,0 +1,533 @@
+/* Tjenester (Ada 2026-10-31): the same dark glass look as Ansatte, Kunder and Statistikk */
+.summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 20px 0 16px;
+}
+.count {
+    margin: 0;
+    color: #bff8e8;
+    font: 700 1.5rem var(--font-heading);
+}
+.count strong {
+    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 2.25rem;
+}
+.privacy {
+    margin: 0;
+    color: #cfeee6;
+    font-size: 1.0625rem;
+    line-height: 1.45;
+}
+/* "Lagret", "Invitasjonen er sendt" ...: a calm mint glass line */
+.notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border: 1px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+}
+.error {
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid #7fb2ff;
+    border-radius: 14px;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+}
+
+.cards {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+@media (min-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+}
+
+/* One service: name and description, a crystal price box on the right, the length as a pill */
+.card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 12px 14px;
+    padding: 14px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+/* Rediger / Slett tjeneste as small glass pills; the open one shows its sheet under the row */
+.actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.action {
+    display: contents;
+}
+/* The opened sheet goes under the whole row of pills, not between them */
+.action::details-content {
+    order: 10;
+    flex-basis: 100%;
+}
+.action:not([open])::details-content {
+    display: none;
+}
+.action > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.6);
+    color: #bff8e8;
+    font: 600 0.875rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.action > summary::-webkit-details-marker {
+    display: none;
+}
+.action > summary:hover,
+.action[open] > summary {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.action > summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+/* Rediger: lit like Slett, but mint */
+.actionMint > summary {
+    border: 1.5px solid rgba(114, 214, 189, 0.75);
+    background: rgba(10, 60, 52, 0.55);
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.3);
+    color: #bff8e8;
+}
+.actionMint > summary svg {
+    color: var(--color-primary);
+}
+/* Slett: exactly the dark blue Avbestill pill from Min BESTI (blue = cancel) */
+.actionDanger > summary {
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+}
+.actionDanger > summary:hover,
+.actionDanger[open] > summary {
+    border-color: #7fb2ff;
+    box-shadow: 0 0 10px rgba(80, 130, 230, 0.45);
+}
+.sheet {
+    order: 10;
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 14px;
+    border: 1px solid rgba(191, 248, 232, 0.2);
+    border-radius: 16px;
+    background: rgba(3, 15, 22, 0.55);
+}
+.sheet p {
+    margin: 0;
+}
+.sheetDanger {
+    border-color: rgba(127, 178, 255, 0.45);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+/* Fields with the lightly glowing mint edge, like Fra / Til on Statistikk */
+.field input,
+.field select {
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 1rem var(--font-heading);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+}
+/* Beskrivelse: a few lines for longer treatments, rounded like the other fields */
+.field textarea {
+    min-height: 88px;
+    padding: 10px 16px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 1rem/1.45 var(--font-small);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    resize: vertical;
+}
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
+    outline: none;
+    border-color: #bff8e8;
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.45);
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font: 700 0.9375rem var(--font-heading);
+    cursor: pointer;
+}
+/* The one glowing action: mint with the neon edge of the home page button */
+.primaryButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+}
+.secondaryButton {
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+}
+/* "Ja, slett": the same blue Avbestill pill */
+.dangerButton {
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    color: #7fb2ff;
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+}
+.dangerButton:hover {
+    border-color: #7fb2ff;
+}
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hint {
+    margin: 16px 0 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+}
+
+/* "Legg til tjeneste" and "Forslag": a small pill with a crystal plus; open, it becomes a card with a dashed aurora edge */
+.add {
+    margin-top: 20px;
+}
+.add[open] {
+    padding: 14px 16px 18px;
+    border: 1.5px dashed rgba(159, 216, 255, 0.5);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.7);
+    backdrop-filter: var(--glass-blur);
+}
+.addTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px 0 6px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+    color: #bff8e8;
+    font: 700 1rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.addTitle::-webkit-details-marker {
+    display: none;
+}
+.addTitle:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.addTitle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.add[open] .addTitle {
+    margin-bottom: 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+.plus {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box, linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+}
+/* Our crystal spark in the same neon ring as the Forslag bulb */
+.plus img {
+    width: 20px;
+    height: 20px;
+}
+/* Laptop: two calm columns, the description over the whole width */
+@media (min-width: 700px) {
+    .addForm {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px 16px;
+    }
+    .addForm > p,
+    .addForm .field:has(textarea) {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Phone: the pills stay on one row */
+@media (max-width: 440px) {
+    .actions {
+        gap: 6px;
+    }
+    .action > summary {
+        gap: 5px;
+        padding: 0 11px;
+        font-size: 0.8125rem;
+    }
+}
+
+.what {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+.name {
+    margin: 0;
+    color: #ffffff;
+    font: 700 1.125rem var(--font-heading);
+    overflow-wrap: anywhere;
+}
+/* Longer descriptions (beauty treatments) read calmly in Inter, kept in the left column */
+.description {
+    margin: 0;
+    color: #cfe3de;
+    font: 400 0.9375rem/1.5 var(--font-small);
+    white-space: pre-line;
+}
+/* Length: the bright mint pill of "Har tilgang" on Ansatte, with a clock */
+.length {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border: 1.5px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.45);
+    color: #f0fffa;
+    box-shadow: 0 0 14px rgba(114, 230, 200, 0.6);
+    font: 600 0.8125rem var(--font-heading);
+}
+.length svg {
+    color: #f0fffa;
+}
+/* Price: crystal number in a dark glass box, like the visits box on Kunder */
+.price {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 84px;
+    padding: 8px 12px;
+    border: 1.5px solid transparent;
+    border-radius: 14px;
+    background: linear-gradient(#061219, #061219) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 12px rgba(159, 216, 255, 0.3);
+    text-align: center;
+}
+.priceValue {
+    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font: 600 1.25rem/1.2 var(--font-small);
+    white-space: nowrap;
+}
+.priceType {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+}
+/* "Pris etter avtale": words instead of a number, so smaller, same crystal colours as the prices */
+.priceDeal {
+    max-width: 120px;
+}
+.priceDeal .priceValue {
+    font-size: 0.875rem;
+    white-space: normal;
+}
+
+/* Forslag for din bransje: the same small pill, lilac star; open, a dashed card with the list */
+.suggestions {
+    margin: 12px 0 0;
+}
+.suggestions[open] {
+    padding: 14px 16px 18px;
+    border: 1.5px dashed rgba(201, 191, 255, 0.55);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.7);
+    backdrop-filter: var(--glass-blur);
+}
+.suggestions[open] .addTitle {
+    margin-bottom: 10px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+/* The crystal light bulb (tips for your trade) in a dark circle with the aurora ring, like the plus */
+.star {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box, linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+}
+.star img {
+    width: 22px;
+    height: 22px;
+}
+.muted {
+    margin: 0 0 12px;
+    color: var(--color-muted);
+}
+.suggestionForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.suggestionList {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+@media (min-width: 900px) {
+    .suggestionList {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+.suggestion {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 12px;
+    padding: 10px 14px;
+    border: 1px solid rgba(191, 248, 232, 0.2);
+    border-radius: 14px;
+    background: rgba(3, 15, 22, 0.55);
+}
+.suggestion:has(input[type="checkbox"]:checked) {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.3);
+}
+.suggestionName {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffffff;
+    font: 700 1rem var(--font-heading);
+    cursor: pointer;
+}
+.suggestionName input {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+}
+.suggestionHint {
+    display: block;
+    color: var(--color-muted);
+    font: 400 0.8125rem var(--font-small);
+}
+.suggestionFields {
+    display: flex;
+    gap: 8px;
+}
+.suggestionFields label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--color-muted);
+    font-size: 0.8125rem;
+}
+.suggestionFields input {
+    width: 76px;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1.5px solid rgba(114, 214, 189, 0.5);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 0.9375rem var(--font-heading);
+}
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+/* The edit page (old links): the same form in one glass sheet */
+.editSheet {
+    margin-top: 20px;
+    padding: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}

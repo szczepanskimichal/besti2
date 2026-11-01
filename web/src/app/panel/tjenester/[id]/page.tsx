@@ -1,10 +1,11 @@
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { getPanelBusiness } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { updateServiceAction } from "../actions";
 import ServiceForm from "../ServiceForm";
-import styles from "../page.module.css";
+import PanelNav from "../../PanelNav";
+import panel from "../../page.module.css";
+import styles from "../tjenester.module.css";
 
 type EditServicePageProps = {
     params: Promise<{ id: string }>;
@@ -26,21 +27,22 @@ export default async function EditServicePage({ params }: EditServicePageProps) 
     }
 
     return (
-        <main className={styles.main}>
-            <Link href="/panel/tjenester" className={styles.back}>← Tilbake til tjenester</Link>
-            <h1 className={styles.title}>Rediger tjeneste</h1>
-            <ServiceForm
-                action={updateServiceAction}
-                serviceId={service.id}
-                submitText="Lagre endringer"
-                initial={{
-                    name: service.name,
-                    description: service.description ?? "",
-                    durationMinutes: String(service.durationMinutes),
-                    priceType: service.priceType,
-                    priceNok: service.priceNok === null ? "" : String(service.priceNok),
-                }}
-            />
+        <main className={panel.main}>
+            <PanelNav title="Rediger tjeneste" active="Tjenester"/>
+            <div className={`${styles.sheet} ${styles.editSheet}`}>
+                <ServiceForm
+                    action={updateServiceAction}
+                    serviceId={service.id}
+                    submitText="Lagre endringer"
+                    initial={{
+                        name: service.name,
+                        description: service.description ?? "",
+                        durationMinutes: String(service.durationMinutes),
+                        priceType: service.priceType,
+                        priceNok: service.priceNok === null ? "" : String(service.priceNok),
+                    }}
+                />
+            </div>
         </main>
     );
 }
