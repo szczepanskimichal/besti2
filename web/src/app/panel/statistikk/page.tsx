@@ -21,7 +21,7 @@ const periods = [
     { days: 7, label: "7 dager", pro: false },
     { days: 30, label: "30 dager", pro: false },
     { days: 90, label: "90 dager", pro: true },
-    { days: 365, label: "12 måneder", pro: true },
+    { days: 365, label: "12 måneder", short: "12 mnd", pro: true },
 ];
 
 const weekdayShort = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
@@ -42,13 +42,19 @@ function change(now: number, before: number) {
         return { text: "som før", className: "" };
     }
     return percent > 0
-        ? { text: `+${percent} % mot forrige periode`, className: styles.up }
-        : { text: `−${Math.abs(percent)} % mot forrige periode`, className: styles.down };
+        ? { text: `▲ +${percent} %`, className: styles.up }
+        : { text: `▼ −${Math.abs(percent)} %`, className: styles.down };
 }
 
+// On a phone only "▲ +17 %" shows; the words stay for screen readers
 function Change({ now, before }: { now: number; before: number }) {
     const result = change(now, before);
-    return result && <span className={`${styles.change} ${result.className}`}>{result.text}</span>;
+    return result && (
+        <span className={`${styles.change} ${result.className}`}>
+            {result.text}
+            {result.className && <span className={styles.changeWords}> mot forrige periode</span>}
+        </span>
+    );
 }
 
 function share(part: number, whole: number) {
@@ -96,8 +102,10 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                     <Link key={p.days} href={`/panel/statistikk?dager=${p.days}`}
                           className={p.days === days ? `${styles.period} ${styles.periodActive}` : styles.period}
                           aria-current={p.days === days ? "page" : undefined}>
-                        {p.label}
-                        {p.pro && p.days !== days && <>&nbsp;<ProBadge short/></>}
+                        {"short" in p
+                            ? <><span className={styles.longLabel}>{p.label}</span><span className={styles.shortLabel}>{p.short}</span></>
+                            : p.label}
+                        {p.pro && p.days !== days && <span className={styles.proMark}><ProBadge short/></span>}
                     </Link>
                 ))}
             </nav>
@@ -108,12 +116,12 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
             )}
 
             <section className={styles.tiles} aria-label={`Siste ${periodName}`}>
-                <div className={styles.tile}>
+                <div className={`${styles.tile} ${styles.tileMint}`}>
                     <p className={styles.tileLabel}>Besøk</p>
                     <p className={styles.tileValue}>{now.visits}</p>
                     <Change now={now.visits} before={before.visits}/>
                 </div>
-                <div className={styles.tile}>
+                <div className={`${styles.tile} ${styles.tileMint}`}>
                     <p className={styles.tileLabel}>Beregnet omsetning</p>
                     <p className={styles.tileValue}>{kr(now.revenue)}</p>
                     <Change now={now.revenue} before={before.revenue}/>
@@ -128,12 +136,12 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                     <p className={styles.tileValue}>{now.newCustomers}</p>
                     <span className={styles.tileNote}>{now.returningCustomers} faste kunder kom tilbake</span>
                 </div>
-                <div className={styles.tile}>
+                <div className={`${styles.tile} ${styles.tileLilac}`}>
                     <p className={styles.tileLabel}>Neste 7 dager</p>
                     <p className={styles.tileValue}>{stats.upcomingVisits} {stats.upcomingVisits === 1 ? "time" : "timer"}</p>
                     {stats.upcomingRevenue > 0 && <span className={styles.tileNote}>{kr(stats.upcomingRevenue)}</span>}
                 </div>
-                <div className={styles.tile}>
+                <div className={`${styles.tile} ${styles.tileBlue}`}>
                     <p className={styles.tileLabel}>Møtte ikke / avbestilt</p>
                     <p className={styles.tileValue}>{now.noShows} / {now.cancelled}</p>
                     <span className={styles.tileNote}>
@@ -168,8 +176,8 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                     <h2 id="forslag" className={styles.heading}>Forslag til deg</h2>
                     <ul className={styles.tips}>
                         {tips.map((tip) => (
-                            <li key={tip.title} className={panel.card}>
-                                <p className={styles.tipTitle}>{tip.title}</p>
+                            <li key={tip.title} className={styles.tip}>
+                                <p className={styles.tipTitle}><CrystalIcon name="stjerne"/> {tip.title}</p>
                                 <p className={styles.tipText}>{tip.text}</p>
                                 {tip.link && <Link href={tip.link} className={styles.tipLink}>Gjør det nå →</Link>}
                             </li>
@@ -207,75 +215,33 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
             <div className={styles.tables}>
                 {[{ title: "Populære tjenester", rows: stats.services }, { title: "Ansatte", rows: stats.employees }]
                     .filter((t) => t.rows.length > 0)
-                    .map((t) => (
-                        <section key={t.title} className={panel.card}>
-                            <h2 className={styles.tableTitle}>{t.title}</h2>
-                            <table className={styles.table}>
-                                <thead>
-                                <tr>
-                                    <th scope="col">Navn</th>
-                                    <th scope="col">Besøk</th>
-                                    <th scope="col">Omsetning</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {t.rows.map((row) => (
-                                    <tr key={row.name}>
-                                        <th scope="row">{row.name}</th>
-                                        <td>{row.visits}</td>
-                                        <td>{kr(row.revenue)}</td>
-                                    </tr>
-                                ))}
-                                </tbody>
-                            </table>
-                        </section>
-                    ))}
+                    .map((t) => {
+                        const most = Math.max(1, ...t.rows.map((row) => row.visits));
+                        return (
+                            <section key={t.title} className={styles.ranking}>
+                                <h2 className={styles.tableTitle}>{t.title}</h2>
+                                {/* Most visits first (as the API sends them); the line shows the visits next to the biggest */}
+                                <ol className={styles.rankList}>
+                                    {t.rows.map((row, i) => (
+                                        <li key={row.name} className={styles.rankRow}>
+                                            <span className={styles.rankPlace} aria-hidden="true">{i + 1}</span>
+                                            <span className={styles.rankName}>{row.name}</span>
+                                            <span className={styles.rankNumbers}>
+                                                <strong>{row.visits} besøk</strong>
+                                                <small>{kr(row.revenue)}</small>
+                                            </span>
+                                            <span className={styles.rankLine} aria-hidden="true">
+                                                <span style={{ width: `${(row.visits / most) * 100}%` }}/>
+                                            </span>
+                                        </li>
+                                    ))}
+                                </ol>
+                            </section>
+                        );
+                    })}
             </div>
 
-            <section className={`${panel.card} ${styles.pro}`} aria-labelledby="pro-beta">
-                <h2 id="pro-beta" className={styles.heading}>Dette er BESTI Pro <ProBadge/></h2>
-                <p className={styles.tipText}>
-                    Disse funksjonene er gratis for alle i beta. Når betaling starter, blir de en del av BESTI Pro.
-                    Du får beskjed på e-post minst 30 dager før, og ingenting koster noe uten at du har sagt ja.
-                </p>
-                <ul className={styles.proList}>
-                    <li><strong>Venteliste og «Ledig i dag».</strong> Blir en time ledig, får kundene på ventelisten
-                        beskjed med en gang, så tomme timer fylles.</li>
-                    <li><strong>«Tid for ny time?»</strong> Kundene får en påminnelse når det er tid for neste besøk.</li>
-                    <li><strong>Stempelkort.</strong> Faste kunder samler stempler og kommer tilbake.</li>
-                    <li><strong>Statistikk for 90 dager og 12 måneder.</strong></li>
-                </ul>
-                <p className={styles.tipText}>
-                    Alt annet (kalender, nettbestilling, kunder, ansatte, varsler, BESTI sammen og ukerapporten)
-                    er med i grunnpakken.
-                </p>
-            </section>
-
-            {pro.length > 0 && (
-                <section className={`${panel.card} ${styles.pro}`} aria-labelledby="pro">
-                    <h2 id="pro" className={styles.heading}>Snart: BESTI Pro <span aria-hidden="true">✨</span></h2>
-                    <ul className={styles.proList}>
-                        {pro.map((tip) => (
-                            <li key={tip.title}><strong>{tip.title}</strong> {tip.text}</li>
-                        ))}
-                    </ul>
-                    <p className={styles.tipText}>
-                        Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.
-                    </p>
-                    {stats.proInterest || query.pro ? (
-                        <p className={styles.notice} role="status">Takk! Vi sier fra når Pro er klar.</p>
-                    ) : (
-                        <form action={proInterestAction}>
-                            <input type="hidden" name="dager" value={days}/>
-                            <SubmitButton className={panel.secondaryButton} pendingText="Sender …">
-                                Jeg er interessert
-                            </SubmitButton>
-                        </form>
-                    )}
-                </section>
-            )}
-
-            <section className={`${panel.card} ${styles.report}`} aria-labelledby="ukerapport">
+            <section className={`${styles.box} ${styles.report}`} aria-labelledby="ukerapport">
                 <div>
                     <h2 id="ukerapport" className={styles.tableTitle}>Ukerapport på e-post</h2>
                     <p className={styles.tipText}>
@@ -293,7 +259,7 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                 </form>
             </section>
 
-            <section className={`${panel.card} ${styles.report}`} aria-labelledby="eksport">
+            <section className={`${styles.box} ${styles.report}`} aria-labelledby="eksport">
                 <div>
                     <h2 id="eksport" className={styles.tableTitle}>Last ned bestillinger (Excel)</h2>
                     <p className={styles.tipText}>
@@ -310,8 +276,64 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                         Til
                         <input type="date" name="til" required defaultValue={todayInOslo()}/>
                     </label>
-                    <button type="submit" className={panel.secondaryButton}>Last ned</button>
+                    <button type="submit" className={`${panel.secondaryButton} ${styles.exportButton}`}>Last ned</button>
                 </form>
+            </section>
+
+            {/* One card for BESTI Pro at the bottom, grouped: what it has, what is coming, what is always free,
+                and a glowing "Jeg er interessert" */}
+            <section className={`${styles.box} ${styles.pro}`} aria-labelledby="pro-beta">
+                <h2 id="pro-beta" className={`${styles.heading} ${styles.proHeading}`}>
+                    BESTI Pro <ProBadge/>
+                </h2>
+                <div className={styles.proGroups}>
+                    <div className={styles.proGroup}>
+                        <p className={styles.proGroupTitle}>Med i Pro</p>
+                        <ul className={styles.proList}>
+                            <li><strong>Venteliste og «Ledig i dag».</strong> Blir en time ledig, får kundene på ventelisten
+                                beskjed med en gang, så tomme timer fylles.</li>
+                            <li><strong>«Tid for ny time?»</strong> Kundene får en påminnelse når det er tid for neste besøk.</li>
+                            <li><strong>Stempelkort.</strong> Faste kunder samler stempler og kommer tilbake.</li>
+                            <li><strong>Statistikk for 90 dager og 12 måneder.</strong></li>
+                        </ul>
+                    </div>
+                    {pro.length > 0 && (
+                        <div className={`${styles.proGroup} ${styles.proGroupLilac}`}>
+                            <p className={`${styles.proGroupTitle} ${styles.proSoon}`}>Kommer snart i Pro</p>
+                            <ul className={styles.proTips}>
+                                {pro.map((tip) => (
+                                    <li key={tip.title}>
+                                        <CrystalIcon name="stjerne"/>
+                                        <span><strong className={styles.proTipTitle}>{tip.title}</strong>{tip.text}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    <div className={`${styles.proGroup} ${styles.proGroupWide}`}>
+                        <p className={styles.proGroupTitle}>Alltid med i grunnpakken</p>
+                        <p className={styles.tipText}>
+                            Kalender, nettbestilling, kunder, ansatte, varsler, BESTI sammen og ukerapporten.
+                            Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.
+                        </p>
+                    </div>
+                </div>
+                <div className={styles.proFoot}>
+                    <p className={styles.tipText}>
+                        Når betaling starter, får du beskjed på e-post minst 30 dager før.
+                        Ingenting koster noe uten at du har sagt ja.
+                    </p>
+                    {stats.proInterest || query.pro ? (
+                        <p className={styles.notice} role="status">Takk! Vi sier fra når Pro er klar.</p>
+                    ) : (
+                        <form action={proInterestAction}>
+                            <input type="hidden" name="dager" value={days}/>
+                            <SubmitButton className={styles.proButton} pendingText="Sender …">
+                                Jeg er interessert
+                            </SubmitButton>
+                        </form>
+                    )}
+                </div>
             </section>
 
             <p className={styles.footnote}>
