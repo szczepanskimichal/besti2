@@ -3,7 +3,7 @@ import { useActionState } from "react";
 import { deleteEmployeeAction } from "./actions";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import styles from "../tjenester/page.module.css";
+import styles from "./ansatte.module.css";
 
 // "Ja, slett": if the API refuses, the reason shows right under the button
 export default function DeleteEmployeeForm({ employeeId }: { employeeId: string }) {

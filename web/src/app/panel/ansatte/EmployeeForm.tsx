@@ -2,9 +2,10 @@
 import { useActionState } from "react";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import styles from "../tjenester/page.module.css";
+import styles from "./ansatte.module.css";
 
 type EmployeeFormProps = {
+    className?: string;
     action: (previous: FormState, formData: FormData) => Promise<FormState>;
     employeeId?: string;
     name?: string;
@@ -13,11 +14,11 @@ type EmployeeFormProps = {
 };
 
 // Add or edit an employee: on an error the message shows here and the names stay
-export default function EmployeeForm({ action, employeeId, name = "", lastName = "", submitText }: EmployeeFormProps) {
+export default function EmployeeForm({ className, action, employeeId, name = "", lastName = "", submitText }: EmployeeFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(action, {});
 
     return (
-        <form action={formAction} className={styles.form}>
+        <form action={formAction} className={className ? `${styles.form} ${className}` : styles.form}>
             {state.error && (
                 <p className={styles.error} role="alert">
                     {state.error}

@@ -1,0 +1,397 @@
+/* Ansatte (Ada 2026-10-31): the dark glass look of Kunder and Statistikk */
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 16px;
+    margin: 20px 0 16px;
+}
+.count {
+    margin: 0;
+    color: #bff8e8;
+    font: 700 1.5rem var(--font-heading);
+}
+.count strong {
+    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 2.25rem;
+}
+.privacy {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    color: #cfeee6;
+    font-size: 1.0625rem;
+    line-height: 1.45;
+}
+.privacy svg {
+    flex: none;
+    margin-top: 4px;
+    color: #8ff0d6;
+}
+
+/* "Lagret", "Invitasjonen er sendt" ...: a calm mint glass line */
+.notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border: 1px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+}
+.error {
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid #7fb2ff;
+    border-radius: 14px;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+}
+
+.cards {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+@media (min-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+        align-items: start;
+    }
+}
+
+/* One employee: crystal initials, name, the login status as a pill, and the three actions */
+.card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 12px 14px;
+    padding: 14px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.avatar {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    /* Dark inside, the glow only around the aurora ring */
+    background: linear-gradient(#061219, #061219) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 12px rgba(159, 216, 255, 0.45);
+    color: #e8fbf5;
+    font: 700 1rem var(--font-heading);
+}
+.who {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    min-width: 0;
+}
+.name {
+    margin: 0;
+    max-width: 100%;
+    overflow: hidden;
+    color: #ffffff;
+    font: 700 1.125rem var(--font-heading);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Login status, colour rule: mint = has login, lilac = waiting for the employee, dashed = none */
+.status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 100%;
+    padding: 3px 10px;
+    border: 1px dashed rgba(191, 248, 232, 0.3);
+    border-radius: 999px;
+    color: var(--color-muted);
+    font: 600 0.8125rem var(--font-heading);
+}
+.status span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.statusOn {
+    border: 1.5px solid #8ff0d6;
+    background: rgba(80, 225, 190, 0.45);
+    color: #f0fffa;
+    box-shadow: 0 0 14px rgba(114, 230, 200, 0.6);
+}
+.statusOn svg {
+    color: #f0fffa;
+}
+.statusWaiting {
+    border: 1px solid #c9bfff;
+    background: rgba(120, 100, 230, 0.16);
+    color: #e4dfff;
+    box-shadow: 0 0 8px rgba(201, 191, 255, 0.35);
+}
+
+/* Rediger / Egen innlogging / Slett as small glass pills; the open one shows its sheet under the row */
+.actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.action {
+    display: contents;
+}
+/* The opened sheet goes under the whole row of pills, not between them */
+.action::details-content {
+    order: 10;
+    flex-basis: 100%;
+}
+.action:not([open])::details-content {
+    display: none;
+}
+.action > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.6);
+    color: #bff8e8;
+    font: 600 0.875rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.action > summary::-webkit-details-marker {
+    display: none;
+}
+.action > summary:hover,
+.action[open] > summary {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.action > summary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+/* Rediger and Tilgang: lit like Slett, but mint */
+.actionMint > summary {
+    border: 1.5px solid rgba(114, 214, 189, 0.75);
+    background: rgba(10, 60, 52, 0.55);
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.3);
+    color: #bff8e8;
+}
+.actionMint > summary svg {
+    color: var(--color-primary);
+}
+/* Slett: exactly the dark blue Avbestill pill from Min BESTI (blue = cancel) */
+.actionDanger > summary {
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+}
+.actionDanger > summary:hover,
+.actionDanger[open] > summary {
+    border-color: #7fb2ff;
+    box-shadow: 0 0 10px rgba(80, 130, 230, 0.45);
+}
+.sheet {
+    order: 10;
+    flex-basis: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 14px;
+    border: 1px solid rgba(191, 248, 232, 0.2);
+    border-radius: 16px;
+    background: rgba(3, 15, 22, 0.55);
+}
+.sheet p {
+    margin: 0;
+}
+.sheetDanger {
+    border-color: rgba(127, 178, 255, 0.45);
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+/* Fields with the lightly glowing mint edge, like Fra / Til on Statistikk */
+.field input {
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 1rem var(--font-heading);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+}
+.field input:focus-visible {
+    outline: none;
+    border-color: #bff8e8;
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.45);
+}
+
+.primaryButton,
+.secondaryButton,
+.dangerButton {
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font: 700 0.9375rem var(--font-heading);
+    cursor: pointer;
+}
+/* The one glowing action: mint with the neon edge of the home page button */
+.primaryButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+}
+.secondaryButton {
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+}
+/* "Ja, slett", "Fjern tilgang" and "Trekk tilbake": the same blue Avbestill pill */
+.dangerButton {
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    color: #7fb2ff;
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+}
+.dangerButton:hover {
+    border-color: #7fb2ff;
+}
+.primaryButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hint {
+    margin: 16px 0 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+}
+
+/* "Legg til ansatt": a small pill with a crystal plus; open, it becomes a card with a dashed aurora edge */
+.add {
+    margin-top: 20px;
+}
+.add[open] {
+    padding: 14px 16px 18px;
+    border: 1.5px dashed rgba(159, 216, 255, 0.5);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.7);
+    backdrop-filter: var(--glass-blur);
+}
+.addTitle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px 0 6px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+    color: #bff8e8;
+    font: 700 1rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.addTitle::-webkit-details-marker {
+    display: none;
+}
+.addTitle:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.addTitle:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.add[open] .addTitle {
+    margin-bottom: 14px;
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+}
+.plus {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box, linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+    color: #e8fbf5;
+    font-size: 1.25rem;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+/* Open: the plus turns into a cross that closes it again */
+.add[open] .plus {
+    transform: rotate(45deg);
+}
+@media (min-width: 700px) {
+    .addForm {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-end;
+    }
+    .addForm .field {
+        flex: 1 1 200px;
+    }
+}
+
+/* Phone: Rediger, Tilgang and Slett ansatt fit on one row */
+@media (max-width: 440px) {
+    .actions {
+        gap: 6px;
+    }
+    .action > summary {
+        gap: 5px;
+        padding: 0 11px;
+        font-size: 0.8125rem;
+    }
+}
