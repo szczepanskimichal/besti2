@@ -2,21 +2,23 @@ import NextLink from "next/link";
 import {formatDay, formatMonth, shiftDay} from "@/lib/format";
 import type {FreeDay} from "@/lib/types";
 import styles from "./MonthCalendar.module.css";
+import VisitStamp from "./VisitStamp";
 
 const WEEKDAYS = ["man.", "tir.", "ons.", "tor.", "fre.", "lør.", "søn."];
 
 // "Velg dag": the whole month at once, so a customer can book weeks ahead without clicking week by week.
 // Days with free times glow; closed, full and past days are dimmed. Days of the next month link to that month.
-// A small pink crystal marks days with the customer's own visits (at any business)
+// A small mint stamp (lilac when waiting) marks days with the customer's own visits (at any business)
 // gridStart is the Monday before the 1st and gridEnd the Sunday after the last day
-export default function MonthCalendar({month, gridStart, gridEnd, days, today, selectedDay, visitDays, dayHref, previousHref, nextHref}: {
+export default function MonthCalendar({month, gridStart, gridEnd, days, today, selectedDay, visitDays, waitingDays = new Set<string>(), dayHref, previousHref, nextHref}: {
     month: string;
     gridStart: string;
     gridEnd: string;
     days: FreeDay[];
     today: string;
     selectedDay: string | undefined;
-    visitDays: Set<string>; // days the customer already has a visit somewhere (a small crystal in the corner)
+    visitDays: Set<string>; // days the customer already has a visit somewhere (a small stamp in the corner)
+    waitingDays?: Set<string>; // of those, days where a visit still waits for an answer (lilac stamp)
     dayHref: (day: string) => string;
     previousHref: string | undefined;
     nextHref: string | undefined;
@@ -48,7 +50,7 @@ export default function MonthCalendar({month, gridStart, gridEnd, days, today, s
                 {dates.map((day) => {
                     const free = freeByDay.get(day) ?? 0;
                     const mine = visitDays.has(day);
-                    const gem = mine && <span className={styles.gem} aria-hidden="true"/>;
+                    const gem = mine && <VisitStamp waiting={waitingDays.has(day)} className={styles.gem}/>;
                     const mineLabel = mine ? ", du har time" : "";
                     const classes = [
                         styles.day,
@@ -77,6 +79,12 @@ export default function MonthCalendar({month, gridStart, gridEnd, days, today, s
                     );
                 })}
             </div>
+            {visitDays.size > 0 && (
+                <p className={styles.visitLegend}>
+                    <span><VisitStamp/> Du har time denne dagen</span>
+                    {waitingDays.size > 0 && <span><VisitStamp waiting/> venter på svar</span>}
+                </p>
+            )}
         </section>
     );
 }

@@ -43,8 +43,8 @@ export default async function Home({searchParams}: HomeProps) {
         <main className={styles.main}>
             <section className={styles.hero}>
                 <div>
-                    <h1 className={styles.heroTitle}>Magiske opplevelser med din BESTI.</h1>
-                    <p className={styles.heroLead}>Finn og bestill på under ett minutt.</p>
+                    <h1 className={styles.heroTitle}>Magiske opplevelser med din BESTI</h1>
+                    <p className={styles.heroLead}>Finn ledig time og bestill på under ett minutt</p>
                 </div>
                 <Form action="/" className={styles.filters}>
                     <label className={styles.field}>
@@ -135,22 +135,6 @@ export default async function Home({searchParams}: HomeProps) {
                     })}
                 </p>
             )}
-            <p className={styles.subtitle}>
-                Sorter:{" "}
-                <Link href={searchHref(search, {sorter: undefined})} className={styles.radius}
-                      aria-current={!sorter ? "true" : undefined}>
-                    {lat && lng ? "Nærmest" : "A–Å"}
-                </Link>
-                <Link href={searchHref(search, {sorter: "vurdering"})} className={styles.radius}
-                      aria-current={sorter ? "true" : undefined}>
-                    Best vurdert
-                </Link>
-                {/* One click on, one click off */}
-                <Link href={searchHref(search, {stjerner: stjerner ? undefined : "4"})} className={styles.radius}
-                      aria-current={stjerner ? "true" : undefined}>
-                    {stjerner ? "✓ " : ""}4<CrystalIcon name="stjerne"/> og over
-                </Link>
-            </p>
             {/* key: every new search shows the skeleton again */}
             <Suspense key={JSON.stringify({...search, page})} fallback={<ResultsSkeleton/>}>
                 <Results {...search} page={page}/>
@@ -180,6 +164,31 @@ function searchHref(search: SearchProps, changes: Partial<SearchProps>): string 
     const params = new URLSearchParams(
         Object.entries(merged).filter((entry): entry is [string, string] => !!entry[1]));
     return `/?${params}`;
+}
+
+// "Sorter:" A–Å / Nærmest, Best vurdert and 4★ og over. Shown from MIN_FOR_SORTING results
+// (with only a few businesses it is just noise), and always while one of them is turned on.
+const MIN_FOR_SORTING = 30;
+function SortLinks({search}: {search: SearchProps}) {
+    const {lat, lng, sorter, stjerner} = search;
+    return (
+        <p className={styles.subtitle}>
+            Sorter:{" "}
+            <Link href={searchHref(search, {sorter: undefined})} className={styles.radius}
+                  aria-current={!sorter ? "true" : undefined}>
+                {lat && lng ? "Nærmest" : "A–Å"}
+            </Link>
+            <Link href={searchHref(search, {sorter: "vurdering"})} className={styles.radius}
+                  aria-current={sorter ? "true" : undefined}>
+                Best vurdert
+            </Link>
+            {/* One click on, one click off */}
+            <Link href={searchHref(search, {stjerner: stjerner ? undefined : "4"})} className={styles.radius}
+                  aria-current={stjerner ? "true" : undefined}>
+                {stjerner ? "✓ " : ""}4<CrystalIcon name="stjerne"/> og over
+            </Link>
+        </p>
+    );
 }
 
 // The slow part: with a date or a time of day the API calculates free times for every business
@@ -220,9 +229,7 @@ async function Results(search: SearchProps) {
 
     return (
         <>
-            <p className={styles.count}>
-                {result.totalCount} {result.totalCount === 1 ? "bedrift" : "bedrifter"}{city ? ` i ${city}` : ""}
-            </p>
+            {(result.totalCount >= MIN_FOR_SORTING || sorter || stjerner) && <SortLinks search={search}/>}
             <ul className={styles.grid}>
                 {businesses.map((business) => (
                     <li key={business.id}>

@@ -1,5 +1,5 @@
-/* Approved look (2026-10-29, green aurora): aurora photo by Tomáš Malík / Unsplash, a slowly waving
-   aurora layer on top and a few twinkling stars. Everything stands still with prefers-reduced-motion. */
+/* Calm look (2026-11-01): the aurora photo by Tomáš Malík / Unsplash, standing still,
+   a portrait crop on phones and a wide crop on computers, both with the same colours. */
 .sky {
     position: fixed;
     inset: 0;
@@ -17,88 +17,17 @@
     }
 }
 
-.photo,
-.aurora {
-    position: absolute;
-    background: image-set(url("/bg/sky-mobil-800.jpg") 1x, url("/bg/sky-mobil-1400.jpg") 2x) center top / cover no-repeat;
-    will-change: transform;
-}
-
 .photo {
+    position: absolute;
     inset: 0;
-    filter: brightness(1.2) saturate(1.2);
-    animation: drift 240s linear infinite alternate;
-}
-
-/* Only the northern lights (no stars), blended on top of the photo and warped by the SVG filter */
-.aurora {
-    inset: -6%;
-    background-image: image-set(url("/bg/aurora-mobil-800.jpg") 1x, url("/bg/aurora-mobil-1400.jpg") 2x);
-    mix-blend-mode: screen;
-    opacity: 0.95;
-    filter: url(#besti-warp) saturate(1.6) brightness(1.15);
-    animation: wave 14s ease-in-out infinite alternate, breathe 5.5s ease-in-out infinite;
-    -webkit-mask-image: linear-gradient(180deg, #000 0, #000 60%, transparent 98%);
-    mask-image: linear-gradient(180deg, #000 0, #000 60%, transparent 98%);
-}
-
-/* Phones: no SVG warp on the aurora (it is redrawn on the processor every frame); it still waves and breathes */
-@media (max-width: 799px) {
-    .aurora {
-        filter: saturate(1.6) brightness(1.15);
-    }
+    background: image-set(url("/bg/sky-rolig-mobil-800.jpg") 1x, url("/bg/sky-rolig-mobil-1400.jpg") 2x) center top / cover no-repeat;
 }
 
 @media (min-width: 800px) {
     .photo {
-        background-image: image-set(url("/bg/sky-desktop-1600.jpg") 1x, url("/bg/sky-desktop-3200.jpg") 2x);
+        background-image: image-set(url("/bg/sky-rolig-desktop-1600.jpg") 1x, url("/bg/sky-rolig-desktop-3200.jpg") 2x);
         background-position: center;
     }
-
-    .aurora {
-        background-image: image-set(url("/bg/aurora-desktop-1600.jpg") 1x, url("/bg/aurora-desktop-3200.jpg") 2x);
-        background-position: center;
-    }
-}
-
-.stars {
-    position: absolute;
-    inset: 0;
-    animation: drift 240s linear infinite alternate;
-}
-
-/* One star: a soft white dot that slowly lights up and fades */
-.star {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    margin: -3px 0 0 -3px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff 0, rgba(255, 255, 255, 0.85) 25%, rgba(190, 255, 235, 0.35) 55%, transparent 72%);
-    opacity: 0;
-    transform: scale(0.5);
-    animation: twinkle var(--d) ease-in-out var(--dl) infinite;
-}
-
-/* Set by Aurora.tsx while the page scrolls */
-.scrolling .photo,
-.scrolling .aurora,
-.scrolling .stars,
-.scrolling .star {
-    animation-play-state: paused;
-}
-
-/* Every second star is crisp: a sharp white core with a thin four-point glint */
-.big {
-    width: 14px;
-    height: 14px;
-    margin: -7px 0 0 -7px;
-    border-radius: 0;
-    background:
-        radial-gradient(circle, #fff 0, #fff 14%, rgba(255, 255, 255, 0) 24%),
-        linear-gradient(90deg, transparent 0, rgba(220, 255, 245, 0.95) 50%, transparent 100%) center / 100% 1px no-repeat,
-        linear-gradient(180deg, transparent 0, rgba(220, 255, 245, 0.95) 50%, transparent 100%) center / 1px 100% no-repeat;
-    filter: drop-shadow(0 0 3px rgba(190, 255, 235, 0.8));
 }
 
 /* Darker top and bottom so text on the photo stays readable */
@@ -106,36 +35,4 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(2, 12, 18, 0.3), rgba(2, 12, 18, 0.05) 45%, rgba(2, 12, 18, 0.3));
-}
-
-@keyframes drift {
-    from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(0.6%, -0.4%, 0); }
-}
-
-@keyframes wave {
-    from { transform: translate3d(2.6%, 1%, 0) scale(1.05); }
-    to { transform: translate3d(-2.6%, -1.6%, 0) scale(1.09); }
-}
-
-@keyframes breathe {
-    0%, 100% { opacity: 0.48; }
-    50% { opacity: 0.88; }
-}
-
-@keyframes twinkle {
-    0%, 100% { opacity: 0; transform: scale(0.4); }
-    50% { opacity: var(--o); transform: scale(1.5); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .photo,
-    .aurora,
-    .stars {
-        animation: none !important;
-    }
-
-    .star {
-        display: none;
-    }
 }
