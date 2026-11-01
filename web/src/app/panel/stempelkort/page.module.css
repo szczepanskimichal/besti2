@@ -113,7 +113,7 @@
 .lead {
     margin: 0;
     color: #e6f7f2;
-    font: 700 1rem/1.5 var(--font-heading);
+    font: 500 1rem/1.5 var(--font-small);
 }
 /* Phone: the Pro stamp first, the sentence under it. Computer: side by side */
 .pro {

@@ -77,6 +77,13 @@ button:disabled {
   font-family: var(--font-heading);
 }
 
+/* Font rule (Ada 2026-11-01): Syne only for titles, buttons, short one-line labels and numbers.
+   Sentences and paragraphs are Inter, so longer text is easy to read. (:where keeps every page style stronger) */
+:where(p) {
+  font-family: var(--font-small);
+  font-weight: 500;
+}
+
 h1, h2, h3 {
   color: var(--color-heading);
   font-weight: 700;

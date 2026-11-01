@@ -175,9 +175,10 @@ div.card {
     color: #9ff5dc;
     font-family: var(--font-heading);
     font-size: 2.5rem;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.1;
     text-shadow: 0 0 16px rgba(61, 255, 176, 0.55);
+    letter-spacing: -0.035em;
 }
 
 /* Yes: the big mint button from the confirmation page; no: Ada's dark blue cancel */

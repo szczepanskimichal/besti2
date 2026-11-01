@@ -213,9 +213,9 @@
 }
 
 .share {
-    font-family: var(--font-heading);
-    font-size: 17.5px;
-    font-weight: 700;
+    font-family: var(--font-small);
+    font-size: 17px;
+    font-weight: 600;
     line-height: 1.35;
     text-align: center;
     color: #9ff5dc;
@@ -227,9 +227,9 @@
 }
 
 .info {
-    font-family: var(--font-heading);
+    font-family: var(--font-small);
     font-size: 14.5px;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.45;
     text-align: center;
     color: #cfe9e2;
@@ -250,6 +250,8 @@
 }
 
 .visitLabel {
+    font-family: var(--font-heading);
+    font-weight: 700;
     margin: 0 0 8px;
     text-align: center;
     font-size: 15px;

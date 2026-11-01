@@ -1,5 +1,5 @@
 /* Del og få kunder (Ada 2026-11-01): the same dark glass look as Galleri, Vurderinger and Stempelkort.
-   Mint = the link and the main actions, lilac = waiting for approval. Headings and numbers in Syne, text in Inter */
+   Mint = the link and the main actions, lilac = waiting for approval and Pro. Headings, buttons and numbers in Syne, sentences in Inter */
 /* This page: the title in glowing mint, today's date on the right also on the phone */
 .page h1 {
     color: #8ff0d6;
@@ -8,10 +8,13 @@
 .page h1 + p {
     margin-left: auto;
 }
+/* The sentence under the title in the middle (the title stays on the left) */
 .lead {
-    margin: 20px 0 12px;
+    max-width: 52ch;
+    margin: 20px auto 14px;
     color: #e6f7f2;
-    font: 600 1.25rem/1.45 var(--font-heading);
+    font: 500 1.0625rem/1.5 var(--font-small);
+    text-align: center;
 }
 /* Waiting for approval: the lilac "venter" pill */
 .waiting {
@@ -22,7 +25,7 @@
     background: linear-gradient(rgba(150, 128, 255, 0.24), rgba(150, 128, 255, 0.24)), var(--color-input-bg);
     box-shadow: 0 0 14px rgba(201, 191, 255, 0.5), inset 0 0 18px rgba(170, 150, 255, 0.25);
     color: #ffffff;
-    font: 600 0.9375rem/1.5 var(--font-heading);
+    font: 500 0.9375rem/1.5 var(--font-small);
 }
 
 .grid {
@@ -45,7 +48,12 @@
     backdrop-filter: var(--glass-blur);
 }
 .hero {
+    align-items: center;
     border-radius: 22px;
+    text-align: center;
+}
+.hero .actions {
+    justify-content: center;
 }
 /* Card titles in glowing mint, a bit bigger */
 .cardTitle {
@@ -63,11 +71,6 @@
 .stepText a {
     color: #8ff0d6;
 }
-.textSyne {
-    margin: 0;
-    color: #e6f7f2;
-    font: 600 0.9375rem/1.5 var(--font-heading);
-}
 /* Tips with the crystal light bulb from Tjenester in a dark aurora ring */
 .tip {
     display: flex;
@@ -75,7 +78,7 @@
     gap: 10px;
     margin: 0;
     color: #cfeee6;
-    font: 600 0.875rem/1.5 var(--font-heading);
+    font: 500 0.875rem/1.5 var(--font-small);
 }
 .bulb {
     display: grid;
@@ -287,11 +290,54 @@
 }
 .proTitle {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 10px;
     color: #d9d2ff;
     font: 700 1.0625rem/1.3 var(--font-heading);
     text-shadow: 0 0 10px rgba(201, 191, 255, 0.45);
+}
+/* Lock after the Pro title, a soft lilac glow */
+.lock {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    filter: drop-shadow(0 0 5px rgba(201, 191, 255, 0.7));
+}
+/* "Send som SMS": shown but locked until Pro (dashed lilac, not clickable) */
+.locked {
+    gap: 8px;
+    border: 1.5px dashed rgba(201, 191, 255, 0.55);
+    background: rgba(20, 16, 40, 0.5);
+    color: #9d97c4;
+    box-shadow: none;
+    cursor: not-allowed;
+}
+.locked:disabled {
+    opacity: 1;
+    cursor: not-allowed;
+}
+.locked:hover {
+    background: rgba(20, 16, 40, 0.5);
+}
+.locked .lock {
+    width: 16px;
+    height: 16px;
+    filter: none;
+    opacity: 0.85;
+}
+/* "E-post er gratis": a small mint label with an envelope */
+.free {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border: 1.5px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.14);
+    color: #bff8e8;
+    font: 700 0.8125rem var(--font-heading);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.35);
 }
 .thanks {
     color: #8ff0d6;

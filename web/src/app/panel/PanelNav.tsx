@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import ProBadge from "@/components/ProBadge/ProBadge";
 import styles from "./page.module.css";
@@ -15,6 +16,7 @@ const ICONS: Record<string, string> = {
     vurderinger: "M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z",
     stempelkort: "M3 7h18v10H3zM7 12h.01M12 12h.01M17 12h.01",
     apningstider: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18M12 7v5l3 2",
+    pro: "M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z",
     del: "M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6M6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6M18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6M8.6 13.5l6.8 4M15.4 6.5l-6.8 4",
 };
 
@@ -31,6 +33,8 @@ const PAGES: { href: string; label: string; icon: string; pro?: boolean }[] = [
     { href: "/panel/stempelkort", label: "Stempelkort", icon: "stempelkort", pro: true },
     { href: "/panel/apningstider", label: "Åpningstider", icon: "apningstider" },
     { href: "/panel/del", label: "Del og få kunder", icon: "del" },
+    // Last, across the whole row: what Pro is, what it will cost and what is always free
+    { href: "/panel/pro", label: "BESTI Pro", icon: "pro", pro: true },
 ];
 
 // "Lørdag 31.10.2026": the owner sees which day it is today, on every panel page
@@ -42,7 +46,7 @@ function todayLabel(): string {
 }
 
 // The top bar of the panel: title and one row of all panel pages, the open one lit in mint
-export default function PanelNav({ title, active }: { title: string; active?: string }) {
+export default function PanelNav({ title, active }: { title: ReactNode; active?: string }) {
     const current = active ?? title;
     return (
         <div className={styles.topBar}>
@@ -59,13 +63,13 @@ export default function PanelNav({ title, active }: { title: string; active?: st
             <nav className={styles.topActions} aria-label="Panel">
                 {PAGES.map((p) => (
                     <Link key={p.href} href={p.href} aria-current={p.label === current ? "page" : undefined}
-                          className={styles.navTab}>
+                          className={p.icon === "pro" ? `${styles.navTab} ${styles.navProTab}` : styles.navTab}>
                         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.7"
                              strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d={ICONS[p.icon]}/>
                         </svg>
                         <span>{p.label}</span>
-                        {p.pro && <span className={styles.navPro}><ProBadge short/></span>}
+                        {p.pro && p.icon !== "pro" && <span className={styles.navPro}><ProBadge short/></span>}
                     </Link>
                 ))}
             </nav>

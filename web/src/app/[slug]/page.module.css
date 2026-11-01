@@ -505,6 +505,7 @@
 }
 
 .loyaltyTitle {
+    font-family: var(--font-heading);
     margin: 0;
     font-weight: 700;
 }

@@ -1,0 +1,269 @@
+/* BESTI Pro (Ada 2026-11-01, v5): dark glass cards like Del and Stempelkort.
+   Mint = free now, lilac = Pro and what comes later. Titles, buttons and numbers in Syne, sentences in Inter */
+.page h1 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #8ff0d6;
+    text-shadow: 0 0 12px rgba(143, 240, 214, 0.55);
+}
+.page h1 + p {
+    margin-left: auto;
+}
+.lead {
+    max-width: 52ch;
+    margin: 16px auto 14px;
+    color: #e6f7f2;
+    font: 500 1.0625rem/1.5 var(--font-small);
+    text-align: center;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* "Gratis nå, betalt senere": a lit mint frame with three numbered steps */
+.info {
+    padding: 14px 16px;
+    border: 2px solid #8ff0d6;
+    border-radius: 20px;
+    background: linear-gradient(rgba(80, 225, 190, 0.1), rgba(80, 225, 190, 0.1)), #0b1d24;
+    box-shadow: 0 0 14px rgba(143, 240, 214, 0.45), inset 0 0 16px rgba(114, 230, 200, 0.18);
+}
+.infoTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0 0 10px;
+    color: #8ff0d6;
+    font: 700 1.1875rem/1.3 var(--font-heading);
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
+}
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.steps li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.steps p {
+    margin: 0;
+    padding-top: 2px;
+    color: #e6f7f2;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+.steps b {
+    display: block;
+    color: #ffffff;
+    font-weight: 600;
+}
+.stepNumber {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border: 2px solid #8ff0d6;
+    border-radius: 50%;
+    background: rgba(80, 225, 190, 0.2);
+    color: #ffffff;
+    font: 700 0.8125rem/1 var(--font-heading);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+}
+
+/* Glass cards */
+.card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    padding: 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 20px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.cardTitle {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 1.25rem/1.3 var(--font-heading);
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.4);
+}
+.center {
+    align-items: center;
+    text-align: center;
+}
+.text {
+    margin: 0;
+    color: #e6f7f2;
+    font: 400 0.9375rem/1.55 var(--font-small);
+}
+.small {
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.8125rem/1.5 var(--font-small);
+}
+
+/* The price: an aurora frame, the big number in Syne with a gradient (tight, the Syne digits are wide) */
+.price {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border: 2px solid transparent;
+    background: linear-gradient(rgba(8, 22, 30, 0.95), rgba(8, 22, 30, 0.95)) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 14px rgba(159, 216, 255, 0.35), 0 0 30px rgba(201, 191, 255, 0.18);
+}
+.big {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+}
+.priceBadge {
+    display: inline-flex;
+    align-self: center;
+    margin-right: 10px;
+}
+.number {
+    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font: 700 2.5rem/1 var(--font-heading);
+    letter-spacing: -0.035em;
+}
+.perMonth {
+    color: #cfeee6;
+    font: 600 1.0625rem var(--font-small);
+}
+.per {
+    margin: 0;
+    color: #cfeee6;
+    font: 600 0.9375rem var(--font-heading);
+}
+.betaPill {
+    display: inline-flex;
+    padding: 6px 14px;
+    border: 2px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    font: 700 0.9375rem var(--font-heading);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+}
+
+/* Lists with a crystal icon in an aurora ring: the title in Syne, the sentence in Inter */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #e6f7f2;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+.list b {
+    display: block;
+    color: #ffffff;
+    font: 700 0.9375rem/1.4 var(--font-heading);
+}
+.icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box, linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+}
+.icon img {
+    width: 20px;
+    height: 20px;
+}
+
+/* "Kommer i Pro": lilac = not here yet */
+.lilac {
+    border: 2px solid #c9bfff;
+    background: rgba(150, 128, 255, 0.12);
+    box-shadow: 0 0 12px rgba(201, 191, 255, 0.35), inset 0 0 12px rgba(201, 191, 255, 0.12);
+}
+.lilacTitle {
+    color: #d9d2ff;
+    text-shadow: 0 0 10px rgba(201, 191, 255, 0.45);
+}
+.lock {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid #c9bfff;
+    border-radius: 50%;
+    background: #120f26;
+    color: #d9d2ff;
+}
+.lock svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* "Jeg vil være med": the lit mint pill */
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    padding: 0 24px;
+    border: 2px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    font: 700 1rem var(--font-heading);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+    cursor: pointer;
+}
+.button:hover {
+    background: rgba(80, 225, 190, 0.3);
+}
+.thanks {
+    margin: 0;
+    color: #8ff0d6;
+    font: 600 0.9375rem/1.4 var(--font-heading);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.4);
+}
+
+/* Computer: two columns, cards side by side equally tall */
+@media (min-width: 900px) {
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 16px;
+    }
+    .card,
+    .info {
+        padding: 18px 24px 20px;
+    }
+    .number {
+        font-size: 3.25rem;
+    }
+}
