@@ -373,6 +373,19 @@
     font-size: 0.75rem;
 }
 
+/* Very narrow phones (320 px): 4 tiles still fit, with a little less padding and smaller text */
+@media (max-width: 374px) {
+    .topActions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 4px;
+        padding: 6px;
+    }
+    .navTab {
+        padding: 8px 1px;
+        font-size: 0.625rem;
+    }
+}
+
 @media (min-width: 900px) {
     .topActions {
         grid-template-columns: repeat(6, 1fr);
