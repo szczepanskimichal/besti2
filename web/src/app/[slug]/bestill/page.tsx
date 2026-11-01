@@ -7,6 +7,7 @@ import {freeCancelText} from "@/lib/freeCancel";
 import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import InviteForm from "./InviteForm";
+import VisitStamp from "./VisitStamp";
 import MonthCalendar from "./MonthCalendar";
 import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
@@ -91,6 +92,7 @@ export default async function BookingPage({params, searchParams}: Props) {
             .sort((a, b) => a.startUtc.localeCompare(b.startUtc))
         : [];
     const visitDays = new Set(myVisits.map((b) => osloDay(b.startUtc)));
+    const waitingDays = new Set(myVisits.filter((b) => b.status === "Venter" || b.status === "VenterKunde").map((b) => osloDay(b.startUtc)));
     const visitsOnSelected = myVisits.filter((b) => osloDay(b.startUtc) === selected?.date);
     const visitMs = units * service.durationMinutes * 60_000;
     function isMine(startUtc: string) {
@@ -216,7 +218,7 @@ export default async function BookingPage({params, searchParams}: Props) {
             <h2 className={styles.sectionTitle}>Velg dag</h2>
             <div className={styles.picker}>
                 <MonthCalendar month={month} gridStart={gridStart} gridEnd={gridEnd} days={days ?? []} today={today}
-                               selectedDay={selected?.date} visitDays={visitDays} dayHref={(day) => bookingUrl(day.slice(0, 7), day)}
+                               selectedDay={selected?.date} visitDays={visitDays} waitingDays={waitingDays} dayHref={(day) => bookingUrl(day.slice(0, 7), day)}
                                previousHref={month > thisMonth ? bookingUrl(shiftMonth(month, -1)) : undefined}
                                nextHref={month < lastMonth ? bookingUrl(shiftMonth(month, 1)) : undefined}/>
 
@@ -257,9 +259,9 @@ export default async function BookingPage({params, searchParams}: Props) {
                         </ul>
                     )}
                     {visitsOnSelected.length > 0 && (
-                        <div className={styles.myVisits}>
+                        <div className={visitsOnSelected.every((b) => b.status === "Venter" || b.status === "VenterKunde") ? `${styles.myVisits} ${styles.myVisitsWait}` : styles.myVisits}>
                             <p className={styles.myVisitsTitle}>
-                                <span className={styles.visitGem} aria-hidden="true"/> Du har time denne dagen
+                                <VisitStamp waiting={visitsOnSelected.every((b) => b.status === "Venter" || b.status === "VenterKunde")}/> Du har time denne dagen
                             </p>
                             <ul>
                                 {visitsOnSelected.map((b) => (

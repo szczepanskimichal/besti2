@@ -31,20 +31,23 @@
     color: var(--color-text);
 }
 
+/* The question small and soft mint, what you type or pick bigger and white, so the answers stand out */
 .field {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    color: #a9d8cc;
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 0.875rem;
 }
 
 .field input,
 .field select {
     font: inherit;
     font-family: var(--font-heading);
+    font-size: 1.0625rem; /* 17 px: also 16 px or more stops iPhones from zooming in on tap */
     font-weight: 500;
-    min-height: 46px;
+    min-height: 48px;
     padding: 0 12px;
     border: 1px solid var(--color-input-border);
     border-radius: var(--radius);
@@ -65,15 +68,16 @@
     margin-top: 4px;
     min-height: 52px;
     padding: 0 24px;
-    border: 2px solid transparent;
+    border: 2px solid #a6f2dd;
     border-radius: 999px;
-    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    background: var(--color-primary);
     color: var(--color-on-primary);
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: var(--neon-glow);
+    /* Same light mint neon frame and glow as "Registrer bedrift" */
+    box-shadow: 0 0 12px rgba(114, 214, 189, 0.5), inset 0 0 8px rgba(114, 214, 189, 0.2);
     cursor: pointer;
 }
 
@@ -84,24 +88,24 @@
     margin: 0 0 32px;
 }
 
+/* Title and lead centred (on a phone above the search card) */
+.hero > div:first-child {
+    text-align: center;
+}
+
 .heroTitle {
+    color: #72d6bd;
     font-size: clamp(1.9rem, 6vw, 3rem);
     line-height: 1.12;
     margin: 8px 0 10px;
 }
 
 .heroLead {
-    font-size: 1.12rem;
+    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
     max-width: 40ch;
-    margin: 0;
+    margin: 0 auto;
     color: #f4fbf8;
     text-shadow: 0 1px 14px rgba(2, 12, 16, 0.6);
-}
-
-/* "12 bedrifter i Gjøvik" above the cards */
-.count {
-    margin: 0 0 16px;
-    color: #dcebe6;
 }
 
 .listTitle {
@@ -137,6 +141,11 @@
         grid-template-columns: 1fr 440px;
         align-items: center;
         min-height: 62vh;
+    }
+
+    /* Title and lead in the middle of the space left of the search card, a little to the left */
+    .hero > div:first-child {
+        padding-right: 80px;
     }
 }
 

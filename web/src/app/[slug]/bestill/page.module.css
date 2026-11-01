@@ -142,8 +142,9 @@
     margin-top: 16px;
     padding: 12px 14px;
     border-radius: 14px;
-    border: 1px solid rgba(255, 111, 181, 0.45);
-    background: linear-gradient(rgba(255, 111, 181, 0.08), rgba(255, 111, 181, 0.08)), var(--color-card-base);
+    border: 2px solid rgba(143, 240, 214, 0.75);
+    box-shadow: 0 0 12px rgba(80, 225, 190, 0.3);
+    background: linear-gradient(rgba(80, 225, 190, 0.08), rgba(80, 225, 190, 0.08)), var(--color-card-base);
 }
 
 .myVisits ul {
@@ -159,14 +160,6 @@
     font-weight: 700;
 }
 
-.visitGem {
-    width: 9px;
-    height: 9px;
-    border-radius: 2px;
-    transform: rotate(45deg);
-    background: linear-gradient(135deg, #ffd1f0, #ff6fb5 55%, #a77bff);
-    box-shadow: 0 0 8px rgba(255, 111, 181, 0.8);
-}
 
 /* Calendar and times: under each other on the phone, side by side on a wide screen */
 .picker {
@@ -351,4 +344,11 @@
 .success {
     margin: 0;
     color: var(--color-text);
+}
+
+/* Only visits still waiting for an answer that day: the lilac of "venter" (BESTI colour rule) */
+.myVisitsWait {
+    border-color: #c9bfff;
+    box-shadow: 0 0 12px rgba(201, 191, 255, 0.35);
+    background: linear-gradient(rgba(150, 128, 255, 0.12), rgba(150, 128, 255, 0.12)), var(--color-card-base);
 }

@@ -1,0 +1,157 @@
+/* Intro when the app opens (Ada 2026-11-01): night sky, green aurora turning slowly, letters -> sparks -> logo */
+.intro {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: #020409;
+}
+/* Already seen in this opening of the app, or "reduce motion": never drawn (set before the first paint) */
+:global(html[data-intro="off"]) .intro {
+    display: none;
+}
+.leaving {
+    animation: leave .45s ease-in forwards;
+    pointer-events: none;
+}
+@keyframes leave {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+.aurora {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0;
+    animation: fade 1.6s ease .1s forwards;
+}
+.aurora i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 150vmax;
+    height: 150vmax;
+    margin: -75vmax 0 0 -75vmax;
+    border-radius: 50%;
+    filter: blur(60px);
+    mix-blend-mode: screen;
+}
+.aurora .a1 {
+    background: conic-gradient(from 0deg, transparent 0 8%, rgba(60, 235, 170, .30) 16%, transparent 27%, transparent 45%,
+    rgba(40, 210, 190, .22) 55%, transparent 66%, transparent 78%, rgba(110, 245, 205, .20) 86%, transparent 95%);
+    animation: spin 16s linear infinite;
+    mask: radial-gradient(circle, transparent 9%, #000 22%, #000 38%, transparent 60%);
+}
+.aurora .a2 {
+    background: conic-gradient(from 120deg, transparent 0 12%, rgba(30, 200, 150, .22) 22%, transparent 34%, transparent 60%,
+    rgba(90, 240, 190, .18) 70%, transparent 82%);
+    animation: spin 26s linear infinite reverse;
+    mask: radial-gradient(circle, transparent 14%, #000 28%, transparent 52%);
+}
+.aurora .a3 {
+    width: 70vmax;
+    height: 28vmax;
+    margin: -14vmax 0 0 -35vmax;
+    background: radial-gradient(closest-side, rgba(70, 230, 180, .16), transparent);
+    animation: sway 7s ease-in-out infinite alternate;
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+@keyframes sway {
+    from {
+        transform: translateY(-6vh) rotate(-8deg) scaleX(.9);
+    }
+    to {
+        transform: translateY(6vh) rotate(8deg) scaleX(1.1);
+    }
+}
+@keyframes fade {
+    to {
+        opacity: 1;
+    }
+}
+
+.canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+.stage {
+    position: relative;
+    width: min(82vw, 520px);
+    aspect-ratio: 1 / 1;
+}
+.word {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 100%;
+    aspect-ratio: 1040 / 430;
+    transform: translateY(-50%);
+    isolation: isolate;
+}
+.letter {
+    position: absolute;
+    mix-blend-mode: plus-lighter;
+    opacity: 0;
+    filter: blur(10px) brightness(1.8);
+    transform: translateY(8px);
+    animation: letter .55s ease-out forwards;
+}
+@keyframes letter {
+    to {
+        opacity: 1;
+        filter: blur(0) brightness(1);
+        transform: none;
+    }
+}
+.wordOut {
+    animation: wordOut .7s ease-in forwards;
+}
+@keyframes wordOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        filter: blur(8px) brightness(2);
+    }
+}
+.icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    height: 74%;
+    transform: translate(-50%, -50%) scale(.9);
+    opacity: 0;
+    filter: blur(10px) brightness(1.8);
+}
+.iconIn {
+    animation: iconIn .8s cubic-bezier(.2, .8, .2, 1) forwards;
+}
+@keyframes iconIn {
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: none;
+    }
+}
+
+/* A tap anywhere skips the intro */
+.skip {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}

@@ -12,8 +12,8 @@ self.addEventListener("push", (event) => {
     }
     event.waitUntil(self.registration.showNotification(data.title || "BESTI", {
         body: data.body || "",
-        icon: "/logo/besti-ikon-192.png",
-        badge: "/logo/besti-ikon-192.png",
+        icon: "/logo/besti-ikon-v2-192.png",
+        badge: "/logo/besti-ikon-v2-192.png",
         lang: "nb",
         // The same notification twice (two devices of one business) replaces itself instead of piling up
         tag: data.tag,

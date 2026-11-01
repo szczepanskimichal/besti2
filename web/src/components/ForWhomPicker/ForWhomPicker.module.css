@@ -5,15 +5,19 @@
     gap: 6px;
 }
 
+/* Same as the other questions in the search card: small and soft mint */
 .label {
-    font-size: 0.95rem;
+    color: #a9d8cc;
+    font-size: 0.875rem;
 }
 
 /* Looks like the other fields in the search card */
 .trigger {
     font: inherit;
     font-family: var(--font-heading);
-    min-height: 46px;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    min-height: 48px;
     padding: 0 12px;
     display: flex;
     align-items: center;

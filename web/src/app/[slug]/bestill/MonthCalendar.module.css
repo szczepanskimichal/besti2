@@ -131,17 +131,9 @@ a.day:hover {
     opacity: 0.3;
 }
 
-/* The customer's own visit that day: a small pink crystal in the corner (still on full days) */
+/* The customer's own visit that day: a small stamp in the corner (still on full days) */
 .gem {
     position: absolute;
-    top: 6px;
-    right: 6px;
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
-    transform: rotate(45deg);
-    background: linear-gradient(135deg, #ffd1f0, #ff6fb5 55%, #a77bff);
-    box-shadow: 0 0 8px rgba(255, 111, 181, 0.8);
 }
 
 .otherMonth .number {
@@ -199,5 +191,73 @@ a.selected:hover {
     .day,
     .arrow {
         transition: none;
+    }
+}
+
+/* v129 (michal 2026-11-01): own visit = the small BESTI stamp (mint check, lilac clock when waiting), no pink */
+.visitStamp {
+    display: inline-flex;
+    flex: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+.visitStamp svg {
+    width: 100%;
+    height: 100%;
+}
+.visitOk {
+    color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.18);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.7);
+}
+.visitWait {
+    color: #c9bfff;
+    background: rgba(150, 128, 255, 0.24);
+    box-shadow: 0 0 8px rgba(201, 191, 255, 0.75);
+}
+.gem {
+    top: 5px;
+    right: 5px;
+}
+/* On the chosen (mint) day: a dark stamp with the mint check, so it does not disappear */
+.selected .visitOk {
+    color: #8ff0d6;
+    background: #062a24;
+    box-shadow: 0 0 0 1px rgba(6, 42, 36, 0.6);
+}
+.selected .visitWait {
+    background: #1d1840;
+}
+.visitLegend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 4px 0;
+    font: 500 0.875rem var(--font-small);
+    color: #cdeee2;
+}
+.visitLegend .visitStamp + .visitStamp,
+.visitLegend > .visitStamp:not(:first-child) {
+    margin-left: 10px;
+}
+.visitLegend {
+    column-gap: 16px;
+    row-gap: 6px;
+}
+.visitLegend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+}
+/* Phone: a smaller stamp tucked in the corner, so the day number stays free */
+@media (max-width: 639px) {
+    .gem {
+        top: 3px;
+        right: 3px;
+        width: 13px;
+        height: 13px;
     }
 }

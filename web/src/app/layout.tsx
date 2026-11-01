@@ -6,6 +6,7 @@ import Footer from "../components/Footer/Footer";
 import { ALLOW_INDEXING, SITE_URL } from "@/lib/site";
 import Aurora from "../components/Aurora/Aurora";
 import Analytics from "../components/Analytics/Analytics";
+import IntroSplash, { INTRO_SCRIPT } from "../components/IntroSplash/IntroSplash";
 
 // Syne bold for almost all text (Ada's final design, 2026-10-30)
 const syne = Syne({
@@ -43,8 +44,13 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
-        <html lang="nb" className={`${syne.variable} ${inter.variable}`}>
+        // suppressHydrationWarning: INTRO_SCRIPT sets data-intro on <html> before React starts
+        <html lang="nb" className={`${syne.variable} ${inter.variable}`} suppressHydrationWarning>
+        <head>
+            <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }}/>
+        </head>
         <body>
+        <IntroSplash/>
         <Aurora />
         <Header />
         {children}
