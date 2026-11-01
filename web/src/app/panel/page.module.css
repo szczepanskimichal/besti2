@@ -373,6 +373,29 @@
     font-size: 0.75rem;
 }
 
+/* BESTI Pro: the last tile across the whole row, lilac (Pro = lilac), icon and name side by side */
+.navProTab {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    gap: 8px;
+    min-height: 44px;
+    border-color: rgba(201, 191, 255, 0.45);
+    background: rgba(150, 128, 255, 0.1);
+    color: #e9e5ff;
+}
+.navProTab svg {
+    color: #d9d2ff;
+}
+.navProTab[aria-current="page"] {
+    border-color: #c9bfff;
+    background: rgba(150, 128, 255, 0.3);
+    color: #ffffff;
+    box-shadow: 0 0 12px rgba(201, 191, 255, 0.5);
+}
+.navProTab[aria-current="page"] svg {
+    color: #ffffff;
+}
+
 /* Very narrow phones (320 px): 4 tiles still fit, with a little less padding and smaller text */
 @media (max-width: 374px) {
     .topActions {

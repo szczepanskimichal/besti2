@@ -99,6 +99,7 @@
 }
 
 .name {
+    font-family: var(--font-heading);
     margin: 4% 0 0;
     font-weight: 700;
     font-size: clamp(1rem, 4.5vw, 1.4rem);
@@ -120,12 +121,15 @@
 }
 
 .scan {
+    font-family: var(--font-heading);
     margin: 3% 0 0;
     font-weight: 700;
     font-size: clamp(0.95rem, 3.6vw, 1.1rem);
 }
 
 .link {
+    font-family: var(--font-heading);
+    font-weight: 700;
     margin: 1% 0 0;
     font-size: clamp(0.85rem, 3.4vw, 1.05rem);
     overflow-wrap: anywhere;
@@ -133,6 +137,8 @@
 }
 
 .footer {
+    font-family: var(--font-heading);
+    font-weight: 700;
     margin: auto 0 0;
     padding-top: 4%;
     font-size: clamp(0.75rem, 3vw, 0.9rem);

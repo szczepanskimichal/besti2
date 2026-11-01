@@ -69,6 +69,8 @@
     color: #8ff0d6;
     font-size: 1.75rem;
     text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
+    font-weight: 700;
+    letter-spacing: -0.035em;
 }
 .full {
     margin: 0;

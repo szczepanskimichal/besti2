@@ -6,6 +6,7 @@ import { getPanelBusiness, getPanelQr, getPanelStats } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site";
 import CopyButton from "@/components/CopyButton/CopyButton";
+import LockIcon from "@/components/LockIcon/LockIcon";
 import ProBadge from "@/components/ProBadge/ProBadge";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import PanelNav from "../PanelNav";
@@ -53,7 +54,7 @@ export default async function SharePage({ searchParams }: SharePageProps) {
     const shortLink = link.replace(/^https?:\/\//, "");
     // ?utm_source=...: the visit statistics show where the customers came from
     const linkFor = (source: string) => `${link}?utm_source=${source}`;
-    const message = `Hei! Nå kan du bestille time hos ${business.name} på nett, når det passer deg: ${linkFor("sms")}`;
+    const message = `Hei! Nå kan du bestille time hos ${business.name} på nett, når det passer deg: ${linkFor("epost")}`;
     const bio = `Bestill time på nett 👇\n${shortLink}`;
 
     return (
@@ -84,7 +85,7 @@ export default async function SharePage({ searchParams }: SharePageProps) {
                         {/* eslint-disable-next-line @next/next/no-img-element -- a small data: image from our own API */}
                         <img src={qrSvg} alt={`QR-kode til ${shortLink}`} className={styles.qr}/>
                         <div className={styles.qrText}>
-                            <p className={styles.textSyne}>Kunden skanner koden med kameraet på mobilen og kommer rett til siden din.</p>
+                            <p className={styles.text}>Kunden skanner koden med kameraet på mobilen og kommer rett til siden din.</p>
                             <Link href="/panel/del/plakat" className={styles.saveButton}>Skriv ut plakat (A5)</Link>
                             <div className={styles.actions}>
                                 <a href={qrPng} download="besti-qr.png" className={`${styles.pill} ${styles.pillLit}`}>Last ned PNG</a>
@@ -138,16 +139,32 @@ export default async function SharePage({ searchParams }: SharePageProps) {
 
                 <section id="melding" className={`${styles.card} ${styles.wide}`}>
                     <h2 className={styles.cardTitle}>Melding til faste kunder</h2>
-                    <p className={styles.text}>Send den på SMS eller e-post til kundene dine, eller legg den i en story.</p>
+                    <span className={styles.free}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"
+                             strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <path d="M3 7l9 6 9-6"/>
+                            <rect x="3" y="5" width="18" height="14" rx="3"/>
+                        </svg>
+                        E-post er gratis
+                    </span>
+                    <p className={styles.text}>Send den på e-post til kundene dine, eller legg den i en story.</p>
                     <p className={styles.ready}>{message}</p>
                     <CopyButton text={message} label="Kopier meldingen" className={`${styles.pill} ${styles.pillLit}`}/>
-                    {/* SMS from BESTI does not exist yet: a note that it comes with Pro, and a way to say "I want it" */}
+                    {/* SMS from BESTI costs money per message: shown, but locked until Pro, with a way to say "I want it" */}
                     <div className={styles.proBox}>
-                        <p className={styles.proTitle}><ProBadge short/> Snart i BESTI Pro</p>
-                        <p className={styles.textSyne}>
+                        <p className={styles.proTitle}>
+                            <ProBadge short/> SMS kun i BESTI Pro <LockIcon className={styles.lock} keyhole/>
+                        </p>
+                        <p className={styles.text}>
                             Send meldingen som SMS til alle kundene dine med ett trykk, rett fra BESTI.
                         </p>
-                        <p className={styles.small}>Vil du ha det? Trykk under, så sier vi fra når det starter.</p>
+                        <button type="button" className={`${styles.pill} ${styles.locked}`} disabled
+                                aria-label="Send som SMS (låst, kommer i BESTI Pro)">
+                            <LockIcon className={styles.lock}/> Send som SMS
+                        </button>
+                        <p className={styles.small}>
+                            SMS koster penger per melding, derfor er den låst i beta. Vil du ha det? Trykk under, så sier vi fra når det starter.
+                        </p>
                         {stats?.proInterest || query.pro ? (
                             <p className={styles.thanks} role="status">Takk! Vi sier fra når det er klart.</p>
                         ) : (

@@ -136,6 +136,10 @@
     display: grid;
     gap: 6px;
 }
+.steps li {
+    font-family: var(--font-small);
+    font-weight: 500;
+}
 
 .importActions {
     display: flex;

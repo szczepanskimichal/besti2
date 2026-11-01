@@ -66,7 +66,7 @@
 .big text {
     font-family: var(--font-heading);
     font-size: 104px;
-    font-weight: 800;
+    font-weight: 700;
     fill: #bff8e8;
     fill-opacity: 0;
     stroke: #bff8e8;
@@ -75,6 +75,7 @@
     stroke-dashoffset: 600;
     filter: drop-shadow(0 0 8px rgba(125, 255, 200, 0.9));
     animation: draw 1.3s ease-out forwards, fill 0.6s 1.15s ease-out forwards;
+    letter-spacing: -0.035em;
 }
 
 .aurora {
@@ -238,9 +239,10 @@ p.big {
 .value {
     font-family: var(--font-heading);
     font-size: 22px;
-    font-weight: 800;
+    font-weight: 700;
     color: #f2fffb;
     overflow-wrap: anywhere;
+    letter-spacing: -0.035em;
 }
 
 .value a {

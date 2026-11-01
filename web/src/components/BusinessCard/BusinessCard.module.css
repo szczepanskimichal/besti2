@@ -52,6 +52,8 @@
 }
 
 .city {
+    font-family: var(--font-heading);
+    font-weight: 700;
     color: var(--color-muted);
     margin: 0;
 }
@@ -137,6 +139,8 @@
 }
 /* "★★★★★ 4,7 · 12 vurderinger" under the city */
 .rating {
+    font-family: var(--font-heading);
+    font-weight: 700;
     margin: 4px 0 0;
     font-size: 0.9rem;
     color: var(--color-muted);
