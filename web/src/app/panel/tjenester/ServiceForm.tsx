@@ -3,9 +3,10 @@ import { useActionState } from "react";
 import { priceTypeOptions } from "@/lib/priceTypes";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import styles from "./page.module.css";
+import styles from "./tjenester.module.css";
 
 type ServiceFormProps = {
+    className?: string;
     action: (previous: FormState, formData: FormData) => Promise<FormState>;
     // The saved service when editing; empty when adding a new one
     initial?: Record<string, string>;
@@ -13,11 +14,11 @@ type ServiceFormProps = {
     submitText: string;
 };
 // One form for "Legg til" and "Rediger": on an error the message shows here and everything typed stays
-export default function ServiceForm({ action, initial = {}, serviceId, submitText }: ServiceFormProps) {
+export default function ServiceForm({ className, action, initial = {}, serviceId, submitText }: ServiceFormProps) {
     const [state, formAction] = useActionState<FormState, FormData>(action, {});
     const value = (field: string, fallback = "") => state.values?.[field] ?? initial[field] ?? fallback;
     return (
-        <form action={formAction} className={styles.form}>
+        <form action={formAction} className={className ? `${styles.form} ${className}` : styles.form}>
             {state.error && (
                 <p className={styles.error} role="alert">
                     {state.error}
@@ -30,7 +31,7 @@ export default function ServiceForm({ action, initial = {}, serviceId, submitTex
             </label>
             <label className={styles.field}>
                 Beskrivelse (valgfritt)
-                <input name="description" maxLength={500} defaultValue={value("description")} />
+                <textarea name="description" maxLength={500} rows={3} defaultValue={value("description")} />
             </label>
             <label className={styles.field}>
                 Hvor lenge varer timen? (minutter)
