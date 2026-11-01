@@ -7,7 +7,7 @@ export const statusLabels: Record<string, string> = {
     MotteIkke: "Møtte ikke",
 };
 
-// BESTI sammen: the two visits of one invitation are marked with 👯 in the calendar
-export function customerLabel(booking: { customerName: string; inviteId: string | null }): string {
-    return booking.inviteId ? `👯 ${booking.customerName}` : booking.customerName;
+// The customer's name in the calendar; the people icon in front (PersonsIcon) shows one, two or a group
+export function customerLabel(booking: { customerName: string }): string {
+    return booking.customerName;
 }

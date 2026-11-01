@@ -1,11 +1,12 @@
 import Link from "next/link";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import { formatTime } from "@/lib/format";
 import type { PanelBooking, PanelGroup } from "@/lib/types";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
 
 // BESTI sammen seen by the business: the whole group as one event, so the salon knows how many come.
-// "Gruppe 👯 5 plasser: 3 med, 2 venter på svar, svarfrist kl. 18:00"
+// "Gruppe 5 plasser: 3 med, 2 venter på svar, svarfrist kl. 18:00"
 export function groupLine(group: PanelGroup): string {
     const waiting = group.persons - group.joined;
     if (!group.open) {
@@ -21,7 +22,7 @@ export default function GroupSummary({ group, members, current }: {
     return (
         <div className={calendar.group}>
             <p className={calendar.groupTitle}>
-                <span aria-hidden="true">👯</span> Gruppe{group.open ? "" : " klar"} · {groupLine(group)}
+                <PersonsIcon persons={group.persons}/>Gruppe{group.open ? "" : " klar"} · {groupLine(group)}
             </p>
             <p className={styles.muted}>
                 Organisert av {group.organizerName}
@@ -61,7 +62,7 @@ export function GroupStrip({ bookings, hrefFor }: { bookings: PanelBooking[]; hr
             {[...first.values()].map((booking) => (
                 <li key={booking.group!.id}>
                     <Link href={hrefFor(booking)} scroll={false} className={calendar.groupChip}>
-                        <span aria-hidden="true">👯</span>{" "}
+                        <PersonsIcon persons={booking.group!.persons}/>
                         <strong>{formatTime(booking.startUtc)} {booking.serviceName}</strong>
                         {" · "}gruppa til {booking.group!.organizerName} · {groupLine(booking.group!)}
                     </Link>

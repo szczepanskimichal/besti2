@@ -35,3 +35,24 @@ export function OkStamp() {
         </span>
     );
 }
+
+// Small round stamp next to the time: lilac clock = waiting, mint check = confirmed.
+// The symbol fills the whole stamp, so it stays readable even when small and never covers the name
+export function MiniStamp({ status }: { status: string }) {
+    const waiting = status === "Venter" || status === "VenterKunde";
+    if (!waiting && status !== "Bekreftet") {
+        return null;
+    }
+    const label = waiting ? pendingLabels[status] : "Bekreftet";
+    return (
+        <span className={`${calendar.miniStamp} ${waiting ? calendar.miniWait : calendar.miniOk}`} title={label}>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.9"
+                 strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {waiting
+                    ? <><circle cx="8" cy="8" r="6.6"/><path d="M8 3.8V8l2.9 1.8"/></>
+                    : <><circle cx="8" cy="8" r="6.6"/><path d="M4.8 8.3l2.2 2.2 4.3-4.8"/></>}
+            </svg>
+            <span className={calendar.srOnly}>{label}</span>
+        </span>
+    );
+}
