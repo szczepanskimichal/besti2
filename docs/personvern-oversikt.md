@@ -94,4 +94,4 @@ Overføring ut av EU/EØS: Cloudflare (USA), under Data Privacy Framework og SCC
 
 ## Åpne punkter
 
-- Bedrifter innen helse (psykolog, fysioterapi): bestillinger kan avsløre helseforhold. Vurder egne regler før slike bedrifter tas inn i større skala.
+- Bedrifter innen helse: avgjort 2026-10-31. BESTI tar ikke imot dem (lege, tannlege, psykolog, fysioterapi, kiropraktor, naprapat, optiker, annen helse), fordi bestillinger kan avsløre helseforhold (art. 9). Kategoriene er fjernet helt fra koden (enum, maler, søk og registrering), og eksisterende bedrifter med dem ble flyttet til Annet (migrasjon RemoveHealthCategories). Kan vurderes på nytt senere. Fotpleie ligger under Skjønnhet og velvære.

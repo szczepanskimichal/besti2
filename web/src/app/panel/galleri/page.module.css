@@ -1,22 +1,329 @@
-.grid {
-    list-style: none;
-    padding: 0;
-    margin: 24px 0 0;
-    display: grid;
-    gap: 16px;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+/* Galleri (Ada 2026-11-01): the same dark glass look as Vurderinger, Stempelkort and Profil.
+   Mint = the photos and the upload, blue = delete. Headings and numbers in Syne, small text in Inter */
+.notice {
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border: 1px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+}
+.error {
+    margin: 0;
+    padding: 10px 14px;
+    border: 1px solid #7fb2ff;
+    border-radius: 14px;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+    font: 400 0.875rem/1.5 var(--font-small);
+}
+.small {
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.875rem/1.5 var(--font-small);
 }
 
+/* Glass cards */
+.hero,
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-width: 0;
+    margin: 0 0 12px;
+    padding: 14px 16px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.hero {
+    margin-top: 20px;
+    border-radius: 22px;
+}
+.heroHead {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+.camera {
+    flex: none;
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 0 10px rgba(159, 240, 218, 0.45));
+}
+.heroText {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+.used {
+    margin: 0;
+    color: #ffffff;
+    font: 700 1.125rem var(--font-heading);
+}
+.usedNumber {
+    color: #8ff0d6;
+    font-size: 1.75rem;
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
+}
+.full {
+    margin: 0;
+    padding: 10px 16px;
+    border: 1.5px solid rgba(143, 240, 214, 0.42);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.6);
+    color: #cfeee6;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+
+/* Upload: a black field with a glowing mint line (like Gratis BESTI-tjeneste); Velg bilde and Last opp bilde side by side */
+.upload {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.drop {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px 16px;
+    border: 2px solid #8ff0d6;
+    border-radius: 18px;
+    background: linear-gradient(rgba(80, 225, 190, 0.08), rgba(80, 225, 190, 0.08)), #0b1d24;
+    box-shadow: 0 0 14px rgba(143, 240, 214, 0.6), 0 0 26px rgba(114, 230, 200, 0.3), inset 0 0 18px rgba(114, 230, 200, 0.28);
+    cursor: pointer;
+}
+/* Two equal buttons side by side, also on the phone */
+.uploadRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+.uploadRow .choose,
+.uploadRow .saveButton {
+    justify-content: center;
+    padding: 0 12px;
+    font-size: 0.875rem;
+}
+/* "Velg bilde": a lit mint pill (lighter than Last opp bilde); the real file field sits invisibly on top of it */
+.choose {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 20px;
+    border: 2px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+    font: 700 0.9375rem var(--font-heading);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.choose:hover {
+    background: rgba(80, 225, 190, 0.28);
+}
+.fileInput {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.choose:focus-within {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.dropHint {
+    color: #a9bdb8;
+    font: 400 0.8125rem var(--font-small);
+}
+.fileName {
+    color: #8ff0d6;
+    font: 500 0.875rem var(--font-small);
+    overflow-wrap: anywhere;
+}
+
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #ffffff;
+    font: 700 1.25rem var(--font-heading);
+}
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1.5px solid rgba(143, 240, 214, 0.42);
+    border-radius: 999px;
+    color: #8ff0d6;
+    font: 700 1.25rem/1 var(--font-heading);
+}
+.countLit {
+    border: 2px solid #8ff0d6;
+    background: rgba(80, 225, 190, 0.28);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.9), 0 0 20px rgba(114, 230, 200, 0.55);
+}
+
+/* The photos: glass frames, two in a row on the phone, more on wider screens */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
 .item {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
-
+/* Every photo in a thin mint frame */
+.frame {
+    position: relative;
+    padding: 4px;
+    border: 1.5px solid rgba(143, 240, 214, 0.7);
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.25);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.55);
+}
+/* The first photo is the big photo on the business page: a mint neon frame */
+.itemCover .frame {
+    border: 2px solid #8ff0d6;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.55), 0 0 18px rgba(114, 230, 200, 0.3);
+}
 .image {
+    display: block;
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid var(--color-border);
+    border-radius: 14px;
+}
+.coverStamp {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    padding: 4px 10px;
+    border: 1.5px solid #8ff0d6;
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.82);
+    color: #8ff0d6;
+    box-shadow: 0 0 10px rgba(143, 240, 214, 0.45);
+    font: 700 0.75rem var(--font-heading);
+}
+
+/* Slett: the blue Avbestill pill; the question opens under it */
+.more {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.pillDanger {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 36px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    border-radius: 999px;
+    background: rgba(12, 28, 70, 0.65);
+    color: #7fb2ff;
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    font: 700 0.875rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.pillDanger::-webkit-details-marker {
+    display: none;
+}
+.more[open] > .pillDanger {
+    display: none;
+}
+.sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1.5px solid rgba(80, 130, 230, 0.6);
+    border-radius: 16px;
+    background: rgba(12, 28, 70, 0.55);
+}
+.sheetText {
+    margin: 0;
+    color: #cfe0ff;
+    font: 400 0.875rem/1.5 var(--font-small);
+}
+
+/* Buttons */
+.saveButton,
+.dangerButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font: 700 0.9375rem var(--font-heading);
+    white-space: nowrap;
+    cursor: pointer;
+}
+.saveButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+}
+.dangerButton {
+    min-height: 40px;
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.85);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #9fc4ff;
+}
+.saveButton:disabled,
+.dangerButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+.saveButton:focus-visible,
+.dangerButton:focus-visible,
+.pillDanger:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+@media (min-width: 700px) {
+    .hero {
+        padding: 20px 24px;
+    }
+    .section {
+        padding: 18px 24px 20px;
+    }
+    .upload {
+        max-width: 480px;
+    }
+    .uploadRow .choose,
+    .uploadRow .saveButton {
+        font-size: 0.9375rem;
+    }
+    .grid {
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 16px;
+    }
 }

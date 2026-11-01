@@ -10,7 +10,7 @@ public static class DemoData
     [
         new("11111111-1111-1111-1111-111111111111"), // Klipp & Stil Frisør
         new("22222222-2222-2222-2222-222222222222"), // Fjord Bygg AS
-        new("33333333-3333-3333-3333-333333333333"), // Nordlys Psykologsenter
+        new("33333333-3333-3333-3333-333333333333"), // Nordlys Massasje
     ];
 
     // Safe to run on every start: does nothing once they are gone. Returns how many businesses were removed.

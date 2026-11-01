@@ -14,7 +14,7 @@ export default function TermsPage() {
     return (
         <main className={styles.main}>
             <h1>Vilkår for bruk</h1>
-            <p className={styles.updated}>Sist oppdatert: 29. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 31. oktober 2026</p>
             <section className={styles.section}>
                 <h2><CrystalIcon name="stjerne"/>Om tjenesten</h2>
                 <p>
@@ -100,9 +100,9 @@ export default function TermsPage() {
                         siden din vises andre steder (for eksempel forhåndsvisning på Facebook eller i Google), så lenge
                         bedriften har konto.</li>
                     <li>Du er ansvarlig for tjenestene du tilbyr og for å følge lover og regler for din bransje.</li>
-                    <li>Driver du med helsetjenester (for eksempel psykolog eller fysioterapi), er du selv ansvarlig for
-                        å vurdere om timebestilling via BESTI passer med taushetsplikten og kravene til
-                        informasjonssikkerhet i din bransje. Be ikke kundene skrive helseopplysninger i meldingsfeltet.</li>
+                    <li>BESTI tar ikke imot helsetjenester, for eksempel lege, tannlege, psykolog, fysioterapeut,
+                        kiropraktor, naprapat eller optiker, fordi en timebestilling der kan avsløre helseopplysninger.
+                        Be ikke kundene skrive helseopplysninger i meldingsfeltet.</li>
                     <li>Du kan bare laste opp bilder du har rettigheter til. Personer på bildene må ha gitt samtykke.
                         Si fra til de ansatte at navnet deres vises på siden.</li>
                     <li>Kundeopplysninger du får gjennom BESTI kan bare brukes til å gi kunden timen, ikke til

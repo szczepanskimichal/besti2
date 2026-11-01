@@ -1,29 +1,545 @@
+/* Stempelkort (Ada 2026-10-31): the same dark glass look as Profil, Ansatte, Tjenester and Åpningstider.
+   Mint = done (full card), crystal stamps like in Min BESTI, numbers in Inter */
 .notice {
-    background: linear-gradient(rgba(143, 214, 160, 0.12), rgba(143, 214, 160, 0.12)), var(--color-card-base);
-    color: var(--color-success);
-    border: 1px solid var(--color-success);
-    border-radius: 8px;
-    padding: 12px 16px;
     margin: 0 0 16px;
+    padding: 10px 16px;
+    border: 1px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+}
+.error {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border: 1px solid #7fb2ff;
+    border-radius: 14px;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+}
+.text {
+    margin: 0;
+    color: #cfeee6;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+.small {
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.875rem/1.5 var(--font-small);
 }
 
-.lead {
-    margin: 0 0 8px;
-}
-
-.heading {
-    font-size: 1.25rem;
-    margin: 28px 0 12px;
-}
-
-.off {
+/* Glass cards */
+.hero,
+.section {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
-    margin-top: 12px;
+    min-width: 0;
+    margin: 0 0 12px;
+    padding: 14px 16px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.hero {
+    margin-top: 20px;
+    border-radius: 22px;
+}
+.sectionTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: #ffffff;
+    font: 700 1.25rem var(--font-heading);
+}
+/* How many: a small mint number in Inter */
+.count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1.5px solid rgba(143, 240, 214, 0.6);
+    border-radius: 999px;
+    color: #8ff0d6;
+    font: 700 1.25rem/1 var(--font-heading);
+}
+/* Someone is waiting for a reward: the number glows */
+.countLit {
+    border: 2px solid #8ff0d6;
+    background: rgba(80, 225, 190, 0.28);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.9), 0 0 20px rgba(114, 230, 200, 0.55);
 }
 
+/* The example card: crystal stamps on a darker glass plate, the reward under them */
+.heroLabel {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 0.875rem var(--font-heading);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+.exampleCard {
+    padding: 12px 14px;
+    border: 1.5px solid transparent;
+    border-radius: 18px;
+    background: linear-gradient(#061219, #061219) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.4), 0 0 18px rgba(159, 216, 255, 0.25);
+}
+.exampleCard ol {
+    margin: 0 0 10px;
+}
+.exampleReward {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 1rem var(--font-heading);
+}
+/* The reward: Syne in mint with a soft glowing mint line under it */
+.exampleReward span,
+.rewardText {
+    text-decoration: underline 2px rgba(143, 240, 214, 0.55);
+    text-underline-offset: 5px;
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.35);
+}
+.lead {
+    margin: 0;
+    color: #e6f7f2;
+    font: 700 1rem/1.5 var(--font-heading);
+}
+/* Phone: the Pro stamp first, the sentence under it. Computer: side by side */
+.pro {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+.proText {
+    margin: 0;
+    color: #e4ddff;
+    font: 400 0.875rem var(--font-small);
+}
+/* Small lilac neon pill like the Pro stamp ring: tells us the business wants Pro */
+.proButton {
+    min-height: 36px;
+    padding: 6px 16px;
+    border: 1.5px solid #c9bfff;
+    border-radius: 999px;
+    background: rgba(150, 128, 255, 0.14);
+    color: #e4ddff;
+    font: 700 0.875rem var(--font-heading);
+    box-shadow: 0 0 8px rgba(201, 191, 255, 0.4);
+    cursor: pointer;
+}
+.proButton:hover {
+    background: rgba(150, 128, 255, 0.24);
+}
+.proThanks {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 0.875rem var(--font-heading);
+}
+
+/* Form */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.visits {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-width: 0;
+}
+.question {
+    margin: 0 0 8px;
+    padding: 0;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+/* 5 to 10 in one row: round glass tiles, the chosen one lit mint like the Nye bestillinger tiles */
+.visitChoices {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 6px;
+    max-width: 480px;
+}
+.visitChoice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1;
+    border: 1.5px solid rgba(143, 240, 214, 0.42);
+    border-radius: 50%;
+    background: rgba(3, 15, 22, 0.6);
+    /* The other choices glow too, only weaker than the chosen one */
+    box-shadow: 0 0 4px rgba(143, 240, 214, 0.25), 0 0 10px rgba(114, 230, 200, 0.12);
+    cursor: pointer;
+}
+.visitChoice input {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+.visitNumber {
+    color: #ffffff;
+    font: 700 1.25rem/1 var(--font-heading);
+}
+.visitText {
+    color: #a9bdb8;
+    font: 400 0.6875rem var(--font-small);
+}
+.visitChoice:has(input:checked) {
+    border-color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.18);
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.6), 0 0 16px rgba(114, 230, 200, 0.35);
+}
+.visitChoice:has(input:checked) .visitNumber {
+    color: #8ff0d6;
+}
+.visitChoice:has(input:checked) .visitText {
+    color: #d6fbf0;
+}
+.visitChoice:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+/* The lightly glowing mint field of the other panel forms */
+/* Small Inter line under "Belønning": the field is the business's own text */
+.fieldHint {
+    color: #a9bdb8;
+    font: 400 0.8125rem var(--font-small);
+}
+.rewardInput {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 1rem var(--font-small);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+}
+/* The reward the business writes: Syne in glowing mint, like on the cards */
+.rewardInput {
+    border-color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.12);
+    color: #8ff0d6;
+    font: 700 1rem var(--font-heading);
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.55), 0 0 18px rgba(114, 230, 200, 0.3);
+}
+.rewardInput::placeholder {
+    color: #7f9a94;
+    font: 400 0.9375rem var(--font-small);
+    text-shadow: none;
+}
+.rewardInput:focus-visible {
+    outline: none;
+    border-color: #bff8e8;
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.45);
+}
+
+/* Buttons and pills */
+.saveButton,
+.dangerButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font: 700 0.9375rem var(--font-heading);
+    white-space: nowrap;
+    cursor: pointer;
+}
+/* The one glowing action: mint with the neon edge of the home page button */
+.saveButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+}
+.saveButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+/* "Ja, slå av": the same blue Avbestill pill */
+.dangerButton {
+    border: 1.5px solid rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+    color: #7fb2ff;
+}
+.saveButton:focus-visible,
+.dangerButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.more {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pill {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.pill::-webkit-details-marker {
+    display: none;
+}
+/* Slå av: exactly the blue Avbestill pill from Min BESTI */
+.pillDanger {
+    border-color: rgba(80, 130, 230, 0.75);
+    background: rgba(12, 28, 70, 0.65);
+    color: #7fb2ff;
+    box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
+}
+.pillDanger::-webkit-details-marker {
+    display: none;
+}
+.pillDanger:hover,
+.more[open] > .pillDanger {
+    background: rgba(18, 40, 96, 0.75);
+}
+.pill:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.sheet {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1.5px dashed rgba(127, 178, 255, 0.5);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.5);
+}
+
+/* Lists */
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.name {
+    margin: 0;
+    color: #ffffff;
+    font: 700 1.0625rem var(--font-heading);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+a.name:hover {
+    color: #8ff0d6;
+}
+/* Stretched link: a tap anywhere on the row opens the customer card */
+.rowLink::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+}
+
+/* Full card: mint glass row with the crystal gift in an aurora ring */
 .ready {
-    border-color: var(--color-warning);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 10px 14px;
+    padding: 12px 14px;
+    border: 1.5px solid #8ff0d6;
+    border-radius: 18px;
+    background: rgba(80, 225, 190, 0.1);
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.45), 0 0 16px rgba(114, 230, 200, 0.25);
+}
+.giftRing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 10px rgba(159, 245, 220, 0.6);
+}
+.giftRing img {
+    width: 30px;
+    height: 30px;
+}
+.readyText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.rewardText {
+    margin: 2px 0 0;
+    color: #8ff0d6;
+    font: 700 1rem var(--font-heading);
+}
+.readyAction {
+    grid-column: 1 / -1;
+}
+
+/* Collecting: name and "7 av 10" on one line, the crystal stamps under */
+.collecting {
+    position: relative;
+    padding: 12px 14px;
+    border: 1.5px solid rgba(191, 248, 232, 0.2);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.55);
+}
+.collectingHead {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+.stampCount {
+    flex: none;
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.875rem var(--font-small);
+}
+.stampCount strong {
+    color: #8ff0d6;
+    font: 700 1.125rem var(--font-small);
+}
+/* Smaller crystal stamps in the list, so 10–12 fit on one phone line */
+.collecting ol {
+    gap: 3px;
+    margin: 8px 0 0;
+}
+.collecting ol li[aria-hidden] {
+    width: 24px;
+    height: 24px;
+    border-width: 1.5px;
+}
+.collecting ol li[aria-hidden] img {
+    width: 16px;
+    height: 16px;
+}
+.collecting ol li[aria-hidden]:last-child img {
+    width: 20px;
+    height: 20px;
+}
+
+@media (min-width: 700px) {
+    .pro {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 14px;
+    }
+    .hero {
+        padding: 20px 24px;
+    }
+    .section {
+        padding: 18px 24px 20px;
+    }
+    .ready {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .readyAction {
+        grid-column: auto;
+    }
+    .collecting ol li[aria-hidden] {
+        width: 32px;
+        height: 32px;
+    }
+    .collecting ol li[aria-hidden] img {
+        width: 21px;
+        height: 21px;
+    }
+}
+.collecting:hover {
+    border-color: rgba(143, 240, 214, 0.5);
+}
+
+/* Under Belønning: the field, Lagre endringer and Slå av side by side, one width and one height.
+   Phone: the field on its own line, the two buttons next to each other under it */
+.rewardRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: 10px;
+    margin-top: -8px;
+}
+.rewardRow .rewardInput {
+    grid-column: 1 / -1;
+}
+.rewardRow .rewardInput,
+.rewardRow .saveButton,
+.rewardRow .pillDanger {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 48px;
+}
+.rewardRow .saveButton,
+.rewardRow .pillDanger {
+    justify-content: center;
+    padding: 0 8px;
+    font: 700 0.875rem var(--font-heading);
+    white-space: nowrap;
+}
+/* Phone: the warning opens under both buttons, full width */
+.rewardRow .sheet {
+    width: calc(200% + 10px);
+    margin-left: calc(-100% - 10px);
+}
+@media (min-width: 700px) {
+    .rewardRow .sheet {
+        width: auto;
+        margin-left: 0;
+    }
+    .rewardRow {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        max-width: 900px;
+    }
+    .rewardRow .saveButton,
+    .rewardRow .pillDanger {
+        font-size: 0.9375rem;
+    }
+    .rewardRow .rewardInput {
+        grid-column: auto;
+    }
 }

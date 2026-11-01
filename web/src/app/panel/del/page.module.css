@@ -1,122 +1,346 @@
-.main {
-    max-width: var(--page-width);
-    margin: 0 auto;
-    padding: 24px 16px 48px;
+/* Del og få kunder (Ada 2026-11-01): the same dark glass look as Galleri, Vurderinger and Stempelkort.
+   Mint = the link and the main actions, lilac = waiting for approval. Headings and numbers in Syne, text in Inter */
+/* This page: the title in glowing mint, today's date on the right also on the phone */
+.page h1 {
+    color: #8ff0d6;
+    text-shadow: 0 0 12px rgba(143, 240, 214, 0.55);
+}
+.page h1 + p {
+    margin-left: auto;
+}
+.lead {
+    margin: 20px 0 12px;
+    color: #e6f7f2;
+    font: 600 1.25rem/1.45 var(--font-heading);
+}
+/* Waiting for approval: the lilac "venter" pill */
+.waiting {
+    margin: 0 0 12px;
+    padding: 10px 16px;
+    border: 2px solid #c9bfff;
+    border-radius: 18px;
+    background: linear-gradient(rgba(150, 128, 255, 0.24), rgba(150, 128, 255, 0.24)), var(--color-input-bg);
+    box-shadow: 0 0 14px rgba(201, 191, 255, 0.5), inset 0 0 18px rgba(170, 150, 255, 0.25);
+    color: #ffffff;
+    font: 600 0.9375rem/1.5 var(--font-heading);
 }
 
-.back {
-    display: inline-block;
-    margin-bottom: 16px;
-    color: var(--color-primary);
-    font-weight: 600;
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.title {
-    font-size: clamp(1.5rem, 5vw, 2rem);
-    margin: 0 0 4px;
-}
-
-.muted {
-    color: var(--color-muted);
-    margin: 0 0 16px;
-}
-
+/* Glass cards */
 .card {
-    padding: 20px 16px;
-    margin-bottom: 16px;
-    background: var(--color-surface);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+    padding: 14px 16px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
     backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+}
+.hero {
+    border-radius: 22px;
+}
+/* Card titles in glowing mint, a bit bigger */
+.cardTitle {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 1.375rem/1.3 var(--font-heading);
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.4);
+}
+.text {
+    margin: 0;
+    color: #e6f7f2;
+    font: 400 0.9375rem/1.55 var(--font-small);
+}
+.text a,
+.stepText a {
+    color: #8ff0d6;
+}
+.textSyne {
+    margin: 0;
+    color: #e6f7f2;
+    font: 600 0.9375rem/1.5 var(--font-heading);
+}
+/* Tips with the crystal light bulb from Tjenester in a dark aurora ring */
+.tip {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    color: #cfeee6;
+    font: 600 0.875rem/1.5 var(--font-heading);
+}
+.bulb {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: linear-gradient(#061219, #061219) padding-box, linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+}
+.bulb img {
+    width: 22px;
+    height: 22px;
+}
+/* Bio text: only the link line glows (mint text like the big link field), no extra neon frame */
+.bioLink {
+    color: #8ff0d6;
+    font: 700 1rem/1.6 var(--font-heading);
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.55);
+}
+.arrow {
+    width: 30px;
+    height: 30px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+.small {
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.8125rem/1.5 var(--font-small);
 }
 
-.card h2 {
-    font-size: 1.15rem;
-    margin: 0 0 8px;
-}
-
-.card p {
-    margin: 0 0 12px;
-}
-
-.card ol {
-    margin: 0 0 12px;
-    padding-left: 20px;
-}
-
-.card li + li {
-    margin-top: 6px;
-}
-
-/* The link in a box that wraps on small phones */
+/* The link: Syne in glowing mint in a lit mint field, like Gratis BESTI-tjeneste on Stempelkort */
 .link {
-    display: block;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    border: 1px solid var(--color-input-border);
-    border-radius: 8px;
-    background: var(--color-input-bg);
+    align-self: stretch;
+    padding: 12px 18px;
+    border: 2px solid #8ff0d6;
+    border-radius: 18px;
+    background: linear-gradient(rgba(80, 225, 190, 0.08), rgba(80, 225, 190, 0.08)), #0b1d24;
+    box-shadow: 0 0 14px rgba(143, 240, 214, 0.6), 0 0 26px rgba(114, 230, 200, 0.3), inset 0 0 18px rgba(114, 230, 200, 0.28);
+    color: #8ff0d6;
+    font: 700 1.0625rem var(--font-heading);
+    text-decoration: none;
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
     overflow-wrap: anywhere;
-    white-space: pre-line;
-    font-weight: 600;
+}
+.link:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
 }
 
+/* Ready texts to copy: a calm dark field */
+.ready {
+    align-self: stretch;
+    margin: 0;
+    padding: 10px 14px;
+    border: 1.5px solid rgba(143, 240, 214, 0.42);
+    border-radius: 16px;
+    background: var(--color-input-bg);
+    color: #e6f7f2;
+    font: 500 0.9375rem/1.5 var(--font-small);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+}
+
+/* QR: a white box (it must be light to scan) in a mint neon frame */
+/* Phone: the QR code in the middle, the text and buttons under it */
+.qrRow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    align-self: stretch;
+}
+.qr {
+    flex: none;
+    width: 160px;
+    height: 160px;
+    padding: 8px;
+    border: 2px solid #8ff0d6;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 0 10px rgba(143, 240, 214, 0.7), 0 0 24px rgba(114, 230, 200, 0.35);
+}
+.qrText {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    align-self: stretch;
+    min-width: 0;
+}
+
+/* Steps with glowing round numbers */
+.steps {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.stepNumber {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 2px solid #8ff0d6;
+    border-radius: 50%;
+    background: rgba(80, 225, 190, 0.2);
+    color: #ffffff;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.7);
+    font: 700 0.9375rem/1 var(--font-heading);
+}
+.stepText {
+    padding-top: 4px;
+    color: #e6f7f2;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+
+/* Buttons and pills */
 .actions {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
-
-.primaryButton,
-.secondaryButton {
+.saveButton,
+.pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding: 0 18px;
+    padding: 0 20px;
     border-radius: 999px;
-    font: inherit;
-    font-family: var(--font-heading);
-    font-weight: 600;
+    font: 700 0.9375rem var(--font-heading);
     text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
 }
-
-.primaryButton {
-    border: none;
-    background: var(--color-primary);
+.saveButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
     color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
 }
-
-.secondaryButton {
-    border: 1px solid var(--color-border);
-    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
-    color: var(--color-text);
+.pill {
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
 }
-
-.primaryButton:focus-visible,
-.secondaryButton:focus-visible {
+/* Lit pill: Se siden and Last ned */
+.pillLit {
+    border: 2px solid #8ff0d6;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+}
+.pill:hover {
+    background: rgba(80, 225, 190, 0.12);
+}
+.saveButton:focus-visible,
+.pill:focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 3px;
 }
 
-.qrRow {
-    display: flex;
-    flex-wrap: wrap;
+/* Phone: the QR card centred (title, code, Skriv ut and the download pills) */
+.qrCard .cardTitle {
+    align-self: center;
+    text-align: center;
+}
+.qrCard .qrText {
     align-items: center;
-    gap: 16px;
+    text-align: center;
+}
+.qrCard .qrText .actions {
+    justify-content: center;
 }
 
-/* White box: a QR code needs a light background to scan */
-.qr {
-    width: 168px;
-    height: 168px;
-    padding: 8px;
-    background: #fff;
-    border-radius: 8px;
+/* BESTI Pro note under the message: SMS comes later (lilac = not here yet) */
+.proBox {
+    display: flex;
+    flex-direction: column;
+    align-self: stretch;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 14px 16px;
+    border: 2px solid #c9bfff;
+    border-radius: 16px;
+    background: rgba(150, 128, 255, 0.12);
+    box-shadow: 0 0 12px rgba(201, 191, 255, 0.35), inset 0 0 12px rgba(201, 191, 255, 0.12);
+}
+.proBox p {
+    margin: 0;
+}
+.proTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #d9d2ff;
+    font: 700 1.0625rem/1.3 var(--font-heading);
+    text-shadow: 0 0 10px rgba(201, 191, 255, 0.45);
+}
+.thanks {
+    color: #8ff0d6;
+    font: 600 0.9375rem/1.4 var(--font-heading);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.4);
 }
 
-.small {
-    font-size: 0.9rem;
-    color: var(--color-muted);
+/* Wider screens: two columns, the message across the whole width */
+@media (min-width: 700px) {
+    .qrCard .cardTitle {
+        align-self: flex-start;
+        text-align: left;
+    }
+    .qrCard .qrText {
+        align-items: flex-start;
+        text-align: left;
+    }
+    .qrCard .qrText .actions {
+        justify-content: flex-start;
+    }
+    .qrRow {
+        flex-direction: row;
+        align-items: center;
+    }
+    .qrText {
+        flex: 1 1 200px;
+        align-self: auto;
+    }
+}
+
+@media (min-width: 900px) {
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        /* Cards side by side are equally tall (Lenken + QR, Google + Instagram) */
+        align-items: stretch;
+        gap: 16px;
+    }
+    .card {
+        padding: 18px 24px 20px;
+    }
+    .wide {
+        grid-column: 1 / -1;
+    }
+    /* The link card as tall as the QR card next to it: a compact glowing link field in the middle, big link text */
+    .hero .link {
+        margin: auto 0;
+        padding: 12px 20px;
+        font-size: 1.375rem;
+        text-align: center;
+    }
 }

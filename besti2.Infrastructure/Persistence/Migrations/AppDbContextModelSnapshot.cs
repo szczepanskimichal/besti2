@@ -584,20 +584,20 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Address = "Munkegata 20",
                             AutoConfirm = false,
-                            Category = "Helse",
+                            Category = "Massasje",
                             City = "Trondheim",
                             CreatedUtc = new DateTime(2026, 10, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Samtaleterapi for voksne.",
-                            Email = "time@nordlyspsykolog.example",
+                            Description = "Klassisk massasje og hot stone i Trondheim sentrum.",
+                            Email = "time@nordlysmassasje.example",
                             FreeCancelHours = 24,
                             IsHidden = false,
                             Latitude = 63.429519999999997,
                             Longitude = 10.395160000000001,
-                            Name = "Nordlys Psykologsenter",
+                            Name = "Nordlys Massasje",
                             OrgNumber = "999000003",
                             PhoneNumber = "+4773000003",
                             PostalCode = "7011",
-                            Slug = "nordlys-psykologsenter-trondheim",
+                            Slug = "nordlys-massasje-trondheim",
                             WeeklyReportOff = false
                         });
                 });
@@ -1389,11 +1389,11 @@ namespace besti2.Infrastructure.Persistence.Migrations
                         {
                             Id = new Guid("a3333333-0000-0000-0000-000000000001"),
                             BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
-                            Description = "Individuell samtale, 50 minutter",
+                            Description = "Hele kroppen, 50 minutter",
                             DurationMinutes = 50,
                             IsDeleted = false,
-                            Name = "Samtaleterapi",
-                            PriceNok = 1200m,
+                            Name = "Klassisk massasje",
+                            PriceNok = 890m,
                             PriceType = "FastPris"
                         },
                         new
@@ -1402,8 +1402,8 @@ namespace besti2.Infrastructure.Persistence.Migrations
                             BusinessId = new Guid("33333333-3333-3333-3333-333333333333"),
                             DurationMinutes = 60,
                             IsDeleted = false,
-                            Name = "Første konsultasjon",
-                            PriceNok = 950m,
+                            Name = "Hot stone-massasje",
+                            PriceNok = 990m,
                             PriceType = "FastPris"
                         });
                 });
