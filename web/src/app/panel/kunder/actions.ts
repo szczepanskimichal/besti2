@@ -17,6 +17,10 @@ export async function customerNoteAction(_previous: FormState, formData: FormDat
     if (!result.ok) {
         return { error: result.message, values: { note } };
     }
+    // From the notepad on Kunder: back to the list, the saved note stays open
+    if (formData.get("tilbake") === "kunder") {
+        redirect(`/panel/kunder?lagret=${encodeURIComponent(key)}`);
+    }
     redirect(`/panel/kunder/${encodeURIComponent(key)}?lagret=1`);
 }
 

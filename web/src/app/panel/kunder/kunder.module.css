@@ -1,0 +1,431 @@
+/* Kunder (Ada 2026-10-31): the same dark glass look as the calendar and Liste */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0 16px;
+}
+.search {
+    position: relative;
+    display: flex;
+    flex: 1 1 320px;
+    min-width: 0;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.search:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.35);
+}
+.searchIcon {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    color: #bff8e8;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+.searchInput {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 12px 0 44px;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    font: 500 0.9375rem var(--font-heading);
+}
+.searchInput:focus {
+    outline: none;
+}
+.searchButton,
+.importButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(5, 17, 24, 0.82);
+    color: #bff8e8;
+    font: 600 0.9375rem var(--font-heading);
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.searchButton {
+    margin: 3px;
+    min-height: 36px;
+    padding: 0 16px;
+    border-color: rgba(191, 248, 232, 0.25);
+    background: rgba(114, 214, 189, 0.12);
+}
+.importButton {
+    backdrop-filter: var(--glass-blur);
+}
+.searchButton:focus-visible,
+.importButton:focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+/* "6 kunder" in big crystal Syne, the privacy line next to it */
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 16px;
+    margin: 0 0 16px;
+}
+.count {
+    margin: 0;
+    color: #bff8e8;
+    font: 700 1.125rem var(--font-heading);
+}
+.count strong {
+    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-size: 2rem;
+}
+.privacy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.875rem;
+}
+
+.cards {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+@media (min-width: 900px) {
+    .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+}
+
+/* One customer: the whole card opens the customer card */
+.card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+        "avatar who visits"
+        "facts facts facts";
+    align-items: center;
+    gap: 10px 14px;
+    height: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card {
+    position: relative;
+}
+/* The name is the link; it covers the whole card so a tap anywhere opens the customer card */
+.name::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+}
+.card:has(.name:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 12px rgba(114, 214, 189, 0.35);
+}
+.avatar {
+    grid-area: avatar;
+    align-self: start;
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(150, 128, 255, 0.18), rgba(6, 18, 25, 0.95) 70%) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 10px rgba(159, 216, 255, 0.35);
+    color: #e8fbf5;
+    font: 700 0.9375rem var(--font-heading);
+}
+.who {
+    grid-area: who;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+.name {
+    overflow: hidden;
+    color: #ffffff;
+    text-decoration: none;
+    font: 700 1.125rem var(--font-heading);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Phone and e-mail under the name, like on a business card */
+.contact {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+    margin-top: 2px;
+    color: #cfeee6;
+    font-size: 0.875rem;
+}
+.contact svg {
+    flex: none;
+    color: #8ff0d6;
+}
+.email {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Number of visits in the top right corner, like the calendar's day numbers */
+/* Right column: visits, and under them the stamp counter when the customer collects stamps */
+.side {
+    grid-area: visits;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 68px;
+}
+.visits {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 58px;
+    padding: 6px 10px;
+    border-radius: 14px;
+    background: rgba(3, 14, 20, 0.55);
+    box-shadow: inset 0 0 0 1.5px #bff8e8, 0 0 12px rgba(191, 248, 232, 0.25);
+}
+.visits strong {
+    color: #ffffff;
+    font: 700 1.375rem/1.1 var(--font-heading);
+}
+.visits small {
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.facts {
+    grid-area: facts;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.fact,
+.next,
+.noShow,
+.quiet {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border: 1px solid rgba(191, 248, 232, 0.25);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.6);
+    color: #dffcf3;
+    font: 600 0.8125rem var(--font-heading);
+}
+/* Mint = a booked time */
+.next {
+    border-color: var(--color-primary);
+    background: rgba(114, 214, 189, 0.14);
+    color: #bff8e8;
+    box-shadow: 0 0 8px rgba(114, 214, 189, 0.3);
+}
+/* Stamp counter in the mint crystal look of the stamps in Min BESTI, framed like the visits box */
+.stamps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px 2px 6px;
+    border-radius: 14px;
+    background: radial-gradient(circle, rgba(114, 214, 189, 0.3), rgba(63, 167, 214, 0.1) 70%, rgba(4, 16, 26, 0.3));
+    box-shadow: inset 0 0 0 1.5px #a6f2dd, 0 0 10px rgba(114, 214, 189, 0.5), inset 0 0 8px rgba(114, 214, 189, 0.3);
+}
+.stampsCount {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #e8fbf5;
+    font: 700 0.875rem/1.2 var(--font-heading);
+    white-space: nowrap;
+}
+.stamps small {
+    color: #bff8e8;
+    font-size: 0.6875rem;
+    white-space: nowrap;
+}
+/* Full card: the reward ring glows stronger, like the gift stamp */
+.stampsReady {
+    box-shadow: inset 0 0 0 1.5px #bff8e8, 0 0 14px rgba(159, 245, 220, 0.8), inset 0 0 8px rgba(114, 214, 189, 0.35);
+}
+
+/* Blue, glowing = did not come (same colour as Møtte ikke everywhere) */
+.noShow {
+    border-color: #7fb2ff;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+    box-shadow: 0 0 10px rgba(127, 178, 255, 0.45);
+}
+.quiet {
+    border-style: dashed;
+    color: var(--color-muted);
+}
+/* ===== Notat: one more line under phone and e-mail, with an open book like the envelope ===== */
+.noteDetails {
+    position: relative;
+    z-index: 2;
+}
+.noteSummary {
+    width: fit-content;
+    list-style: none;
+    cursor: pointer;
+}
+.noteSummary::-webkit-details-marker {
+    display: none;
+}
+.noteSummary span {
+    text-decoration: underline;
+    text-decoration-color: rgba(143, 240, 214, 0.45);
+    text-underline-offset: 3px;
+}
+.noteSummary:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+/* No note yet: faint "Skriv notat" */
+.noteEmpty {
+    opacity: 0.6;
+}
+/* Above the card link, so the tap opens the customer card's note */
+.noteLink {
+    position: relative;
+    z-index: 2;
+    text-decoration: none;
+}
+.noteDetails[open] .noteSummary {
+    color: #ffffff;
+}
+
+/* The open note: a page from the phone's notes app, lined, in the BESTI colours */
+.sheet {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: -74px;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    width: min(320px, calc(100vw - 56px));
+    padding: 12px 16px 14px;
+    border: 1px solid rgba(201, 191, 255, 0.55);
+    border-radius: 16px;
+    background:
+        linear-gradient(160deg, #0d2330, #0a1622);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.55), 0 0 16px rgba(159, 216, 255, 0.3);
+    white-space: normal;
+    cursor: auto;
+}
+.sheetTitle {
+    align-self: stretch;
+    margin: 0 0 8px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid rgba(201, 191, 255, 0.55);
+    color: #c9bfff;
+    font: 700 0.8125rem var(--font-heading);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+/* Lined like the notes app; the text sits on the lines */
+.sheetText {
+    width: 100%;
+    min-height: 140px;
+    padding: 2px 0;
+    border: 0;
+    background: repeating-linear-gradient(transparent 0 27px, rgba(143, 240, 214, 0.2) 27px 28px);
+    color: #f2fffb;
+    font: 500 0.9375rem/28px var(--font-heading);
+    resize: vertical;
+}
+.sheetText:focus {
+    outline: none;
+}
+.sheetText::placeholder {
+    color: rgba(191, 248, 232, 0.45);
+}
+.sheetHint {
+    margin: 0;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+.sheetSave {
+    min-height: 40px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: var(--color-on-primary);
+    font: 700 0.875rem var(--font-heading);
+    cursor: pointer;
+}
+.sheetSaved {
+    margin: 0;
+    color: #8ff0d6;
+    font: 600 0.8125rem var(--font-heading);
+}
+.sheetError {
+    margin: 0;
+    color: #cfe0ff;
+    font-size: 0.8125rem;
+}
+/* The open note lies over the cards below it */
+.cards > li {
+    position: relative;
+}
+.cards > li:has(details[open]) {
+    z-index: 10;
+}
+
+/* Phone: a little tighter, so Neste, Sist and Møtte ikke fit on one line */
+@media (max-width: 599px) {
+    .fact,
+    .next,
+    .noShow,
+    .quiet {
+        padding: 3px 8px;
+        font-size: 0.75rem;
+    }
+    .facts {
+        gap: 5px;
+    }
+}
