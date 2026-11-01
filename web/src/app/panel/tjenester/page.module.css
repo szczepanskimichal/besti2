@@ -124,11 +124,13 @@
     font-family: var(--font-heading);
     font-weight: 600;
     min-height: 48px;
-    border: none;
     border-radius: 999px;
-    background: var(--color-primary);
-    color: var(--color-on-primary);
     cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    text-shadow: none;
 }
 
 .primaryButton:hover {
@@ -154,12 +156,12 @@
     font-weight: 600;
     min-height: 44px;
     padding: 0 20px;
-    border: 1px solid var(--color-input-border);
     border-radius: 999px;
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    color: var(--color-text);
     text-decoration: none;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 /* Same box as "Slett", but blue: editing is not dangerous */
 .editBox summary {

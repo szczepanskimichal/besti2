@@ -118,16 +118,18 @@
 }
 
 .primaryButton {
-    border: none;
-    background: var(--color-primary);
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
     color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    text-shadow: none;
 }
 
 .secondaryButton {
-    border: 1px solid var(--color-input-border);
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    color: var(--color-text);
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 .dangerButton {

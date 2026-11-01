@@ -1,4 +1,6 @@
 "use client";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import { useActionState } from "react";
 import NextLink from "next/link";
 import { createInviteAction } from "./actions";
@@ -62,7 +64,7 @@ export default function InviteForm({ businessSlug, serviceId, employeeId, startU
                 <label className={styles.choice}>
                     <input type="radio" name="payMode" value="JegSpanderer"
                            defaultChecked={value("payMode") === "JegSpanderer"}/>
-                    <span>{group ? "Jeg betaler for alle" : "Jeg spanderer"} <span aria-hidden="true">🎁</span></span>
+                    <span>{group ? "Jeg betaler for alle" : "Jeg spanderer"}{" "}<CrystalIcon name="gave"/></span>
                 </label>
             </fieldset>
             <p className={styles.muted}>Dere betaler hos bedriften, som vanlig.</p>
@@ -102,7 +104,7 @@ export default function InviteForm({ businessSlug, serviceId, employeeId, startU
                 bekrefter at du har lest <NextLink href="/personvern">personvernerklæringen</NextLink>.
             </p>
             <SubmitButton className={styles.primaryButton} pendingText="Lager invitasjon…">
-                Lag invitasjon <span aria-hidden="true">👯</span>
+                Lag invitasjon <PersonsIcon persons={2}/>
             </SubmitButton>
         </form>
     );

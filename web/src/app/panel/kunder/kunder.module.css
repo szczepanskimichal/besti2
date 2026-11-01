@@ -48,24 +48,26 @@
     gap: 8px;
     min-height: 44px;
     padding: 0 18px;
-    border: 1px solid rgba(191, 248, 232, 0.35);
     border-radius: 999px;
-    background: rgba(5, 17, 24, 0.82);
-    color: #bff8e8;
     font: 600 0.9375rem var(--font-heading);
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 .searchButton {
     margin: 3px;
     min-height: 36px;
     padding: 0 16px;
-    border-color: rgba(191, 248, 232, 0.25);
-    background: rgba(114, 214, 189, 0.12);
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 .importButton {
-    backdrop-filter: var(--glass-blur);
 }
 .searchButton:focus-visible,
 .importButton:focus-visible,

@@ -433,6 +433,10 @@
     border-radius: 999px;
     text-decoration: none;
     cursor: pointer;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 /* The main step: mint gradient with a neon ring, like "Se timen i Min BESTI" */
@@ -467,9 +471,6 @@
 }
 
 .secondaryButton {
-    border: 1px solid var(--color-primary);
-    background: var(--color-input-bg);
-    color: var(--color-primary);
     font-weight: 600;
     min-height: 44px;
     padding: 0 8px;

@@ -8,6 +8,7 @@ import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
 import BookingForm from "./BookingForm";
 import InviteForm from "./InviteForm";
 import VisitStamp from "./VisitStamp";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import MonthCalendar from "./MonthCalendar";
 import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
@@ -151,7 +152,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                     <NextLink href={bookingUrl(month, selected?.date, undefined, together ? persons : 2)} scroll={false}
                               className={together ? `${styles.togetherOption} ${styles.togetherSelected}` : styles.togetherOption}
                               aria-current={together ? "page" : undefined}>
-                        Sammen <span aria-hidden="true">👯</span>
+                        Sammen <PersonsIcon persons={2}/>
                     </NextLink>
                 </nav>
             )}
@@ -295,7 +296,7 @@ export default async function BookingPage({params, searchParams}: Props) {
 
             {chosen && selected && (
                 <section>
-                    <h2 className={styles.sectionTitle}>{!together ? "Dine opplysninger" : persons === 2 ? "Inviter din BESTI" : "Inviter gjengen"}</h2>
+                    <h2 className={styles.sectionTitle}>{!together ? "Dine opplysninger" : persons === 2 ? "Inviter din BESTI" : "Inviter BESTI team"}</h2>
                     <p className={styles.muted}>
                         {formatDay(selected.date)} kl. {formatTime(chosen.startUtc)}
                         {/* Together: the others get other employees, so only a chosen employee is named */}

@@ -178,14 +178,15 @@
     max-width: 100%;
     padding: 0 12px;
     overflow: hidden;
-    border: 1px solid rgba(191, 248, 232, 0.3);
     border-radius: 999px;
-    background: rgba(3, 15, 22, 0.6);
-    color: #bff8e8;
     font: 600 0.8125rem var(--font-heading);
     text-decoration: none;
     text-overflow: ellipsis;
     white-space: nowrap;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 /* The customer's note: a calm dark speech bubble */

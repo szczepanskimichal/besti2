@@ -2309,3 +2309,9 @@ a.breakTime,
     mask-image: repeating-linear-gradient(135deg, #000 0 1.5px, transparent 1.5px 6px);
     pointer-events: none;
 }
+.blockButton {
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
+}
