@@ -121,13 +121,13 @@
     align-items: center;
     min-height: 40px;
     padding: 0 14px;
-    border: 1.5px solid rgba(166, 242, 221, 0.55);
     border-radius: 999px;
-    background: rgba(3, 15, 22, 0.6);
-    box-shadow: 0 0 8px rgba(114, 214, 189, 0.25);
-    color: #dffcf3;
     font: 600 0.875rem var(--font-heading);
     text-decoration: none;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 /* Avbestill in dark blue, the free-cancel time under it */

@@ -75,11 +75,12 @@
     font-weight: 600;
     min-height: 44px;
     padding: 0 20px;
-    border: 1px solid var(--color-primary);
     border-radius: 999px;
-    background: var(--color-input-bg);
-    color: var(--color-primary);
     cursor: pointer;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 .secondaryButton:hover {
@@ -105,13 +106,13 @@
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    border: 1px solid var(--color-border);
     border-radius: 8px;
-    background: var(--color-surface);
-    backdrop-filter: var(--glass-blur);
-    color: inherit;
     font-weight: 600;
     text-decoration: none;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 .slot:hover {
@@ -214,11 +215,13 @@
     font-family: var(--font-heading);
     font-weight: 600;
     min-height: 48px;
-    border: none;
     border-radius: 999px;
-    background: var(--color-primary);
-    color: var(--color-on-primary);
     cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    text-shadow: none;
 }
 
 .primaryButton:hover {
@@ -309,16 +312,20 @@
     align-items: center;
     min-height: 44px;
     padding: 0 16px;
-    border: 1px solid var(--color-border);
     border-radius: 999px;
-    background: var(--color-input-bg);
     font-weight: 600;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 
 .choice input:checked + span {
-    background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
-    border-color: var(--color-primary);
-    color: var(--color-primary);
+    border: var(--btn-on-border);
+    background: var(--btn-on-bg);
+    color: var(--btn-on-text);
+    box-shadow: var(--btn-on-glow);
+    text-shadow: var(--btn-on-text-shadow);
 }
 
 .choice input:focus-visible + span {
@@ -351,4 +358,39 @@
     border-color: #c9bfff;
     box-shadow: 0 0 12px rgba(201, 191, 255, 0.35);
     background: linear-gradient(rgba(150, 128, 255, 0.12), rgba(150, 128, 255, 0.12)), var(--color-card-base);
+}
+
+/* Ada 2026-11-01: the title, the price line, the intro notes and the section titles in the middle */
+.title,
+.title + .muted,
+.together + .muted,
+.sectionTitle,
+.sectionTitle ~ .muted,
+.timesTitle,
+.timesTitle ~ .muted {
+    text-align: center;
+}
+/* The Duo figures on the mint "Sammen" pill: dark like the text, so they stay clear on mint */
+.togetherOption img {
+    width: 22px;
+    height: 22px;
+}
+.primaryButton img,
+.togetherSelected img {
+    filter: brightness(0.3) saturate(1.4);
+}
+.choice img {
+    margin-left: 8px;
+}
+
+/* Ada 2026-11-01: the chosen time and "Sammen" = the main full mint button with the neon edge */
+.slotSelected,
+.slotSelected:hover,
+.togetherSelected,
+.togetherSelected:hover {
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    text-shadow: none;
 }

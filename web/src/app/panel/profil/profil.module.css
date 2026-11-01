@@ -326,9 +326,10 @@
     cursor: default;
 }
 .secondaryButton {
-    border: 1.5px solid rgba(114, 214, 189, 0.6);
-    background: rgba(3, 15, 22, 0.7);
-    color: #bff8e8;
+    border: var(--btn-border);
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    box-shadow: var(--btn-glow);
 }
 /* "Ja, slett": the same blue Avbestill pill */
 .dangerButton {

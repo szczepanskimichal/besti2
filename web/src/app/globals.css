@@ -29,6 +29,18 @@
   --font-heading: var(--font-syne), system-ui, sans-serif;
   --font-body: var(--font-syne), system-ui, sans-serif;
   --font-small: var(--font-inter), system-ui, sans-serif;
+  /* Buttons, the same neon everywhere (Ada 2026-11-01, like the panel pills):
+     ordinary = calm mint line + soft glow, chosen = lit mint, main = full mint with the neon edge */
+  --btn-border: 1.5px solid rgba(114, 214, 189, 0.6);
+  --btn-bg: rgba(3, 15, 22, 0.7);
+  --btn-text: #bff8e8;
+  --btn-glow: 0 0 10px rgba(114, 214, 189, 0.25);
+  --btn-on-border: 2px solid #8ff0d6;
+  --btn-on-bg: rgba(80, 225, 190, 0.2);
+  --btn-on-text: #e6fff8;
+  --btn-on-glow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+  --btn-on-text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
+  --btn-main-bg: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
 }
 
 /* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */

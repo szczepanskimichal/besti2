@@ -20,14 +20,16 @@
 .printButton {
     min-height: 44px;
     padding: 0 18px;
-    border: none;
     border-radius: 999px;
-    background: var(--color-primary);
-    color: var(--color-on-primary);
     font: inherit;
     font-family: var(--font-heading);
     font-weight: 600;
     cursor: pointer;
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    text-shadow: none;
 }
 
 .printButton:focus-visible {
