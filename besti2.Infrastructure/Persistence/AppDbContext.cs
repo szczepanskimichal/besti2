@@ -126,12 +126,12 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 new Business
                 {
                     Id = new Guid("33333333-3333-3333-3333-333333333333"),
-                    Name = "Nordlys Psykologsenter",
-                    Slug = "nordlys-psykologsenter-trondheim",
+                    Name = "Nordlys Massasje",
+                    Slug = "nordlys-massasje-trondheim",
                     OrgNumber = "999000003",
-                    Category = BusinessCategory.Helse,
-                    Description = "Samtaleterapi for voksne.",
-                    Email = "time@nordlyspsykolog.example",
+                    Category = BusinessCategory.Massasje,
+                    Description = "Klassisk massasje og hot stone i Trondheim sentrum.",
+                    Email = "time@nordlysmassasje.example",
                     PhoneNumber = "+4773000003",
                     Address = "Munkegata 20",
                     PostalCode = "7011",
@@ -188,15 +188,15 @@ public class AppDbContext : IdentityDbContext<AppUser>
                 },
                 new Service
                 {
-                    Id = new Guid("a3333333-0000-0000-0000-000000000001"), Name = "Samtaleterapi",
-                    Description = "Individuell samtale, 50 minutter", DurationMinutes = 50,
-                    PriceType = PriceType.FastPris, PriceNok = 1200m,
+                    Id = new Guid("a3333333-0000-0000-0000-000000000001"), Name = "Klassisk massasje",
+                    Description = "Hele kroppen, 50 minutter", DurationMinutes = 50,
+                    PriceType = PriceType.FastPris, PriceNok = 890m,
                     BusinessId = new Guid("33333333-3333-3333-3333-333333333333")
                 },
                 new Service
                 {
-                    Id = new Guid("a3333333-0000-0000-0000-000000000002"), Name = "Første konsultasjon",
-                    DurationMinutes = 60, PriceType = PriceType.FastPris, PriceNok = 950m,
+                    Id = new Guid("a3333333-0000-0000-0000-000000000002"), Name = "Hot stone-massasje",
+                    DurationMinutes = 60, PriceType = PriceType.FastPris, PriceNok = 990m,
                     BusinessId = new Guid("33333333-3333-3333-3333-333333333333")
                 });
         });

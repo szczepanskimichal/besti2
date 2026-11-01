@@ -16,7 +16,7 @@ public static class DevUserSeeder
     [
         ("eier@klippogstil.example", new Guid("11111111-1111-1111-1111-111111111111")),
         ("eier@fjordbygg.example", new Guid("22222222-2222-2222-2222-222222222222")),
-        ("eier@nordlyspsykolog.example", new Guid("33333333-3333-3333-3333-333333333333")),
+        ("eier@nordlysmassasje.example", new Guid("33333333-3333-3333-3333-333333333333")),
     ];
 
     // A customer for Min Besti and Favoritter, and an admin for /admin (Admin:Emails in appsettings.Development.json)

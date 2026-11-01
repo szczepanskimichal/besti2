@@ -62,6 +62,33 @@ public class BusinessRegistrationServiceTests
         Assert.False(result.Success);
         Assert.Equal("Fyll ut alle feltene.", result.Error);
     }
+    // check if the removed health categories are refused (bookings there can reveal health information)
+    [Theory]
+    [InlineData("Psykolog")]
+    [InlineData("Tannlege")]
+    [InlineData("Helse")]
+    public async Task RegisterAsync_HealthCategory_Fails(string category)
+    {
+        var (service, db, _) = CreateService();
+
+        var result = await service.RegisterAsync(TestFrisor() with { Category = category });
+
+        Assert.False(result.Success);
+        Assert.Equal("Velg en gyldig kategori.", result.Error);
+        Assert.False(await db.Businesses.AnyAsync(b => b.OrgNumber == "912345688"));
+    }
+
+    // check if foot care (moved to beauty) can still register
+    [Fact]
+    public async Task RegisterAsync_Fotpleie_IsAllowed()
+    {
+        var (service, _, _) = CreateService();
+
+        var result = await service.RegisterAsync(TestFrisor() with { Category = "Fotpleie" });
+
+        Assert.True(result.Success);
+    }
+
     // check if a phone number with letters is refused
     [Fact]
     public async Task RegisterAsync_InvalidPhone_Fails()

@@ -76,7 +76,7 @@ public class Business
     public DateTime? LoyaltyStartUtc { get; set; }
 
     // The choices in the panel
-    public static readonly int[] LoyaltyOptions = [5, 6, 8, 10, 12];
+    public static readonly int[] LoyaltyOptions = [5, 6, 7, 8, 9, 10];
 
     // BESTI's own note about the business (admin only, never shown to the business or customers)
     public string? AdminNote { get; set; }

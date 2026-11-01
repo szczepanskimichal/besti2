@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { redeemLoyalty, setLoyalty } from "@/lib/api";
+import { redeemLoyalty, sendProInterest, setLoyalty } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 
 export async function saveLoyaltyAction(formData: FormData) {
@@ -21,4 +21,14 @@ export async function redeemLoyaltyAction(formData: FormData) {
     }
     const result = await redeemLoyalty(token, String(formData.get("customerUserId") ?? ""));
     redirect(result.ok ? "/panel/stempelkort?gitt=1" : `/panel/stempelkort?feil=${encodeURIComponent(result.message)}`);
+}
+
+// "Jeg vil ha Pro": the same interest signal as the button under Statistikk (admin sees it in its list)
+export async function proInterestAction() {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+    const result = await sendProInterest(token);
+    redirect(result.ok ? "/panel/stempelkort?pro=1" : `/panel/stempelkort?feil=${encodeURIComponent(result.message)}`);
 }

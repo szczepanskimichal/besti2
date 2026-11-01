@@ -43,7 +43,7 @@ public class BusinessSearchServiceTests
         var cities = await service.GetCitiesAsync();
 
         Assert.Equal(2, result.Count);
-        Assert.DoesNotContain(result, b => b.Name == "Nordlys Psykologsenter");
+        Assert.DoesNotContain(result, b => b.Name == "Nordlys Massasje");
         Assert.DoesNotContain("Trondheim", cities);
     }
 
@@ -64,7 +64,7 @@ public class BusinessSearchServiceTests
         // Assert
         Assert.Equal(3, result.Count);
         Assert.Equal(
-            new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Psykologsenter" },
+            new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Massasje" },
             result.Select(b => b.Name));
     }
 
@@ -270,7 +270,7 @@ public class BusinessSearchServiceTests
 
         // Assert
         Assert.Equal(
-            new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Psykologsenter" },
+            new[] { "Fjord Bygg AS", "Klipp & Stil Frisør", "Nordlys Massasje" },
             result.Select(b => b.Name));
         Assert.True(result[0].DistanceKm < 1);
     }

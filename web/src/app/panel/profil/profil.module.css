@@ -1,0 +1,519 @@
+/* Profil (Ada 2026-10-31): the same dark glass look as Ansatte, Tjenester and Åpningstider */
+.notice {
+    margin: 0 0 16px;
+    padding: 10px 16px;
+    border: 1px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(114, 214, 189, 0.1);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+}
+.error {
+    margin: 0 0 12px;
+    padding: 10px 14px;
+    border: 1px solid #7fb2ff;
+    border-radius: 14px;
+    background: rgba(12, 28, 70, 0.55);
+    color: #cfe0ff;
+}
+.text {
+    margin: 0;
+    color: #cfeee6;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+.muted {
+    margin: 0;
+    color: #a9bdb8;
+    font: 400 0.875rem/1.5 var(--font-small);
+}
+
+/* Top: one glass card, the logo in a round aurora ring next to the name (Syne, aurora gradient),
+   the Verifisert stamp and the Bytt logo pill under the name */
+/* Profil only: the page word bigger, so it holds its own next to the big business name */
+.page h1 {
+    font-size: clamp(2rem, 7vw, 2.75rem);
+}
+.hero {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "logo text" "upload text";
+    align-items: start;
+    gap: 12px 16px;
+    margin: 20px 0 16px;
+    padding: 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 22px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.logoRing {
+    grid-area: logo;
+    justify-self: center;
+    padding: 3px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff);
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.5), 0 0 18px rgba(159, 216, 255, 0.35);
+}
+.logoRing > * {
+    display: flex;
+    width: 76px;
+    height: 76px;
+    border: 3px solid #061219;
+    font-size: 1.75rem;
+}
+.heroText {
+    grid-area: text;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+.heroUpload {
+    grid-area: upload;
+    display: flex;
+    justify-content: center;
+}
+/* Open: the pill stays under the logo, the sheet goes full width under the whole card row */
+.heroUpload:has(.more[open]) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-content: stretch;
+}
+.heroUpload .more {
+    flex: 1;
+    align-items: center;
+}
+.heroUpload .more[open] {
+    align-items: stretch;
+}
+.heroUpload .more[open] > .pill {
+    align-self: flex-start;
+}
+.heroUpload .pill {
+    align-self: center;
+    min-height: 30px;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+.businessName {
+    margin: 0;
+    color: #8ff0d6;
+    text-shadow: 0 0 14px rgba(143, 240, 214, 0.35);
+    font: 700 clamp(1.5rem, 6vw, 2.25rem)/1.1 var(--font-heading);
+    overflow-wrap: anywhere;
+}
+.verified {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+    color: #a9bdb8;
+    font: 400 0.875rem/1.4 var(--font-small);
+}
+.verifiedStamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px 2px 3px;
+    border: 1.5px solid #8ff0d6;
+    border-radius: 999px;
+    background: linear-gradient(rgba(143, 240, 214, 0.14), rgba(143, 240, 214, 0.14)), var(--color-input-bg);
+    box-shadow: 0 0 10px rgba(143, 240, 214, 0.35), inset 0 0 8px rgba(143, 240, 214, 0.15);
+    color: #dffcf3;
+    font: 600 0.75rem/1.2 var(--font-small);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.verifiedStamp:hover {
+    box-shadow: 0 0 14px rgba(143, 240, 214, 0.55), inset 0 0 8px rgba(143, 240, 214, 0.2);
+}
+.verifiedStamp:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+.verifiedSeal {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    background: url("/ikoner/verifisert.svg") center / contain no-repeat;
+    filter: drop-shadow(0 0 4px rgba(159, 216, 255, 0.55));
+}
+/* "Sjekket i Brønnøysundregistrene ...": small, left, in line with the name and the stamp */
+.verifiedWhen {
+    text-align: left;
+    font-size: 0.75rem;
+    line-height: 1.35;
+}
+/* Waiting for the check: lilac, like everything else that waits */
+.verifiedWaiting {
+    margin: 0;
+    padding: 8px 14px;
+    border: 1.5px solid #c9bfff;
+    border-radius: 14px;
+    background: rgba(150, 128, 255, 0.14);
+    color: #e4ddff;
+    font: 400 0.9375rem/1.5 var(--font-small);
+}
+@media (min-width: 700px) {
+    .hero {
+        gap: 24px;
+        padding: 20px 24px;
+    }
+    .logoRing > * {
+        width: 104px;
+        height: 104px;
+        font-size: 2.25rem;
+    }
+    .heroText {
+        padding-top: 6px;
+    }
+}
+
+/* Glass sections with a Syne title */
+.profileForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+    margin: 0 0 12px;
+    padding: 14px 16px 16px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
+}
+.profileForm .section {
+    margin: 0;
+}
+.sectionTitle {
+    float: left;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #ffffff;
+    font: 700 1.25rem var(--font-heading);
+}
+.sectionTitle + * {
+    clear: both;
+}
+.grid,
+.addressGrid {
+    display: grid;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+/* Fields with the lightly glowing mint edge, like the other panel forms */
+.field input,
+.field select,
+.field textarea {
+    width: 100%;
+    color-scheme: dark;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: var(--color-text);
+    font: 500 1rem var(--font-small);
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+}
+.field textarea {
+    padding: 10px 16px;
+    border-radius: 18px;
+    line-height: 1.5;
+    resize: vertical;
+}
+.field input[type="file"] {
+    padding: 8px 12px;
+    border-radius: 18px;
+}
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible {
+    outline: none;
+    border-color: #bff8e8;
+    box-shadow: 0 0 14px rgba(114, 214, 189, 0.45);
+}
+
+/* Nye bestillinger: two glass choices, the chosen one lit mint with the neon glow of the switches */
+.question {
+    margin: 0;
+    color: #cfeee6;
+    font: 600 0.875rem var(--font-heading);
+}
+.choices {
+    display: grid;
+    gap: 10px;
+}
+.choice {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 12px 16px 12px 46px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 18px;
+    background: rgba(3, 15, 22, 0.6);
+    cursor: pointer;
+}
+.choice input {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0;
+    accent-color: #8ff0d6;
+}
+.choiceTitle {
+    color: #ffffff;
+    font: 700 1rem var(--font-heading);
+}
+.choiceText {
+    color: #a9bdb8;
+    font: 400 0.875rem var(--font-small);
+}
+.choice:has(input:checked) {
+    border-color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.18);
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.6), 0 0 16px rgba(114, 230, 200, 0.35);
+}
+.choice:has(input:checked) .choiceText {
+    color: #d6fbf0;
+}
+.choice:has(input:focus-visible) {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+/* Buttons */
+.saveButton,
+.secondaryButton,
+.dangerButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-start;
+    min-height: 44px;
+    padding: 0 22px;
+    border-radius: 999px;
+    font: 700 0.9375rem var(--font-heading);
+    text-decoration: none;
+    cursor: pointer;
+}
+/* The one glowing action: mint with the neon edge of the home page button */
+.saveButton {
+    border: 2px solid transparent;
+    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+}
+.saveButton:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+.secondaryButton {
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+}
+/* "Ja, slett": the same blue Avbestill pill */
+.dangerButton {
+    border: 1.5px solid #7fb2ff;
+    background: rgba(12, 28, 70, 0.7);
+    color: #cfe0ff;
+}
+.saveButton:focus-visible,
+.secondaryButton:focus-visible,
+.dangerButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Calendar choices: three equal glass tiles, told apart by their icon in an aurora ring */
+.calendarChoices {
+    display: grid;
+    gap: 10px;
+}
+.calendarChoice {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 52px;
+    padding: 6px 16px 6px 8px;
+    border: 1.5px solid rgba(191, 248, 232, 0.35);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: #ffffff;
+    font: 700 0.9375rem var(--font-heading);
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
+}
+.calendarChoice::before {
+    content: "";
+    flex: none;
+    width: 38px;
+    height: 38px;
+    border: 1.5px solid transparent;
+    border-radius: 50%;
+    background: var(--cal-icon) center / 24px no-repeat, linear-gradient(#061219, #061219) padding-box,
+        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
+    box-shadow: 0 0 8px rgba(159, 216, 255, 0.35);
+}
+.calendarChoice:hover {
+    border-color: #8ff0d6;
+    box-shadow: 0 0 6px rgba(143, 240, 214, 0.5), 0 0 14px rgba(114, 230, 200, 0.3);
+}
+.calendarChoice:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+/* Our crystal icons: phone, calendar page and chain link */
+.calPhone {
+    --cal-icon: url("/ikoner/telefon.svg");
+}
+.calGoogle {
+    --cal-icon: url("/ikoner/kalender.svg");
+}
+.calCopy {
+    --cal-icon: url("/ikoner/lenke.svg");
+}
+/* "Lag ny lenke eller slå av": rarely used, so a quiet underlined text link */
+.quietLink {
+    align-self: flex-start;
+    color: #a9bdb8;
+    font: 500 0.875rem var(--font-small);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    list-style: none;
+    cursor: pointer;
+}
+.quietLink::-webkit-details-marker {
+    display: none;
+}
+.quietLink:hover {
+    color: #cfeee6;
+}
+.quietLink:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+
+/* Small glass pills that open a sheet under them (Bytt logo, Endre passord, Slett bedrift ...) */
+.more {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.pill {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    min-height: 40px;
+    padding: 0 18px;
+    border: 1.5px solid rgba(114, 214, 189, 0.6);
+    border-radius: 999px;
+    background: rgba(3, 15, 22, 0.7);
+    color: #bff8e8;
+    box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
+    font: 600 0.9375rem var(--font-heading);
+    list-style: none;
+    cursor: pointer;
+}
+.pill::-webkit-details-marker {
+    display: none;
+}
+.pill:hover,
+.more[open] > .pill {
+    background: rgba(114, 214, 189, 0.16);
+}
+.pill:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
+.pillDanger {
+    border-color: #7fb2ff;
+    color: #cfe0ff;
+    box-shadow: 0 0 10px rgba(127, 178, 255, 0.25);
+}
+.pillDanger:hover,
+.more[open] > .pillDanger {
+    background: rgba(12, 28, 70, 0.7);
+}
+.sheet,
+.sheetForm {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.sheet {
+    padding: 14px 16px 16px;
+    border: 1.5px dashed rgba(159, 216, 255, 0.5);
+    border-radius: 18px;
+    background: rgba(5, 17, 24, 0.7);
+}
+.sheetDanger {
+    border-color: rgba(127, 178, 255, 0.6);
+    background: rgba(12, 28, 70, 0.4);
+}
+.accountRow {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* Laptop: fields side by side, the two choices next to each other */
+@media (min-width: 700px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .addressGrid {
+        grid-template-columns: 2fr 1fr 1.4fr;
+    }
+    .grid .wide {
+        grid-column: 1 / -1;
+    }
+    .addressGrid .wide {
+        grid-column: auto;
+    }
+    .choices {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .calendarChoices {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .profileForm .section:last-of-type .field {
+        max-width: 360px;
+    }
+    .accountRow {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+    .accountRow .more[open] {
+        flex: 1 1 100%;
+    }
+}

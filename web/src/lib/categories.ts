@@ -18,21 +18,7 @@ export const categoryGroups: CategoryGroup[] = [    {
             Massasje: "Massasje",
             Spa: "Spa",
             Tatovering: "Tatovering og piercing",
-        },
-    },
-    {
-        label: "Helse",
-        color: "#047857",
-        categories: {
-            Fysioterapi: "Fysioterapi",
-            Kiropraktor: "Kiropraktor",
-            Naprapat: "Naprapat",
-            Psykolog: "Psykolog",
-            Tannlege: "Tannlege",
-            Lege: "Lege",
-            Optiker: "Optiker",
             Fotpleie: "Fotpleie",
-            Helse: "Annen helse",
         },
     },
     {

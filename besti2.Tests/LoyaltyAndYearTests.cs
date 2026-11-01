@@ -86,7 +86,7 @@ public class LoyaltyAndYearTests
         await using var db = await CreateSeededDbAsync();
         var service = new LoyaltyService(db);
 
-        Assert.NotNull(await service.SetAsync(KlippOgStil, new SetLoyaltyRequest(7, "Gratis klipp"), Now));
+        Assert.NotNull(await service.SetAsync(KlippOgStil, new SetLoyaltyRequest(11, "Gratis klipp"), Now));
         Assert.NotNull(await service.SetAsync(KlippOgStil, new SetLoyaltyRequest(10, " "), Now));
         Assert.Null(await service.SetAsync(KlippOgStil, new SetLoyaltyRequest(10, "Gratis klipp"), Now));
         Assert.Null(await service.SetAsync(KlippOgStil, new SetLoyaltyRequest(null, null), Now));

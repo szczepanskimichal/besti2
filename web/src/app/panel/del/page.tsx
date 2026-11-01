@@ -1,24 +1,49 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getPanelBusiness, getPanelQr } from "@/lib/api";
+import { getPanelBusiness, getPanelQr, getPanelStats } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site";
 import CopyButton from "@/components/CopyButton/CopyButton";
+import ProBadge from "@/components/ProBadge/ProBadge";
+import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import PanelNav from "../PanelNav";
+import panel from "../page.module.css";
+import { smsProInterestAction } from "./actions";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
     title: "Del og få kunder",
 };
 
-// Everything a business needs to bring its own customers: the link, the QR code, the poster and ready texts
-export default async function SharePage() {
+// Steps as glowing round numbers, the same counters as on the other panel pages
+function Steps({ items }: { items: ReactNode[] }) {
+    return (
+        <ol className={styles.steps}>
+            {items.map((item, index) => (
+                <li key={index} className={styles.step}>
+                    <span className={styles.stepNumber} aria-hidden="true">{index + 1}</span>
+                    <span className={styles.stepText}>{item}</span>
+                </li>
+            ))}
+        </ol>
+    );
+}
+
+// "Del og få kunder" (Ada 2026-11-01): the dark glass look of the other panel pages. The link in a glowing mint
+// field on top, the QR code in a white box with a mint neon frame, ready texts in dark fields with a Kopier pill
+type SharePageProps = {
+    searchParams: Promise<{ pro?: string; feil?: string }>;
+};
+
+export default async function SharePage({ searchParams }: SharePageProps) {
     const token = await getToken();
     if (!token) {
         redirect("/logg-inn");
     }
-    const [business, qrSvg, qrPng] = await Promise.all([
-        getPanelBusiness(token), getPanelQr(token, "svg"), getPanelQr(token, "png"),
+    const [business, qrSvg, qrPng, stats, query] = await Promise.all([
+        getPanelBusiness(token), getPanelQr(token, "svg"), getPanelQr(token, "png"), getPanelStats(token, 7), searchParams,
     ]);
     if (!business || !qrSvg || !qrPng) {
         redirect("/logg-inn");
@@ -32,86 +57,110 @@ export default async function SharePage() {
     const bio = `Bestill time på nett 👇\n${shortLink}`;
 
     return (
-        <main className={styles.main}>
-            <Link href="/panel" className={styles.back}>← Tilbake til bestillinger</Link>
-            <h1 className={styles.title}>Del og få kunder</h1>
-            <p className={styles.muted}>
+        <main className={`${panel.main} ${styles.page}`}>
+            <PanelNav title="Del og få kunder"/>
+            <p className={styles.lead}>
                 De fleste nye kunder kommer via deg: fra plakaten i salongen, Instagram og Google. Her er alt du trenger.
             </p>
             {business.isHidden && (
-                <p className={styles.muted}>
+                <p className={styles.waiting} role="status">
                     Bedriften venter på godkjenning. Lenken virker for kundene så snart den er godkjent.
                 </p>
             )}
 
-            <section className={styles.card}>
-                <h2>Lenken til siden din</h2>
-                <a href={link} className={styles.link} target="_blank" rel="noopener noreferrer">{shortLink}</a>
-                <div className={styles.actions}>
-                    <CopyButton text={link} label="Kopier lenken" className={styles.primaryButton}/>
-                    <a href={link} className={styles.secondaryButton} target="_blank" rel="noopener noreferrer">Se siden</a>
-                </div>
-            </section>
+            <div className={styles.grid}>
+                <section className={`${styles.card} ${styles.hero}`}>
+                    <h2 className={styles.cardTitle}>Lenken til siden din</h2>
+                    <a href={link} className={styles.link} target="_blank" rel="noopener noreferrer">{shortLink}</a>
+                    <div className={styles.actions}>
+                        <CopyButton text={link} label="Kopier lenken" className={styles.saveButton}/>
+                        <a href={link} className={`${styles.pill} ${styles.pillLit}`} target="_blank" rel="noopener noreferrer">Se siden</a>
+                    </div>
+                </section>
 
-            <section className={styles.card}>
-                <h2>QR-kode og plakat</h2>
-                <div className={styles.qrRow}>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a small data: image from our own API */}
-                    <img src={qrSvg} alt={`QR-kode til ${shortLink}`} className={styles.qr}/>
-                    <div>
-                        <p>Kunden skanner koden med kameraet på mobilen og kommer rett til siden din.</p>
-                        <div className={styles.actions}>
-                            <Link href="/panel/del/plakat" className={styles.primaryButton}>Skriv ut plakat (A5)</Link>
-                            <a href={qrPng} download="besti-qr.png" className={styles.secondaryButton}>Last ned PNG</a>
-                            <a href={qrSvg} download="besti-qr.svg" className={styles.secondaryButton}>Last ned SVG</a>
+                <section className={`${styles.card} ${styles.qrCard}`}>
+                    <h2 className={styles.cardTitle}>QR-kode og plakat</h2>
+                    <div className={styles.qrRow}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- a small data: image from our own API */}
+                        <img src={qrSvg} alt={`QR-kode til ${shortLink}`} className={styles.qr}/>
+                        <div className={styles.qrText}>
+                            <p className={styles.textSyne}>Kunden skanner koden med kameraet på mobilen og kommer rett til siden din.</p>
+                            <Link href="/panel/del/plakat" className={styles.saveButton}>Skriv ut plakat (A5)</Link>
+                            <div className={styles.actions}>
+                                <a href={qrPng} download="besti-qr.png" className={`${styles.pill} ${styles.pillLit}`}>Last ned PNG</a>
+                                <a href={qrSvg} download="besti-qr.svg" className={`${styles.pill} ${styles.pillLit}`}>Last ned SVG</a>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <p className={styles.small}>
-                    Tips: heng plakaten ved kassen eller i vinduet, og legg QR-koden på visittkort og timekort.
-                    SVG er skarp i alle størrelser (til trykkeri), PNG passer til Instagram og Facebook.
-                </p>
-            </section>
+                    <p className={styles.tip}>
+                        <span className={styles.bulb} aria-hidden="true">
+                            {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon */}
+                            <img src="/ikoner/lyspare.svg" alt=""/>
+                        </span>
+                        <span>Tips: heng plakaten ved kassen eller i vinduet, og legg QR-koden på visittkort og timekort.
+                        SVG er skarp i alle størrelser (til trykkeri), PNG passer til Instagram og Facebook.</span>
+                    </p>
+                </section>
 
-            <section className={styles.card}>
-                <h2>Google: «Bestill time» rett i søket</h2>
-                <p>Når noen søker på bedriften din, kan Google vise en knapp som går rett til BESTI.</p>
-                <ol>
-                    <li>Søk på navnet til bedriften på Google, logget inn med kontoen som eier Google-profilen
-                        (eller åpne <a href="https://business.google.com" target="_blank" rel="noopener noreferrer">business.google.com</a>).
-                    </li>
-                    <li>Trykk «Rediger profil» og velg «Kontakt».</li>
-                    <li>Lim inn lenken under «Lenker for timebestilling» (kan også hete «Avtalelenker») og lagre.</li>
-                </ol>
-                <div className={styles.actions}>
-                    <CopyButton text={linkFor("google")} label="Kopier lenke til Google" className={styles.secondaryButton}/>
-                </div>
-                <p className={styles.small}>Google sjekker endringen først, så det kan ta noen dager før knappen vises.</p>
-            </section>
+                <section className={styles.card}>
+                    <h2 className={styles.cardTitle}>Google: «Bestill time» rett i søket</h2>
+                    <p className={styles.text}>Når noen søker på bedriften din, kan Google vise en knapp som går rett til BESTI.</p>
+                    <Steps items={[
+                        <>Søk på navnet til bedriften på Google, logget inn med kontoen som eier Google-profilen
+                            (eller åpne <a href="https://business.google.com" target="_blank" rel="noopener noreferrer">business.google.com</a>).</>,
+                        <>Trykk «Rediger profil» og velg «Kontakt».</>,
+                        <>Lim inn lenken under «Lenker for timebestilling» (kan også hete «Avtalelenker») og lagre.</>,
+                    ]}/>
+                    <CopyButton text={linkFor("google")} label="Kopier lenke til Google" className={`${styles.pill} ${styles.pillLit}`}/>
+                    <p className={styles.small}>Google sjekker endringen først, så det kan ta noen dager før knappen vises.</p>
+                </section>
 
-            <section className={styles.card}>
-                <h2>Instagram og Facebook</h2>
-                <ol>
-                    <li>Instagram: «Rediger profil» → «Lenker» → «Legg til ekstern lenke», og lim inn lenken.</li>
-                    <li>Facebook-siden: «Legg til knapp» → «Bestill nå», og lim inn lenken.</li>
-                    <li>Skriv gjerne i bio-teksten at kundene kan bestille på nett.</li>
-                </ol>
-                <p className={styles.link}>{bio}</p>
-                <div className={styles.actions}>
-                    <CopyButton text={bio} label="Kopier bio-tekst" className={styles.secondaryButton}/>
-                    <CopyButton text={linkFor("instagram")} label="Kopier lenke til Instagram" className={styles.secondaryButton}/>
-                    <CopyButton text={linkFor("facebook")} label="Kopier lenke til Facebook" className={styles.secondaryButton}/>
-                </div>
-            </section>
+                <section className={styles.card}>
+                    <h2 className={styles.cardTitle}>Instagram og Facebook</h2>
+                    <Steps items={[
+                        <>Instagram: «Rediger profil» → «Lenker» → «Legg til ekstern lenke», og lim inn lenken.</>,
+                        <>Facebook-siden: «Legg til knapp» → «Bestill nå», og lim inn lenken.</>,
+                        <>Skriv gjerne i bio-teksten at kundene kan bestille på nett.</>,
+                    ]}/>
+                    {/* On the page a crystal arrow; the copied text keeps the emoji, which Instagram can show */}
+                    <p className={styles.ready}>
+                        Bestill time på nett
+                        {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon */}
+                        <img src="/ikoner/pil-ned.svg" alt="" aria-hidden="true" className={styles.arrow}/>
+                        <br/><span className={styles.bioLink}>{shortLink}</span>
+                    </p>
+                    <div className={styles.actions}>
+                        <CopyButton text={bio} label="Kopier bio-tekst" className={`${styles.pill} ${styles.pillLit}`}/>
+                        <CopyButton text={linkFor("instagram")} label="Lenke til Instagram" className={`${styles.pill} ${styles.pillLit}`}/>
+                        <CopyButton text={linkFor("facebook")} label="Lenke til Facebook" className={`${styles.pill} ${styles.pillLit}`}/>
+                    </div>
+                </section>
 
-            <section className={styles.card}>
-                <h2>Melding til faste kunder</h2>
-                <p>Send den på SMS eller e-post til kundene dine, eller legg den i en story.</p>
-                <p className={styles.link}>{message}</p>
-                <div className={styles.actions}>
-                    <CopyButton text={message} label="Kopier meldingen" className={styles.secondaryButton}/>
-                </div>
-            </section>
+                <section id="melding" className={`${styles.card} ${styles.wide}`}>
+                    <h2 className={styles.cardTitle}>Melding til faste kunder</h2>
+                    <p className={styles.text}>Send den på SMS eller e-post til kundene dine, eller legg den i en story.</p>
+                    <p className={styles.ready}>{message}</p>
+                    <CopyButton text={message} label="Kopier meldingen" className={`${styles.pill} ${styles.pillLit}`}/>
+                    {/* SMS from BESTI does not exist yet: a note that it comes with Pro, and a way to say "I want it" */}
+                    <div className={styles.proBox}>
+                        <p className={styles.proTitle}><ProBadge short/> Snart i BESTI Pro</p>
+                        <p className={styles.textSyne}>
+                            Send meldingen som SMS til alle kundene dine med ett trykk, rett fra BESTI.
+                        </p>
+                        <p className={styles.small}>Vil du ha det? Trykk under, så sier vi fra når det starter.</p>
+                        {stats?.proInterest || query.pro ? (
+                            <p className={styles.thanks} role="status">Takk! Vi sier fra når det er klart.</p>
+                        ) : (
+                            <form action={smsProInterestAction}>
+                                <SubmitButton className={`${styles.pill} ${styles.pillLit}`} pendingText="Sender …">
+                                    Jeg vil være med
+                                </SubmitButton>
+                            </form>
+                        )}
+                        {query.feil && <p className={styles.small} role="alert">Noe gikk galt. Prøv igjen.</p>}
+                    </div>
+                </section>
+            </div>
         </main>
     );
 }

@@ -91,48 +91,6 @@ public static class ServiceTemplates
             Fixed("Liten tatovering", 60, 1200),
             Hourly("Tatovering", 1500)
         ],
-        [BusinessCategory.Helse] =
-        [
-            Fixed("Konsultasjon", 45, 790),
-            Fixed("Oppfølging", 30, 590)
-        ],
-        [BusinessCategory.Fysioterapi] =
-        [
-            Fixed("Første konsultasjon", 60, 750),
-            Fixed("Oppfølging", 30, 520),
-            Fixed("Idrettsfysioterapi", 45, 690)
-        ],
-        [BusinessCategory.Kiropraktor] =
-        [
-            Fixed("Første konsultasjon", 45, 890),
-            Fixed("Oppfølging", 20, 550)
-        ],
-        [BusinessCategory.Naprapat] =
-        [
-            Fixed("Første konsultasjon", 60, 850),
-            Fixed("Oppfølging", 30, 650)
-        ],
-        [BusinessCategory.Psykolog] =
-        [
-            Fixed("Første samtale", 60, 1900),
-            Fixed("Samtaletime", 45, 1700)
-        ],
-        [BusinessCategory.Tannlege] =
-        [
-            Fixed("Undersøkelse med røntgen", 45, 1090),
-            Fixed("Tannrens", 30, 890),
-            ByAgreement("Akutt time", 30, "Ved smerter eller skade.")
-        ],
-        [BusinessCategory.Lege] =
-        [
-            Fixed("Legetime", 20, 990),
-            Fixed("Utvidet konsultasjon", 40, 1690)
-        ],
-        [BusinessCategory.Optiker] =
-        [
-            Fixed("Synsundersøkelse", 30, 790),
-            Fixed("Kontaktlinsetilpasning", 45, 990)
-        ],
         [BusinessCategory.Fotpleie] =
         [
             Fixed("Fotpleie", 60, 790),
