@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { formatDay, formatTime, todayInOslo, weekdayOf } from "@/lib/format";
+import PersonsIcon, { personsFor } from "@/components/PersonsIcon/PersonsIcon";
 import { customerLabel } from "@/lib/bookingStatus";
 import type { BusinessDetails } from "@/lib/types";
-import PendingBadge from "../PendingBadge";
+import { MiniStamp } from "../PendingBadge";
 import calendar from "../calendar.module.css";
 import { type Column, type Href, blockLabel, blockHoursOn } from "./calendarLayout";
 import { isoWeek } from "./calendarDates";
@@ -55,8 +56,8 @@ export default function MonthGrid({ days, month, business, dayHref, newHref, hre
                                     <Link key={booking.id} href={hrefFor(booking)} scroll={false}
                                           className={`${calendar.monthVisit} ${calendar[booking.status] ?? ""}`}
                                           title={`${booking.customerName} – ${booking.serviceName} hos ${booking.employeeName}`}>
-                                        <PendingBadge status={booking.status} iconOnly/>
-                                        {formatTime(booking.startUtc)} {customerLabel(booking)}
+                                        <MiniStamp status={booking.status}/>
+                                        {formatTime(booking.startUtc)} <PersonsIcon persons={personsFor(booking)}/>{customerLabel(booking)}
                                     </Link>
                                 ))}
                                 {visits.length > MONTH_PREVIEW && (

@@ -21,6 +21,8 @@ import YearGrid from "./calendar/YearGrid";
 import PhoneList from "./calendar/PhoneList";
 import BookingDetails, { allowedActions } from "./calendar/BookingDetails";
 import { GroupStrip } from "./calendar/GroupSummary";
+import CalendarLegend from "./calendar/CalendarLegend";
+import PauseDetails from "./calendar/PauseDetails";
 import TimeOffDetails from "./calendar/TimeOffDetails";
 import DaySummary from "./calendar/DaySummary";
 import DateJump from "./calendar/DateJump";
@@ -31,7 +33,7 @@ const PLAN_DAYS = 14;
 type CalendarPageProps = {
     searchParams: Promise<{
         dag?: string; visning?: string; ansatt?: string; bestilling?: string; flytt?: string; feil?: string;
-        ny?: string; tid?: string; for?: string; blokker?: string; blokkering?: string; varsel?: string;
+        ny?: string; tid?: string; for?: string; blokker?: string; blokkering?: string; varsel?: string; pause?: string;
     }>;
 };
 
@@ -108,6 +110,16 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
     const newTime = query.tid && /^\d{2}:\d{2}$/.test(query.tid) ? query.tid : "09:00";
     const newEmployee = business.employees.some((e) => e.id === query.for) ? query.for : undefined;
     const newTimeOff = query.blokker === "1";
+    // A click on "Pause" (day view: ?pause=<employee id>, week view: ?pause=1 on that day)
+    const pauseHours = business.openingHours.find((h) => h.dayOfWeek === weekdayOf(day) && h.breakStart && h.breakEnd);
+    const pauseEmployee = business.employees.find((e) => e.id === query.pause);
+    const pause = query.pause && pauseHours ? {
+        day,
+        start: pauseHours.breakStart!.slice(0, 5),
+        hours: `${pauseHours.breakStart!.slice(0, 5)}–${pauseHours.breakEnd!.slice(0, 5)}`,
+        employeeId: pauseEmployee?.id,
+        who: pauseEmployee ? `${pauseEmployee.name}${pauseEmployee.lastName ? ` ${pauseEmployee.lastName}` : ""}` : "Hele bedriften",
+    } : undefined;
     const selectedBlock = allBlocks.find((t) => t.id === query.blokkering);
     // Visits already in a time that was just blocked (they are kept)
     const overlapping = Number(query.varsel);
@@ -198,8 +210,10 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <GroupStrip bookings={bookings} hrefFor={(booking) => link({ bestilling: booking.id })}/>
 
+            {!year && <CalendarLegend/>}
+
             {year ? (
-                <YearGrid year={day.slice(0, 4)} counts={counts}
+                <YearGrid year={day.slice(0, 4)} counts={counts} openingHours={business.openingHours}
                           dayHref={(date) => link({ dag: date, visning: undefined, ansatt: undefined })}
                           monthHref={(date) => link({ dag: date, visning: "maned" })}/>
             ) : plan ? null : month ? (
@@ -211,6 +225,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <TimeGrid columns={columns} range={range} showEmployee={week} openingHours={business.openingHours}
                           hrefFor={(booking) => link({ bestilling: booking.id })}
                           blockHref={(block) => link({ blokkering: block.id })}
+                          pauseHref={(column) => link(week ? { dag: column.id, pause: "1" } : { pause: column.id })}
                           newHref={(column, minute) => link({
                               ny: "1",
                               tid: clock(minute),
@@ -224,7 +239,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                 <PhoneList columns={month ? columns.filter((c) => c.day.startsWith(day.slice(0, 7)))
                     : week || plan ? columns : [{ id: day, title: formatDay(day), day, bookings, blocks: blocksOn(blocks, day) }]}
                            hrefFor={(booking) => link({ bestilling: booking.id })}
-                           blockHref={(block) => link({ blokkering: block.id })} always={plan}/>
+                           blockHref={(block) => link({ blokkering: block.id })} always={plan}
+                           openingHours={business.openingHours}
+                           pauseHref={month || plan ? undefined : (column) => link({ dag: column.day, pause: "1" })}/>
             )}
 
             {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}
@@ -232,7 +249,13 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
             {moving && (
                 <MoveBookingForm booking={moving} employees={business.employees} date={osloDay(moving.startUtc)}
                                  time={formatTime(moving.startUtc)} view={view} closeHref={link({ bestilling: moving.id })}/>
-            )}            {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
+            )}
+            {pause && (
+                <PauseDetails when={formatDay(pause.day)} hours={pause.hours} who={pause.who}
+                              newHref={link({ pause: undefined, ny: "1", tid: pause.start, ...(pause.employeeId ? { for: pause.employeeId } : { dag: pause.day }) })}
+                              closeHref={here}/>
+            )}
+            {selectedBlock && <TimeOffDetails block={selectedBlock} closeHref={here}/>}
             {newTimeOff && (
                 <TimeOffForm employees={business.employees} date={day} employeeId={employeeFilter} view={view}
                              closeHref={here}/>
