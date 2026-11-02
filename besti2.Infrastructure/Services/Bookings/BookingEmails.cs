@@ -253,6 +253,40 @@ public class BookingEmails(
         }
     }
 
+    // BESTI sammen: someone in the group cancelled, to each of the others (their own visit stays booked)
+    public async Task SendGroupMemberCancelledAsync(Booking booking, string whoCancelled,
+        CancellationToken cancellationToken)
+    {
+        if (booking.CustomerEmail.Length == 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var when = OsloTime.Format(booking.StartUtc);
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                $"{whoCancelled} har avbestilt sin time i BESTI sammen og kommer ikke.\n\n" +
+                "Timen din står fortsatt, så du kan komme som planlagt.\n" +
+                $"Vil du heller avbestille, gjør du det i Min BESTI: {webBaseUrl}/min-besti\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {when}\n" +
+                $"Sted: {business.Name}, {business.Address}, {business.PostalCode} {business.City}\n\n" +
+                "Hilsen BESTI";
+            await emailService.SendAsync(booking.CustomerEmail, $"{whoCancelled} har avbestilt: {service.Name}, {when}",
+                body, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send group cancellation email for booking {BookingId}", booking.Id);
+        }
+    }
+
     // Mails to the business go to the owner's confirmed login e-mail, never to the public contact e-mail
     // (nobody has confirmed that one, a typo would send customer data to a stranger)
     private async Task SendToOwnerAsync(Guid businessId, string subject, string body,

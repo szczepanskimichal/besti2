@@ -6,6 +6,7 @@ using besti2.Domain.Entities;
 using besti2.Domain.Enums;
 using besti2.Infrastructure.Persistence;
 using besti2.Infrastructure.Services.Bookings;
+using besti2.Infrastructure.Services.Invites;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -501,7 +502,32 @@ public class BookingService(
             $"{booking.CustomerName} har avbestilt timen {OsloTime.Format(booking.StartUtc)}" +
             (note is null ? "" : $": {note}"),
             BookingNotifier.PanelLink(booking), CancellationToken.None);
+        await TellGroupAsync(booking, CancellationToken.None);
         return UpdateBookingStatusOutcome.Updated;
+    }
+
+    // BESTI sammen: when one of the group cancels, the others are told (bell and e-mail), so nobody turns up
+    // thinking they go together. Their own visits stay booked
+    private async Task TellGroupAsync(Booking cancelled, CancellationToken cancellationToken)
+    {
+        if (cancelled.InviteId is not Guid inviteId)
+        {
+            return;
+        }
+
+        var others = await dbContext.Bookings.AsNoTracking()
+            .Where(b => b.InviteId == inviteId && b.Id != cancelled.Id && b.Status != BookingStatus.Avlyst
+                        && b.CustomerUserId != cancelled.CustomerUserId)
+            .ToListAsync(cancellationToken);
+        var who = InviteService.FirstName(cancelled.CustomerName);
+        foreach (var other in others)
+        {
+            await notifier.NotifyAsync(other, toBusiness: false,
+                $"{who} har avbestilt sin time i BESTI sammen ({OsloTime.Format(other.StartUtc)}). " +
+                "Timen din hos {0} står fortsatt.",
+                "/min-besti", cancellationToken);
+            await emails.SendGroupMemberCancelledAsync(other, who, cancellationToken);
+        }
     }
 
     // Update the status of a booking

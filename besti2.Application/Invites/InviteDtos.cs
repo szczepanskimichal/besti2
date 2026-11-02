@@ -69,7 +69,8 @@ public record FriendMessageDto(string Name, string Text, string? Icon, bool Join
 // What everyone with the link sees on /invitasjon/{token}: first names only, never contact details.
 // Persons = all visits; Joined = booked so far (the inviter's own included); PlacesLeft = places still free
 // for others; Open = new people can still join; IsMember = the visitor is booked in it;
-// StillFree = the visitor's place (and the inviter's, before the first yes) is still free right now
+// StillFree = the visitor's place (and the inviter's, before the first yes) is still free right now;
+// CancelledNames = first names of the others who booked and then cancelled; ViewerCancelled = the visitor did
 public record InviteDto(
     Guid Id,
     string Status,
@@ -94,7 +95,9 @@ public record InviteDto(
     bool IsMember,
     bool StillFree,
     IReadOnlyList<InviteChatLineDto>? Chat = null, // null = the viewer may not read the chat
-    IReadOnlyList<FriendMessageDto>? FriendMessages = null); // only for the inviter
+    IReadOnlyList<FriendMessageDto>? FriendMessages = null, // only for the inviter
+    IReadOnlyList<string>? CancelledNames = null,
+    bool ViewerCancelled = false);
 
 // One invitation in Min Besti (sent by me, or one I joined)
 public record CustomerInviteDto(

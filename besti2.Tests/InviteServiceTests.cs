@@ -168,6 +168,34 @@ public class InviteServiceTests
         Assert.Contains(mail.Sent, m => m.To == "ola@test.example");
     }
 
+    // check if the friend is told (bell, e-mail and the invitation page) when the inviter cancels,
+    // and keeps their own visit
+    [Fact]
+    public async Task InviterCancels_FriendToldAndKeepsVisit()
+    {
+        await using var db = await CreateSeededDbAsync();
+        var token = await SendAsync(db);
+        await Invites(db).AcceptAsync(token, OlaId, new AcceptInviteRequest("+47 400 00 000"));
+        var kari = await db.Bookings.SingleAsync(b => b.CustomerUserId == KariId);
+        var mail = new FakeEmailService();
+
+        var outcome = await new BookingService(db, mail, NullLogger<BookingService>.Instance)
+            .CancelByCustomerAsync(kari.Id, KariId);
+
+        Assert.Equal(UpdateBookingStatusOutcome.Updated, outcome);
+        var ola = await db.Bookings.SingleAsync(b => b.CustomerUserId == OlaId);
+        Assert.NotEqual(BookingStatus.Avlyst, ola.Status);
+        Assert.Contains(db.Notifications, n => n.UserId == OlaId && n.Text.StartsWith("Kari har avbestilt"));
+        Assert.Contains(mail.Sent, m => m.To == "ola@test.example" && m.Subject.StartsWith("Kari har avbestilt"));
+        Assert.DoesNotContain(mail.Sent, m => m.To == "kari@test.example");
+        var seenByOla = await Invites(db).GetAsync(token, OlaId);
+        Assert.Equal(["Kari"], seenByOla!.CancelledNames);
+        Assert.False(seenByOla.ViewerCancelled);
+        var seenByKari = await Invites(db).GetAsync(token, KariId);
+        Assert.True(seenByKari!.ViewerCancelled);
+        Assert.Empty(seenByKari.CancelledNames!);
+    }
+
     // check if the inviter cannot accept their own invitation
     [Fact]
     public async Task Accept_OwnInvite_Refused()

@@ -221,6 +221,8 @@ export type Invite = {
     // BESTI-chat: the inviter and the friends who joined (mine = written by the logged-in visitor,
     // canDelete = mine, or the visitor is the inviter); null = the visitor may not read it
     chat?: { id: string; name: string; text: string; mine: boolean; canDelete: boolean; time: string; reactions: ChatReaction[] }[] | null;
+    cancelledNames?: string[] | null; // first names of the others who booked and then cancelled
+    viewerCancelled?: boolean; // the visitor booked and then cancelled
 };
 
 // Crystal reactions on a BESTI-chat message, in the house style instead of emoji
