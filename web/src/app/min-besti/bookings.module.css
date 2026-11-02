@@ -335,3 +335,87 @@
     font: 600 0.875rem var(--font-heading);
     cursor: pointer;
 }
+
+/* Ada 2026-11-02 (desktop): bigger day headers on "Kommende" and a bigger stamp */
+@media (min-width: 900px) {
+    .besideStamp {
+        padding-right: 116px;
+    }
+
+    .date {
+        font-size: 1.5rem;
+    }
+
+    .time {
+        font-size: 1.1875rem;
+    }
+
+    .stamp {
+        top: 14px;
+        right: 14px;
+        width: 100px;
+        height: 100px;
+    }
+
+    .stamp svg {
+        width: 34px;
+        height: 34px;
+    }
+
+    .stamp > span {
+        font-size: 0.78rem;
+    }
+
+    .stampWaiting svg {
+        width: 27px;
+        height: 27px;
+    }
+
+    .stampWaiting > span {
+        font-size: 0.75rem;
+    }
+
+    .stampWaiting small {
+        font-size: 0.6rem;
+    }
+}
+
+/* michal 2026-11-02: the venteliste badge without yellow: lilac with a bell while waiting, mint when a time came free */
+.waitBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px 4px 8px;
+    border: 1.5px solid #c9bfff;
+    border-radius: 999px;
+    background: rgba(169, 160, 255, 0.14);
+    box-shadow: 0 0 10px rgba(201, 191, 255, 0.4);
+    color: #e6e0ff;
+    font: 700 0.8125rem var(--font-heading);
+    white-space: nowrap;
+}
+
+.waitBadge img {
+    width: 18px;
+    height: 18px;
+}
+
+.waitBadgeFree {
+    border-color: #8ff0d6;
+    background: rgba(114, 214, 189, 0.16);
+    box-shadow: 0 0 10px rgba(143, 240, 214, 0.45);
+    color: #dffff5;
+}
+
+/* michal 2026-11-02: "Gratis avbestilling i ..." next to Avbestill when there is room (wraps below on a narrow phone);
+   once the cancel form is open it gets the whole width again */
+.cancelRow {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.cancelRow:has(details[open]) {
+    flex-direction: column;
+    align-items: flex-start;
+}

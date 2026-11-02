@@ -5,6 +5,8 @@ import type { CustomerBooking, WaitlistEntry } from "@/lib/types";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { daysBetween, isoWeek, mondayOf, shortDay, weekDays } from "../panel/calendar/calendarDates";
 import Countdown from "./Countdown";
+import EmptyState from "@/components/EmptyState/EmptyState";
+import StatusStamp from "./StatusStamp";
 import styles from "./MyCalendar.module.css";
 
 export type CalendarView = "ar" | "maned" | "uke" | "dag" | "plan";
@@ -14,6 +16,7 @@ export type Suggestion = {
     date: string;
     serviceName: string;
     businessName: string;
+    businessSlug: string;
     bookHref: string;
 };
 
@@ -173,6 +176,7 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                                             {waitingOn(d).length > 0 && (
                                                 <span className={styles.cellBell}><CrystalIcon name="bjelle"/></span>
                                             )}
+                                            {suggested && <span className={`${styles.ring} ${styles.cellClock}`}/>}
                                         </Link>
                                     );
                                 });
@@ -198,6 +202,7 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                                         <span className={styles.weekDate}>
                                             <span className={styles.weekName}>{WEEKDAYS[(new Date(`${d}T12:00:00Z`).getUTCDay() + 6) % 7]}</span>
                                             <span className={styles.weekNumber}>{Number(d.slice(8))}</span>
+                                            <span className={styles.weekFull}>{formatDay(d)}</span>
                                         </span>
                                         <span className={styles.weekItems}>
                                             {onDay.length === 0 && extra === 0 && <span className={styles.freeText}>Ledig</span>}
@@ -263,6 +268,16 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
     suggestions: Suggestion[]; compact?: boolean;
 }) {
     if (visits.length === 0 && waitlist.length === 0 && suggestions.length === 0) {
+        if (date >= today && !compact) {
+            // Ada 2026-11-02: a free day as a little invitation, with the crystal sparkles
+            return (
+                <div className={styles.freeDay}>
+                    <EmptyState icon="sparkles" title="Helt ledig dag" action={{ href: "/", label: "Finn en bedrift" }}>
+                        Trenger du en time? Finn en ledig tid hos BESTI.
+                    </EmptyState>
+                </div>
+            );
+        }
         return (
             <div className={styles.free}>
                 <p className={styles.freeTitle}>{date < today ? "Ingen timer denne dagen." : "Helt ledig dag ✨"}</p>
@@ -281,9 +296,11 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                             <span>{formatTime(b.endUtc)}</span>
                         </span>
                         <div className={styles.itemBody}>
-                            <p className={styles.itemTitle}>{b.serviceName}</p>
-                            <p className={styles.muted}>
-                                hos {b.employeeName}, <Link href={`/${b.businessSlug}`}>{b.businessName}</Link>
+                            <p className={styles.itemBusiness}>
+                                <Link href={`/${b.businessSlug}`}>{b.businessName}</Link>
+                            </p>
+                            <p className={`${styles.itemTitle} ${styles.itemService}`}>
+                                <CrystalIcon name="stjerne"/>{b.serviceName} hos {b.employeeName}
                             </p>
                             {over ? (
                                 <p className={styles.links}>
@@ -294,6 +311,7 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                                 </p>
                             ) : (
                                 <>
+                                    <StatusStamp status={b.status} className={styles.itemStamp}/>
                                     <span className={styles.status}>
                                         {b.status === "VenterKunde" ? "Svar ønskes" : statusLabels[b.status] ?? b.status}
                                     </span>
@@ -317,7 +335,10 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                     <span className={styles.itemTime}><CrystalIcon name="bjelle"/></span>
                     <div className={styles.itemBody}>
                         <p className={styles.itemTitle}>{w.notified ? "Det ble ledig!" : "På venteliste"}</p>
-                        <p className={styles.muted}>{w.serviceName} hos {w.businessName}</p>
+                        <p className={styles.itemBusiness}><Link href={`/${w.businessSlug}`}>{w.businessName}</Link></p>
+                        <p className={`${styles.itemService} ${styles.itemServiceSmall}`}>
+                            <CrystalIcon name="stjerne"/>{w.serviceName}{w.employeeName && ` hos ${w.employeeName}`}
+                        </p>
                         <p className={styles.links}>
                             <Link href={`/${w.businessSlug}/bestill?${new URLSearchParams({
                                 tjeneste: w.serviceId, maned: w.date.slice(0, 7), dato: w.date,
@@ -332,7 +353,10 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                     <span className={styles.itemTime}><span className={styles.ring}/></span>
                     <div className={styles.itemBody}>
                         <p className={styles.itemTitle}>Tid for ny time?</p>
-                        <p className={styles.muted}>{s.serviceName} hos {s.businessName}</p>
+                        <p className={styles.itemBusiness}><Link href={`/${s.businessSlug}`}>{s.businessName}</Link></p>
+                        <p className={`${styles.itemService} ${styles.itemServiceSmall}`}>
+                            <CrystalIcon name="stjerne"/>{s.serviceName}
+                        </p>
                         <p className={styles.links}><Link href={s.bookHref}>Finn en tid</Link></p>
                     </div>
                 </li>

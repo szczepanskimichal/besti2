@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getMe, getMyBookings, getMyInvites, getMyRebookReminders, getMyWaitlist } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { statusLabels } from "@/lib/bookingStatus";
 import { formatDate, formatDay, formatTime, isIsoDate, osloDay, sameDay, shiftDay, todayInOslo } from "@/lib/format";
 import { bookingsToReview, upcomingBookings } from "@/lib/minBesti";
 import { canCancelOnline } from "@/lib/freeCancel";
@@ -14,6 +13,7 @@ import { withdrawInviteAction } from "../invitasjon/actions";
 import CancelBookingForm from "./CancelBookingForm";
 import Countdown, { FreeCancelLeft } from "./Countdown";
 import MyCalendar, { type CalendarView, type Suggestion } from "./MyCalendar";
+import StatusStamp from "./StatusStamp";
 import MinBestiTabs from "@/components/MinBestiTabs/MinBestiTabs";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 // Same cards, status colours and buttons as the business panel
@@ -153,11 +153,15 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                 <li key={entry.id} className={styles.card}>
                                     <div className={styles.cardHeader}>
                                         <p className={styles.when}>{formatDay(entry.date)}</p>
-                                        <span className={styles.status}>{entry.notified ? "Det ble ledig!" : "Venter"}</span>
+                                        <span className={`${mine.waitBadge} ${entry.notified ? mine.waitBadgeFree : ""}`}>
+                                            <CrystalIcon name="bjelle"/>{entry.notified ? "Det ble ledig!" : "Venter på ledig tid"}
+                                        </span>
                                     </div>
-                                    <p className={styles.service}>
-                                        {entry.serviceName} hos <Link href={`/${entry.businessSlug}`}>{entry.businessName}</Link>
-                                        {entry.employeeName && ` (${entry.employeeName})`}
+                                    <p className={mine.place}>
+                                        <Link href={`/${entry.businessSlug}`}>{entry.businessName}</Link>
+                                    </p>
+                                    <p className={mine.service}>
+                                        <CrystalIcon name="stjerne"/> {entry.serviceName}{entry.employeeName && ` hos ${entry.employeeName}`}
                                     </p>
                                     <div className={styles.actions}>
                                         <Link href={times} className={`${styles.primaryButton} ${waitlistStyles.linkButton}`}>Se ledige tider</Link>
@@ -242,9 +246,11 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     <ul className={styles.list}>
                         {rebook.map((reminder) => (
                             <li key={reminder.id} className={styles.card}>
-                                <p className={styles.service}>
-                                    {reminder.serviceName} hos{" "}
+                                <p className={mine.place}>
                                     <Link href={`/${reminder.businessSlug}`}>{reminder.businessName}</Link>
+                                </p>
+                                <p className={mine.service}>
+                                    <CrystalIcon name="stjerne"/> {reminder.serviceName}
                                 </p>
                                 <p className={styles.muted}>Vi minner deg på det {reminder.weeks} uker etter hver time.</p>
                                 <form action={removeRebookReminderAction} className={styles.actions}>
@@ -293,6 +299,7 @@ function rebookSuggestions(reminders: RebookReminder[], visits: CustomerBooking[
             date,
             serviceName: reminder.serviceName,
             businessName: reminder.businessName,
+            businessSlug: reminder.businessSlug,
             bookHref: `/${reminder.businessSlug}/bestill?${query}`,
         }];
     });
@@ -341,19 +348,3 @@ function MovedVisit({ booking }: { booking: CustomerBooking }) {
     );
 }
 
-// Every status as a tilted glowing stamp in the corner: mint = confirmed, lavender = waiting
-// (for the business, or for the customer's answer to a new time)
-function StatusStamp({ status }: { status: string }) {
-    const waiting = status !== "Bekreftet";
-    return (
-        <span className={`${mine.stamp} ${waiting ? mine.stampWaiting : ""}`} role="img"
-              aria-label={`Status: ${statusLabels[status] ?? status}`}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                {waiting ? <><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v4.8l3.2 2"/></> : <path d="M5 12.5l4.5 4.5L19 7.5"/>}
-            </svg>
-            <span aria-hidden="true">
-                {!waiting ? "BEKREFTET" : status === "VenterKunde" ? <>VENTER PÅ<small>SVARET DITT</small></> : <>VENTER PÅ<small>BEKREFTELSE</small></>}
-            </span>
-        </span>
-    );
-}
