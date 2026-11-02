@@ -163,7 +163,15 @@ public partial class InviteService(
             })
             .FirstAsync(cancellationToken);
         var members = await MemberIdsAsync(invite.Id, cancellationToken);
-        var names = await FirstNamesAsync([invite.InviterUserId, .. members], cancellationToken);
+        // Booked and then cancelled (and not back in again): the others must see that they no longer come
+        var cancelled = (await dbContext.Bookings.AsNoTracking()
+                .Where(b => b.InviteId == invite.Id && b.Status == BookingStatus.Avlyst && b.CustomerUserId != null)
+                .Select(b => b.CustomerUserId!)
+                .Distinct()
+                .ToListAsync(cancellationToken))
+            .Where(id => !members.Contains(id))
+            .ToList();
+        var names = await FirstNamesAsync([invite.InviterUserId, .. members, .. cancelled], cancellationToken);
         var placesLeft = PlacesLeft(invite, members);
         var open = IsOpen(invite, members);
         var isMember = viewerUserId is not null && members.Contains(viewerUserId);
@@ -197,7 +205,9 @@ public partial class InviteService(
             isMember,
             stillFree,
             isInviter || isMember ? await ChatAsync(invite, viewerUserId!, isInviter, cancellationToken) : null,
-            isInviter ? await GreetingsAsync(invite.Id, cancellationToken) : null);
+            isInviter ? await GreetingsAsync(invite.Id, cancellationToken) : null,
+            cancelled.Where(id => id != viewerUserId).Select(id => names.GetValueOrDefault(id, "Gjest")).ToList(),
+            viewerUserId is not null && cancelled.Contains(viewerUserId));
     }
 
     public async Task<InviteResult> AcceptAsync(string token, string friendUserId, AcceptInviteRequest request,

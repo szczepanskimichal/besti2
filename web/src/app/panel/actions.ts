@@ -30,6 +30,25 @@ export async function confirmBookingAction(formData: FormData) {
     await changeStatus(formData, "bekreft");
 }
 
+// BESTI sammen: "Bekreft alle" confirms every waiting visit of the group, so each person gets their e-mail
+export async function confirmGroupAction(formData: FormData) {
+    const token = await getToken();
+    if (!token) {
+        redirect("/logg-inn");
+    }
+
+    // At most 8 in a group; one at a time, so each confirmation is saved and sent before the next
+    const ids = formData.getAll("bookingId").map(String).slice(0, 8);
+    let failed = false;
+    for (const id of ids) {
+        failed = (await changeBookingStatus(token, id, "bekreft")) !== "ok" || failed;
+    }
+
+    const back = safeRedirectPath(String(formData.get("tilbake") ?? ""));
+    const page = back.startsWith("/panel") ? back : "/panel";
+    redirect(failed ? `${page}${page.includes("?") ? "&" : "?"}feil=1` : page);
+}
+
 export async function cancelBookingAction(formData: FormData) {
     await changeStatus(formData, "avlys");
 }

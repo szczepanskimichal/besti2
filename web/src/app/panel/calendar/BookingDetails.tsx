@@ -3,7 +3,7 @@ import { formatDay, formatTime, osloDay } from "@/lib/format";
 import { statusLabels } from "@/lib/bookingStatus";
 import type { PanelBooking } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
-import { cancelBookingAction, confirmBookingAction } from "../actions";
+import { cancelBookingAction, confirmBookingAction, confirmGroupAction } from "../actions";
 import { NoShowButtons, NoShowCount } from "../NoShow";
 import GroupSummary from "./GroupSummary";
 import styles from "../page.module.css";
@@ -15,6 +15,9 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
     booking: PanelBooking; members?: { booking: PanelBooking; href: string }[]; closeHref: string; moveHref: string
 }) {
     const { started, canConfirm, canCancel, canMove } = allowedActions(booking);
+    // BESTI sammen: everyone in the group still waiting (this visit included), confirmed with one click
+    const waiting = booking.group ? members.filter((m) => allowedActions(m.booking).canConfirm).map((m) => m.booking) : [];
+    const confirmAll = waiting.some((b) => b.id !== booking.id);
     return (
         <div className={calendar.overlay}>
             <section className={calendar.dialog} role="dialog" aria-modal="true" aria-labelledby="booking-title">
@@ -66,13 +69,25 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
                         )}
                     </div>
                 )}
-                {(canConfirm || canCancel) && (
+                {(canConfirm || canCancel || confirmAll) && (
                     <div className={styles.actions}>
+                        {confirmAll && (
+                            <form action={confirmGroupAction}>
+                                {waiting.map((b) => <input key={b.id} type="hidden" name="bookingId" value={b.id}/>)}
+                                <input type="hidden" name="tilbake" value={closeHref}/>
+                                <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">
+                                    {canConfirm ? `Bekreft alle ${waiting.length}` : `Bekreft resten av gruppa (${waiting.length})`}
+                                </SubmitButton>
+                            </form>
+                        )}
                         {canConfirm && (
                             <form action={confirmBookingAction}>
                                 <input type="hidden" name="bookingId" value={booking.id}/>
                                 <input type="hidden" name="tilbake" value={closeHref}/>
-                                <SubmitButton className={styles.primaryButton} pendingText="Bekrefter…">Bekreft</SubmitButton>
+                                <SubmitButton className={confirmAll ? styles.secondaryButton : styles.primaryButton}
+                                              pendingText="Bekrefter…">
+                                    {confirmAll ? `Bare ${booking.customerName.split(" ")[0]}` : "Bekreft"}
+                                </SubmitButton>
                             </form>
                         )}
                         {canMove && (

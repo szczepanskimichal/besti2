@@ -54,11 +54,15 @@ export default async function InvitePage({ params, searchParams }: Props) {
     // Two people (the inviter and one friend) keep the words for two; anything else is a group
     const pair = invite.persons === 2 && invite.organizerJoins;
     const open = invite.open && (invite.status === "Venter" || invite.status === "Akseptert");
+    // Someone booked and then cancelled in Min BESTI: the others must not think they still go together
+    const cancelled = invite.cancelledNames ?? [];
+    // The visitor cancelled their own visit (the inviter always, a friend once nobody new can join)
+    const iCancelled = !!invite.viewerCancelled && !invite.isMember && (invite.isInviter || !open);
 
     return (
         <main className={styles.main}>
             <div className={styles.card}>
-                {open && invite.isInviter && (
+                {open && invite.isInviter && !iCancelled && (
                     <>
                         <LiveStatus/>
                         <Badge waiting/>
@@ -153,23 +157,37 @@ export default async function InvitePage({ params, searchParams }: Props) {
                 )}
 
                 {/* Booked: a member (also while others can still join), or the inviter once the group is closed */}
-                {invite.status === "Akseptert" && (invite.isInviter ? !open : invite.isMember) && (
+                {iCancelled && (
+                    <Closed title="Du har avbestilt timen din"
+                            text={invite.joined > 0
+                                ? `${listNames(invite.names)} har fortsatt ${invite.joined === 1 ? "sin time" : "sine timer"}, og vi har gitt beskjed.`
+                                : "Ingen fra gruppa har time lenger."}
+                            invite={invite}/>
+                )}
+
+                {invite.status === "Akseptert" && !iCancelled && (invite.isInviter ? !open : invite.isMember) && (
                     <>
                         {open && <LiveStatus/>}
-                        <Badge/>
+                        {/* The pair is no longer together: no check mark and sparks */}
+                        <Badge waiting={pair && cancelled.length > 0}/>
                         <h1 className={styles.title}>
-                            {pair ? "Dere er booket!" : open ? "Du er med!" : "Gruppa er klar!"}
+                            {pair && cancelled.length > 0 ? `${cancelled[0]} har avbestilt`
+                                : pair ? "Dere er booket!" : open ? "Du er med!" : "Gruppa er klar!"}
                         </h1>
                         <p className={styles.muted}>
-                            {pair
+                            {pair && cancelled.length > 0
+                                ? `${cancelled[0]} kommer ikke likevel. Timen din står fortsatt, så du kan komme alene. Vil du heller avbestille, gjør du det i Min BESTI.`
+                                : pair
                                 ? invite.isInviter
                                     ? `${invite.names.find((n) => n !== invite.inviterFirstName) ?? "Vennen din"} ble med!`
                                     : `Du og ${invite.inviterFirstName} har time sammen.`
                                 : `${invite.joined} ${invite.joined === 1 ? "person" : "personer"} ${open ? "er med så langt" : "kommer"}: ${listNames(invite.names)}.`}{" "}
+                            {!pair && cancelled.length > 0 && `${listNames(cancelled)} har avbestilt. `}
                             {invite.payMode === "JegSpanderer" &&
                                 (invite.isInviter ? (pair ? "Du spanderer 🎁. " : "Du betaler for alle 🎁. ")
                                     : `${invite.inviterFirstName} spanderer 🎁. `)}
-                            {invite.isMember ? "Timen din ligger i Min BESTI." : "Bedriften har fått beskjed om hvor mange som kommer."}
+                            {pair && cancelled.length > 0 ? ""
+                                : invite.isMember ? "Timen din ligger i Min BESTI." : "Bedriften har fått beskjed om hvor mange som kommer."}
                         </p>
                         {invite.isInviter && <FriendMessages invite={invite}/>}
                         <Seats invite={invite}/>
@@ -189,7 +207,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                     </>
                 )}
 
-                {invite.status === "Akseptert" && !open && !invite.isInviter && !invite.isMember && (
+                {invite.status === "Akseptert" && !open && !invite.isInviter && !invite.isMember && !iCancelled && (
                     <Closed title={invite.placesLeft === 0 ? (pair ? "Invitasjonen er allerede besvart" : "Gruppa er full") : "Svarfristen er ute"}
                             text={pair
                                 ? `${invite.inviterFirstName} har allerede fått med seg en venn.`
