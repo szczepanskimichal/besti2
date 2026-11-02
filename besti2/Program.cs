@@ -49,6 +49,7 @@ builder.Services.AddHostedService<BookingAnonymizationJob>();
 builder.Services.AddHostedService<BookingReminderJob>();
 builder.Services.AddHostedService<EmailSenderJob>();
 builder.Services.AddHostedService<BusinessVerificationJob>();
+builder.Services.AddHostedService<BusinessLocationJob>();
 builder.Services.AddHostedService<PushSenderJob>();
 builder.Services.AddHostedService<WaitlistJob>();
 builder.Services.AddHostedService<RebookReminderJob>();

@@ -10,6 +10,10 @@ public interface IBusinessService
     // The owner's panel: also a business that is still waiting for approval
     Task<BusinessDetailsDto?> GetForPanelAsync(Guid id, CancellationToken cancellationToken = default);
 
+    // Businesses without a map position (Geonorge was down, or the address was not found) are looked up
+    // again in the background. Returns how many got a position
+    Task<int> FillMissingLocationsAsync(CancellationToken cancellationToken = default);
+
     // Returns null when saved, otherwise an error message for the owner
     Task<string?> AddServiceAsync(Guid businessId, CreateServiceRequest request,
         CancellationToken cancellationToken = default);

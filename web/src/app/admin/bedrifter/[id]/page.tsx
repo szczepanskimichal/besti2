@@ -7,6 +7,7 @@ import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatDateTime } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import RegistryName from "@/components/RegistryName/RegistryName";
 import { decideAction, noteAction, suspendAction } from "../../actions";
 import NoteForm from "./NoteForm";
 import styles from "../../admin.module.css";
@@ -102,6 +103,8 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
                                rel="noopener noreferrer" target="_blank">{details.orgNumber}</a>
                             {business.verified ? " · Verifisert" : ""}
                         </dd>
+                        <dt>Brønnøysund</dt>
+                        <dd><RegistryName orgNumber={details.orgNumber} name={business.name}/></dd>
                         <dt>Hørte om BESTI</dt>
                         <dd>{details.referralSource ?? "Ikke oppgitt"}</dd>
                     </dl>

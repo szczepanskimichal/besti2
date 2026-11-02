@@ -35,6 +35,31 @@ public class BusinessServiceTests
         Assert.Equal(2, result.Employees.Count);
     }
 
+    // check if a business without a map position gets one when Geonorge answers again, and stays without
+    // one while Geonorge is still down
+    [Fact]
+    public async Task FillMissingLocations_TriesAgain()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+        var klipp = await db.Businesses.SingleAsync(b => b.Id == klippId);
+        klipp.Latitude = null;
+        klipp.Longitude = null;
+        await db.SaveChangesAsync();
+        var geonorge = new FakeGeocodingService { Result = null };
+        var service = new BusinessService(db, geonorge, new FakeImageStorage());
+
+        Assert.Equal(0, await service.FillMissingLocationsAsync());
+        geonorge.Result = (60.79, 10.69);
+        Assert.True(await service.FillMissingLocationsAsync() >= 1);
+
+        Assert.Equal(60.79, (await db.Businesses.SingleAsync(b => b.Id == klippId)).Latitude);
+    }
+
     // check if JoinedUtc is the approval time, so the "Ny på Besti" stamp counts from when the page went live
     [Fact]
     public async Task GetByIdAsync_JoinedUtc_IsApprovalTime()
