@@ -152,6 +152,9 @@
     background: rgba(150, 128, 255, 0.14);
     color: #e4ddff;
     font: 400 0.9375rem/1.5 var(--font-small);
+    /* "Brønnøysundregistrene" is wider than the text column on a 320 px phone */
+    overflow-wrap: anywhere;
+    hyphens: auto;
 }
 @media (min-width: 700px) {
     .hero {

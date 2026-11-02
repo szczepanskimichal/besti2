@@ -499,7 +499,8 @@ a.name:hover {
    Phone: the field on its own line, the two buttons next to each other under it */
 .rewardRow {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    /* minmax(0, ...): the closed warning must not push the row wider than a 320 px phone */
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     align-items: start;
     gap: 10px;
     margin-top: -8px;
@@ -520,6 +521,15 @@ a.name:hover {
     padding: 0 8px;
     font: 700 0.875rem var(--font-heading);
     white-space: nowrap;
+}
+/* The smallest phones: the two buttons may take two lines instead of being cut */
+@media (max-width: 359px) {
+    .rewardRow .saveButton,
+    .rewardRow .pillDanger {
+        white-space: normal;
+        text-align: center;
+        line-height: 1.15;
+    }
 }
 /* Phone: the warning opens under both buttons, full width */
 .rewardRow .sheet {
