@@ -45,7 +45,7 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
             )}
             <h2 className={styles.question}>Hvordan var timen?</h2>
             <p className={styles.share}>
-                Del erfaringen din på BESTI og hjelp andre å velge <CrystalIcon name="hjerte"/>
+                Del erfaringen din på BESTI og hjelp andre å velge <CrystalIcon name="stjerne"/>
             </p>
             <p className={styles.info}>
                 Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
