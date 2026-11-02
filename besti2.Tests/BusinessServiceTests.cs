@@ -144,6 +144,26 @@ public class BusinessServiceTests
         Assert.Equal("Prisen kan være maks 1 000 000 kr.", error);
     }
 
+    // check if AddServiceAsync rejects "Fast pris" without a price and a length outside 5-minute steps
+    [Theory]
+    [InlineData(30, null, "Skriv inn prisen")]
+    [InlineData(7, 300, "Varighet må gå opp i 5 minutter")]
+    public async Task AddServiceAsync_ReturnsError_WhenPriceMissingOrOddLength(int minutes, int? price, string start)
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        await using var db = new AppDbContext(options);
+        await db.Database.EnsureCreatedAsync();
+        var service = new BusinessService(db, new FakeGeocodingService(), new FakeImageStorage());
+        var klippId = new Guid("11111111-1111-1111-1111-111111111111");
+
+        var error = await service.AddServiceAsync(klippId,
+            new CreateServiceRequest("Skjeggtrim", null, minutes, price, "FastPris"));
+
+        Assert.StartsWith(start, error);
+    }
+
     // check if AddServiceAsync rejects an unknown price type - unhappy path
     [Fact]
     public async Task AddServiceAsync_ReturnsError_WhenPriceTypeIsInvalid()

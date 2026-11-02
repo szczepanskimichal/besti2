@@ -215,7 +215,8 @@ export default function PrivacyPage() {
                 <h2><CrystalIcon name="stjerne"/>Dine rettigheter</h2>
                 <ul>
                     <li><strong>Innsyn og dataportabilitet:</strong> last ned alt vi lagrer om deg under
-                        {" "}<Link href="/min-besti/profil">Min BESTI → Profil → «Last ned mine data»</Link>.</li>
+                        {" "}<Link href="/min-besti/profil">Min BESTI → Profil → «Last ned mine data»</Link>. En bedrift
+                        laster ned sine data under Profil → «Last ned mine data» i bedriftspanelet.</li>
                     <li><strong>Retting:</strong> endre navn og telefon under Profil.</li>
                     <li><strong>Sletting:</strong> slett kontoen under Profil → «Slett konto». En bedrift sletter sin
                         konto i panelet under Bedriftsprofil → «Slett bedrift».</li>

@@ -67,7 +67,8 @@ export default async function InvitePage({ params, searchParams }: Props) {
                         <LiveStatus/>
                         <Badge waiting/>
                         <h1 className={styles.title}>
-                            {invite.joined > (invite.organizerJoins ? 1 : 0) ? `${invite.joined} av ${invite.persons} er med` : "Invitasjonen er klar!"}
+                            {invite.joined > (invite.organizerJoins ? 1 : 0) ? `${invite.joined} av ${invite.persons} er med`
+                                : invite.stillFree ? "Invitasjonen er klar!" : "Tiden er ikke ledig lenger"}
                         </h1>
                         <p className={styles.muted}>
                             {pair
@@ -360,7 +361,7 @@ function FriendMessages({ invite }: { invite: Invite }) {
 function TakenWarning({ invite }: { invite: Invite }) {
     return (
         <div className={styles.warning} role="status">
-            <p>Noen andre har nettopp bestilt hos {invite.businessName} på denne tiden, så det er ikke lenger en ledig plass.</p>
+            <p>Tiden hos {invite.businessName} er ikke ledig lenger (noen har bestilt, eller bedriften har stengt), så det er ingen plass igjen.</p>
             <NextLink href={`/${invite.businessSlug}`}>Finn en ny tid hos {invite.businessName} →</NextLink>
         </div>
     );

@@ -35,6 +35,9 @@ export default function AccountForms() {
                     </form>
                 </details>
 
+                {/* "Last ned mine data": a plain link, the browser saves the file */}
+                <a href="/panel/profil/eksport" className={`${styles.pill} ${styles.pillLink}`} download>Last ned mine data</a>
+
                 {/* Slett bedrift: the blue Avbestill pill, with the warning and the password inside */}
                 <details className={styles.more} open={!!deletion.error}>
                     <summary className={`${styles.pill} ${styles.pillDanger}`}>Slett bedrift</summary>

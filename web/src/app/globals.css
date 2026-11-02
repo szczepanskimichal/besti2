@@ -128,6 +128,14 @@ input::placeholder, textarea::placeholder {
   color: #a9c6bf;
 }
 
+/* iPhone and iPad zoom the whole page into a field whose text is under 16 px, and do not zoom back.
+   Only Safari on iOS knows -webkit-touch-callout, so the design stays as it is everywhere else */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]), select, textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
 /* Users who ask the system for more contrast get solid cards and brighter text */
 @media (prefers-contrast: more) {
   :root {

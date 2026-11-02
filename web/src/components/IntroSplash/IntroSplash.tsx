@@ -7,8 +7,10 @@ import styles from "./IntroSplash.module.css";
 // Shown once per opening of the app (sessionStorage, set by INTRO_SCRIPT in the layout before the page is drawn),
 // never with "reduce motion", and a tap anywhere skips it. The page loads underneath in the meantime.
 
-// Runs in <head> before the first paint: decides if the intro is shown, so it never flashes in or out
-export const INTRO_SCRIPT = `try{var h=document.documentElement;if(sessionStorage.getItem("besti-intro")||matchMedia("(prefers-reduced-motion: reduce)").matches){h.dataset.intro="off"}else{sessionStorage.setItem("besti-intro","1")}}catch(e){document.documentElement.dataset.intro="off"}`;
+// Runs in <head> before the first paint: decides if the intro is shown, so it never flashes in or out.
+// Only when the app opens on the front page: a customer from a QR code, Instagram or a BESTI sammen link
+// goes straight to the business or the invitation (and does not get the intro later in the same visit)
+export const INTRO_SCRIPT = `try{var h=document.documentElement;if(sessionStorage.getItem("besti-intro")||location.pathname!=="/"||matchMedia("(prefers-reduced-motion: reduce)").matches){h.dataset.intro="off"}sessionStorage.setItem("besti-intro","1")}catch(e){document.documentElement.dataset.intro="off"}`;
 
 // Each letter's place inside the 1040 x 430 word (in %), cut tight so the files stay small
 const LETTERS = [

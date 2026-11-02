@@ -28,6 +28,10 @@ public static class BusinessEndpoints
                     return Results.BadRequest(new { message = "Ugyldig posisjon." });
                 }
 
+                // Nobody types a name longer than this; a pasted wall of text must not reach the database
+                q = q is { Length: > 100 } ? q[..100] : q;
+                city = city is { Length: > 100 } ? city[..100] : city;
+
                 // A radius of 0, below 0 or bigger than Norway = no radius
                 if (maxKm is not (> 0 and <= 2000))
                 {
