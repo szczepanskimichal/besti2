@@ -85,11 +85,12 @@ export default async function Home({searchParams}: HomeProps) {
                             ))}
                         </datalist>
                     </label>
-                    <label className={styles.field}>
+                    {/* On the computer "Når har du tid?" and "Beste tidspunkt" side by side, so the card is shorter */}
+                    <label className={`${styles.field} ${styles.half}`}>
                         Når har du tid?
                         <input name="date" type="date" defaultValue={date ?? ""} min={todayInOslo()}/>
                     </label>
-                    <label className={styles.field}>
+                    <label className={`${styles.field} ${styles.half}`}>
                         Beste tidspunkt
                         <select name="tid" defaultValue={tid ?? ""}>
                             <option value="">Hele dagen</option>

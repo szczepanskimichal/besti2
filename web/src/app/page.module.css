@@ -138,9 +138,44 @@
 }
 @media (min-width: 900px) {
     .hero {
-        grid-template-columns: 1fr 440px;
+        grid-template-columns: 1fr 560px;
         align-items: center;
         min-height: 62vh;
+    }
+
+    /* Ada 2026-11-01: a bigger search card on the computer (wider, more air, bigger fields) */
+    .filters {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px 14px;
+        padding: 28px 32px 22px;
+        border-radius: 26px;
+    }
+
+    /* Every row the full width, only the day and the time of day share one row */
+    .filters > * {
+        grid-column: 1 / -1;
+    }
+
+    .filters > .half {
+        grid-column: auto;
+    }
+
+    .field {
+        gap: 8px;
+        font-size: 1.05rem;
+    }
+
+    .field input,
+    .field select {
+        min-height: 56px;
+        padding: 0 16px;
+        font-size: 1.2rem;
+    }
+
+    .searchButton {
+        min-height: 58px;
+        font-size: 1.2rem;
     }
 
     /* Title and lead in the middle of the space left of the search card, a little to the left */

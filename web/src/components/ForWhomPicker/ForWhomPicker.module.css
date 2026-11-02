@@ -134,3 +134,16 @@
     padding: 0 12px;
     color: #fff;
 }
+
+/* Ada 2026-11-01: on the computer the same bigger size as the other fields in the search card */
+@media (min-width: 900px) {
+    .label {
+        font-size: 1.05rem;
+    }
+
+    .trigger {
+        min-height: 56px;
+        padding: 0 16px;
+        font-size: 1.2rem;
+    }
+}
