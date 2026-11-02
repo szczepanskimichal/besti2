@@ -33,8 +33,9 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
             {logo && <p className={styles.notice} role="status">Logoen er lagret.</p>}
             {business.latitude === null && (
                 <p className={styles.error} role="status">
-                    Vi fant ikke adressen på kartet – sjekk adressen og postnummeret.
-                    Uten kart vises dere ikke i «Nær meg».
+                    Dere er ikke på kartet ennå, så dere vises ikke i «Nær meg». Kartverket svarer kanskje ikke
+                    akkurat nå, og vi prøver igjen automatisk hver time. Står denne meldingen her i morgen også,
+                    sjekk adressen og postnummeret.
                 </p>
             )}
 

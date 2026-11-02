@@ -42,6 +42,7 @@ export default function NewBookingForm({ services, employees, date, time, employ
                         </p>
                     )}
                     {view && <input type="hidden" name="visning" value={view}/>}
+                    {state.values?.pastOk && <input type="hidden" name="pastOk" value={state.values.pastOk}/>}
                     <label className={formStyles.field}>
                         Tjeneste
                         {/* key: a select only takes a new defaultValue when it is created again */}

@@ -4,6 +4,7 @@ import { getBusinessApproval } from "@/lib/api";
 import { getCategoryLabel } from "@/lib/categories";
 import { privatePage } from "@/lib/site";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
+import RegistryName from "@/components/RegistryName/RegistryName";
 import { approveBusinessAction, rejectBusinessAction } from "./actions";
 import styles from "../panel/page.module.css";
 
@@ -59,6 +60,7 @@ export default async function ApprovalPage({ searchParams }: ApprovalPageProps) 
                     {business.address}, {business.postalCode} {business.city}<br/>
                     {business.email} · {business.phoneNumber}
                 </p>
+                <p><RegistryName orgNumber={business.orgNumber} name={business.name}/></p>
                 <p>
                     <a href={`https://virksomhet.brreg.no/nb/oppslag/enheter/${business.orgNumber}`}
                        target="_blank" rel="noopener noreferrer">Se bedriften i Brønnøysundregistrene</a>

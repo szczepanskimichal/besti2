@@ -380,8 +380,8 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
         business.FreeCancelHours = request.FreeCancelHours;
         business.Website = website;
         business.AutoConfirm = request.AutoConfirm;
-        // New address: look up the map position again (null = no map)
-        if (addressChanged)
+        // New address, or still no map: look up the map position again (null = no map)
+        if (addressChanged || business.Latitude is null)
         {
             var point = await geocoding.GeocodeAsync(business.Address, business.PostalCode, cancellationToken);
             business.Latitude = point?.Latitude;
@@ -390,6 +390,32 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
 
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
+    }
+
+    public async Task<int> FillMissingLocationsAsync(CancellationToken cancellationToken = default)
+    {
+        // A few at a time, so a long Geonorge outage is not hammered every hour
+        var businesses = await dbContext.Businesses
+            .Where(b => b.Latitude == null)
+            .OrderBy(b => b.CreatedUtc)
+            .Take(50)
+            .ToListAsync(cancellationToken);
+        var found = 0;
+        foreach (var business in businesses)
+        {
+            var point = await geocoding.GeocodeAsync(business.Address, business.PostalCode, cancellationToken);
+            if (point is null)
+            {
+                continue;
+            }
+
+            business.Latitude = point.Value.Latitude;
+            business.Longitude = point.Value.Longitude;
+            found++;
+        }
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return found;
     }
 
     public async Task<string?> UpdateOpeningHoursAsync(Guid businessId, UpdateOpeningHoursRequest request,

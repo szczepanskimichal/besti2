@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { changeBookingStatus, createManualBooking, createTimeOff, deleteTimeOff, moveBooking } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { todayInOslo } from "@/lib/format";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import { FIRST_STEPS_COOKIE, WELCOME_COOKIE } from "./firstStepsCookie";
 import type { FormState } from "@/lib/formState";
@@ -62,6 +63,9 @@ function viewParam(formData: FormData): string {
     return view === "ar" || view === "uke" || view === "maned" || view === "plan" ? `&visning=${view}` : "";
 }
 
+// "1. januar 2020": with the year, since a wrong year is the usual typo
+const withYear = new Intl.DateTimeFormat("nb-NO", { timeZone: "UTC", day: "numeric", month: "long", year: "numeric" });
+
 const MANUAL_FIELDS = ["serviceId", "employeeId", "date", "time", "customerName", "customerPhone", "customerEmail",
     "note", "sendConfirmation", "units"];
 
@@ -76,6 +80,16 @@ export async function createManualBookingAction(_previous: FormState, formData: 
     const values: Record<string, string> = {};
     for (const field of MANUAL_FIELDS) {
         values[field] = String(formData.get(field) ?? "");
+    }
+
+    // A typo in the year easily puts a visit in 2020: a day in the past is saved only when asked twice
+    // (pastOk = the day the owner already saw the question for)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(values.date) && values.date < todayInOslo()
+        && formData.get("pastOk") !== values.date) {
+        return {
+            error: `${withYear.format(new Date(`${values.date}T12:00:00Z`))} har allerede vært. Stemmer datoen? Trykk «Lagre bestilling» igjen for å lagre likevel.`,
+            values: { ...values, pastOk: values.date },
+        };
     }
 
     const result = await createManualBooking(token, {
