@@ -489,9 +489,21 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
             return "Varighet må være mellom 5 og 480 minutter.";
         }
 
+        // The booking times go in steps of 5 minutes (the field checks it too, but only in the browser)
+        if (request.DurationMinutes % 5 != 0)
+        {
+            return "Varighet må gå opp i 5 minutter (f.eks. 30, 45 eller 60).";
+        }
+
         if (!Enum.TryParse<PriceType>(request.PriceType, out var priceType) || !Enum.IsDefined(priceType))
         {
             return "Velg en gyldig pristype.";
+        }
+
+        // "Fast pris" without a price would show "Pris etter avtale" to the customer
+        if (priceType == PriceType.FastPris && request.PriceNok is null)
+        {
+            return "Skriv inn prisen, eller velg «Etter avtale».";
         }
 
         if (request.PriceNok is < 0)

@@ -3,9 +3,12 @@ import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import calendar from "../calendar.module.css";
 
 // What the colours, the small stamps and the people icons mean (the same in every view)
-export default function CalendarLegend() {
+// place: "top" above the calendar (hidden on phones), "bottom" under the phone list (phones only), so on a
+// phone the day's visits come first
+export default function CalendarLegend({ place }: { place: "top" | "bottom" }) {
     return (
-        <div className={calendar.legend} aria-label="Forklaring">
+        <div className={`${calendar.legend} ${place === "top" ? calendar.legendTop : calendar.legendBottom}`}
+             aria-label="Forklaring">
             <ul>
                 <li><span className={`${calendar.legendSwatch} ${calendar.swatchOk}`}/><MiniStamp status="Bekreftet"/>Bekreftet</li>
                 <li><span className={`${calendar.legendSwatch} ${calendar.swatchWait}`}/><MiniStamp status="Venter"/>Venter på svar</li>

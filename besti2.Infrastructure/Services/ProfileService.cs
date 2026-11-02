@@ -36,10 +36,16 @@ public class ProfileService(
 
     public async Task<MyDataExport?> ExportAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var user = await CustomerAsync(userId);
+        var user = await userManager.FindByIdAsync(userId);
         if (user is null)
         {
             return null;
+        }
+
+        // A business owner has no visits or reviews of their own: the login and the business they run
+        if (user.BusinessId is Guid businessId)
+        {
+            return await ExportOwnerAsync(user, businessId, cancellationToken);
         }
 
         var bookings = await dbContext.Bookings.AsNoTracking()
@@ -132,6 +138,27 @@ public class ProfileService(
             inviteMessages);
     }
 
+    private async Task<MyDataExport?> ExportOwnerAsync(AppUser user, Guid businessId,
+        CancellationToken cancellationToken)
+    {
+        var business = await dbContext.Businesses.AsNoTracking()
+            .Where(b => b.Id == businessId)
+            .Select(b => new ExportBusiness(b.Name, b.OrgNumber, b.Address, b.PostalCode, b.City, b.PhoneNumber,
+                b.Email, b.Website, b.Description, b.ReferralSource, b.CreatedUtc, b.ApprovedUtc,
+                b.DataProcessingAcceptedUtc, !b.WeeklyReportOff, b.ProInterestUtc))
+            .FirstOrDefaultAsync(cancellationToken);
+        if (business is null)
+        {
+            return null;
+        }
+
+        return new MyDataExport(DateTime.UtcNow,
+            new ExportAccount(user.FullName ?? "", user.Email ?? "", user.PhoneNumber, user.EmailConfirmed,
+                !user.ReminderEmailOff, !user.SoonNoticeOff),
+            [], [], [], [], [], [], [], [], [], [], [],
+            Business: business);
+    }
+
     public async Task<string?> UpdateAsync(string userId, UpdateMyProfileRequest request,
         CancellationToken cancellationToken = default)
     {
@@ -196,9 +223,12 @@ public class ProfileService(
             return null;
         }
 
+        // Tell exactly what is missing, the same words as on sign-up
         return result.Errors.Any(e => e.Code == "PasswordMismatch")
             ? "Nåværende passord er feil."
-            : "Passordet kunne ikke endres. Prøv et annet passord.";
+            : result.Errors.Any(e => e.Code.StartsWith("Password"))
+                ? "Passordet må ha minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn."
+                : "Passordet kunne ikke endres. Prøv et annet passord.";
     }
 
     public async Task<string?> DeleteAsync(string userId, DeleteAccountRequest request,

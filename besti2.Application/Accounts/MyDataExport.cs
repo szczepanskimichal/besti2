@@ -15,7 +15,26 @@ public record MyDataExport(
     IReadOnlyList<ExportHelpfulVote> HelpfulVotes,
     IReadOnlyList<ExportPushDevice> PushDevices,
     IReadOnlyList<ExportStaffAccess> StaffAccess,
-    IReadOnlyList<ExportInviteMessage>? InviteMessages = null);
+    IReadOnlyList<ExportInviteMessage>? InviteMessages = null,
+    ExportBusiness? Business = null); // only for a business owner
+
+// A business owner's own business (the customers' data belongs to the business: Kunder → Eksporter CSV)
+public record ExportBusiness(
+    string Name,
+    string OrgNumber,
+    string Address,
+    string PostalCode,
+    string City,
+    string PhoneNumber,
+    string? ContactEmail,
+    string? Website,
+    string? Description,
+    string? ReferralSource,
+    DateTime CreatedUtc,
+    DateTime? ApprovedUtc,
+    DateTime? DataProcessingAcceptedUtc,
+    bool WeeklyReport,
+    DateTime? ProInterestUtc);
 
 // ReminderEmail / SoonNotice: the choices under Varsler
 public record ExportAccount(string FullName, string Email, string? Phone, bool EmailConfirmed, bool ReminderEmail,

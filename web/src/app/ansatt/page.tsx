@@ -52,6 +52,13 @@ function daysOf(place: StaffPlace, from: string): { day: string; entries: Entry[
         .filter((d) => d.entries.length > 0);
 }
 
+// "10:00–11:00"; a day blocked from midnight to midnight is "Hele dagen", not "00:00–00:00"
+function clockRange(startUtc: string, endUtc: string): string {
+    const start = formatTime(startUtc);
+    const end = formatTime(endUtc);
+    return start === "00:00" && end === "00:00" ? "Hele dagen" : `${start}–${end}`;
+}
+
 // An employee's own week: only their own visits, with the phone number and notes; no prices or settings
 export default async function StaffPage({ searchParams }: StaffPageProps) {
     const token = await getToken();
@@ -100,7 +107,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
                                                 {entries.map((e) => (
                                                     <li key={e.key}>
                                                         <span className={styles.time}>
-                                                            {formatTime(e.startUtc)}–{formatTime(e.endUtc)}
+                                                            {clockRange(e.startUtc, e.endUtc)}
                                                         </span>
                                                         <span className={styles.text}>{e.content}</span>
                                                     </li>

@@ -16,7 +16,7 @@ export default function DaySummary({ bookings }: { bookings: PanelBooking[] }) {
                 <p className={waiting ? calendar.summaryWaiting : undefined}>
                     <strong>{waiting}</strong><span>venter</span>
                 </p>
-                <p className={calendar.summaryBooked}><strong>{hours.toLocaleString("nb-NO")}</strong><span>timer booket</span></p>
+                <p className={calendar.summaryBooked}><strong>{hours.toLocaleString("nb-NO")}</strong><span>{hours === 1 ? "time" : "timer"} booket</span></p>
             </div>
         </section>
     );

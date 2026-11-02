@@ -97,6 +97,32 @@ public class ProfileServiceTests
         Assert.True(await users.CheckPasswordAsync((await users.FindByIdAsync(kari.Id))!, "Nytt123!"));
     }
 
+    // check if a weak new password says what is missing, not only "try another one"
+    [Fact]
+    public async Task ChangePassword_Weak_SaysWhy()
+    {
+        var (profile, users, _, _) = await CreateAsync();
+        var kari = await KariAsync(users);
+
+        var weak = await profile.ChangePasswordAsync(kari.Id, new ChangePasswordRequest(Password, "abcdefgh"));
+
+        Assert.StartsWith("Passordet må ha minst 6 tegn", weak);
+    }
+
+    // check if a business owner gets their own data too (login and the business), not "not found"
+    [Fact]
+    public async Task Export_BusinessOwner_GetsAccountAndBusiness()
+    {
+        var (profile, users, _, _) = await CreateAsync();
+        var owner = await KariAsync(users, KlippOgStil);
+
+        var export = await profile.ExportAsync(owner.Id);
+
+        Assert.Equal(owner.Email, export!.Account.Email);
+        Assert.Equal("Klipp & Stil Frisør", export.Business!.Name);
+        Assert.Empty(export.Bookings);
+    }
+
     // check if a business owner can change the password too (Bedriftsprofil in the panel)
     [Fact]
     public async Task ChangePassword_WorksForBusinessOwner()

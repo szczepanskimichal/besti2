@@ -1,5 +1,5 @@
 import NextLink from "next/link";
-import {notFound} from "next/navigation";
+import {notFound, redirect} from "next/navigation";
 import {getBusinessBySlug, getFreeDays, getMe, getMyBookings} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, monthGrid, shiftDay, shiftMonth, todayInOslo} from "@/lib/format";
@@ -32,8 +32,12 @@ export default async function BookingPage({params, searchParams}: Props) {
     const business = await getBusinessBySlug(slug);
     const service = business?.services.find((s) => s.id === tjeneste);
 
-    if (!business || !service) {
+    if (!business) {
         notFound();
+    }
+    // A link without a service, or to a service that is gone: the business page, where the customer picks one
+    if (!service) {
+        redirect(`/${encodeURIComponent(slug)}#tjenester`);
     }
 
     // BESTI sammen: sammen=N books N visits at the same time, one employee each ("1" from old links = two).
@@ -301,7 +305,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         {formatDay(selected.date)} kl. {formatTime(chosen.startUtc)}
                         {/* Together: the others get other employees, so only a chosen employee is named */}
                         {chosenEmployee && (!together || employeeId) && ` hos ${chosenEmployee.name}`}
-                        {together && ` · ${persons} personer${organizerJoins ? " med deg" : ", uten deg"}`}
+                        {together && (organizerJoins ? ` · ${persons} personer, du inkludert` : ` · ${persons} personer, uten deg`)}
                         {` · ${formatLength(units * service.durationMinutes)}`}
                     </p>
                     <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>

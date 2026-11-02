@@ -24,11 +24,14 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
 const radiusOptions = [0, 2, 5, 10, 25, 50, 75, 100];
 export default async function Home({searchParams}: HomeProps) {
     const query = await searchParams;
-    const {category, city, q, tid} = query;
+    const {category, city, tid} = query;
+    // The API reads at most 100 characters; a longer text (pasted by mistake) is cut instead of failing
+    const q = query.q?.slice(0, 100);
     // Broken or edited links (e.g. ?date=abc) must not crash the page: invalid values are ignored
     const date = isIsoDate(query.date) ? query.date : undefined;
-    const lat = isDecimal(query.lat) ? query.lat : undefined;
-    const lng = isDecimal(query.lng) ? query.lng : undefined;
+    // A position outside the map (?lat=999) is refused by the API: ignore it like any other broken value
+    const lat = isDecimal(query.lat) && Math.abs(Number(query.lat)) <= 90 ? query.lat : undefined;
+    const lng = isDecimal(query.lng) && Math.abs(Number(query.lng)) <= 180 ? query.lng : undefined;
     const km = isDecimal(query.km) ? query.km : undefined;
     const page = isPageNumber(query.page) ? query.page : undefined;
     // "Best vurdert" and "4★ og over": any other value is ignored

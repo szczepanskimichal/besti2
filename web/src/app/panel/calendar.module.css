@@ -1905,6 +1905,20 @@ a.booking:hover {
     font-size: 0.8125rem;
     color: #d8f5ec;
 }
+/* Phone: the legend goes under the list, so the visits are the first thing the owner sees */
+.legendBottom {
+    margin: 14px 0 0;
+}
+@media (max-width: 767px) {
+    .legendTop {
+        display: none;
+    }
+}
+@media (min-width: 768px) {
+    .legendBottom {
+        display: none;
+    }
+}
 .legend ul {
     display: flex;
     flex-wrap: wrap;

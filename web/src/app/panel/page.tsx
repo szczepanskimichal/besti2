@@ -210,7 +210,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
 
             <GroupStrip bookings={bookings} hrefFor={(booking) => link({ bestilling: booking.id })}/>
 
-            {!year && <CalendarLegend/>}
+            {!year && <CalendarLegend place="top"/>}
 
             {year ? (
                 <YearGrid year={day.slice(0, 4)} counts={counts} openingHours={business.openingHours}
@@ -243,6 +243,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                            openingHours={business.openingHours}
                            pauseHref={month || plan ? undefined : (column) => link({ dag: column.day, pause: "1" })}/>
             )}
+            {!year && <CalendarLegend place="bottom"/>}
 
             {selected && <BookingDetails booking={selected} closeHref={here} moveHref={link({ flytt: selected.id })}
                                          members={members}/>}

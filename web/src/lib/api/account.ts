@@ -108,7 +108,7 @@ export async function deleteMyAccount(token: string, password: string): Promise<
     return toResult(await apiFetch("/api/me/delete", { method: "POST", token, body: { password }, forwardIp: true }));
 }
 
-// "Last ned mine data": everything BESTI keeps about the logged-in customer (null = not a customer)
+// "Last ned mine data": everything BESTI keeps about the logged-in customer or business owner (null = not logged in)
 export async function exportMyData(token: string): Promise<unknown | null> {
     const res = await apiFetch("/api/me/export", { token });
     return res.ok ? res.json() : null;
