@@ -5,7 +5,7 @@ import type { CustomerBooking, WaitlistEntry } from "@/lib/types";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { daysBetween, isoWeek, mondayOf, shortDay, weekDays } from "../panel/calendar/calendarDates";
 import Countdown from "./Countdown";
-import EmptyState from "@/components/EmptyState/EmptyState";
+import FreeDay from "./FreeDay";
 import StatusStamp from "./StatusStamp";
 import styles from "./MyCalendar.module.css";
 
@@ -81,7 +81,9 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                 <Link href={link("dag", osloDay(next.startUtc))} scroll={false} className={styles.next}>
                     <span className={styles.nextLabel}>Neste time</span>
                     <strong className={styles.nextWhen}>{formatDay(osloDay(next.startUtc))} kl. {formatTime(next.startUtc)}</strong>
-                    <span className={styles.nextWhat}>{next.serviceName} hos {next.businessName}</span>
+                    {/* Ada 2026-11-03: the same order as every visit card: the business in mint, then the star and the service */}
+                    <span className={styles.nextBusiness}>{next.businessName}</span>
+                    <span className={styles.nextWhat}><CrystalIcon name="stjerne"/> {next.serviceName} hos {next.employeeName}</span>
                     <span><Countdown startUtc={next.startUtc}/></span>
                 </Link>
             )}
@@ -185,7 +187,8 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                         <ul className={styles.legend} aria-label="Forklaring">
                             <li><span className={`${styles.swatch} ${styles.Bekreftet}`}/> Bekreftet</li>
                             <li><span className={`${styles.swatch} ${styles.Venter}`}/> Venter</li>
-                            <li><span className={styles.ring}/> Tid for ny time?</li>
+                            <li><span className={`${styles.swatch} ${styles.swatchDone}`}/> Fullført</li>
+                            <li><span className={`${styles.ring} ${styles.legendClock}`}/> Tid for ny time?</li>
                         </ul>
                     </>
                 )}
@@ -269,12 +272,10 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
 }) {
     if (visits.length === 0 && waitlist.length === 0 && suggestions.length === 0) {
         if (date >= today && !compact) {
-            // Ada 2026-11-02: a free day as a little invitation, with the crystal sparkles
+            // Ada 2026-11-03: a free day as a little invitation, with the crystal magnifying glass
             return (
                 <div className={styles.freeDay}>
-                    <EmptyState icon="sparkles" title="Helt ledig dag" action={{ href: "/", label: "Finn en bedrift" }}>
-                        Trenger du en time? Finn en ledig tid hos BESTI.
-                    </EmptyState>
+                    <FreeDay/>
                 </div>
             );
         }
@@ -303,12 +304,16 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                                 <CrystalIcon name="stjerne"/>{b.serviceName} hos {b.employeeName}
                             </p>
                             {over ? (
+                                <>
+                                {/* Ada 2026-11-03: a visit that is over is clearly marked, so it is not mixed up with the coming ones */}
+                                <span className={styles.doneBadge}>✓ Fullført</span>
                                 <p className={styles.links}>
                                     <Link href={`/${b.businessSlug}/bestill?${new URLSearchParams({ tjeneste: b.serviceId, ansatt: b.employeeId })}`}>
                                         Bestill igjen
                                     </Link>
                                     {!b.isReviewed && <> · <Link href="/min-besti/vurderinger">Gi vurdering</Link></>}
                                 </p>
+                                </>
                             ) : (
                                 <>
                                     <StatusStamp status={b.status} className={styles.itemStamp}/>

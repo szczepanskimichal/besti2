@@ -321,7 +321,7 @@ function Details({ invite }: { invite: Invite }) {
                 <NextLink href={`/${invite.businessSlug}`}>{invite.businessName}</NextLink>
             </dd>
             <dt>Tjeneste</dt>
-            <dd>{invite.serviceName} · {formatLength(invite.visitMinutes)}</dd>
+            <dd><CrystalIcon name="stjerne"/> {invite.serviceName} · {formatLength(invite.visitMinutes)}</dd>
             <dt>Adresse</dt>
             <dd>{invite.businessAddress}</dd>
             <dt>Pris</dt>

@@ -7,6 +7,7 @@ import PendingBadge, { OkStamp } from "../PendingBadge";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
 import { type Column, type Href, type BlockHref, blockLabel, blockHoursOn } from "./calendarLayout";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // Phone: the visits of each day as a list of cards; a tap opens the details window.
 // always = also on a big screen ("Plan")
@@ -66,7 +67,7 @@ export default function PhoneList({ columns, hrefFor, blockHref, always = false,
                                     </span>
                                     <span className={calendar.cardBody}>
                                         <span className={calendar.cardWho}><PersonsIcon persons={personsFor(booking)}/>{customerLabel(booking)}</span>
-                                        <span className={calendar.service}>{booking.serviceName}</span>
+                                        <span className={calendar.service}><CrystalIcon name="stjerne"/> {booking.serviceName}</span>
                                     </span>
                                     <span className={calendar.cardStamp}>
                                         {booking.status === "Bekreftet" ? <OkStamp/>

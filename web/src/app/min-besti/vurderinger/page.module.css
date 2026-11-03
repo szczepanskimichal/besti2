@@ -193,12 +193,23 @@
     white-space: nowrap;
 }
 
+/* Ada 2026-11-03: "Takk for vurderingen!" big in the middle, with the crystal heart */
 .success {
-    padding: 12px 16px;
-    border-radius: 12px;
+    padding: 16px 20px;
+    border-radius: 16px;
     background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     color: var(--color-primary-dark);
-    font-weight: 600;
+    font-family: var(--font-heading);
+    font-size: clamp(1.3rem, 6vw, 1.75rem);
+    font-weight: 700;
+    text-align: center;
+    text-shadow: 0 0 14px rgba(114, 214, 189, 0.45);
+}
+
+.success img {
+    width: 1.5em;
+    height: 1.5em;
+    filter: drop-shadow(0 0 8px rgba(255, 170, 220, 0.55));
 }
 
 /* "Hvordan var timen?" big and mint, with the invitation to share under it */

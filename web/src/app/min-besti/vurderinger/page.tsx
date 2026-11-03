@@ -39,19 +39,19 @@ export default async function ReviewsPage({ searchParams }: ReviewsPageProps) {
         <main className={panelStyles.main}>
             <h1 className={panelStyles.title}>Min BESTI</h1>
             <MinBestiTabs/>
-            {takk && <p className={styles.success} role="status">Takk for vurderingen! 💙</p>}
+            {takk && <p className={styles.success} role="status">Takk for vurderingen! <CrystalIcon name="hjerte"/></p>}
             {bilde === "feil" && (
                 <p className={panelStyles.error} role="alert">Vurderingen er lagret, men bildet kunne ikke lastes opp.</p>
             )}
             <h2 className={styles.question}>Hvordan var timen?</h2>
             <p className={styles.share}>
-                Del erfaringen din på BESTI og hjelp andre å velge <CrystalIcon name="stjerne"/>
+                Del erfaringen din på BESTI og hjelp andre å velge
             </p>
             <p className={styles.info}>
                 Bare fornavnet ditt vises på bedriftens side. Du kan vurdere en time i 30 dager.
             </p>
             {visits.length === 0 ? (
-                <EmptyState icon={<CrystalIcon name="stjerne"/>} title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
+                <EmptyState icon="star" title="Ingen timer å vurdere" action={{ href: "/", label: "Finn en bedrift" }}>
                     Etter et besøk kan du gi stjerner og et bilde her. Bare ekte besøk kan vurderes.
                 </EmptyState>
             ) : (

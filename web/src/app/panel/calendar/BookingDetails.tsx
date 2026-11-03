@@ -8,6 +8,7 @@ import { NoShowButtons, NoShowCount } from "../NoShow";
 import GroupSummary from "./GroupSummary";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // The details window for one visit: customer, contact, note and Bekreft / Avlys
 // members = all visits of the same BESTI sammen group (same time, other employees), each with its link
@@ -31,7 +32,7 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
                 <span className={`${styles.status} ${styles[booking.status] ?? ""}`}>
                     {statusLabels[booking.status] ?? booking.status}
                 </span>
-                <p className={styles.service}>{booking.serviceName} hos {booking.employeeName}</p>
+                <p className={styles.service}><CrystalIcon name="stjerne"/> {booking.serviceName} hos {booking.employeeName}</p>
                 {booking.group && <GroupSummary group={booking.group} members={members} current={booking.id}/>}
                 {booking.previousStartUtc && (
                     <p className={styles.muted}>

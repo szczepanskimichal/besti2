@@ -1,6 +1,5 @@
 "use client";
 import { useSyncExternalStore } from "react";
-import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./Countdown.module.css";
 
 // "Om 2 dager" on each coming visit. Seeing the time shrink makes people remember the visit or cancel in time
@@ -13,7 +12,7 @@ export default function Countdown({ startUtc }: { startUtc: string }) {
     const left = new Date(startUtc).getTime() - now;
     return (
         <span className={`${styles.pill} ${left < 2 * hour ? styles.soon : ""}`}>
-            <CrystalIcon name="stjerne"/> {left <= 0 ? "Nå" : `Om ${formatLeft(left)}`}
+            {left <= 0 ? "Nå" : `Om ${formatLeft(left)}`}
         </span>
     );
 }

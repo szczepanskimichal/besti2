@@ -419,3 +419,10 @@
     flex-direction: column;
     align-items: flex-start;
 }
+
+/* Ada 2026-11-03: "Ring bedriften hvis du ikke kan komme." on its own line on the phone */
+@media (max-width: 899px) {
+    .callLine {
+        display: block;
+    }
+}

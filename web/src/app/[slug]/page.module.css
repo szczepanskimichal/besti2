@@ -82,7 +82,7 @@
 }
 
 .heroButton:hover {
-    background: linear-gradient(var(--color-primary-dark), var(--color-primary-dark)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-hover-bg);
 }
 
 @media (max-width: 480px) {
