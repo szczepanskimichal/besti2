@@ -289,12 +289,12 @@
 /* "Svar kunden": the one glowing action, mint like Lagre */
 .pillMint {
     border: 2px solid transparent;
-    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-bg);
     color: var(--color-on-primary);
     box-shadow: var(--neon-glow);
 }
 .pillMint:hover {
-    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-bg);
     filter: brightness(1.05);
 }
 .more[open] > .pill {
@@ -375,7 +375,7 @@
     padding: 0 22px;
     border: 2px solid transparent;
     border-radius: 999px;
-    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-bg);
     color: var(--color-on-primary);
     box-shadow: var(--neon-glow);
     font: 700 0.9375rem var(--font-heading);

@@ -109,7 +109,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     </span>
                                 </div>
                                 <p className={styles.service}>
-                                    {invite.serviceName} hos <Link href={`/${invite.businessSlug}`}>{invite.businessName}</Link>
+                                    <CrystalIcon name="stjerne"/> {invite.serviceName} hos <Link href={`/${invite.businessSlug}`}>{invite.businessName}</Link>
                                 </p>
                                 <p className={styles.muted}>
                                     {invite.joined === 0
@@ -139,42 +139,6 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     <CrystalIcon name="stjerne"/>
                     Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere
                 </Link>
-            )}
-            {waitlist.length > 0 && (
-                <>
-                    <h2>Venteliste <CrystalIcon name="bjelle"/></h2>
-                    <ul className={styles.list}>
-                        {waitlist.map((entry) => {
-                            const times = `/${entry.businessSlug}/bestill?${new URLSearchParams({
-                                tjeneste: entry.serviceId, maned: entry.date.slice(0, 7), dato: entry.date,
-                                ...(entry.employeeId ? { ansatt: entry.employeeId } : {}),
-                            })}`;
-                            return (
-                                <li key={entry.id} className={styles.card}>
-                                    <div className={styles.cardHeader}>
-                                        <p className={styles.when}>{formatDay(entry.date)}</p>
-                                        <span className={`${mine.waitBadge} ${entry.notified ? mine.waitBadgeFree : ""}`}>
-                                            <CrystalIcon name="bjelle"/>{entry.notified ? "Det ble ledig!" : "Venter på ledig tid"}
-                                        </span>
-                                    </div>
-                                    <p className={mine.place}>
-                                        <Link href={`/${entry.businessSlug}`}>{entry.businessName}</Link>
-                                    </p>
-                                    <p className={mine.service}>
-                                        <CrystalIcon name="stjerne"/> {entry.serviceName}{entry.employeeName && ` hos ${entry.employeeName}`}
-                                    </p>
-                                    <div className={styles.actions}>
-                                        <Link href={times} className={`${styles.primaryButton} ${waitlistStyles.linkButton}`}>Se ledige tider</Link>
-                                        <form action={leaveWaitlistAction}>
-                                            <input type="hidden" name="id" value={entry.id}/>
-                                            <SubmitButton className={styles.secondaryButton} pendingText="Fjerner…">Fjern</SubmitButton>
-                                        </form>
-                                    </div>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </>
             )}
             <h2>Kommende</h2>
             {upcoming.length === 0 ? (
@@ -233,12 +197,52 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                             ) : (
                                 <p className={styles.muted}>
                                     Fristen for gratis avbestilling er ute.{" "}
-                                    <a href={`tel:${booking.businessPhone}`}>Ring bedriften</a> hvis du ikke kan komme.
+                                    {/* Ada 2026-11-03: on the phone "Ring bedriften" starts its own line */}
+                                    <span className={mine.callLine}>
+                                        <a href={`tel:${booking.businessPhone}`}>Ring bedriften</a> hvis du ikke kan komme.
+                                    </span>
                                 </p>
                             )}
                         </li>
                     ))}
                 </ul>
+            )}
+            {/* Ada 2026-11-03: the venteliste comes after Kommende */}
+            {waitlist.length > 0 && (
+                <>
+                    <h2>Venteliste <CrystalIcon name="bjelle"/></h2>
+                    <ul className={styles.list}>
+                        {waitlist.map((entry) => {
+                            const times = `/${entry.businessSlug}/bestill?${new URLSearchParams({
+                                tjeneste: entry.serviceId, maned: entry.date.slice(0, 7), dato: entry.date,
+                                ...(entry.employeeId ? { ansatt: entry.employeeId } : {}),
+                            })}`;
+                            return (
+                                <li key={entry.id} className={styles.card}>
+                                    <div className={styles.cardHeader}>
+                                        <p className={styles.when}>{formatDay(entry.date)}</p>
+                                        <span className={`${mine.waitBadge} ${entry.notified ? mine.waitBadgeFree : ""}`}>
+                                            <CrystalIcon name="bjelle"/>{entry.notified ? "Det ble ledig!" : "Venter på ledig tid"}
+                                        </span>
+                                    </div>
+                                    <p className={mine.place}>
+                                        <Link href={`/${entry.businessSlug}`}>{entry.businessName}</Link>
+                                    </p>
+                                    <p className={mine.service}>
+                                        <CrystalIcon name="stjerne"/> {entry.serviceName}{entry.employeeName && ` hos ${entry.employeeName}`}
+                                    </p>
+                                    <div className={styles.actions}>
+                                        <Link href={times} className={`${styles.primaryButton} ${waitlistStyles.linkButton}`}>Se ledige tider</Link>
+                                        <form action={leaveWaitlistAction}>
+                                            <input type="hidden" name="id" value={entry.id}/>
+                                            <SubmitButton className={styles.secondaryButton} pendingText="Fjerner…">Fjern</SubmitButton>
+                                        </form>
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </>
             )}
             {rebook.length > 0 && (
                 <>

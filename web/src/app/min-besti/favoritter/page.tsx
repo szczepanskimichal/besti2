@@ -113,7 +113,7 @@ export default async function FavoritesPage({ searchParams }: FavoritesPageProps
                                 ) : last && (
                                     <p className={styles.last}>
                                         <span className={styles.label}>Sist</span>
-                                        <span>{last.serviceName} hos {last.employeeName}, {formatDate(last.startUtc)}</span>
+                                        <span><CrystalIcon name="stjerne"/> {last.serviceName} hos {last.employeeName}, {formatDate(last.startUtc)}</span>
                                     </p>
                                 )}
                                 {/* The stamp card of this business, only when it has one */}

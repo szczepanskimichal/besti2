@@ -10,6 +10,7 @@ import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { leaveStaffPlaceAction } from "./actions";
 import panelStyles from "../panel/page.module.css";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 export const metadata: Metadata = {
     title: "Arbeidsplan",
@@ -31,7 +32,7 @@ function daysOf(place: StaffPlace, from: string): { day: string; entries: Entry[
             key: b.id, day: osloDay(b.startUtc), startUtc: b.startUtc, endUtc: b.endUtc,
             content: (
                 <>
-                    <strong>{b.serviceName}</strong> · {b.customerName}{" "}
+                    <strong><CrystalIcon name="stjerne"/> {b.serviceName}</strong> · {b.customerName}{" "}
                     <a href={`tel:${b.customerPhone}`}>{b.customerPhone}</a>
                     {b.status === "Venter" && <span className={styles.waiting}> Venter på svar</span>}
                     {b.customerNote && <span className={styles.note}>Kunden: {b.customerNote}</span>}

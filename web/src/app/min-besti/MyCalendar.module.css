@@ -44,8 +44,13 @@
     text-transform: uppercase;
 }
 
+.nextBusiness {
+    color: #8ff0d4;
+    font: 700 1rem var(--font-heading);
+}
+
 .nextWhat {
-    color: #bdf5e4;
+    color: #f2fffb;
     font-family: var(--font-heading);
     font-weight: 600;
 }
@@ -790,8 +795,9 @@
     backdrop-filter: none;
 }
 
+/* Ada 2026-11-03: "Helt ledig dag" a bit bigger, still on one line in a 320 px phone */
 .freeDay > div > p:first-of-type {
-    font-size: 1.5rem;
+    font-size: clamp(1.6rem, 7.6vw, 2rem);
     letter-spacing: -0.02em;
     text-shadow: 0 0 18px rgba(114, 214, 189, 0.45);
 }
@@ -841,7 +847,7 @@
     }
 
     .freeDay > div > p:first-of-type {
-        font-size: 2.25rem;
+        font-size: 3rem;
     }
 
     .freeDay > div > p:nth-of-type(2) {
@@ -1295,5 +1301,74 @@
 @media (min-width: 900px) {
     .itemServiceSmall {
         font-size: 1.125rem;
+    }
+}
+
+/* Ada 2026-11-03: visits that are over are quiet: no neon frame or glow, a grey "Fullført" pill instead of the stamp,
+   grey chips in Måned and Uke (no strike-through, that would look like a cancelled visit) */
+.item.past {
+    border: 1px solid rgba(191, 248, 232, 0.14);
+    box-shadow: none;
+    background: rgba(255, 255, 255, 0.025);
+}
+
+.item.past .itemTime,
+.item.past .itemBusiness,
+.item.past .itemService {
+    opacity: 0.6;
+}
+
+.doneBadge {
+    justify-self: start;
+    padding: 3px 12px;
+    border: 1px solid rgba(232, 255, 247, 0.28);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(232, 255, 247, 0.75);
+    font: 700 0.8125rem var(--font-heading);
+    letter-spacing: 0.02em;
+}
+
+.chip.past {
+    --tone: rgba(191, 248, 232, 0.22);
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(232, 255, 247, 0.55);
+    box-shadow: none;
+}
+
+/* Ada 2026-11-03: the legend has a grey ring for visits that are over, and a bigger clock */
+.swatchDone {
+    --tone: rgba(232, 255, 247, 0.45);
+    box-shadow: none;
+}
+
+.legend .legendClock {
+    width: 1.6em;
+    height: 1.6em;
+    vertical-align: middle;
+}
+
+/* Ada 2026-11-03: on the phone the times in Måned sit in small frames too, like on the computer (not only a side line) */
+@media (max-width: 899px) {
+    .chip {
+        padding: 1px 3px;
+        border: 1.5px solid var(--tone, #8ff0d6);
+        border-radius: 6px;
+    }
+
+    .chip.Bekreftet {
+        --tone: #8ff0d6;
+        box-shadow: 0 0 6px rgba(143, 240, 214, 0.45);
+    }
+
+    .chip.Venter,
+    .chip.VenterKunde {
+        --tone: #c9bfff;
+        box-shadow: 0 0 6px rgba(201, 191, 255, 0.45);
+    }
+
+    .chip.past {
+        --tone: rgba(191, 248, 232, 0.22);
+        box-shadow: none;
     }
 }

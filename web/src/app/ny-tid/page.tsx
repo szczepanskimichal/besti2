@@ -8,6 +8,7 @@ import { answerNewTimeAction } from "./actions";
 // Same card, crystal and buttons as the booking confirmation, so the two pages feel like one
 import confirm from "../[slug]/bestill/bekreftet/page.module.css";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 export const metadata: Metadata = {
     title: "Ny tid",
@@ -134,7 +135,7 @@ export default async function NewTimePage({ searchParams }: NewTimePageProps) {
                     <dt>Bedrift</dt>
                     <dd>{newTime.businessName}</dd>
                     <dt>Tjeneste</dt>
-                    <dd>{newTime.serviceName}</dd>
+                    <dd><CrystalIcon name="stjerne"/> {newTime.serviceName}</dd>
                     <dt>Hos</dt>
                     <dd>{newTime.employeeName}</dd>
                 </dl>

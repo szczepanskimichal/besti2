@@ -1,0 +1,132 @@
+/* The free day keeps the look of the Dag card: no own frame, a big Syne title */
+.box {
+    border: 0;
+    background: none;
+    backdrop-filter: none;
+}
+
+/* The title size is set in MyCalendar.module.css (.freeDay) */
+.title {
+    --lens: 0.95em;
+    position: relative;
+    padding: 0.35em 0.6em;
+    white-space: nowrap;
+    animation: sweep 3.6s ease-in-out forwards;
+}
+
+/* 1. The glass glides over the title once, the letters under the lens grow */
+@property --x {
+    syntax: "<percentage>";
+    inherits: true;
+    initial-value: 50%;
+}
+
+.zoom {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: inherit;
+    background: radial-gradient(circle at var(--x) 50%, rgba(191, 248, 232, 0.16), rgba(143, 123, 255, 0.14) 60%, transparent), #061922;
+    color: #ffffff;
+    -webkit-text-fill-color: #ffffff;
+    text-shadow: 0 0 14px rgba(191, 248, 232, 0.9);
+    /* the clip is scaled with the text, so divide by the zoom to keep it as big as the glass */
+    clip-path: circle(calc(var(--lens) / 1.45) at var(--x) 50%);
+    transform: scale(1.45);
+    transform-origin: var(--x) 50%;
+    pointer-events: none;
+    animation: hide 0.3s 3.6s forwards;
+}
+
+.glass {
+    position: absolute;
+    left: var(--x);
+    top: 50%;
+    width: calc(var(--lens) * 4.1);
+    height: calc(var(--lens) * 4.1);
+    /* the lens centre of the svg is at 40 % / 40 % */
+    transform-origin: 40% 40%;
+    transform: translate(0, 0) translate(-40%, -40%) scale(1);
+    filter: drop-shadow(0 0 6px rgba(140, 240, 215, 0.75)) drop-shadow(0 0 16px rgba(150, 128, 255, 0.45));
+    pointer-events: none;
+    animation: fly 1s 3.6s cubic-bezier(0.5, 0, 0.3, 1) forwards, hide 0.15s 4.6s forwards;
+}
+
+@keyframes sweep {
+    0%, 10% {
+        --x: 8%;
+    }
+
+    60% {
+        --x: 92%;
+    }
+
+    100% {
+        --x: 50%;
+    }
+}
+
+/* 2. Then it flies up into the neon ring (the sizes come from FreeDay.tsx) */
+@keyframes fly {
+    to {
+        transform: translate(var(--fly-x, 0px), var(--fly-y, -100px)) translate(-40%, -40%) scale(var(--fly-scale, 0.4));
+    }
+}
+
+@keyframes hide {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes show {
+    to {
+        opacity: 1;
+    }
+}
+
+/* 3. The sparkles make room, and the glass stays in the ring */
+.sparkles {
+    position: absolute;
+    inset: 0;
+    animation: hide 0.5s 3.9s forwards;
+}
+
+.ringGlass {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 74px;
+    height: 74px;
+    transform-origin: 40% 40%;
+    transform: translate(-40%, -40%);
+    opacity: 0;
+    filter: drop-shadow(0 0 6px rgba(140, 240, 215, 0.8)) drop-shadow(0 0 14px rgba(150, 128, 255, 0.45));
+    animation: show 0.15s 4.5s forwards, peek 3.6s 5s ease-in-out infinite;
+}
+
+@keyframes peek {
+    50% {
+        transform: translate(-40%, -40%) rotate(-10deg) scale(1.08);
+    }
+}
+
+/* Without motion: the glass sits in the ring straight away */
+@media (prefers-reduced-motion: reduce) {
+    .title,
+    .ringGlass {
+        animation: none;
+    }
+
+    .zoom,
+    .glass,
+    .sparkles {
+        display: none;
+    }
+
+    .ringGlass {
+        opacity: 1;
+    }
+}

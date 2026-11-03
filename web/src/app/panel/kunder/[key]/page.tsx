@@ -10,6 +10,7 @@ import { removeCustomerAction } from "../actions";
 import CustomerNoteForm from "./CustomerNoteForm";
 import panel from "../../page.module.css";
 import styles from "../page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 export const metadata: Metadata = { title: "Kundekort" };
 
@@ -81,7 +82,7 @@ export default async function CustomerPage({ params, searchParams }: CustomerPag
                             </span>
                         </div>
                         <p className={panel.service}>
-                            {visit.serviceName} hos {visit.employeeName}
+                            <CrystalIcon name="stjerne"/> {visit.serviceName} hos {visit.employeeName}
                             {visit.priceNok !== null && ` · ${kroner.format(visit.priceNok)} kr`}
                         </p>
                         {visit.customerNote && <p className={panel.note}>💬 {visit.customerNote}</p>}

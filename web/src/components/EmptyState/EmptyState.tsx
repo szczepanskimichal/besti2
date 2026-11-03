@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import styles from "./EmptyState.module.css";
 
 type Props = {
-    icon: ReactNode | "sparkles"; // an emoji, a CrystalIcon or three crystal sparkles in a neon ring
+    icon: ReactNode | "sparkles" | "star"; // an emoji, a CrystalIcon, three crystal sparkles or one big crystal star in a neon ring
     title: string;
     children: ReactNode;
     // The one next step, e.g. "Finn en bedrift"
@@ -23,6 +23,12 @@ export default function EmptyState({ icon, title, children, action }: Props) {
                     <img src="/ikoner/iskra.svg" alt="" className={`${styles.sparkle} ${styles.small}`}/>
                     {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
                     <img src="/ikoner/iskra.svg" alt="" className={`${styles.sparkle} ${styles.tiny}`}/>
+                </span>
+            ) : icon === "star" ? (
+                // Ada 2026-11-03: the crystal star lit in the same neon ring as the sparkles
+                <span className={styles.ring} aria-hidden="true">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                    <img src="/ikoner/stjerne-liten.svg" alt="" className={`${styles.sparkle} ${styles.ringStar}`}/>
                 </span>
             ) : (
                 <span className={styles.icon} aria-hidden="true">{icon}</span>

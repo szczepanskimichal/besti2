@@ -396,9 +396,10 @@
 .sheetSave {
     min-height: 40px;
     padding: 0 18px;
-    border: 0;
+    border: 2px solid transparent;
     border-radius: 999px;
-    background: var(--color-primary);
+    background: var(--btn-main-bg);
+    box-shadow: var(--neon-glow);
     color: var(--color-on-primary);
     font: 700 0.875rem var(--font-heading);
     cursor: pointer;

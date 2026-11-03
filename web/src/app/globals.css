@@ -25,7 +25,9 @@
   --color-danger: #ff9b85;
   /* Neon outline of the main buttons (green to turquoise) */
   --neon-border: linear-gradient(180deg, #5af05e, #28c9e8);
-  --neon-glow: 0 0 10px rgba(90, 240, 120, 0.45), 0 0 22px rgba(40, 200, 232, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  /* Ada 2026-11-03: every main mint button glows like "Finn en bedrift" (and the chosen Min BESTI tab) */
+  --neon-glow: 0 0 16px rgba(61, 255, 176, 0.65), 0 0 30px rgba(63, 167, 214, 0.3);
+  --neon-glow-hover: 0 0 20px rgba(61, 255, 176, 0.8), 0 0 36px rgba(63, 167, 214, 0.4);
   --font-heading: var(--font-syne), system-ui, sans-serif;
   --font-body: var(--font-syne), system-ui, sans-serif;
   --font-small: var(--font-inter), system-ui, sans-serif;
@@ -40,7 +42,8 @@
   --btn-on-text: #e6fff8;
   --btn-on-glow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
   --btn-on-text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
-  --btn-main-bg: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+  --btn-main-bg: linear-gradient(135deg, #9ff5dc, #4fc3a6) padding-box, linear-gradient(#c9fff0, #c9fff0) border-box;
+  --btn-main-hover-bg: linear-gradient(135deg, #b4fbe6, #5fd3b6) padding-box, linear-gradient(#c9fff0, #c9fff0) border-box;
 }
 
 /* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */

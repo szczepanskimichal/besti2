@@ -20,9 +20,10 @@
     display: inline-block;
     min-height: 44px;
     padding: 10px 20px;
-    border: none;
+    border: 2px solid transparent;
     border-radius: 8px;
-    background: var(--color-primary);
+    background: var(--btn-main-bg);
+    box-shadow: var(--neon-glow);
     color: var(--color-on-primary);
     font: inherit;
     font-family: var(--font-heading);
@@ -33,5 +34,5 @@
 
 .link:hover,
 .button:hover {
-    background: var(--color-primary-dark);
+    background: var(--btn-main-hover-bg);
 }

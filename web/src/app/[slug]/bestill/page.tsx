@@ -12,6 +12,7 @@ import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import MonthCalendar from "./MonthCalendar";
 import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // The biggest group the API takes (InviteRules.MaxPersons)
 const MAX_PERSONS = 8;
@@ -272,7 +273,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                                 {visitsOnSelected.map((b) => (
                                     <li key={b.id}>
                                         <strong>{formatTime(b.startUtc)}–{formatTime(b.endUtc)}</strong>{" "}
-                                        {b.serviceName} hos {b.businessName}
+                                        <CrystalIcon name="stjerne"/> {b.serviceName} hos {b.businessName}
                                     </li>
                                 ))}
                             </ul>

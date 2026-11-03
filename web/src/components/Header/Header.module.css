@@ -60,7 +60,7 @@
     padding: 0 16px;
     border: 2px solid transparent;
     border-radius: 999px;
-    background: linear-gradient(var(--color-primary), var(--color-primary)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-bg);
     color: var(--color-on-primary);
     font-family: var(--font-heading);
     font-weight: 700;
@@ -70,7 +70,7 @@
 }
 
 .ctaLink:hover {
-    background: linear-gradient(var(--color-primary-dark), var(--color-primary-dark)) padding-box, var(--neon-border) border-box;
+    background: var(--btn-main-hover-bg);
 }
 
 /* Logged out: "Logg inn" is the main button (customers far outnumber businesses), the same mint as on the login page */
@@ -80,10 +80,10 @@
     min-height: 46px;
     padding: 0 16px;
     border-radius: 999px;
-    background: linear-gradient(135deg, #9ff5dc, #72d6bd 55%, #4fc3a6);
-    /* Same light mint neon frame and glow as "Registrer bedrift" */
-    border: 2px solid #a6f2dd;
-    box-shadow: 0 0 12px rgba(114, 214, 189, 0.5), inset 0 0 8px rgba(114, 214, 189, 0.2);
+    /* Lit like every main mint button (Ada 2026-11-03) */
+    border: 2px solid transparent;
+    background: var(--btn-main-bg);
+    box-shadow: var(--neon-glow);
     color: #04101a;
     font-family: var(--font-heading);
     font-weight: 800;
