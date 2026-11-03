@@ -22,7 +22,21 @@ const IN_PRO = [
     { icon: "krystall", title: "Statistikk for 90 dager og 12 måneder", text: "Se hvordan bedriften vokser over tid." },
 ];
 
-// BESTI Pro (Ada 2026-11-01, v5): what Pro is, that it is free in the beta, what it will cost and what is always free.
+// Coming to Pro later, shown locked with a lilac "Kommer" (they were "Kommer snart i Pro" on Statistikk before)
+const COMING = [
+    { title: "SMS til faste kunder", text: "Låst i beta, fordi SMS koster penger." },
+    { title: "Hvor kommer kundene fra?", text: "Se om kundene kom fra Instagram, Google eller QR-plakaten." },
+    { title: "Tilbud for rolige timer", text: "Fyll de rolige dagene med tilbud og fremhev populære tjenester." },
+    { title: "Flere avdelinger", text: "Alle avdelinger og ansatte samlet i ett panel." },
+];
+
+// Everything a business gets without Pro
+const ALWAYS_FREE = [
+    "Kalender", "Nettbestilling", "Kunder", "Ansatte", "Varsler",
+    "E-post til faste kunder", "BESTI sammen", "Ukerapporten",
+];
+
+// BESTI Pro (Ada 2026-11-03, v6): three cards. What is in Pro (free in the beta), the price after the beta, what is always free.
 // Mint = free now, lilac = Pro and what comes later. Pro never gives a better place in the search
 type ProPageProps = {
     searchParams: Promise<{ pro?: string; feil?: string }>;
@@ -44,38 +58,11 @@ export default async function ProPage({ searchParams }: ProPageProps) {
             <p className={styles.lead}>Verktøy som fyller tomme timer og får faste kunder til å komme tilbake.</p>
 
             <div className={styles.grid}>
+                {/* Ada 2026-11-03: one card says what Pro is and that it is free now (was steps + two lists) */}
                 <section className={styles.info} aria-labelledby="pro-info">
-                    <h2 id="pro-info" className={styles.infoTitle}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"
-                             strokeLinecap="round" aria-hidden="true">
-                            <circle cx="12" cy="12" r="9.5"/>
-                            <path d="M12 11v6"/>
-                            <circle cx="12" cy="7.5" r="0.6" fill="currentColor"/>
-                        </svg>
-                        Gratis nå, betalt senere
+                    <h2 id="pro-info" className={`${styles.infoTitle} ${styles.lilacTitle}`}>
+                        Prøv alt i Pro gratis i beta
                     </h2>
-                    <ol className={styles.steps}>
-                        <li><span className={styles.stepNumber} aria-hidden="true">1</span>
-                            <p><b>Nå, i beta:</b> alt i Pro er gratis for alle bedrifter.</p></li>
-                        <li><span className={styles.stepNumber} aria-hidden="true">2</span>
-                            <p><b>Når betaling med kort og Vipps kommer:</b> Pro blir en betalt tjeneste, 299 kr i måneden.</p></li>
-                        <li><span className={styles.stepNumber} aria-hidden="true">3</span>
-                            <p><b>Før det:</b> du får e-post minst 30 dager før. Ingenting koster noe uten at du har sagt ja.</p></li>
-                    </ol>
-                </section>
-
-                <section className={`${styles.card} ${styles.price}`} aria-label="Pris">
-                    <p className={styles.big}>
-                        <span className={styles.priceBadge}><ProBadge short size={46}/></span>
-                        <span className={styles.number}>299</span>
-                        <span className={styles.perMonth}>kr / mnd</span>
-                    </p>
-                    <p className={styles.per}>per salong, eks. mva</p>
-                    <span className={styles.betaPill}>Gratis i beta</span>
-                </section>
-
-                <section className={styles.card} aria-labelledby="pro-med">
-                    <h2 id="pro-med" className={styles.cardTitle}>Med i Pro</h2>
                     <ul className={styles.list}>
                         {IN_PRO.map((item) => (
                             <li key={item.title}>
@@ -86,39 +73,42 @@ export default async function ProPage({ searchParams }: ProPageProps) {
                                 <span><b>{item.title}</b>{item.text}</span>
                             </li>
                         ))}
+                        {COMING.map((item) => (
+                            <li key={item.title}>
+                                <span className={styles.lock} aria-hidden="true"><LockIcon/></span>
+                                <span><b>{item.title} <span className={styles.soon}>Kommer</span></b>{item.text}</span>
+                            </li>
+                        ))}
                     </ul>
                 </section>
 
-                <section className={`${styles.card} ${styles.lilac}`} aria-labelledby="pro-kommer">
-                    <h2 id="pro-kommer" className={`${styles.cardTitle} ${styles.lilacTitle}`}>Kommer i Pro</h2>
-                    <ul className={styles.list}>
-                        <li>
-                            <span className={styles.lock} aria-hidden="true"><LockIcon/></span>
-                            <span><b>SMS til faste kunder</b>Send en melding til alle kundene med ett trykk. Låst i beta, fordi SMS koster penger.</span>
-                        </li>
-                    </ul>
-                </section>
-
-                <section className={`${styles.card} ${styles.center}`} aria-labelledby="pro-gratis">
-                    <h2 id="pro-gratis" className={styles.cardTitle}>Alltid gratis</h2>
-                    <p className={styles.text}>
-                        Kalender, nettbestilling, kunder, ansatte, varsler, e-post til faste kunder, BESTI sammen og ukerapporten.
+                {/* What it costs after the beta, the 30-day promise and the button, in one place */}
+                <section id="med" className={`${styles.card} ${styles.price}`} aria-labelledby="pro-pris">
+                    <h2 id="pro-pris" className={`${styles.priceTitle} ${styles.lilacTitle}`}>Etter beta</h2>
+                    <p className={styles.big}>
+                        <span className={styles.priceBadge}><ProBadge short size={60}/></span>
+                        <span className={styles.number}>299</span>
+                        <span className={styles.perMonth}>kr / mnd</span>
                     </p>
-                    <p className={styles.text}>Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.</p>
-                </section>
-
-                <section id="med" className={`${styles.card} ${styles.center}`}>
+                    <p className={styles.per}>per salong, eks. mva</p>
+                    <p className={styles.text}>Du får e-post minst 30 dager før. Ingenting koster noe uten at du har sagt ja.</p>
                     {stats.proInterest || query.pro ? (
                         <p className={styles.thanks} role="status">Takk! Vi sier fra når Pro starter.</p>
                     ) : (
-                        <>
-                            <p className={styles.text}>Vil du være med når Pro starter?</p>
-                            <form action={proPageInterestAction}>
-                                <SubmitButton className={styles.button} pendingText="Sender …">Jeg vil være med</SubmitButton>
-                            </form>
-                        </>
+                        <form action={proPageInterestAction}>
+                            <SubmitButton className={styles.button} pendingText="Sender …">Jeg vil være med</SubmitButton>
+                        </form>
                     )}
                     {query.feil && <p className={styles.small} role="alert">Noe gikk galt. Prøv igjen.</p>}
+                </section>
+
+                {/* Ada 2026-11-03: a big list, so the business sees how much it gets for free */}
+                <section className={`${styles.card} ${styles.center} ${styles.wide}`} aria-labelledby="pro-gratis">
+                    <h2 id="pro-gratis" className={styles.freeTitle}>Alltid gratis i BESTI</h2>
+                    <ul className={styles.freeList}>
+                        {ALWAYS_FREE.map((item) => <li key={item}>{item}</li>)}
+                    </ul>
+                    <p className={styles.text}>Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.</p>
                 </section>
             </div>
         </main>

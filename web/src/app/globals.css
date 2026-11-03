@@ -44,6 +44,20 @@
   --btn-on-text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
   --btn-main-bg: linear-gradient(135deg, #9ff5dc, #4fc3a6) padding-box, linear-gradient(#c9fff0, #c9fff0) border-box;
   --btn-main-hover-bg: linear-gradient(135deg, #b4fbe6, #5fd3b6) padding-box, linear-gradient(#c9fff0, #c9fff0) border-box;
+  /* BESTI Pro (Ada 2026-11-03): its own rainbow crystal glass with powder pink. Soft lights (blur them), crystal facets and a rainbow edge */
+  --pro-iris: radial-gradient(circle at 15% 25%, rgba(246, 190, 214, 0.6), transparent 30%),
+    radial-gradient(circle at 40% 75%, rgba(240, 196, 214, 0.5), transparent 28%),
+    radial-gradient(circle at 60% 20%, rgba(143, 240, 214, 0.42), transparent 26%),
+    radial-gradient(circle at 85% 65%, rgba(150, 205, 255, 0.5), transparent 30%),
+    radial-gradient(circle at 78% 12%, rgba(222, 186, 255, 0.5), transparent 26%),
+    radial-gradient(circle at 95% 95%, rgba(246, 190, 214, 0.45), transparent 28%),
+    linear-gradient(120deg, #24142c, #10202e 50%, #22142e);
+  --pro-facets: linear-gradient(115deg, transparent 14%, rgba(255, 255, 255, 0.12) 14%, rgba(255, 210, 240, 0.1) 27%, transparent 27%),
+    linear-gradient(65deg, transparent 52%, rgba(210, 240, 255, 0.14) 52%, rgba(220, 200, 255, 0.1) 66%, transparent 66%),
+    linear-gradient(160deg, transparent 60%, rgba(200, 255, 235, 0.12) 60%, rgba(255, 230, 200, 0.08) 75%, transparent 75%),
+    linear-gradient(20deg, transparent 6%, rgba(230, 210, 255, 0.12) 6%, transparent 19%);
+  --pro-edge: linear-gradient(120deg, #f6c1d8, #fbd9e6, #9ff5dc, #9fd8ff, #d6b8ff, #f6c1d8);
+  --pro-glow: 0 0 14px rgba(240, 190, 220, 0.45), 0 0 28px rgba(201, 176, 255, 0.22);
 }
 
 /* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */

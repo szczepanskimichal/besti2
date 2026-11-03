@@ -6,7 +6,8 @@ import empty from "@/components/EmptyState/EmptyState.module.css";
 import styles from "./FreeDay.module.css";
 
 // Ada 2026-11-03: "Helt ledig dag" with a crystal aurora magnifying glass.
-// The glass glides over the title (the letters under the lens grow), then flies up and stays in the neon ring.
+// The glass glides once over the title, left to right (the letters under the lens grow),
+// then flies from the end of the title up into the neon ring and stays there.
 export default function FreeDay() {
     const title = "Helt ledig dag";
     const box = useRef<HTMLDivElement>(null);
@@ -14,14 +15,14 @@ export default function FreeDay() {
     const flying = useRef<HTMLImageElement>(null);
     const resting = useRef<HTMLImageElement>(null);
 
-    // Measure where the glass must fly: from the middle of the title to the glass in the ring
+    // Measure where the glass must fly: from the end of the sweep (92 % of the title) to the glass in the ring
     useLayoutEffect(() => {
         const measure = () => {
             if (!box.current || !heading.current || !flying.current || !resting.current) return;
             const from = heading.current.getBoundingClientRect();
             const to = resting.current.getBoundingClientRect();
             const glass = flying.current.offsetWidth;
-            box.current.style.setProperty("--fly-x", `${to.left + to.width * 0.4 - (from.left + from.width / 2)}px`);
+            box.current.style.setProperty("--fly-x", `${to.left + to.width * 0.4 - (from.left + from.width * 0.92)}px`);
             box.current.style.setProperty("--fly-y", `${to.top + to.height * 0.4 - (from.top + from.height / 2)}px`);
             box.current.style.setProperty("--fly-scale", `${glass > 0 ? to.width / glass : 0.4}`);
         };

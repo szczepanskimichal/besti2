@@ -6,6 +6,7 @@ import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import { daysBetween, isoWeek, mondayOf, shortDay, weekDays } from "../panel/calendar/calendarDates";
 import Countdown from "./Countdown";
 import FreeDay from "./FreeDay";
+import EmptyState from "@/components/EmptyState/EmptyState";
 import StatusStamp from "./StatusStamp";
 import styles from "./MyCalendar.module.css";
 
@@ -242,10 +243,10 @@ export default function MyCalendar({ view, day, today, visits, waitlist, suggest
                         ...suggestions.map((s) => s.date),
                     ])].filter((d) => d >= today).sort();
                     return coming.length === 0 ? (
-                        <div className={styles.free}>
-                            <p className={styles.freeTitle}>Ingenting planlagt ennå ✨</p>
-                            <p className={styles.muted}>Lyst til å unne deg noe? <Link href="/">Finn en bedrift</Link></p>
-                        </div>
+                        // Ada 2026-11-03: the same empty card as Kommende (Kommende is hidden in Plan)
+                        <EmptyState icon="sparkles" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
+                            Når du bestiller, ser du timen her, med nedtelling, veibeskrivelse og avbestilling.
+                        </EmptyState>
                     ) : (
                         <ol className={styles.plan}>
                             {coming.map((d) => (
@@ -327,7 +328,10 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
                                         {" · "}
                                         <a href={`/min-besti/kalender/${b.id}`}>Legg til i kalender</a>
                                         {" · "}
-                                        <a href={`#time-${b.id}`}>Endre eller avbestill</a>
+                                        {/* Plan has no Kommende list under it: open the visit's card in Dag */}
+                                        <a href={compact ? `/min-besti?${new URLSearchParams({ visning: "dag", dag: date })}#time-${b.id}` : `#time-${b.id}`}>
+                                            Endre eller avbestill
+                                        </a>
                                     </p>
                                 </>
                             )}

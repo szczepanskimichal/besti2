@@ -73,7 +73,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
             </div>
             {customers.length === 0 ? (
                 q ? <p className={panel.muted}>Ingen treff.</p> : (
-                    <EmptyState icon="👥" title="Ingen kunder ennå">
+                    <EmptyState icon="people" title="Ingen kunder ennå">
                         Kundene kommer hit av seg selv med den første bestillingen, med historikk og plass til notater.
                         Eller importer dem fra systemet dere bruker i dag.
                     </EmptyState>

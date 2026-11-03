@@ -11,7 +11,7 @@
     position: relative;
     padding: 0.35em 0.6em;
     white-space: nowrap;
-    animation: sweep 3.6s ease-in-out forwards;
+    animation: sweep 2.6s ease-in-out forwards;
 }
 
 /* 1. The glass glides over the title once, the letters under the lens grow */
@@ -37,7 +37,7 @@
     transform: scale(1.45);
     transform-origin: var(--x) 50%;
     pointer-events: none;
-    animation: hide 0.3s 3.6s forwards;
+    animation: hide 0.3s 2.6s forwards;
 }
 
 .glass {
@@ -51,24 +51,21 @@
     transform: translate(0, 0) translate(-40%, -40%) scale(1);
     filter: drop-shadow(0 0 6px rgba(140, 240, 215, 0.75)) drop-shadow(0 0 16px rgba(150, 128, 255, 0.45));
     pointer-events: none;
-    animation: fly 1s 3.6s cubic-bezier(0.5, 0, 0.3, 1) forwards, hide 0.15s 4.6s forwards;
+    animation: fly 1s 2.6s cubic-bezier(0.5, 0, 0.3, 1) forwards, hide 0.15s 3.6s forwards;
 }
 
+/* Ada 2026-11-03: one way only, left to right, no way back */
 @keyframes sweep {
-    0%, 10% {
+    0%, 14% {
         --x: 8%;
     }
 
-    60% {
-        --x: 92%;
-    }
-
     100% {
-        --x: 50%;
+        --x: 92%;
     }
 }
 
-/* 2. Then it flies up into the neon ring (the sizes come from FreeDay.tsx) */
+/* 2. From the end of the title it flies straight up into the neon ring (the sizes come from FreeDay.tsx) */
 @keyframes fly {
     to {
         transform: translate(var(--fly-x, 0px), var(--fly-y, -100px)) translate(-40%, -40%) scale(var(--fly-scale, 0.4));
@@ -91,7 +88,7 @@
 .sparkles {
     position: absolute;
     inset: 0;
-    animation: hide 0.5s 3.9s forwards;
+    animation: hide 0.5s 2.9s forwards;
 }
 
 .ringGlass {
@@ -104,7 +101,7 @@
     transform: translate(-40%, -40%);
     opacity: 0;
     filter: drop-shadow(0 0 6px rgba(140, 240, 215, 0.8)) drop-shadow(0 0 14px rgba(150, 128, 255, 0.45));
-    animation: show 0.15s 4.5s forwards, peek 3.6s 5s ease-in-out infinite;
+    animation: show 0.15s 3.5s forwards, peek 3.6s 4s ease-in-out infinite;
 }
 
 @keyframes peek {

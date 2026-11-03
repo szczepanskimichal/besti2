@@ -24,7 +24,7 @@
     gap: 12px;
 }
 
-/* "Gratis nå, betalt senere": a lit mint frame with three numbered steps */
+/* "Prøv alt i Pro gratis i beta": a lit mint frame with the list of Pro tools */
 .info {
     padding: 14px 16px;
     border: 2px solid #8ff0d6;
@@ -36,49 +36,11 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 0 0 10px;
+    margin: 0 0 16px;
     color: #8ff0d6;
-    font: 700 1.1875rem/1.3 var(--font-heading);
+    font: 700 1.5rem/1.25 var(--font-heading);
     text-shadow: 0 0 10px rgba(143, 240, 214, 0.5);
 }
-.steps {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-.steps li {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-.steps p {
-    margin: 0;
-    padding-top: 2px;
-    color: #e6f7f2;
-    font: 400 0.9375rem/1.5 var(--font-small);
-}
-.steps b {
-    display: block;
-    color: #ffffff;
-    font-weight: 600;
-}
-.stepNumber {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 26px;
-    height: 26px;
-    border: 2px solid #8ff0d6;
-    border-radius: 50%;
-    background: rgba(80, 225, 190, 0.2);
-    color: #ffffff;
-    font: 700 0.8125rem/1 var(--font-heading);
-    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
-}
-
 /* Glass cards */
 .card {
     display: flex;
@@ -112,15 +74,39 @@
     font: 400 0.8125rem/1.5 var(--font-small);
 }
 
-/* The price: an aurora frame, the big number in Syne with a gradient (tight, the Syne digits are wide) */
+/* The price (Ada 2026-11-03): the Pro rainbow crystal glass from globals.css (soft blurred lights, crystal facets,
+   a rainbow edge). The number in white Syne (tight, the Syne digits are wide) */
 .price {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     align-items: center;
     justify-content: center;
     text-align: center;
     border: 2px solid transparent;
-    background: linear-gradient(rgba(8, 22, 30, 0.95), rgba(8, 22, 30, 0.95)) padding-box,
-        linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
-    box-shadow: 0 0 14px rgba(159, 216, 255, 0.35), 0 0 30px rgba(201, 191, 255, 0.18);
+    background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
+    box-shadow: var(--pro-glow);
+}
+.price::before,
+.price::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+}
+.price::before {
+    inset: -20%;
+    background: var(--pro-iris);
+    filter: blur(40px);
+}
+.price::after {
+    inset: 0;
+    background: var(--pro-facets);
+    filter: blur(6px);
+}
+.priceTitle {
+    margin: 0;
+    font: 700 1.5rem/1.25 var(--font-heading);
 }
 .big {
     display: flex;
@@ -131,13 +117,12 @@
 .priceBadge {
     display: inline-flex;
     align-self: center;
-    margin-right: 10px;
+    margin-right: 12px;
 }
+/* Ada 2026-11-03: one colour, white with a soft glow, so it reads well on the rainbow glass */
 .number {
-    background: linear-gradient(115deg, #8ff0d6, #9fd8ff, #c9bfff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: #ffffff;
+    text-shadow: 0 0 14px rgba(240, 200, 230, 0.6);
     font: 700 2.5rem/1 var(--font-heading);
     letter-spacing: -0.035em;
 }
@@ -150,18 +135,6 @@
     color: #cfeee6;
     font: 600 0.9375rem var(--font-heading);
 }
-.betaPill {
-    display: inline-flex;
-    padding: 6px 14px;
-    border: 2px solid #8ff0d6;
-    border-radius: 999px;
-    background: rgba(80, 225, 190, 0.2);
-    color: #e6fff8;
-    font: 700 0.9375rem var(--font-heading);
-    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
-    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
-}
-
 /* Lists with a crystal icon in an aurora ring: the title in Syne, the sentence in Inter */
 .list {
     display: flex;
@@ -199,12 +172,6 @@
     height: 20px;
 }
 
-/* "Kommer i Pro": lilac = not here yet */
-.lilac {
-    border: 2px solid #c9bfff;
-    background: rgba(150, 128, 255, 0.12);
-    box-shadow: 0 0 12px rgba(201, 191, 255, 0.35), inset 0 0 12px rgba(201, 191, 255, 0.12);
-}
 .lilacTitle {
     color: #d9d2ff;
     text-shadow: 0 0 10px rgba(201, 191, 255, 0.45);
@@ -223,6 +190,17 @@
 .lock svg {
     width: 18px;
     height: 18px;
+}
+/* "Kommer": a small lilac pill after the SMS title */
+.soon {
+    display: inline-flex;
+    margin-left: 6px;
+    padding: 1px 9px;
+    border: 1.5px solid #c9bfff;
+    border-radius: 999px;
+    color: #d9d2ff;
+    font: 700 0.75rem/1.5 var(--font-heading);
+    vertical-align: 2px;
 }
 
 /* "Jeg vil være med": the lit mint pill */
@@ -251,6 +229,40 @@
     text-shadow: 0 0 8px rgba(143, 240, 214, 0.4);
 }
 
+/* "Alltid gratis i BESTI": a big title and every free tool as a mint pill with a check */
+.freeTitle {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 1.625rem/1.25 var(--font-heading);
+    text-shadow: 0 0 12px rgba(143, 240, 214, 0.5);
+}
+.freeList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 4px 0;
+    padding: 0;
+    list-style: none;
+}
+.freeList li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1.5px solid rgba(143, 240, 214, 0.7);
+    border-radius: 999px;
+    background: rgba(80, 225, 190, 0.12);
+    color: #ffffff;
+    font: 700 1rem/1.3 var(--font-heading);
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.3);
+}
+.freeList li::before {
+    content: "✓";
+    color: #8ff0d6;
+    font-weight: 700;
+}
+
 /* Computer: two columns, cards side by side equally tall */
 @media (min-width: 900px) {
     .grid {
@@ -265,5 +277,18 @@
     }
     .number {
         font-size: 3.25rem;
+    }
+    .wide {
+        grid-column: 1 / -1;
+    }
+    .freeTitle {
+        font-size: 2rem;
+    }
+    .infoTitle,
+    .priceTitle {
+        font-size: 1.75rem;
+    }
+    .freeList li {
+        font-size: 1.0625rem;
     }
 }

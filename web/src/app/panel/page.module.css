@@ -377,22 +377,57 @@
 
 /* BESTI Pro: the last tile across the whole row, lilac (Pro = lilac), icon and name side by side */
 .navProTab {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     grid-column: 1 / -1;
     flex-direction: row;
     gap: 8px;
     min-height: 44px;
-    border-color: rgba(201, 191, 255, 0.45);
-    background: rgba(150, 128, 255, 0.1);
-    color: #e9e5ff;
+    /* Ada 2026-11-03: the same rainbow crystal glass as the price on the Pro page */
+    border: 1.5px solid transparent;
+    background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
+    color: #ffffff;
+    box-shadow: var(--pro-glow);
+    text-shadow: 0 0 8px rgba(201, 176, 255, 0.7);
+}
+.navProTab::before,
+.navProTab::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
+}
+.navProTab::before {
+    inset: -30%;
+    background: var(--pro-iris);
+    filter: blur(22px);
+    opacity: 0.75;
+}
+.navProTab::after {
+    inset: 0;
+    background: var(--pro-facets);
+    filter: blur(4px);
+}
+.navProTab:hover {
+    border-color: transparent;
+    background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
+}
+.navProTab:hover::before {
+    opacity: 1;
 }
 .navProTab svg {
-    color: #d9d2ff;
+    color: #ffffff;
 }
 .navProTab[aria-current="page"] {
-    border-color: #c9bfff;
-    background: rgba(150, 128, 255, 0.3);
+    border-width: 2px;
+    border-color: transparent;
+    background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
     color: #ffffff;
-    box-shadow: 0 0 12px rgba(201, 191, 255, 0.5);
+    box-shadow: 0 0 16px rgba(201, 176, 255, 0.6), 0 0 32px rgba(255, 170, 220, 0.3);
+}
+.navProTab[aria-current="page"]::before {
+    opacity: 1;
 }
 .navProTab[aria-current="page"] svg {
     color: #ffffff;

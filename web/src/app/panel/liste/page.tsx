@@ -46,7 +46,7 @@ export default async function PanelListPage({ searchParams }: PanelPageProps) {
             )}
 
             {upcoming.length === 0 ? (
-                <EmptyState icon="🗓️" title="Ingen kommende bestillinger"
+                <EmptyState icon="notes" title="Ingen kommende bestillinger"
                             action={{ href: "/panel/del", label: "Del lenken din" }}>
                     Når kundene bestiller, kommer timene her. Del lenken eller heng opp plakaten, så finner de deg.
                 </EmptyState>
