@@ -58,7 +58,7 @@ export default async function ServicesPage({ searchParams }: ServicesPageProps) 
             )}
 
             {count === 0 ? (
-                <EmptyState icon="✂️" title="Ingen tjenester ennå">
+                <EmptyState icon="scissors" title="Ingen tjenester ennå">
                     Uten tjenester kan ingen bestille. {templates.length > 0 ? "Legg til din egen, eller velg fra forslagene" : "Legg til din egen"} under.
                 </EmptyState>
             ) : (

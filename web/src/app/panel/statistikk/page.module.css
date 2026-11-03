@@ -410,78 +410,6 @@
     box-shadow: 0 0 8px rgba(60, 184, 160, 0.35);
 }
 
-.pro {
-    margin-top: 32px;
-    border-color: rgba(201, 191, 255, 0.55);
-}
-
-.proHeading {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-
-.proSoon {
-    color: #c9bfff;
-    font: 700 0.8125rem var(--font-heading);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-/* The Pro tips that fit this business, each after a crystal star */
-.proTips {
-    display: grid;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.proTips li {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding: 10px 12px;
-    border: 1px solid rgba(201, 191, 255, 0.45);
-    border-radius: 14px;
-    background: rgba(120, 100, 230, 0.12);
-}
-
-.proTipTitle {
-    display: block;
-    color: #f2fffb;
-    font-family: var(--font-heading);
-    font-weight: 700;
-}
-
-.proTips img {
-    flex: none;
-    margin-top: 2px;
-}
-
-.pro .heading {
-    margin-top: 0;
-}
-
-.proList {
-    margin: 0;
-    padding-left: 20px;
-    display: grid;
-    gap: 8px;
-}
-
-/* Sentences in Inter, the short titles in front of them stay Syne */
-.proList li,
-.proTips li {
-    font-family: var(--font-small);
-    font-weight: 500;
-}
-.proList strong {
-    font-family: var(--font-heading);
-    font-weight: 700;
-}
-
 .report {
     margin-top: 16px;
     display: flex;
@@ -491,8 +419,9 @@
     gap: 12px;
 }
 
-.footnote {
-    margin: 24px 0 0;
+/* Under the number tiles: how revenue and visits are counted */
+.tilesNote {
+    margin: 12px 0 0;
     font-size: 0.8125rem;
     color: var(--color-muted);
 }
@@ -613,87 +542,76 @@
     font-family: var(--font-small);
 }
 
-/* BESTI Pro card: small groups in dark glass (2 side by side on a computer), a lilac one for "Kommer snart" */
-.proGroups {
-    display: grid;
-    gap: 12px;
+/* "Se alt om BESTI Pro": a small link in the same rainbow crystal glass as the BESTI Pro tile in the menu */
+.proMore {
+    margin: 32px 0 0;
+    color: #e6dcff;
+    font: 700 1.125rem var(--font-heading);
+    text-align: center;
+    text-shadow: 0 0 10px rgba(201, 176, 255, 0.45);
 }
 
 @media (min-width: 768px) {
-    .proGroups {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .proGroupWide {
-        grid-column: 1 / -1;
+    .proMore {
+        font-size: 1.375rem;
     }
 }
 
-.proGroup {
-    padding: 14px 16px;
-    border: 1px solid rgba(191, 248, 232, 0.18);
-    border-radius: 18px;
-    background: rgba(3, 15, 22, 0.45);
-}
-
-.proGroupLilac {
-    border-color: rgba(201, 191, 255, 0.4);
-    background: rgba(120, 100, 230, 0.08);
-}
-
-.proGroupTitle {
-    margin: 0 0 10px;
-    color: #bff8e8;
-    font: 700 0.8125rem var(--font-heading);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-
-.proGroupWide .tipText {
-    margin: 0;
-}
-
-/* The ending: the payment promise and the glowing button next to it (under it on a phone) */
-.proFoot {
-    margin-top: 16px;
+.proLinkRow {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: center;
+    margin: 12px 0 0;
+}
+
+.proLink {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px 20px;
-}
-
-.proFoot .tipText {
-    margin: 0;
-    flex: 1 1 280px;
-}
-
-.proButton {
-    font: inherit;
-    font-family: var(--font-heading);
-    font-weight: 700;
-    min-height: 48px;
-    padding: 0 26px;
-    border: 2px solid transparent;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 22px;
+    border: 1.5px solid transparent;
     border-radius: 999px;
-    background: var(--btn-main-bg);
-    color: var(--color-on-primary);
-    box-shadow: var(--neon-glow);
-    cursor: pointer;
+    background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
+    box-shadow: var(--pro-glow);
+    color: #ffffff;
+    font: 700 0.9375rem var(--font-heading);
+    text-decoration: none;
+    text-shadow: 0 0 8px rgba(201, 176, 255, 0.7);
 }
 
-.proButton:hover {
-    filter: brightness(1.06);
+.proLink::before,
+.proLink::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    pointer-events: none;
 }
 
-.proButton:focus-visible {
-    outline: 2px solid var(--color-primary);
+.proLink::before {
+    inset: -30%;
+    background: var(--pro-iris);
+    filter: blur(22px);
+    opacity: 0.75;
+}
+
+.proLink::after {
+    inset: 0;
+    background: var(--pro-facets);
+    filter: blur(4px);
+}
+
+.proLink:hover::before {
+    opacity: 1;
+}
+
+.proLink:focus-visible {
+    outline: 2px solid #c9b0ff;
     outline-offset: 3px;
 }
 
-@media (max-width: 600px) {
-    .proFoot form,
-    .proButton {
-        width: 100%;
-    }
+.noWrap {
+    white-space: nowrap;
 }

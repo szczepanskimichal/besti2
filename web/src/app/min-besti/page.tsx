@@ -140,72 +140,77 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                     Du har {toReview === 1 ? "1 time" : `${toReview} timer`} du kan vurdere
                 </Link>
             )}
-            <h2>Kommende</h2>
-            {upcoming.length === 0 ? (
-                <EmptyState icon="sparkles" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
-                    Når du bestiller, ser du timen her, med nedtelling, veibeskrivelse og avbestilling.
-                </EmptyState>
-            ) : (
-                <ul className={styles.list}>
-                    {upcoming.map((booking) => booking.status === "VenterKunde" ? (
-                        // The business moved the visit: only the change and the answer, nothing else
-                        <li key={booking.id} id={`time-${booking.id}`} className={`${mine.card} ${mine.movedCard}`}>
-                            <MovedVisit booking={booking}/>
-                        </li>
+            {/* Ada 2026-11-03: Plan ("Alt som kommer") already lists every coming visit, so Kommende is not repeated under it */}
+            {view !== "plan" && (
+                <>
+                    <h2>Kommende</h2>
+                    {upcoming.length === 0 ? (
+                        <EmptyState icon="sparkles" title="Ingen kommende timer" action={{ href: "/", label: "Finn en bedrift" }}>
+                            Når du bestiller, ser du timen her, med nedtelling, veibeskrivelse og avbestilling.
+                        </EmptyState>
                     ) : (
-                        <li key={booking.id} id={`time-${booking.id}`} className={mine.card}>
-                            <div className={mine.besideStamp}>
-                                <p className={mine.date}>{formatDate(booking.startUtc)}</p>
-                                <div className={mine.timeRow}>
-                                    <span className={mine.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
-                                    <Countdown startUtc={booking.startUtc}/>
-                                </div>
-                            </div>
-                            <StatusStamp status={booking.status}/>
-                            <p className={mine.place}>
-                                <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
-                                <br/>
-                                {booking.businessAddress}
-                            </p>
-                            <p className={mine.service}>
-                                <CrystalIcon name="stjerne"/> {booking.serviceName} hos {booking.employeeName}
-                            </p>
-                            {booking.inviteId && together.has(booking.inviteId) && others(together.get(booking.inviteId)!.names) && (
-                                <p className={styles.muted}>
-                                    <span aria-hidden="true">👯</span> Sammen med {others(together.get(booking.inviteId)!.names)}
-                                </p>
-                            )}
-                            <p className={mine.links}>
-                                <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
-                                <a href={directionsUrl(booking.businessAddress)} target="_blank" rel="noopener noreferrer">
-                                    Veibeskrivelse
-                                </a>
-                            </p>
-                            {/* After the business's free-cancel deadline: only by phone */}
-                            {canCancelOnline(booking) ? (
-                                <div className={mine.cancelRow}>
-                                    <details className={mine.cancel}>
-                                        <summary>Avbestill</summary>
-                                        <p>
-                                            Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
-                                            Tiden blir ledig for andre.
-                                        </p>
-                                        <CancelBookingForm bookingId={booking.id}/>
-                                    </details>
-                                    <FreeCancelLeft untilUtc={freeCancelUntil(booking)}/>
-                                </div>
+                        <ul className={styles.list}>
+                            {upcoming.map((booking) => booking.status === "VenterKunde" ? (
+                                // The business moved the visit: only the change and the answer, nothing else
+                                <li key={booking.id} id={`time-${booking.id}`} className={`${mine.card} ${mine.movedCard}`}>
+                                    <MovedVisit booking={booking}/>
+                                </li>
                             ) : (
-                                <p className={styles.muted}>
-                                    Fristen for gratis avbestilling er ute.{" "}
-                                    {/* Ada 2026-11-03: on the phone "Ring bedriften" starts its own line */}
-                                    <span className={mine.callLine}>
-                                        <a href={`tel:${booking.businessPhone}`}>Ring bedriften</a> hvis du ikke kan komme.
-                                    </span>
-                                </p>
-                            )}
-                        </li>
-                    ))}
-                </ul>
+                                <li key={booking.id} id={`time-${booking.id}`} className={mine.card}>
+                                    <div className={mine.besideStamp}>
+                                        <p className={mine.date}>{formatDate(booking.startUtc)}</p>
+                                        <div className={mine.timeRow}>
+                                            <span className={mine.time}>{formatTime(booking.startUtc)}–{formatTime(booking.endUtc)}</span>
+                                            <Countdown startUtc={booking.startUtc}/>
+                                        </div>
+                                    </div>
+                                    <StatusStamp status={booking.status}/>
+                                    <p className={mine.place}>
+                                        <Link href={`/${booking.businessSlug}`}>{booking.businessName}</Link>
+                                        <br/>
+                                        {booking.businessAddress}
+                                    </p>
+                                    <p className={mine.service}>
+                                        <CrystalIcon name="stjerne"/> {booking.serviceName} hos {booking.employeeName}
+                                    </p>
+                                    {booking.inviteId && together.has(booking.inviteId) && others(together.get(booking.inviteId)!.names) && (
+                                        <p className={styles.muted}>
+                                            <span aria-hidden="true">👯</span> Sammen med {others(together.get(booking.inviteId)!.names)}
+                                        </p>
+                                    )}
+                                    <p className={mine.links}>
+                                        <a href={`/min-besti/kalender/${booking.id}`}>Legg til i kalender</a>
+                                        <a href={directionsUrl(booking.businessAddress)} target="_blank" rel="noopener noreferrer">
+                                            Veibeskrivelse
+                                        </a>
+                                    </p>
+                                    {/* After the business's free-cancel deadline: only by phone */}
+                                    {canCancelOnline(booking) ? (
+                                        <div className={mine.cancelRow}>
+                                            <details className={mine.cancel}>
+                                                <summary>Avbestill</summary>
+                                                <p>
+                                                    Avbestille {booking.serviceName} {formatDate(booking.startUtc)} kl. {formatTime(booking.startUtc)}?
+                                                    Tiden blir ledig for andre.
+                                                </p>
+                                                <CancelBookingForm bookingId={booking.id}/>
+                                            </details>
+                                            <FreeCancelLeft untilUtc={freeCancelUntil(booking)}/>
+                                        </div>
+                                    ) : (
+                                        <p className={styles.muted}>
+                                            Fristen for gratis avbestilling er ute.{" "}
+                                            {/* Ada 2026-11-03: on the phone "Ring bedriften" starts its own line */}
+                                            <span className={mine.callLine}>
+                                                <a href={`tel:${booking.businessPhone}`}>Ring bedriften</a> hvis du ikke kan komme.
+                                            </span>
+                                        </p>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </>
             )}
             {/* Ada 2026-11-03: the venteliste comes after Kommende */}
             {waitlist.length > 0 && (

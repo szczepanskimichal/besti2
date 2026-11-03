@@ -11,7 +11,7 @@ import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
 import BarChart from "./BarChart";
-import { proInterestAction, weeklyReportAction } from "./actions";
+import { weeklyReportAction } from "./actions";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = { title: "Statistikk" };
@@ -81,7 +81,6 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
     const now: StatsNumbers = stats.current;
     const before: StatsNumbers = stats.previous;
     const tips = stats.tips.filter((t) => t.kind === "tips");
-    const pro = stats.tips.filter((t) => t.kind === "pro");
     // The hours that had visits, from the first to the last (not the whole night)
     const busyHours = stats.hours.map((count, hour) => ({ count, hour })).filter((h) => h.count > 0);
     const hours = busyHours.length === 0
@@ -170,6 +169,11 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                     </div>
                 )}
             </section>
+            {/* What the numbers above mean, right under them (michal 2026-11-03) */}
+            <p className={styles.tilesNote}>
+                Omsetningen er beregnet ut fra prisen da timen ble bestilt. Kundene betaler hos dere, ikke i BESTI.
+                Besøk = timer som er gjennomført (ikke avbestilte eller «Møtte ikke»).
+            </p>
 
             {tips.length > 0 && (
                 <section aria-labelledby="forslag">
@@ -280,66 +284,14 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
                 </form>
             </section>
 
-            {/* One card for BESTI Pro at the bottom, grouped: what it has, what is coming, what is always free,
-                and a glowing "Jeg er interessert" */}
-            <section className={`${styles.box} ${styles.pro}`} aria-labelledby="pro-beta">
-                <h2 id="pro-beta" className={`${styles.heading} ${styles.proHeading}`}>
-                    BESTI Pro <ProBadge/>
-                </h2>
-                <div className={styles.proGroups}>
-                    <div className={styles.proGroup}>
-                        <p className={styles.proGroupTitle}>Med i Pro</p>
-                        <ul className={styles.proList}>
-                            <li><strong>Venteliste og «Ledig i dag».</strong> Blir en time ledig, får kundene på ventelisten
-                                beskjed med en gang, så tomme timer fylles.</li>
-                            <li><strong>«Tid for ny time?»</strong> Kundene får en påminnelse når det er tid for neste besøk.</li>
-                            <li><strong>Stempelkort.</strong> Faste kunder samler stempler og kommer tilbake.</li>
-                            <li><strong>Statistikk for 90 dager og 12 måneder.</strong></li>
-                        </ul>
-                    </div>
-                    {pro.length > 0 && (
-                        <div className={`${styles.proGroup} ${styles.proGroupLilac}`}>
-                            <p className={`${styles.proGroupTitle} ${styles.proSoon}`}>Kommer snart i Pro</p>
-                            <ul className={styles.proTips}>
-                                {pro.map((tip) => (
-                                    <li key={tip.title}>
-                                        <CrystalIcon name="stjerne"/>
-                                        <span><strong className={styles.proTipTitle}>{tip.title}</strong>{tip.text}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                    <div className={`${styles.proGroup} ${styles.proGroupWide}`}>
-                        <p className={styles.proGroupTitle}>Alltid med i grunnpakken</p>
-                        <p className={styles.tipText}>
-                            Kalender, nettbestilling, kunder, ansatte, varsler, BESTI sammen og ukerapporten.
-                            Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.
-                        </p>
-                    </div>
-                </div>
-                <div className={styles.proFoot}>
-                    <p className={styles.tipText}>
-                        Når betaling starter, får du beskjed på e-post minst 30 dager før.
-                        Ingenting koster noe uten at du har sagt ja.
-                    </p>
-                    {stats.proInterest || query.pro ? (
-                        <p className={styles.notice} role="status">Takk! Vi sier fra når Pro er klar.</p>
-                    ) : (
-                        <form action={proInterestAction}>
-                            <input type="hidden" name="dager" value={days}/>
-                            <SubmitButton className={styles.proButton} pendingText="Sender …">
-                                Jeg er interessert
-                            </SubmitButton>
-                        </form>
-                    )}
-                </div>
-            </section>
-
-            <p className={styles.footnote}>
-                Omsetningen er beregnet ut fra prisen da timen ble bestilt. Kundene betaler hos dere, ikke i BESTI.
-                Besøk = timer som er gjennomført (ikke avbestilte eller «Møtte ikke»).
+            {/* Everything about Pro lives on the Pro page, here only one sentence and a small rainbow crystal link to it */}
+            <p className={styles.proMore}>Flere funksjoner for statistikk kommer i <span className={styles.noWrap}>BESTI Pro.</span></p>
+            <p className={styles.proLinkRow}>
+                <Link href="/panel/pro" className={styles.proLink}>
+                    Se alt om BESTI Pro <ProBadge short/>
+                </Link>
             </p>
+
         </main>
     );
 }
