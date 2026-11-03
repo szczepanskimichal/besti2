@@ -74,6 +74,12 @@
 html {
   scroll-padding-top: 80px;
 }
+/* A computer screen is further from the eyes: everything in rem is about 6 % bigger there (17 px instead of 16 px) */
+@media (min-width: 1024px) {
+  html {
+    font-size: 17px;
+  }
+}
 body {
   margin: 0;
   font-family: var(--font-body);

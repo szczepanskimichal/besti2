@@ -65,7 +65,7 @@
     flex-direction: column;
     gap: 6px;
     font-family: var(--font-heading);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: #d8f5ee;
 }
@@ -158,7 +158,7 @@
     box-shadow: 0 0 12px rgba(114, 214, 189, 0.45), inset 0 0 8px rgba(114, 214, 189, 0.25);
     color: #e6fff6;
     font-family: var(--font-heading);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     cursor: pointer;
 }
@@ -174,7 +174,7 @@
     align-items: flex-start;
     gap: 10px;
     font-family: var(--font-small);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     line-height: 1.5;
     color: #d8f5ee;

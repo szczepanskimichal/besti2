@@ -63,7 +63,7 @@
 .hint {
     flex-basis: 100%;
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--color-muted);
 }
 
@@ -126,7 +126,7 @@
     font-family: var(--font-heading);
     margin: 3% 0 0;
     font-weight: 700;
-    font-size: clamp(0.95rem, 3.6vw, 1.1rem);
+    font-size: clamp(1rem, 3.6vw, 1.1rem);
 }
 
 .link {
@@ -143,7 +143,7 @@
     font-weight: 700;
     margin: auto 0 0;
     padding-top: 4%;
-    font-size: clamp(0.75rem, 3vw, 0.9rem);
+    font-size: clamp(0.8125rem, 3vw, 1rem);
     color: #4a5a6a;
 }
 

@@ -20,7 +20,7 @@
     padding: 0 14px;
     border-radius: 999px;
     color: #dffcf3;
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
     text-decoration: none;
 }
 
@@ -33,22 +33,21 @@
     margin-left: 6px;
 }
 
-.shortLabel {
-    display: none;
-}
-
 /* Phone: the four periods side by side in one row, the Pro badge small in the corner */
 @media (max-width: 599px) {
+    /* Phone: the four periods in two rows, full names (michal 2026-11-03) */
     .periods {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4px;
         width: 100%;
+        border-radius: 24px;
     }
     .period {
         position: relative;
         justify-content: center;
         padding: 0 4px;
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
         white-space: nowrap;
     }
     .proMark {
@@ -58,12 +57,10 @@
         margin: 0;
         transform: scale(0.75);
     }
-    .longLabel {
-        display: none;
-    }
-    .shortLabel {
-        display: inline;
-    }
+
+}
+
+@media (max-width: 599px) {
     .changeWords {
         position: absolute;
         width: 1px;
@@ -121,7 +118,7 @@
     font-weight: 700;
     margin: 0;
     color: #cfeee6;
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
 }
 
 .tileValue {
@@ -166,7 +163,7 @@
 
 .tileNote {
     color: var(--color-muted);
-    font: 0.8125rem var(--font-small);
+    font: 0.9375rem var(--font-small);
 }
 
 /* Up and down as a small pill; the words say it too, never only the colour */
@@ -175,7 +172,7 @@
     border: 1px solid rgba(191, 248, 232, 0.25);
     border-radius: 999px;
     color: var(--color-muted);
-    font: 600 0.75rem var(--font-small);
+    font: 600 0.8125rem var(--font-small);
 }
 
 .up {
@@ -280,7 +277,7 @@
 
 .barValue {
     min-height: 1.2em;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-text);
     font-variant-numeric: tabular-nums;
 }
@@ -307,7 +304,7 @@
 }
 
 .barLabel {
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
     white-space: nowrap;
     overflow: hidden;
@@ -368,14 +365,14 @@
     background: linear-gradient(rgba(6, 18, 25, 0.95), rgba(6, 18, 25, 0.95)) padding-box,
         linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
     color: #e8fbf5;
-    font: 700 0.8125rem var(--font-small);
+    font: 700 0.9375rem var(--font-small);
 }
 
 .rankName {
     min-width: 0;
     overflow-wrap: anywhere;
     color: #f2fffb;
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 
 .rankNumbers {
@@ -387,12 +384,12 @@
 
 .rankNumbers strong {
     color: #ffffff;
-    font: 700 0.9375rem var(--font-small);
+    font: 700 1rem var(--font-small);
 }
 
 .rankNumbers small {
     color: var(--color-muted);
-    font: 0.75rem var(--font-small);
+    font: 0.8125rem var(--font-small);
 }
 
 .rankLine {
@@ -422,7 +419,7 @@
 /* Under the number tiles: how revenue and visits are counted */
 .tilesNote {
     margin: 12px 0 0;
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -443,7 +440,7 @@
 .exportForm label {
     display: grid;
     gap: 4px;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -534,7 +531,7 @@
 
 .charts .barValue {
     color: #bff8e8;
-    font: 700 0.8125rem var(--font-small);
+    font: 700 0.9375rem var(--font-small);
 }
 
 .charts .barLabel {
@@ -577,7 +574,7 @@
     background: linear-gradient(#120f24, #120f24) padding-box, var(--pro-edge) border-box;
     box-shadow: var(--pro-glow);
     color: #ffffff;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     text-decoration: none;
     text-shadow: 0 0 8px rgba(201, 176, 255, 0.7);
 }
@@ -614,4 +611,24 @@
 
 .noWrap {
     white-space: nowrap;
+}
+
+/* Long sentences stay about 70 characters wide on a computer, easier to read */
+.tilesNote,
+.tipText {
+    max-width: 70ch;
+}
+
+/* Phone, two rows: the Pro badge sits right after the name instead of over the corner */
+@media (max-width: 599px) {
+    .period .proMark {
+        position: static;
+        margin-left: 6px;
+        transform: none;
+    }
+}
+
+/* Mitt år: only every other month has a name, so a name may reach over the empty neighbour ("mar", "mai") */
+.glow .barLabel {
+    overflow: visible;
 }

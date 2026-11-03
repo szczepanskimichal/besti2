@@ -38,7 +38,7 @@
     flex-wrap: wrap;
     gap: 4px 14px;
     margin: 6px 0;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--color-muted);
 }
 
@@ -53,7 +53,7 @@
 }
 
 .noteBadge {
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: var(--color-warning);
 }
 
@@ -79,7 +79,7 @@
 
 .noteHint {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--color-muted);
 }
 
@@ -215,7 +215,7 @@ a.saveButton {
 
 .columnSample {
     display: block;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -254,7 +254,7 @@ a.saveButton {
 }
 
 .problems {
-    font-size: 0.9375rem;
+    font-size: 1rem;
     color: var(--color-warning);
 }
 

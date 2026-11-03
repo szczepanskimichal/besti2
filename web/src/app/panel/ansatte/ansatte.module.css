@@ -47,7 +47,7 @@
     background: rgba(114, 214, 189, 0.1);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .error {
     margin: 0;
@@ -126,7 +126,7 @@
     border: 1px dashed rgba(191, 248, 232, 0.3);
     border-radius: 999px;
     color: var(--color-muted);
-    font: 600 0.8125rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 .status span {
     overflow: hidden;
@@ -174,7 +174,7 @@
     min-height: 40px;
     padding: 0 16px;
     border-radius: 999px;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     list-style: none;
     cursor: pointer;
     border: var(--btn-border);
@@ -245,7 +245,7 @@
     flex-direction: column;
     gap: 6px;
     color: #cfeee6;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 /* Fields with the lightly glowing mint edge, like Fra / Til on Statistikk */
 .field input {
@@ -271,7 +271,7 @@
     min-height: 44px;
     padding: 0 22px;
     border-radius: 999px;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     cursor: pointer;
 }
 /* The one glowing action: mint with the neon edge of the home page button */
@@ -312,7 +312,7 @@
 .hint {
     margin: 16px 0 0;
     color: var(--color-muted);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 /* "Legg til ansatt": a small pill with a crystal plus; open, it becomes a card with a dashed aurora edge */
@@ -396,6 +396,6 @@
     .action > summary {
         gap: 5px;
         padding: 0 11px;
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
     }
 }

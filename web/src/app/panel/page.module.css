@@ -63,7 +63,7 @@
 }
 
 .status {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 999px;
@@ -220,7 +220,7 @@
     flex-direction: column;
     gap: 4px;
     margin-bottom: 8px;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .cancelMessage textarea {
@@ -299,7 +299,7 @@
     border-radius: 999px;
     background: rgba(3, 14, 20, 0.62);
     color: #bff8e8;
-    font: 700 clamp(0.95rem, 3.6vw, 1.15rem) var(--font-heading);
+    font: 700 clamp(1rem, 3.6vw, 1.15rem) var(--font-heading);
     box-shadow: 0 0 12px rgba(114, 214, 189, 0.25);
     backdrop-filter: var(--glass-blur);
     white-space: nowrap;
@@ -325,7 +325,8 @@
    Phone: 4 per row (3 rows, nothing hidden); laptop: 6 per row (2 rows). */
 .topActions {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    /* Phone: 3 per row (4 rows), so the names can be bigger and easier to read (michal 2026-11-03) */
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
     overflow: visible;
     padding: 8px;
@@ -346,7 +347,7 @@
     border: 1px solid transparent;
     border-radius: 16px;
     color: var(--color-text);
-    font: 600 0.6875rem/1.15 var(--font-heading);
+    font: 600 0.9375rem/1.15 var(--font-heading);
     text-align: center;
     text-decoration: none;
     white-space: normal;
@@ -433,16 +434,22 @@
     color: #ffffff;
 }
 
-/* Very narrow phones (320 px): 4 tiles still fit, with a little less padding and smaller text */
+/* Very narrow phones (320 px): still 3 per row, a little less padding */
 @media (max-width: 374px) {
     .topActions {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 4px;
         padding: 6px;
     }
     .navTab {
-        padding: 8px 1px;
-        font-size: 0.625rem;
+        padding: 8px 2px;
+        font-size: 0.8125rem;
+    }
+}
+
+/* Tablet: 4 per row */
+@media (min-width: 600px) and (max-width: 899px) {
+    .topActions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
@@ -454,7 +461,7 @@
         flex-direction: row;
         gap: 10px;
         min-height: 52px;
-        font-size: 0.9375rem;
+        font-size: 1rem;
     }
     .navPro {
         position: static;
@@ -491,5 +498,5 @@
     border-radius: 999px;
     background: rgba(12, 28, 70, 0.5);
     color: #cfe0ff;
-    font: 600 0.8125rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }

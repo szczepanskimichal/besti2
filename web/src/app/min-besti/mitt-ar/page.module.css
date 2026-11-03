@@ -162,7 +162,7 @@
     display: block;
     margin-top: 8px;
     font-family: var(--font-small);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 500;
     color: #a9cfc6;
 }
@@ -252,13 +252,13 @@ p.big {
 
 .text {
     font-family: var(--font-small);
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
     color: #a9cfc6;
 }
 
 .note {
     margin: 16px 0 0;
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }

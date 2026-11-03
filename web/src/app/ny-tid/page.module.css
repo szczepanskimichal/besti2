@@ -113,7 +113,7 @@ div.card {
     display: block;
     color: #8fb8ae;
     font-family: var(--font-small);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -160,7 +160,7 @@ div.card {
 }
 .new .label {
     color: #d6fff3;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 800;
 }
 .newDate {
@@ -199,7 +199,7 @@ div.card {
     background: rgba(12, 28, 70, 0.65);
     box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
     color: #7fb2ff;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     cursor: pointer;
 }
 .no:hover {
@@ -208,7 +208,7 @@ div.card {
 .note {
     margin: 14px 0 0;
     color: #9fc9bf;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

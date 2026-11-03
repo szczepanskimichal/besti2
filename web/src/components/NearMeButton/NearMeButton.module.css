@@ -65,7 +65,7 @@
     left: -6px;
     top: -8px;
     font-style: normal;
-    font-size: 13px;
+    font-size: 15px;
     line-height: 1;
     color: #bff8e8;
     text-shadow: 0 0 6px #72d6bd;
@@ -136,6 +136,6 @@
 
 .denied {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--color-muted);
 }

@@ -62,7 +62,7 @@
 
 .count {
     color: var(--color-muted);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .steps {
@@ -111,7 +111,7 @@
 .text {
     margin: 2px 0 0;
     color: var(--color-muted);
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
 .hide {
@@ -122,7 +122,7 @@
     color: var(--color-muted);
     font: inherit;
     font-family: var(--font-heading);
-    font-size: 0.9rem;
+    font-size: 1rem;
     text-decoration: underline;
     cursor: pointer;
 }

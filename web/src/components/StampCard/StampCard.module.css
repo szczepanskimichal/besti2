@@ -17,7 +17,7 @@
     border: 2px dashed var(--color-input-border);
     color: var(--color-on-primary);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .filled {
@@ -38,7 +38,7 @@
 .small .stamp {
     width: 24px;
     height: 24px;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
 }
 
 /* Crystal version in mint: glowing rings, a heart for each stamp, a gift as the reward */
