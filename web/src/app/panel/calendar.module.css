@@ -74,7 +74,7 @@
 
 .hours {
     position: relative;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -204,18 +204,8 @@
     flex: none;
 }
 
-.employeeFilter select {
+.employeePicker {
     flex: 1 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    text-overflow: ellipsis;
-    font: inherit;
-    font-family: var(--font-heading);
-    min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid var(--color-input-border);
-    border-radius: 8px;
-    background: var(--color-input-bg);
 }
 
 .toggle {
@@ -418,7 +408,7 @@ a.booking:hover {
     z-index: 1;
     overflow: hidden;
     padding: 4px 8px;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
     text-decoration: none;
     background: repeating-linear-gradient(135deg, rgba(150, 255, 230, 0.06) 0 8px, rgba(150, 255, 230, 0.12) 8px 16px);
@@ -437,7 +427,7 @@ a.booking:hover {
     right: 0;
     z-index: 1;
     padding: 4px 8px;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
     background: rgba(150, 255, 230, 0.06);
     border-left: 3px dotted var(--color-muted);
@@ -502,7 +492,7 @@ a.booking:hover {
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: none;
     color: #cdeee2;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .month .corner {
@@ -513,7 +503,7 @@ a.booking:hover {
 
 .weekNumber {
     padding-top: 10px;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     color: rgba(190, 243, 227, 0.6);
     text-align: center;
 }
@@ -545,7 +535,7 @@ a.booking:hover {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    font-size: 0.95rem;
+    font-size: 1rem;
     color: #e8fff7;
     text-decoration: none;
 }
@@ -601,7 +591,7 @@ a.booking:hover {
 .monthBlock {
     overflow: hidden;
     padding: 2px 7px;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -638,7 +628,7 @@ a.booking:hover {
 
 .monthMore {
     padding-left: 4px;
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     color: var(--color-primary);
 }
 
@@ -654,7 +644,7 @@ a.booking:hover {
 
     .month .columnHead {
         padding: 8px 3px;
-        font-size: 0.7rem;
+        font-size: 0.8125rem;
     }
 
     .weekNumber {
@@ -669,7 +659,7 @@ a.booking:hover {
     .dayNumber {
         width: 22px;
         height: 22px;
-        font-size: 0.72rem;
+        font-size: 0.8125rem;
     }
 
     .monthAdd {
@@ -755,7 +745,7 @@ a.booking:hover {
     border-radius: 999px;
     background: rgba(242, 196, 109, 0.22);
     color: var(--color-warning);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     white-space: nowrap;
     vertical-align: middle;
@@ -877,7 +867,7 @@ a.booking:hover {
 
 .yearTotal {
     font-family: var(--font-small);
-    font-size: 0.78rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     color: var(--color-muted);
     text-transform: none;
@@ -896,7 +886,7 @@ a.booking:hover {
     aspect-ratio: 1;
     border-radius: 8px;
     font-family: var(--font-small);
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     color: rgba(232, 255, 247, 0.7);
     text-decoration: none;
 }
@@ -940,7 +930,7 @@ a.booking:hover {
     padding: 0;
     list-style: none;
     font-family: var(--font-small);
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -995,7 +985,7 @@ a.booking:hover {
 }
 .summaryStats span {
     color: var(--color-muted);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     line-height: 1.2;
 }
 .summaryStats .summaryWaiting {
@@ -1019,7 +1009,7 @@ a.booking:hover {
 }
 .summaryNextLabel {
     color: var(--color-primary);
-    font: 700 0.75rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
     letter-spacing: 0.12em;
     text-transform: uppercase;
 }
@@ -1084,7 +1074,7 @@ a.booking:hover {
 }
 .cardTime small {
     color: var(--color-muted);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
 }
 .cardBody {
     display: flex;
@@ -1104,7 +1094,7 @@ a.booking:hover {
     gap: 6px;
     margin-top: 3px;
     color: var(--color-muted);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
 }
 .avatar {
     display: grid;
@@ -1115,7 +1105,7 @@ a.booking:hover {
     border-radius: 50%;
     background: rgba(114, 214, 189, 0.15);
     color: #bff8e8;
-    font: 700 0.6875rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
 }
 .cardStamp {
     align-self: start;
@@ -1126,7 +1116,7 @@ a.booking:hover {
     border: 1.5px solid var(--color-primary);
     border-radius: 999px;
     color: var(--color-primary);
-    font: 700 0.6875rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transform: rotate(4deg);
@@ -1140,7 +1130,7 @@ a.booking:hover {
     border: 1.5px solid #c9bfff;
     background: rgba(150, 128, 255, 0.14);
     color: #e6e0ff;
-    font: 700 0.6875rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
     letter-spacing: 0.04em;
     text-transform: uppercase;
     transform: rotate(4deg);
@@ -1188,7 +1178,7 @@ a.booking:hover {
         min-height: 38px;
         padding: 0;
         border-radius: 999px;
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
     }
     .segmented {
         grid-row: 1;
@@ -1249,7 +1239,7 @@ a.booking:hover {
     color: #bff8e8;
 }
 .hours {
-    font: 700 0.95rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     color: #dff7f0;
 }
 /* View switch (År Måned Uke Dag Plan) on a darker glass, like the other buttons */
@@ -1507,7 +1497,7 @@ a.booking:hover {
     border: 1px solid rgba(191, 248, 232, 0.35);
     border-radius: 999px;
     color: var(--color-text);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .dateJump label {
     position: relative;
@@ -1533,7 +1523,7 @@ a.booking:hover {
 }
 .dateJumpText {
     display: none;
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
     color: var(--color-text);
 }
 .controlBar .segmented {
@@ -1902,7 +1892,7 @@ a.booking:hover {
     border-radius: 16px;
     background: rgba(3, 14, 20, 0.45);
     font-family: var(--font-small);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     color: #d8f5ec;
 }
 /* Phone: the legend goes under the list, so the visits are the first thing the owner sees */
@@ -1992,7 +1982,7 @@ a.booking:hover {
     border-radius: 999px;
     background: rgba(3, 14, 20, 0.6);
     color: #d8f5ec;
-    font: 600 0.75rem var(--font-small);
+    font: 600 0.8125rem var(--font-small);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2001,7 +1991,7 @@ a.booking:hover {
     flex: none;
     width: 18px;
     height: 18px;
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
 }
 /* The middle got narrower: a long customer name goes to a second line instead of being cut */
 .phoneCard .cardWho {
@@ -2074,7 +2064,7 @@ a.booking:hover {
     border-radius: 999px;
     background: rgba(3, 14, 20, 0.72);
     color: #ffffff;
-    font: 700 0.8125rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     letter-spacing: 0.04em;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2097,7 +2087,7 @@ a.booking:hover {
 }
 .offLabel small {
     color: #bff8e8;
-    font: 600 0.75rem var(--font-small);
+    font: 600 0.8125rem var(--font-small);
     letter-spacing: 0;
 }
 /* A long name ("Hele bedriften · Teammøte") goes to two lines instead of being cut */
@@ -2203,7 +2193,7 @@ a.breakTime:focus-visible {
 }
 .pauseText {
     margin: 0 0 16px;
-    font: 500 0.9375rem/1.5 var(--font-small);
+    font: 500 1rem/1.5 var(--font-small);
     color: var(--color-muted);
 }
 .pauseChoices {
@@ -2224,14 +2214,14 @@ a.breakTime:focus-visible {
     display: block;
     margin-top: 14px;
     text-align: center;
-    font: 600 0.9375rem var(--font-small);
+    font: 600 1rem var(--font-small);
     color: #cfe3de;
     text-decoration: underline;
     text-underline-offset: 3px;
 }
 /* Hours in Pause / blocked time in Syne, like the times on the visits (michal 2026-11-01) */
 .offLabel small {
-    font: 600 0.8125rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     color: #e6f7f2;
 }
 a.breakTime,
@@ -2252,7 +2242,7 @@ a.breakTime,
 }
 .phoneCard.phoneBlocked .time {
     white-space: nowrap;
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 /* v126 (michal 2026-11-01): the stripes themselves in our colours, mint -> teal -> lilac along the block
    (the stripe pattern is a mask over a soft colour gradient) */

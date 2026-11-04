@@ -6,7 +6,6 @@ import { getBusinessBySlug, getBusinessReviews, getMe, getMyFavoriteIds, getMyLo
 import { getToken } from "@/lib/auth";
 import { getCategoryLabel } from "@/lib/categories";
 import { formatDate, formatPrice } from "@/lib/format";
-import { freeCancelText } from "@/lib/freeCancel";
 import { isNewOnBesti } from "@/lib/newOnBesti";
 import { weekdays } from "@/lib/weekdays";
 import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
@@ -18,6 +17,8 @@ import HelpfulButton from "./HelpfulButton";
 import StampCard from "@/components/StampCard/StampCard";
 
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import FreeCancelPill from "@/components/FreeCancelPill/FreeCancelPill";
 
 type Props = {
     params: Promise<{ slug: string }>;
@@ -258,7 +259,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                                 target="_blank"
                                 rel="noopener noreferrer"
                             >
-                                Vis vei 🧭
+                                Vis vei <CrystalIcon name="kompass"/>
                             </a>
                             <a href={`tel:${business.phoneNumber}`}>{business.phoneNumber}</a>
                             {business.email && <a href={`mailto:${business.email}`}>{business.email}</a>}
@@ -268,17 +269,17 @@ export default async function BusinessPage({ params, searchParams }: Props) {
                                 </a>
                             )}
                         </address>
-                        <p className={styles.cancel}>{freeCancelText(business.freeCancelHours)}.</p>
+                        <div className={styles.cancel}><FreeCancelPill hours={business.freeCancelHours}/></div>
                     </section>
                     {business.loyaltyVisits && business.loyaltyReward && (
                         <div className={`${styles.loyalty} ${styles.orderLoyalty}`}>
                             <p className={styles.loyaltyTitle}>
-                                <span aria-hidden="true">🎟️</span> Stempelkort: hvert {business.loyaltyVisits}. besøk gir
+                                <CrystalIcon name="stempelkort"/> Stempelkort: hvert {business.loyaltyVisits}. besøk gir
                                 «{business.loyaltyReward}»
                             </p>
                             {myCard ? (
                                 <>
-                                    <StampCard stamps={myCard.stamps} visits={myCard.visits} small/>
+                                    <StampCard stamps={myCard.stamps} visits={myCard.visits} small crystal/>
                                     <p className={styles.muted}>
                                         {myCard.rewardReady
                                             ? "Kortet er fullt! Si fra ved neste besøk, så får du belønningen."

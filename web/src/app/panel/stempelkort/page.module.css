@@ -8,7 +8,7 @@
     background: rgba(114, 214, 189, 0.1);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .error {
     margin: 0 0 12px;
@@ -21,12 +21,12 @@
 .text {
     margin: 0;
     color: #cfeee6;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
 }
 .small {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* Glass cards */
@@ -80,24 +80,32 @@
 .heroLabel {
     margin: 0;
     color: #8ff0d6;
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     letter-spacing: 0.04em;
+    text-align: center;
     text-transform: uppercase;
 }
+/* The frame hugs the circles with a little air on the sides, in the middle (michal 2026-11-04) */
 .exampleCard {
-    padding: 12px 14px;
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
+    padding: 12px 28px;
     border: 1.5px solid transparent;
     border-radius: 18px;
     background: linear-gradient(#061219, #061219) padding-box,
         linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
     box-shadow: 0 0 6px rgba(143, 240, 214, 0.4), 0 0 18px rgba(159, 216, 255, 0.25);
 }
+/* Circles and the reward in the middle of the card (Ada 2026-11-04) */
 .exampleCard ol {
     margin: 0 0 10px;
+    justify-content: center;
 }
 .exampleReward {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin: 0;
     color: #8ff0d6;
@@ -125,7 +133,7 @@
 .proText {
     margin: 0;
     color: #e4ddff;
-    font: 400 0.875rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 /* Small lilac neon pill like the Pro stamp ring: tells us the business wants Pro */
 .proButton {
@@ -135,7 +143,7 @@
     border-radius: 999px;
     background: rgba(150, 128, 255, 0.14);
     color: #e4ddff;
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     box-shadow: 0 0 8px rgba(201, 191, 255, 0.4);
     cursor: pointer;
 }
@@ -145,7 +153,7 @@
 .proThanks {
     margin: 0;
     color: #8ff0d6;
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
 }
 
 /* Form */
@@ -164,7 +172,7 @@
     margin: 0 0 8px;
     padding: 0;
     color: #cfeee6;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 /* 5 to 10 in one row: round glass tiles, the chosen one lit mint like the Nye bestillinger tiles */
 .visitChoices {
@@ -200,7 +208,7 @@
 }
 .visitText {
     color: #a9bdb8;
-    font: 400 0.6875rem var(--font-small);
+    font: 400 0.8125rem var(--font-small);
 }
 .visitChoice:has(input:checked) {
     border-color: #8ff0d6;
@@ -223,13 +231,13 @@
     gap: 6px;
     min-width: 0;
     color: #cfeee6;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 /* The lightly glowing mint field of the other panel forms */
 /* Small Inter line under "Belønning": the field is the business's own text */
 .fieldHint {
     color: #a9bdb8;
-    font: 400 0.8125rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 .rewardInput {
     width: 100%;
@@ -253,7 +261,7 @@
 }
 .rewardInput::placeholder {
     color: #7f9a94;
-    font: 400 0.9375rem var(--font-small);
+    font: 400 1rem var(--font-small);
     text-shadow: none;
 }
 .rewardInput:focus-visible {
@@ -272,7 +280,7 @@
     min-height: 44px;
     padding: 0 22px;
     border-radius: 999px;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     white-space: nowrap;
     cursor: pointer;
 }
@@ -315,7 +323,7 @@
     background: rgba(3, 15, 22, 0.7);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
     list-style: none;
     cursor: pointer;
 }
@@ -438,7 +446,7 @@ a.name:hover {
     flex: none;
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.875rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 .stampCount strong {
     color: #8ff0d6;
@@ -519,7 +527,7 @@ a.name:hover {
 .rewardRow .pillDanger {
     justify-content: center;
     padding: 0 8px;
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     white-space: nowrap;
 }
 /* The smallest phones: the two buttons may take two lines instead of being cut */
@@ -547,7 +555,7 @@ a.name:hover {
     }
     .rewardRow .saveButton,
     .rewardRow .pillDanger {
-        font-size: 0.9375rem;
+        font-size: 1rem;
     }
     .rewardRow .rewardInput {
         grid-column: auto;

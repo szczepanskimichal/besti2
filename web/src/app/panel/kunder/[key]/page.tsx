@@ -85,7 +85,7 @@ export default async function CustomerPage({ params, searchParams }: CustomerPag
                             <CrystalIcon name="stjerne"/> {visit.serviceName} hos {visit.employeeName}
                             {visit.priceNok !== null && ` · ${kroner.format(visit.priceNok)} kr`}
                         </p>
-                        {visit.customerNote && <p className={panel.note}>💬 {visit.customerNote}</p>}
+                        {visit.customerNote && <p className={panel.note}><CrystalIcon name="snakkeboble"/> {visit.customerNote}</p>}
                     </li>
                 ))}
             </ul>

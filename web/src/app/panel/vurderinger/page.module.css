@@ -8,7 +8,7 @@
     background: rgba(114, 214, 189, 0.1);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .error {
     margin: 0 0 12px;
@@ -21,7 +21,7 @@
 .small {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* Glass cards */
@@ -106,7 +106,7 @@
 }
 .tileText {
     color: #cfeee6;
-    font: 400 0.8125rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 /* "venter på svar": exactly the lilac "venter" pill from the invitation (even lilac neon line, dark inside
    with a lilac tint and inner glow), only the number */
@@ -189,7 +189,7 @@
 .date {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.8125rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
     white-space: nowrap;
 }
 .comment {
@@ -209,7 +209,7 @@
     gap: 6px;
     margin: 0;
     color: #cfeee6;
-    font: 400 0.875rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 .hiddenNote {
     margin: 0;
@@ -218,7 +218,7 @@
     border-radius: 14px;
     background: rgba(12, 28, 70, 0.65);
     color: #9fc4ff;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* The business's answer: a calm mint box, like the answer on the business page */
@@ -232,12 +232,12 @@
 .replyLabel {
     margin: 0 0 2px;
     color: #8ff0d6;
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
 }
 .replyText {
     margin: 0;
     color: #dffcf3;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
 }
 
 /* Lilac neon stamp: the customer is waiting for your answer */
@@ -250,7 +250,7 @@
     color: #ffffff;
     box-shadow: 0 0 14px rgba(201, 191, 255, 0.5), inset 0 0 18px rgba(170, 150, 255, 0.25);
     text-shadow: 0 0 8px rgba(189, 176, 255, 0.95);
-    font: 700 0.8125rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
 }
 
 /* Answer: the field opens after a click */
@@ -271,7 +271,7 @@
     background: rgba(3, 15, 22, 0.7);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     text-decoration: none;
     list-style: none;
     cursor: pointer;
@@ -314,7 +314,7 @@
     flex-direction: column;
     gap: 6px;
     color: #cfeee6;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 .field textarea {
     width: 100%;
@@ -345,7 +345,7 @@
     border-radius: 999px;
     background: var(--color-input-bg);
     color: #eefcf7;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     cursor: pointer;
 }
 .chipOn {
@@ -378,7 +378,7 @@
     background: var(--btn-main-bg);
     color: var(--color-on-primary);
     box-shadow: var(--neon-glow);
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     cursor: pointer;
 }
 .saveButton:disabled {

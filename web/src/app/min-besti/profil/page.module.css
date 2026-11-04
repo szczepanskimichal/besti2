@@ -54,7 +54,7 @@
 .me .since {
     margin: 2px 0 3px;
     color: #bff3e3;
-    font: 600 0.9rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 
 .email {
@@ -161,7 +161,7 @@
     background: rgba(4, 30, 32, 0.7);
     box-shadow: 0 0 14px rgba(61, 255, 176, 0.3);
     color: #dffaf1;
-    font: 700 0.95rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
 }
 
 .saved svg {

@@ -37,7 +37,7 @@
     background: rgba(114, 214, 189, 0.1);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .error {
     margin: 0;
@@ -100,7 +100,7 @@
     min-height: 40px;
     padding: 0 16px;
     border-radius: 999px;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     list-style: none;
     cursor: pointer;
     border: var(--btn-border);
@@ -171,7 +171,7 @@
     flex-direction: column;
     gap: 6px;
     color: #cfeee6;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 /* Fields with the lightly glowing mint edge, like Fra / Til on Statistikk */
 .field input,
@@ -212,7 +212,7 @@
     min-height: 44px;
     padding: 0 22px;
     border-radius: 999px;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     cursor: pointer;
 }
 /* The one glowing action: mint with the neon edge of the home page button */
@@ -253,7 +253,7 @@
 .hint {
     margin: 16px 0 0;
     color: var(--color-muted);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 /* "Legg til tjeneste" and "Forslag": a small pill with a crystal plus; open, it becomes a card with a dashed aurora edge */
@@ -336,7 +336,7 @@
     .action > summary {
         gap: 5px;
         padding: 0 11px;
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
     }
 }
 
@@ -357,7 +357,7 @@
 .description {
     margin: 0;
     color: #cfe3de;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
     white-space: pre-line;
 }
 /* Length: the bright mint pill of "Har tilgang" on Ansatte, with a clock */
@@ -371,7 +371,7 @@
     background: rgba(80, 225, 190, 0.45);
     color: #f0fffa;
     box-shadow: 0 0 14px rgba(114, 230, 200, 0.6);
-    font: 600 0.8125rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
 }
 .length svg {
     color: #f0fffa;
@@ -401,14 +401,14 @@
 }
 .priceType {
     color: var(--color-muted);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
 }
 /* "Pris etter avtale": words instead of a number, so smaller, same crystal colours as the prices */
 .priceDeal {
     max-width: 120px;
 }
 .priceDeal .priceValue {
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     white-space: normal;
 }
 
@@ -497,7 +497,7 @@
 .suggestionHint {
     display: block;
     color: var(--color-muted);
-    font: 400 0.8125rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 .suggestionFields {
     display: flex;
@@ -508,7 +508,7 @@
     align-items: center;
     gap: 6px;
     color: var(--color-muted);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
 }
 .suggestionFields input {
     width: 76px;
@@ -518,7 +518,7 @@
     border-radius: 999px;
     background: rgba(3, 15, 22, 0.7);
     color: var(--color-text);
-    font: 500 0.9375rem var(--font-heading);
+    font: 500 1rem var(--font-heading);
 }
 .visuallyHidden {
     position: absolute;

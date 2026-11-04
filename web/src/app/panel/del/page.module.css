@@ -25,7 +25,7 @@
     background: linear-gradient(rgba(150, 128, 255, 0.24), rgba(150, 128, 255, 0.24)), var(--color-input-bg);
     box-shadow: 0 0 14px rgba(201, 191, 255, 0.5), inset 0 0 18px rgba(170, 150, 255, 0.25);
     color: #ffffff;
-    font: 500 0.9375rem/1.5 var(--font-small);
+    font: 500 1rem/1.5 var(--font-small);
 }
 
 .grid {
@@ -65,7 +65,7 @@
 .text {
     margin: 0;
     color: #e6f7f2;
-    font: 400 0.9375rem/1.55 var(--font-small);
+    font: 400 1rem/1.55 var(--font-small);
 }
 .text a,
 .stepText a {
@@ -78,7 +78,7 @@
     gap: 10px;
     margin: 0;
     color: #cfeee6;
-    font: 500 0.875rem/1.5 var(--font-small);
+    font: 500 0.9375rem/1.5 var(--font-small);
 }
 .bulb {
     display: grid;
@@ -110,7 +110,7 @@
 .small {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.8125rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* The link: Syne in glowing mint in a lit mint field, like Gratis BESTI-tjeneste on Stempelkort */
@@ -141,7 +141,7 @@
     border-radius: 16px;
     background: var(--color-input-bg);
     color: #e6f7f2;
-    font: 500 0.9375rem/1.5 var(--font-small);
+    font: 500 1rem/1.5 var(--font-small);
     white-space: pre-line;
     overflow-wrap: anywhere;
 }
@@ -200,12 +200,12 @@
     background: rgba(80, 225, 190, 0.2);
     color: #ffffff;
     box-shadow: 0 0 8px rgba(143, 240, 214, 0.7);
-    font: 700 0.9375rem/1 var(--font-heading);
+    font: 700 1rem/1 var(--font-heading);
 }
 .stepText {
     padding-top: 4px;
     color: #e6f7f2;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
 }
 
 /* Buttons and pills */
@@ -222,7 +222,7 @@
     min-height: 44px;
     padding: 0 20px;
     border-radius: 999px;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     text-decoration: none;
     white-space: nowrap;
     cursor: pointer;
@@ -336,12 +336,12 @@
     border-radius: 999px;
     background: rgba(80, 225, 190, 0.14);
     color: #bff8e8;
-    font: 700 0.8125rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     box-shadow: 0 0 8px rgba(143, 240, 214, 0.35);
 }
 .thanks {
     color: #8ff0d6;
-    font: 600 0.9375rem/1.4 var(--font-heading);
+    font: 600 1rem/1.4 var(--font-heading);
     text-shadow: 0 0 8px rgba(143, 240, 214, 0.4);
 }
 

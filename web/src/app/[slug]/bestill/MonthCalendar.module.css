@@ -76,7 +76,7 @@
     padding: 6px 0;
     text-align: center;
     font-family: var(--font-small);
-    font-size: 0.78rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     color: #cdeee2;
 }
@@ -115,7 +115,7 @@ a.day:hover {
 .count {
     display: none;
     font-family: var(--font-small);
-    font-size: 0.72rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
 }
 
@@ -123,8 +123,8 @@ a.day:hover {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--neon-border);
-    box-shadow: 0 0 8px rgba(90, 240, 120, 0.7);
+    background: linear-gradient(180deg, #b8fff0, #5af0c8);
+    box-shadow: 0 0 8px rgba(114, 242, 207, 0.7);
 }
 
 .full .number {
@@ -235,7 +235,7 @@ a.selected:hover {
     align-items: center;
     gap: 8px;
     margin: 14px 4px 0;
-    font: 500 0.875rem var(--font-small);
+    font: 500 0.9375rem var(--font-small);
     color: #cdeee2;
 }
 .visitLegend .visitStamp + .visitStamp,

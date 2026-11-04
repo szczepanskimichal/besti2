@@ -168,7 +168,7 @@
     border-top: 1px solid var(--color-border);
     color: var(--color-muted);
     font-family: var(--font-small);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
@@ -209,13 +209,13 @@
     background: linear-gradient(var(--color-primary-soft), var(--color-primary-soft)), var(--color-card-base);
     border: 1px solid var(--color-border);
     color: var(--color-primary);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .duration {
     color: var(--color-muted);
     font-family: var(--font-small);
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
@@ -242,7 +242,7 @@
 
 .verified .muted {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 .muted {
@@ -558,7 +558,7 @@
     color: var(--color-muted);
     font: inherit;
     font-family: var(--font-heading);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     text-decoration: none;
     cursor: pointer;
 }
@@ -571,7 +571,7 @@
 /* "(pause 12:00–12:30)" after the opening hours */
 .breakTime {
     color: var(--color-muted);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 /* "Frisør · Oslo": one line, one font */
@@ -579,7 +579,7 @@
     margin: -2px 0 10px;
     color: var(--color-muted);
     font-family: var(--font-small);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
     letter-spacing: 0.02em;
 }
@@ -598,7 +598,7 @@
     border-radius: 50%;
     color: #d9fff2;
     font-family: var(--font-small);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 800;
     line-height: 1.2;
     text-align: center;
@@ -633,7 +633,7 @@
 .sparks i {
     position: absolute;
     font-style: normal;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: #bff5e6;
     text-shadow: 0 0 8px #72d6bd;
     opacity: 0;

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getMe, getMyProfile, getNotifications, getPushPublicKey } from "@/lib/api";
@@ -5,6 +6,7 @@ import { getToken } from "@/lib/auth";
 import { formatAgo } from "@/lib/format";
 import { privatePage } from "@/lib/site";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 import { deleteNotificationAction, markAllReadAction } from "./actions";
 import LineIcon, { type LineIconName } from "./LineIcon";
 import PhoneApp from "./PhoneApp";
@@ -60,7 +62,7 @@ export default async function NotificationsPage() {
                                     {!item.isRead && <span className={styles.dot} aria-label="Ny"/>}
                                     {formatAgo(item.createdUtc)}
                                 </span>
-                                <span className={styles.text}>{item.text}</span>
+                                <span className={styles.text}>{withCrystalIcons(item.text)}</span>
                             </a>
                             <form action={deleteNotificationAction}>
                                 <input type="hidden" name="id" value={item.id}/>
@@ -101,4 +103,14 @@ function kindOf(text: string): LineIconName | "review" {
         return "calendar";
     }
     return "bell";
+}
+
+// The API writes 👯 🎉 💬 into the text (they also go out as push messages, where only text works).
+// Here in the app they are shown as the same crystal icons as everywhere else
+function withCrystalIcons(text: string): ReactNode {
+    return text.split(/(👯|🎉|💬)/u).map((part, i) =>
+        part === "👯" ? <PersonsIcon key={i} persons={2}/>
+            : part === "🎉" ? <CrystalIcon key={i} name="feiring"/>
+            : part === "💬" ? <CrystalIcon key={i} name="snakkeboble"/>
+            : part);
 }

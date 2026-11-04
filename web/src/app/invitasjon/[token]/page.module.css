@@ -282,7 +282,7 @@
 .label {
     color: #8fb8ae;
     font-family: var(--font-small);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -291,7 +291,7 @@
 .when .label {
     color: #bff8e8;
     font-family: var(--font-heading);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: 0.16em;
     text-shadow: 0 0 8px rgba(61, 255, 176, 0.6);
@@ -327,7 +327,7 @@
 .details dt {
     color: #8fb8ae;
     font-family: var(--font-heading);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 500;
     padding-top: 2px;
 }
@@ -346,7 +346,7 @@
 
 .details .muted {
     font-weight: 400;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 /* "Send invitasjonen til din besti" above the share buttons */
@@ -407,7 +407,7 @@
     border-radius: 10px;
     background: rgba(4, 16, 26, 0.45);
     color: #9fc9bf;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     font-weight: 400;
     overflow-wrap: anywhere;
     user-select: all;
@@ -463,7 +463,7 @@
     background: rgba(12, 28, 70, 0.65);
     box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
     color: #7fb2ff;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     cursor: pointer;
 }
 .cancelButton:hover {
@@ -599,7 +599,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 /* A place still waiting for an answer: lilac dashed ring that breathes */
@@ -630,7 +630,7 @@
 
 /* Small note under the message field: friends must not mistake it for a reply to the organizer */
 .fieldHint {
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     font-weight: 400;
     color: var(--color-muted);
 }
@@ -669,7 +669,7 @@
     border-radius: 999px;
     background: var(--color-input-bg);
     color: #eefcf7;
-    font: 600 0.875rem var(--font-heading);
+    font: 600 0.9375rem var(--font-heading);
     cursor: pointer;
 }
 .chipOn {
@@ -741,7 +741,7 @@
 }
 .bubbleName {
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
     font-weight: 600;
 }
 .bubbleText {
@@ -770,7 +770,7 @@
     border: 0;
     background: none;
     color: var(--color-primary);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
     text-decoration: underline;
     cursor: pointer;
 }
@@ -803,7 +803,7 @@
 .chatHint {
     margin: -4px 0 0;
     color: var(--color-text-muted);
-    font-size: 0.8125rem;
+    font-size: 0.9375rem;
 }
 .chatLines {
     display: flex;
@@ -855,17 +855,17 @@
 }
 .chatName {
     color: #8cc8ff;
-    font: 700 0.8125rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
 }
 .chatText {
     color: #ffffff;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     overflow-wrap: anywhere;
 }
 .chatTime {
     align-self: flex-end;
     color: var(--color-text-muted);
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
 }
 
 /* "Slett": small, next to the time, only on lines the visitor may delete */
@@ -958,7 +958,7 @@
     border-radius: 999px;
     background: #0b2230;
     color: var(--color-text);
-    font: 700 0.75rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
     cursor: pointer;
 }
 .reaction:not(:has(span)) {

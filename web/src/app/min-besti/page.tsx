@@ -21,6 +21,7 @@ import styles from "../panel/page.module.css";
 import waitlistStyles from "./waitlist.module.css";
 import mine from "./bookings.module.css";
 import EmptyState from "@/components/EmptyState/EmptyState";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 
 export const metadata: Metadata = {
     title: "Min BESTI",
@@ -96,7 +97,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                         suggestions={suggestions} link={calendarLink}/>
             {waiting.length > 0 && (
                 <>
-                    <h2>Venter på svar <span aria-hidden="true">👯</span></h2>
+                    <h2>Venter på svar <PersonsIcon persons={2}/></h2>
                     <ul className={styles.list}>
                         {waiting.map((invite) => (
                             <li key={invite.id} className={styles.card}>
@@ -175,7 +176,7 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
                                     </p>
                                     {booking.inviteId && together.has(booking.inviteId) && others(together.get(booking.inviteId)!.names) && (
                                         <p className={styles.muted}>
-                                            <span aria-hidden="true">👯</span> Sammen med {others(together.get(booking.inviteId)!.names)}
+                                            <PersonsIcon persons={2}/> Sammen med {others(together.get(booking.inviteId)!.names)}
                                         </p>
                                     )}
                                     <p className={mine.links}>

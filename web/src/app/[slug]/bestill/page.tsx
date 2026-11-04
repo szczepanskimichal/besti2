@@ -3,8 +3,7 @@ import {notFound, redirect} from "next/navigation";
 import {getBusinessBySlug, getFreeDays, getMe, getMyBookings} from "@/lib/api";
 import {getToken} from "@/lib/auth";
 import {daysBetween, formatDay, osloDay, formatLength, formatMonth, formatPrice, formatTime, isIsoDate, isIsoMonth, monthGrid, shiftDay, shiftMonth, todayInOslo} from "@/lib/format";
-import {freeCancelText} from "@/lib/freeCancel";
-import AutoSubmitSelect from "@/components/AutoSubmitSelect/AutoSubmitSelect";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 import BookingForm from "./BookingForm";
 import InviteForm from "./InviteForm";
 import VisitStamp from "./VisitStamp";
@@ -13,6 +12,7 @@ import MonthCalendar from "./MonthCalendar";
 import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import FreeCancelPill from "@/components/FreeCancelPill/FreeCancelPill";
 
 // The biggest group the API takes (InviteRules.MaxPersons)
 const MAX_PERSONS = 8;
@@ -175,20 +175,23 @@ export default async function BookingPage({params, searchParams}: Props) {
 
                 {together && (
                     <>
-                        <label className={styles.field}>
-                            Hvor mange timer?
-                            <AutoSubmitSelect name="sammen" defaultValue={persons}>
+                        {/* Ada 2026-11-03: round number buttons instead of the long system list (the same as on the home page) */}
+                        <div className={styles.field}>
+                            <span id="hvor-mange">Hvor mange personer?</span>
+                            <nav className={styles.sizes} aria-labelledby="hvor-mange">
                                 {Array.from({length: maxPersons - 1}, (_, i) => i + 2).map((count) => (
-                                    <option key={count} value={count}>{count} personer</option>
+                                    <NextLink key={count} href={bookingUrl(month, selected?.date, undefined, count)} scroll={false}
+                                              aria-label={`${count} personer`} aria-current={count === persons ? "true" : undefined}
+                                              className={count === persons ? `${styles.size} ${styles.sizeOn}` : styles.size}>
+                                        {count}
+                                    </NextLink>
                                 ))}
-                            </AutoSubmitSelect>
-                        </label>
+                            </nav>
+                        </div>
                         <label className={styles.field}>
-                            Skal du selv ha time?
-                            <AutoSubmitSelect name="selv" defaultValue={organizerJoins ? "1" : "0"}>
-                                <option value="1">Ja, jeg er med</option>
-                                <option value="0">Nei, jeg bare inviterer</option>
-                            </AutoSubmitSelect>
+                            Er du selv med?
+                            <GlassSelect name="selv" defaultValue={organizerJoins ? "1" : "0"} autoSubmit overlay
+                                         options={[{ value: "1", label: "Ja, jeg er med" }, { value: "0", label: "Nei, jeg bare inviterer" }]}/>
                         </label>
                     </>
                 )}
@@ -196,25 +199,18 @@ export default async function BookingPage({params, searchParams}: Props) {
                 {organizerJoins && (
                     <label className={styles.field}>
                         {together ? "Ansatt for deg" : "Ansatt"}
-                        <AutoSubmitSelect name="ansatt" defaultValue={employeeId ?? ""}>
-                            <option value="">Hvem som helst</option>
-                            {business.employees.map((employee) => (
-                                <option key={employee.id} value={employee.id}>
-                                    {employee.name} {employee.lastName}
-                                </option>
-                            ))}
-                        </AutoSubmitSelect>
+                        <GlassSelect name="ansatt" defaultValue={employeeId ?? ""} autoSubmit overlay
+                                     options={[{ value: "", label: "Hvem som helst" },
+                                         ...business.employees.map((e) => ({ value: e.id, label: `${e.name} ${e.lastName}` }))]}/>
                     </label>
                 )}
 
                 {maxUnits > 1 && (
                     <label className={styles.field}>
                         Varighet
-                        <AutoSubmitSelect name="antall" defaultValue={units}>
-                        {Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
-                                <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
-                            ))}
-                        </AutoSubmitSelect>
+                        <GlassSelect name="antall" defaultValue={String(units)} autoSubmit overlay
+                                     options={Array.from({length: maxUnits}, (_, i) => i + 1).map((count) => (
+                                         { value: String(count), label: formatLength(count * service.durationMinutes) }))}/>
                     </label>
                 )}
 
@@ -309,7 +305,7 @@ export default async function BookingPage({params, searchParams}: Props) {
                         {together && (organizerJoins ? ` · ${persons} personer, du inkludert` : ` · ${persons} personer, uten deg`)}
                         {` · ${formatLength(units * service.durationMinutes)}`}
                     </p>
-                    <p className={styles.muted}>{freeCancelText(business.freeCancelHours)}.</p>
+                    <div className={styles.cancelRow}><FreeCancelPill hours={business.freeCancelHours}/></div>
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}

@@ -352,7 +352,7 @@
     border-radius: 999px;
     background: #03121a;
     color: #d9fff2;
-    font-size: 0.7rem;
+    font-size: 11.2px; /* fixed px: top bar stays as before, also on computer */
     font-weight: 700;
     line-height: 17px;
     text-align: center;

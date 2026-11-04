@@ -2,6 +2,7 @@
 import { useState, useSyncExternalStore, type ReactNode } from "react";
 import CopyButton from "@/components/CopyButton/CopyButton";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // "Del invitasjon": the phone's own share sheet (WhatsApp, Snap, Messenger …) where it exists,
 // otherwise WhatsApp, Snapchat, SMS and "Kopier lenke" (a computer usually has no share sheet)
@@ -39,7 +40,7 @@ export default function ShareInvite({ url, text, children }: { url: string; text
         <div className={styles.share}>
             {canShare && (
                 <button type="button" onClick={share} className={styles.primaryButton}>
-                    {shared ? "Del igjen" : "Del invitasjon"} <span aria-hidden="true">📲</span>
+                    {shared ? "Del igjen" : "Del invitasjon"} <CrystalIcon name="del"/>
                 </button>
             )}
             {/* A click on WhatsApp, Snapchat, SMS or Kopier counts as sent */}

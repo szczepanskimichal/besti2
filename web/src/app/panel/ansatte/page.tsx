@@ -105,10 +105,6 @@ export default async function EmployeesPage({ searchParams }: EmployeesPageProps
                 </summary>
                 <EmployeeForm action={addEmployeeAction} submitText="Legg til" className={styles.addForm}/>
             </details>
-            <p className={styles.hint}>
-                «Tilgang»: den ansatte logger inn med sin egen BESTI-konto og finner jobbkalenderen sin under «Jobb»,
-                med egne timer, kundenavn og notater.
-            </p>
         </main>
     );
 }

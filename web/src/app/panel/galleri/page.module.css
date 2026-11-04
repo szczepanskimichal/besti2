@@ -8,7 +8,7 @@
     background: rgba(114, 214, 189, 0.1);
     color: #bff8e8;
     box-shadow: 0 0 10px rgba(114, 214, 189, 0.25);
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 .error {
     margin: 0;
@@ -17,12 +17,12 @@
     border-radius: 14px;
     background: rgba(12, 28, 70, 0.55);
     color: #cfe0ff;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 .small {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* Glass cards */
@@ -79,7 +79,7 @@
     border-radius: 18px;
     background: rgba(3, 15, 22, 0.6);
     color: #cfeee6;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
 }
 
 /* Upload: a black field with a glowing mint line (like Gratis BESTI-tjeneste); Velg bilde and Last opp bilde side by side */
@@ -109,7 +109,7 @@
 .uploadRow .saveButton {
     justify-content: center;
     padding: 0 12px;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 /* "Velg bilde": a lit mint pill (lighter than Last opp bilde); the real file field sits invisibly on top of it */
 .choose {
@@ -124,7 +124,7 @@
     color: #e6fff8;
     box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
     text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     white-space: nowrap;
     cursor: pointer;
 }
@@ -145,11 +145,11 @@
 }
 .dropHint {
     color: #a9bdb8;
-    font: 400 0.8125rem var(--font-small);
+    font: 400 0.9375rem var(--font-small);
 }
 .fileName {
     color: #8ff0d6;
-    font: 500 0.875rem var(--font-small);
+    font: 500 0.9375rem var(--font-small);
     overflow-wrap: anywhere;
 }
 
@@ -226,7 +226,7 @@
     background: rgba(3, 15, 22, 0.82);
     color: #8ff0d6;
     box-shadow: 0 0 10px rgba(143, 240, 214, 0.45);
-    font: 700 0.75rem var(--font-heading);
+    font: 700 0.8125rem var(--font-heading);
 }
 
 /* Slett: the blue Avbestill pill; the question opens under it */
@@ -246,7 +246,7 @@
     background: rgba(12, 28, 70, 0.65);
     color: #7fb2ff;
     box-shadow: 0 0 8px rgba(80, 130, 230, 0.3);
-    font: 700 0.875rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     list-style: none;
     cursor: pointer;
 }
@@ -268,7 +268,7 @@
 .sheetText {
     margin: 0;
     color: #cfe0ff;
-    font: 400 0.875rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* Buttons */
@@ -281,7 +281,7 @@
     min-height: 44px;
     padding: 0 22px;
     border-radius: 999px;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     white-space: nowrap;
     cursor: pointer;
 }
@@ -322,7 +322,7 @@
     }
     .uploadRow .choose,
     .uploadRow .saveButton {
-        font-size: 0.9375rem;
+        font-size: 1rem;
     }
     .grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

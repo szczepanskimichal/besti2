@@ -12,7 +12,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
     const { token } = await params;
     const invite = /^[A-Za-z0-9_-]{20,100}$/.test(token) ? await getInvite(token).catch(() => null) : null;
     const title = invite ? `${invite.inviterFirstName} inviterer deg` : "Bestill med din BESTI";
-    const what = invite ? `${invite.serviceName} hos ${invite.businessName}` : "BESTI sammen";
+    const what = invite ? `${invite.serviceName} hos ${invite.businessName}` : "BESTI Duo og Team";
     const group = invite && (invite.persons > 2 || !invite.organizerJoins);
     const places = group && invite.open ? ` · ${invite.placesLeft} av ${invite.persons} plasser ledige` : "";
     const when = invite ? `${formatDate(invite.startUtc)} kl. ${formatTime(invite.startUtc)}${places}` : "";

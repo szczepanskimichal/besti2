@@ -8,6 +8,7 @@ import { formatLength } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import formStyles from "./tjenester/page.module.css";
 import calendar from "./calendar.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type NewBookingFormProps = {
     services: Service[];
@@ -45,32 +46,24 @@ export default function NewBookingForm({ services, employees, date, time, employ
                     {state.values?.pastOk && <input type="hidden" name="pastOk" value={state.values.pastOk}/>}
                     <label className={formStyles.field}>
                         Tjeneste
-                        {/* key: a select only takes a new defaultValue when it is created again */}
-                        <select key={value("serviceId")} name="serviceId" required defaultValue={value("serviceId", services[0]?.id)}
-                                onChange={(e) => setServiceId(e.target.value)}>
-                            {services.map((s) => (
-                                <option key={s.id} value={s.id}>{s.name} ({s.durationMinutes} min)</option>
-                            ))}
-                        </select>
+                        {/* key: the list only takes a new defaultValue when it is created again */}
+                        <GlassSelect key={value("serviceId")} name="serviceId" defaultValue={value("serviceId", services[0]?.id)}
+                                     onChange={setServiceId}
+                                     options={services.map((s) => ({ value: s.id, label: `${s.name} (${s.durationMinutes} min)` }))}/>
                     </label>
                     {maxUnits > 1 && service && (
                         <label className={formStyles.field}>
                             Varighet
-                            <select key={`${serviceId}-${value("units")}`} name="units" defaultValue={value("units", "1")}>
-                                {Array.from({ length: maxUnits }, (_, i) => i + 1).map((count) => (
-                                    <option key={count} value={count}>{formatLength(count * service.durationMinutes)}</option>
-                                ))}
-                            </select>
+                            <GlassSelect key={`${serviceId}-${value("units")}`} name="units" defaultValue={value("units", "1")}
+                                         options={Array.from({ length: maxUnits }, (_, i) => i + 1).map((count) => (
+                                             { value: String(count), label: formatLength(count * service.durationMinutes) }))}/>
                         </label>
                     )}
                     <label className={formStyles.field}>
                         Ansatt
-                        <select key={value("employeeId")} name="employeeId" required
-                                defaultValue={value("employeeId", employeeId ?? employees[0]?.id)}>
-                            {employees.map((e) => (
-                                <option key={e.id} value={e.id}>{e.name} {e.lastName}</option>
-                            ))}
-                        </select>
+                        <GlassSelect key={value("employeeId")} name="employeeId"
+                                     defaultValue={value("employeeId", employeeId ?? employees[0]?.id)}
+                                     options={employees.map((e) => ({ value: e.id, label: `${e.name} ${e.lastName}` }))}/>
                     </label>
                     <div className={calendar.formRow}>
                         <label className={formStyles.field}>

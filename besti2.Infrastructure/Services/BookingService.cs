@@ -523,7 +523,7 @@ public class BookingService(
         foreach (var other in others)
         {
             await notifier.NotifyAsync(other, toBusiness: false,
-                $"{who} har avbestilt sin time i BESTI sammen ({OsloTime.Format(other.StartUtc)}). " +
+                $"{who} har avbestilt sin felles time ({OsloTime.Format(other.StartUtc)}). " +
                 "Timen din hos {0} står fortsatt.",
                 "/min-besti", cancellationToken);
             await emails.SendGroupMemberCancelledAsync(other, who, cancellationToken);

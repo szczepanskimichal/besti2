@@ -1,6 +1,7 @@
 import NextLink from "next/link";
 import { toggleHelpfulAction } from "./actions";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 type HelpfulButtonProps = {
     reviewId: string;
@@ -12,7 +13,7 @@ type HelpfulButtonProps = {
 
 // "Nyttig": readers show which reviews helped them (the most useful ones are easy to trust)
 export default function HelpfulButton({ reviewId, slug, count, marked, loggedIn }: HelpfulButtonProps) {
-    const label = <><span aria-hidden="true">👍</span> Nyttig{count > 0 && ` · ${count}`}</>;
+    const label = <><CrystalIcon name="tommel"/> Nyttig{count > 0 && ` · ${count}`}</>;
     if (!loggedIn) {
         return (
             <NextLink href={`/logg-inn?neste=${encodeURIComponent(`/${slug}#vurderinger`)}`} className={styles.helpful}>

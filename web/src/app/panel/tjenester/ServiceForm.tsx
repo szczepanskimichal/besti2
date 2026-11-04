@@ -4,6 +4,7 @@ import { priceTypeOptions } from "@/lib/priceTypes";
 import type { FormState } from "@/lib/formState";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./tjenester.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type ServiceFormProps = {
     className?: string;
@@ -40,13 +41,9 @@ export default function ServiceForm({ className, action, initial = {}, serviceId
             </label>
             <label className={styles.field}>
                 Pristype
-                {/* key: a select only takes a new defaultValue when it is created again */}
-                <select key={value("priceType", "FastPris")} name="priceType" required
-                        defaultValue={value("priceType", "FastPris")}>
-                    {priceTypeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                </select>
+                {/* key: the list only takes a new defaultValue when it is created again */}
+                <GlassSelect key={value("priceType", "FastPris")} name="priceType"
+                             defaultValue={value("priceType", "FastPris")} options={priceTypeOptions}/>
             </label>
             <label className={styles.field}>
                 Pris i NOK (tom ved pris etter avtale)

@@ -21,7 +21,7 @@ const periods = [
     { days: 7, label: "7 dager", pro: false },
     { days: 30, label: "30 dager", pro: false },
     { days: 90, label: "90 dager", pro: true },
-    { days: 365, label: "12 måneder", short: "12 mnd", pro: true },
+    { days: 365, label: "12 måneder", pro: true },
 ];
 
 const weekdayShort = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
@@ -99,11 +99,9 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
             <nav className={styles.periods} aria-label="Periode">
                 {periods.map((p) => (
                     <Link key={p.days} href={`/panel/statistikk?dager=${p.days}`}
-                          className={p.days === days ? `${styles.period} ${styles.periodActive}` : styles.period}
+                          className={`${styles.period} ${p.days === days ? styles.periodActive : ""}`}
                           aria-current={p.days === days ? "page" : undefined}>
-                        {"short" in p
-                            ? <><span className={styles.longLabel}>{p.label}</span><span className={styles.shortLabel}>{p.short}</span></>
-                            : p.label}
+                        {p.label}
                         {p.pro && p.days !== days && <span className={styles.proMark}><ProBadge short/></span>}
                     </Link>
                 ))}

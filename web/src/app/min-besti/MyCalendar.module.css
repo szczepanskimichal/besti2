@@ -144,13 +144,13 @@
 .sub {
     margin: 0;
     font-family: var(--font-small);
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
 .todayLink {
     font-family: var(--font-small);
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-primary);
 }
 
@@ -266,7 +266,7 @@
 
 .miniCount {
     font-family: var(--font-small);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
 }
 
@@ -282,7 +282,7 @@
     padding: 6px 0;
     text-align: center;
     font-family: var(--font-small);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 500;
     color: #cdeee2;
 }
@@ -319,7 +319,7 @@
     border-radius: 50%;
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .todayNumber {
@@ -373,7 +373,7 @@
     position: absolute;
     top: 4px;
     right: 4px;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
 }
 
 .suggestedDay {
@@ -389,7 +389,7 @@
     padding: 0;
     list-style: none;
     font-family: var(--font-heading);
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     font-weight: 600;
     color: #d8f0ea;
 }
@@ -459,7 +459,7 @@
 
 .weekName {
     font-family: var(--font-small);
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--color-muted);
 }
 
@@ -481,7 +481,7 @@
 
 .chipWide {
     padding: 4px 8px;
-    font-size: 0.82rem;
+    font-size: 0.9375rem;
     font-weight: 400;
 }
 
@@ -491,7 +491,7 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-small);
-    font-size: 0.82rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -522,7 +522,7 @@
     align-items: center;
     gap: 2px;
     font-family: var(--font-small);
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -560,7 +560,7 @@
     background: var(--tone-bg, var(--color-primary-soft));
     color: var(--tone, var(--color-primary));
     font-family: var(--font-small);
-    font-size: 0.78rem;
+    font-size: 0.9375rem;
     font-weight: 600;
 }
 
@@ -626,7 +626,7 @@
 
     .chip {
         padding: 1px 4px;
-        font-size: 0.72rem;
+        font-size: 0.8125rem;
         letter-spacing: 0;
         text-overflow: ellipsis;
     }
@@ -658,7 +658,7 @@
 @media (min-width: 900px) {
     .weekday {
         padding: 8px 0;
-        font-size: 0.9375rem;
+        font-size: 1rem;
         font-weight: 600;
     }
 
@@ -678,7 +678,7 @@
         padding: 3px 7px;
         border: 2px solid var(--tone, #8ff0d6);
         border-radius: 9px;
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
         line-height: 1.35;
     }
 
@@ -704,17 +704,17 @@
 
     .chipWide {
         padding: 6px 12px;
-        font-size: 0.9375rem;
+        font-size: 1rem;
     }
 
     .chipMore {
-        font-size: 0.8125rem;
+        font-size: 0.9375rem;
     }
 
     .cellBell {
         top: 8px;
         right: 8px;
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     .legend {
@@ -734,7 +734,7 @@
     }
 
     .weekName {
-        font-size: 0.875rem;
+        font-size: 0.9375rem;
     }
 
     .weekNumber {
@@ -757,7 +757,7 @@
     position: absolute;
     top: 4px;
     left: 4px;
-    font-size: 0.8rem;
+    font-size: 0.9375rem;
 }
 
 .suggestedDay {
@@ -1277,7 +1277,7 @@
 .itemBusiness {
     margin: 0;
     color: #8ff0d4;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
     overflow-wrap: anywhere;
 }
 
@@ -1295,7 +1295,7 @@
 .itemServiceSmall {
     margin: 0;
     color: #e6fff6;
-    font: 700 0.9375rem var(--font-heading);
+    font: 700 1rem var(--font-heading);
 }
 
 @media (min-width: 900px) {
@@ -1325,7 +1325,7 @@
     border-radius: 999px;
     background: rgba(255, 255, 255, 0.06);
     color: rgba(232, 255, 247, 0.75);
-    font: 700 0.8125rem var(--font-heading);
+    font: 700 0.9375rem var(--font-heading);
     letter-spacing: 0.02em;
 }
 

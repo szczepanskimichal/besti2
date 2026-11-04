@@ -7,6 +7,7 @@ const RING_ICONS = {
     notes: "/ikoner/notatblokk.svg", // Liste
     scissors: "/ikoner/saks.svg", // Tjenester
     people: "/ikoner/kunder.svg", // Kunder
+    heart: "/ikoner/hjerte.svg", // Favoritter
 };
 type RingIcon = keyof typeof RING_ICONS;
 

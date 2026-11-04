@@ -1,0 +1,65 @@
+/* The city field with the glass suggestion list (list look from GlassSelect) */
+.picker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* "Nær meg" on top of the list: an action, not a city, so it has its own neon frame and glow
+   (Ada 2026-11-03: it must stand out from the city lines) */
+.near {
+    font: inherit;
+    font-family: var(--font-heading);
+    width: 100%;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    padding: 0 14px;
+    border: 1.5px solid rgba(143, 240, 212, 0.75);
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(114, 214, 189, 0.24), rgba(114, 214, 189, 0.06));
+    box-shadow: 0 0 14px rgba(143, 240, 212, 0.35), inset 0 0 10px rgba(143, 240, 212, 0.12);
+    color: #8ff0d4;
+    text-align: left;
+    cursor: pointer;
+}
+
+.near:hover,
+.nearActive {
+    background: linear-gradient(90deg, rgba(114, 214, 189, 0.34), rgba(114, 214, 189, 0.1));
+    box-shadow: 0 0 20px rgba(143, 240, 212, 0.55), inset 0 0 10px rgba(143, 240, 212, 0.18);
+}
+
+.pin {
+    flex: none;
+    filter: drop-shadow(0 0 6px rgba(143, 240, 212, 0.6));
+}
+
+.nearText {
+    font-size: 1.0625rem;
+    text-shadow: 0 0 8px rgba(143, 240, 212, 0.5);
+    font-weight: 700;
+}
+
+.nearHint {
+    margin-left: auto;
+    font-family: var(--font-small);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: #a9d8cc;
+}
+
+/* The letters the customer typed, lit up in mint */
+.match {
+    color: #7dffd9;
+    text-shadow: 0 0 8px rgba(125, 255, 217, 0.6);
+}
+
+.denied {
+    margin: 6px 0 0;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: var(--color-muted);
+}

@@ -100,7 +100,7 @@
 
 .meta {
     margin: 2px 0 0;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
     color: var(--color-muted);
 }
 
@@ -116,7 +116,7 @@
 .label {
     display: block;
     font-family: var(--font-heading);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -155,14 +155,14 @@
 }
 
 .stamps .label {
-    font-size: 13px;
+    font-size: 15px;
     letter-spacing: 0.14em;
     margin: 0 0 10px;
 }
 
 .stampText {
     margin: 0;
-    font-size: 14px;
+    font-size: 15px;
     color: var(--color-muted);
 }
 

@@ -7,6 +7,7 @@ import BusinessLogo from "@/components/BusinessLogo/BusinessLogo";
 import Stars from "@/components/Stars/Stars";
 import VerifiedBadge from "@/components/VerifiedBadge/VerifiedBadge";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import PersonsIcon from "@/components/PersonsIcon/PersonsIcon";
 
 
 type Props = {
@@ -51,7 +52,7 @@ export default function BusinessCard({ business, persons = 1 }: Props) {
             {slots.length > 0 && (
                 <div className={styles.slots}>
                     <p className={styles.slotsLabel}>
-                        {slots[0].serviceName} · Ledig{together && ` for ${persons === 2 ? "to" : persons} 👯`} {formatDate(slots[0].startUtc)}:
+                        {slots[0].serviceName} · Ledig{together && <> for {persons === 2 ? "to" : persons} <PersonsIcon persons={persons}/></>} {formatDate(slots[0].startUtc)}:
                     </p>
                     {/* One click: the booking page opens with service, employee, day and time chosen */}
                     {slots.map((slot) => (

@@ -8,6 +8,7 @@ import Stars from "@/components/Stars/Stars";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { reviewAction } from "../actions";
 import styles from "../admin.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 export const metadata: Metadata = { title: "Vurderinger" };
 
@@ -77,10 +78,8 @@ export default async function AdminReviewsPage({ searchParams }: AdminReviewsPag
                                 <input type="hidden" name="id" value={review.id}/>
                                 <input type="hidden" name="back" value={onlyHidden ? "skjulte" : ""}/>
                                 <label className={styles.srOnly} htmlFor={`grunn-${review.id}`}>Grunn</label>
-                                <select id={`grunn-${review.id}`} name="reason" required defaultValue="" className={styles.select}>
-                                    <option value="" disabled>Skjul fordi …</option>
-                                    {reasons.review.map((reason) => <option key={reason} value={reason}>{reason}</option>)}
-                                </select>
+                                <GlassSelect id={`grunn-${review.id}`} name="reason" required placeholder="Skjul fordi …" overlay className={styles.select}
+                                             options={reasons.review.map((reason) => ({ value: reason, label: reason }))}/>
                                 <SubmitButton className={styles.dangerButton} pendingText="Skjuler …">Skjul</SubmitButton>
                                 {review.photoUrl && (
                                     <span className={styles.muted}>«Bildet passer ikke» sletter bildet for godt.</span>

@@ -1,0 +1,163 @@
+/* The same look as "For hvem?" (ForWhomPicker): field-like button, frosted glass list, chosen line in mint */
+.picker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    color: #a9d8cc;
+    font-size: 0.9375rem;
+}
+
+.trigger {
+    font: inherit;
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-weight: 500;
+    min-height: 48px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius);
+    background: var(--color-input-bg);
+    color: #fff;
+    text-align: left;
+    cursor: pointer;
+}
+
+.picker {
+    min-width: 0;
+}
+
+.value {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Invisible input under the field: only there so the browser can say "fill in this field" */
+.validator {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.chevron,
+.chevronUp {
+    flex: none;
+    transition: transform 0.2s;
+}
+
+.chevronUp {
+    transform: rotate(180deg);
+}
+
+/* The open list: frosted glass, pushes the fields below down; a long list scrolls inside */
+.list {
+    max-height: 340px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0 0 4px;
+    padding: 6px;
+    list-style: none;
+    border-radius: 18px;
+    border: 1px solid rgba(150, 255, 230, 0.28);
+    /* michal 2026-11-03: a little lighter than the page, so the open list stands out */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05)), rgba(24, 50, 60, 0.72);
+    backdrop-filter: blur(20px) saturate(140%);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    scrollbar-color: rgba(114, 214, 189, 0.5) transparent;
+}
+
+/* Floating version: over the page, right under the field */
+.overlay {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 100%;
+    width: max-content;
+    max-width: calc(100vw - 32px);
+    /* Solid here, so the text under the floating list does not show through */
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)), #18323c;
+}
+
+/* Group name, e.g. "Skjønnhet og velvære": small soft mint, not clickable */
+.group {
+    display: block;
+    padding: 10px 12px 4px;
+    color: #a9d8cc;
+    font-family: var(--font-small);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.option {
+    font: inherit;
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 8px 12px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+    background: none;
+    color: var(--color-heading);
+    text-align: left;
+    cursor: pointer;
+}
+
+/* Only with the keyboard (arrows/Tab): a mint ring around the line; a mouse or finger never shows it */
+.option:focus-visible {
+    outline: 2px solid #8ff0d4;
+    outline-offset: -2px;
+}
+
+.option:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.selected {
+    background: rgba(114, 214, 189, 0.2);
+    border-color: rgba(150, 255, 230, 0.35);
+    color: #e6fff8;
+}
+
+@media (min-width: 900px) {
+    .label {
+        font-size: 1.05rem;
+    }
+
+    .trigger {
+        min-height: 56px;
+        padding: 0 16px;
+        font-size: 1.2rem;
+    }
+}

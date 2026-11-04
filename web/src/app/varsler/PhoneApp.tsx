@@ -7,6 +7,7 @@ import { removePushAction, savePushAction } from "./actions";
 import panelStyles from "../panel/page.module.css";
 import LineIcon from "./LineIcon";
 import styles from "./page.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 type PushState = "loading" | "on" | "off" | "blocked" | "unsupported";
 
@@ -76,7 +77,7 @@ export default function PhoneApp({ publicKey }: { publicKey: string | null }) {
             )}
             {iosBrowser && (
                 <p className={panelStyles.muted}>
-                    På iPhone: trykk på Del-knappen <span aria-hidden="true">⬆️</span> nederst i Safari og velg
+                    På iPhone: trykk på Del-knappen <CrystalIcon name="del"/> nederst i Safari og velg
                     «Legg til på Hjem-skjerm». Åpne BESTI fra ikonet, så kan du slå på varsler her.
                 </p>
             )}

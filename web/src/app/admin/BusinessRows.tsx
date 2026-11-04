@@ -33,7 +33,7 @@ export default function BusinessRows({ rows }: { rows: AdminBusinessRow[] }) {
                         {row.averageStars !== null && <span>{row.averageStars.toString().replace(".", ",")} <CrystalIcon name="stjerne"/></span>}
                         {row.verified && <span>Verifisert</span>}
                         {row.proInterest && <span className={styles.highlight}>Interessert i Pro</span>}
-                        {row.hasNote && <span>📝 Notat</span>}
+                        {row.hasNote && <span><CrystalIcon name="notatblokk"/> Notat</span>}
                     </p>
                 </li>
             ))}

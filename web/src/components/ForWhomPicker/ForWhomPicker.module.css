@@ -8,7 +8,7 @@
 /* Same as the other questions in the search card: small and soft mint */
 .label {
     color: #a9d8cc;
-    font-size: 0.875rem;
+    font-size: 0.9375rem;
 }
 
 /* Looks like the other fields in the search card */
@@ -87,7 +87,7 @@
 
 .icon {
     flex: none;
-    filter: drop-shadow(0 0 5px rgba(60, 230, 170, 0.45));
+    filter: drop-shadow(0 0 5px rgba(114, 214, 189, 0.5));
 }
 
 .title {
@@ -104,7 +104,7 @@
     margin-top: 2px;
     font-family: var(--font-small);
     font-weight: 400;
-    font-size: 0.82rem;
+    font-size: 0.9375rem;
     line-height: 1.3;
     color: rgba(232, 255, 247, 0.78);
 }
@@ -115,7 +115,7 @@
     border: 1px solid rgba(150, 255, 230, 0.35);
     font-family: var(--font-small);
     font-weight: 500;
-    font-size: 0.7rem;
+    font-size: 0.8125rem;
     color: var(--color-heading);
 }
 
@@ -124,15 +124,37 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
-.teamSize select {
-    font: inherit;
-    font-family: var(--font-heading);
-    min-height: 46px;
-    padding: 0 12px;
-    color: #fff;
+/* 3 4 5 6 7 8 as round neon buttons in one row, the chosen one lit mint (same as the other buttons) */
+.sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.size {
+    flex: 1 1 0;
+    min-width: 40px;
+    max-width: 56px;
+    height: 46px;
+    padding: 0;
+    border: var(--btn-border);
+    border-radius: 999px;
+    background: var(--btn-bg);
+    box-shadow: var(--btn-glow);
+    color: var(--btn-text);
+    font: 700 1.125rem var(--font-heading);
+    cursor: pointer;
+}
+
+.sizeOn {
+    border: var(--btn-on-border);
+    background: var(--btn-on-bg);
+    box-shadow: var(--btn-on-glow);
+    color: var(--btn-on-text);
+    text-shadow: var(--btn-on-text-shadow);
 }
 
 /* Ada 2026-11-01: on the computer the same bigger size as the other fields in the search card */

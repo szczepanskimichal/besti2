@@ -8,6 +8,7 @@ import type { FormState } from "@/lib/formState";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./page.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 // The business sign-up form: on an error every field stays filled in, only the password is typed again
 export default function RegisterBusinessForm() {
@@ -71,17 +72,9 @@ export default function RegisterBusinessForm() {
             </label>
             <label className={styles.field}>
                 Kategori
-                {/* key: a select only takes a new defaultValue when it is created again */}
-                <select key={value("category")} name="category" required defaultValue={value("category")}>
-                    <option value="" disabled>Velg kategori</option>
-                    {categoryOptionGroups.map((group) => (
-                        <optgroup key={group.label} label={group.label}>
-                            {group.options.map((option) => (
-                                <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                        </optgroup>
-                    ))}
-                </select>
+                {/* key: the list only takes a new defaultValue when it is created again */}
+                <GlassSelect key={value("category")} name="category" required placeholder="Velg kategori"
+                             defaultValue={value("category")} groups={categoryOptionGroups}/>
             </label>
             <label className={styles.field}>
                 Adresse
@@ -122,12 +115,8 @@ export default function RegisterBusinessForm() {
             <p className={styles.hint}>Minst 6 tegn, stor og liten bokstav, et tall og et spesialtegn.</p>
             <label className={styles.field}>
                 Hvor hørte du om BESTI? (valgfritt)
-                <select key={value("referralSource")} name="referralSource" defaultValue={value("referralSource")}>
-                    <option value="">Velg</option>
-                    {referralSources.map((source) => (
-                        <option key={source} value={source}>{source}</option>
-                    ))}
-                </select>
+                <GlassSelect key={value("referralSource")} name="referralSource" defaultValue={value("referralSource")}
+                             options={[{ value: "", label: "Velg" }, ...referralSources.map((source) => ({ value: source, label: source }))]}/>
             </label>
             <label className={styles.checkbox}>
                 <input type="checkbox" name="acceptDataProcessing" required

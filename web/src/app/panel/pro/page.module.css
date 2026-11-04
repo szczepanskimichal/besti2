@@ -66,12 +66,12 @@
 .text {
     margin: 0;
     color: #e6f7f2;
-    font: 400 0.9375rem/1.55 var(--font-small);
+    font: 400 1rem/1.55 var(--font-small);
 }
 .small {
     margin: 0;
     color: #a9bdb8;
-    font: 400 0.8125rem/1.5 var(--font-small);
+    font: 400 0.9375rem/1.5 var(--font-small);
 }
 
 /* The price (Ada 2026-11-03): the Pro rainbow crystal glass from globals.css (soft blurred lights, crystal facets,
@@ -133,7 +133,7 @@
 .per {
     margin: 0;
     color: #cfeee6;
-    font: 600 0.9375rem var(--font-heading);
+    font: 600 1rem var(--font-heading);
 }
 /* Lists with a crystal icon in an aurora ring: the title in Syne, the sentence in Inter */
 .list {
@@ -149,12 +149,12 @@
     align-items: flex-start;
     gap: 12px;
     color: #e6f7f2;
-    font: 400 0.9375rem/1.5 var(--font-small);
+    font: 400 1rem/1.5 var(--font-small);
 }
 .list b {
     display: block;
     color: #ffffff;
-    font: 700 0.9375rem/1.4 var(--font-heading);
+    font: 700 1rem/1.4 var(--font-heading);
 }
 .icon {
     display: grid;
@@ -199,7 +199,7 @@
     border: 1.5px solid #c9bfff;
     border-radius: 999px;
     color: #d9d2ff;
-    font: 700 0.75rem/1.5 var(--font-heading);
+    font: 700 0.8125rem/1.5 var(--font-heading);
     vertical-align: 2px;
 }
 
@@ -225,7 +225,7 @@
 .thanks {
     margin: 0;
     color: #8ff0d6;
-    font: 600 0.9375rem/1.4 var(--font-heading);
+    font: 600 1rem/1.4 var(--font-heading);
     text-shadow: 0 0 8px rgba(143, 240, 214, 0.4);
 }
 

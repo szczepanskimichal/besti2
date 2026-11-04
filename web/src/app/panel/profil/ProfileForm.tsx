@@ -5,6 +5,7 @@ import type { FormState } from "@/lib/formState";
 import { FREE_CANCEL_OPTIONS } from "@/lib/freeCancel";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import styles from "./profil.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type ProfileFormProps = {
     // The saved profile
@@ -89,13 +90,9 @@ export default function ProfileForm({ initial }: ProfileFormProps) {
                 </div>
                 <label className={styles.field}>
                     <span>Gratis avbestilling inntil</span>
-                    <select name="freeCancelHours" defaultValue={value("freeCancelHours")}>
-                        {FREE_CANCEL_OPTIONS.map((hours) => (
-                            <option key={hours} value={hours}>
-                                {hours === 0 ? "Når som helst før timen" : `${hours} timer før timen`}
-                            </option>
-                        ))}
-                    </select>
+                    <GlassSelect name="freeCancelHours" defaultValue={value("freeCancelHours")}
+                                 options={FREE_CANCEL_OPTIONS.map((hours) => (
+                                     { value: String(hours), label: hours === 0 ? "Når som helst før timen" : `${hours} timer før timen` }))}/>
                 </label>
             </fieldset>
 
