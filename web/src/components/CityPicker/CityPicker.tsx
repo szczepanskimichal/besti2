@@ -87,7 +87,7 @@ export default function CityPicker({ name, cities, defaultValue = "", placeholde
                             <span className={styles.nearHint}>Bruk posisjonen min</span>
                         </button>
                     </li>
-                    {/* No title above the cities: the field label "Finn lokale BESTI-bedrifter" already says it (Ada 2026-11-03) */}
+                    {/* No title above the cities: the field label "Hvor?" already says it (Ada 2026-11-03, label 2026-11-04) */}
                     {matches.length > 0 && (
                         <li role="presentation">
                             <ul role="presentation" className={glass.options}>

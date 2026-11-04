@@ -41,7 +41,7 @@
 .logoWord {
     color: #8ff0d6;
     font-family: var(--font-logo), var(--font-heading);
-    font-size: calc(var(--tile) * 0.64);
+    font-size: calc(var(--tile) * 0.52);
     font-weight: 700;
     line-height: 1;
     letter-spacing: 0.1em;
@@ -167,7 +167,7 @@
     }
 
     .logoWord {
-        font-size: calc(var(--tile) * 0.56);
+        font-size: calc(var(--tile) * 0.46);
         letter-spacing: 0.04em;
     }
 

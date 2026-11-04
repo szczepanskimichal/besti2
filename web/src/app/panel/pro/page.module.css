@@ -74,6 +74,11 @@
     font: 400 0.9375rem/1.5 var(--font-small);
 }
 
+/* The SMS note at the end of the Pro card: a little air above it */
+.smsNote {
+    margin-top: 14px;
+}
+
 /* The price (Ada 2026-11-03): the Pro rainbow crystal glass from globals.css (soft blurred lights, crystal facets,
    a rainbow edge). The number in white Syne (tight, the Syne digits are wide) */
 .price {

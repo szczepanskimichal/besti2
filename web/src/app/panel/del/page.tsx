@@ -163,7 +163,7 @@ export default async function SharePage({ searchParams }: SharePageProps) {
                             <LockIcon className={styles.lock}/> Send som SMS
                         </button>
                         <p className={styles.small}>
-                            SMS koster penger per melding, derfor er den låst i beta. Vil du ha det? Trykk under, så sier vi fra når det starter.
+                            SMS betales per melding, i tillegg til Pro, og du bestemmer selv et tak per måned. Derfor er den låst i beta. Vil du ha det? Trykk under, så sier vi fra når det starter.
                         </p>
                         {stats?.proInterest || query.pro ? (
                             <p className={styles.thanks} role="status">Takk! Vi sier fra når det er klart.</p>
