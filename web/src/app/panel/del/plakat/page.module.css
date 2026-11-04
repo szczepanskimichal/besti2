@@ -4,203 +4,244 @@
     padding: 24px 16px 48px;
 }
 
+/* The tools in a dark glass card, like the other panel pages */
 .toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px 16px;
-    margin-bottom: 20px;
+    gap: 14px 12px;
+    margin-bottom: 24px;
+    padding: 16px 18px 18px;
+    border: 1.5px solid rgba(191, 248, 232, 0.28);
+    border-radius: 22px;
+    background: rgba(5, 17, 24, 0.82);
+    backdrop-filter: var(--glass-blur);
 }
-
+.toolbarTop {
+    display: flex;
+    flex-basis: 100%;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+.title {
+    margin: 0;
+    color: #8ff0d6;
+    font: 700 1.75rem/1.2 var(--font-heading);
+    text-shadow: 0 0 12px rgba(143, 240, 214, 0.5);
+}
 .back {
-    color: var(--color-primary);
-    font-weight: 600;
-}
-
-.printButton {
-    min-height: 44px;
-    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1.5px solid rgba(143, 240, 214, 0.55);
     border-radius: 999px;
-    font: inherit;
-    font-family: var(--font-heading);
-    font-weight: 600;
-    cursor: pointer;
-    border: 2px solid transparent;
-    background: var(--btn-main-bg);
-    color: var(--color-on-primary);
-    box-shadow: var(--neon-glow);
-    text-shadow: none;
+    color: #e6f7f2;
+    font: 600 0.9375rem var(--font-heading);
+    text-decoration: none;
 }
 
-.printButton:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 3px;
-}
-
-/* Nordlys / Lys */
+/* Nordlys / Lys: the chosen one lit mint */
 .styles {
     display: inline-flex;
-    padding: 3px;
-    border: 1px solid var(--color-border);
+    gap: 4px;
+    padding: 4px;
+    border: 1.5px solid rgba(143, 240, 214, 0.42);
     border-radius: 999px;
+    background: var(--color-input-bg);
 }
-
 .styles a {
     display: inline-flex;
     align-items: center;
     min-height: 38px;
     padding: 0 14px;
+    border: 2px solid transparent;
     border-radius: 999px;
-    color: var(--color-text);
+    color: #c3dad3;
+    font: 600 0.9375rem var(--font-heading);
     text-decoration: none;
 }
-
 .styles a[aria-current="page"] {
-    background: var(--color-primary);
-    color: var(--color-on-primary);
+    border-color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
 }
 
+.printButton {
+    min-height: 44px;
+    padding: 0 20px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    box-shadow: var(--neon-glow);
+    font: 600 1rem var(--font-heading);
+    cursor: pointer;
+}
+.back:focus-visible,
+.styles a:focus-visible,
+.printButton:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 3px;
+}
 .hint {
     flex-basis: 100%;
     margin: 0;
-    font-size: 1rem;
-    color: var(--color-muted);
+    color: #a9bdb8;
+    font: 500 0.9375rem/1.5 var(--font-small);
 }
 
-/* The A5 sheet (148 × 210 mm); on screen a white page with the same proportions */
+/* The A5 sheet (148 × 210 mm); on screen a page with the same proportions */
 .sheet {
     width: 100%;
     max-width: 148mm;
     aspect-ratio: 148 / 210;
     margin: 0 auto;
-    padding: 9% 8%;
+    padding: 8% 8% 7%;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
     background: #fff;
     color: #06201f;
-    border-radius: 6px;
+    border-radius: 8px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 .brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35em;
     margin: 0;
-    font-weight: 800;
-    letter-spacing: 0.3em;
-    font-size: 0.85rem;
     color: #1f6f63;
+    font: 700 clamp(1.75rem, 8vw, 2.5rem)/1 var(--font-heading);
+    letter-spacing: 0.14em;
 }
-
 .logo {
-    width: 22%;
+    width: 20%;
     aspect-ratio: 1;
     object-fit: contain;
-    margin-top: 5%;
+    margin-top: 4%;
     border-radius: 12px;
 }
-
 .name {
     font-family: var(--font-heading);
     margin: 4% 0 0;
-    font-weight: 700;
-    font-size: clamp(1rem, 4.5vw, 1.4rem);
+    font: 700 clamp(1rem, 4.5vw, 1.4rem)/1.25 var(--font-heading);
 }
-
 .heading {
-    margin: 2% 0 0;
-    font-size: clamp(1.5rem, 7vw, 2.3rem);
-    line-height: 1.15;
+    margin: 1.5% 0 0;
     color: #0f4b57;
+    font: 700 clamp(1.35rem, 6.4vw, 2.5rem)/1.12 var(--font-heading);
     text-shadow: none;
 }
-
+.arrow {
+    width: 9%;
+    height: auto;
+    margin: auto 0 0;
+    padding-top: 3%;
+}
+/* Lys: a thin mint frame around the code (prints fine, little ink) */
 .qr {
-    width: 62%;
+    width: 56%;
     aspect-ratio: 1;
-    margin: auto 0 0;
-    padding-top: 4%;
+    margin-top: 2%;
+    padding: 3.5%;
+    border: 2px solid #3fbfa0;
+    border-radius: 18px;
+    background: #fff;
 }
-
 .scan {
-    font-family: var(--font-heading);
-    margin: 3% 0 0;
-    font-weight: 700;
-    font-size: clamp(1rem, 3.6vw, 1.1rem);
+    margin: 4% 0 0;
+    font: 700 clamp(0.85rem, 3.4vw, 1.15rem)/1.35 var(--font-heading);
 }
-
+/* The address in a mint pill */
 .link {
-    font-family: var(--font-heading);
-    font-weight: 700;
-    margin: 1% 0 0;
-    font-size: clamp(0.85rem, 3.4vw, 1.05rem);
+    margin: 2.5% 0 0;
+    padding: 1.5% 5%;
+    border: 2px solid #3fbfa0;
+    border-radius: 999px;
+    color: #0f5e52;
+    font: 700 clamp(0.8rem, 3.2vw, 1.05rem)/1.3 var(--font-heading);
     overflow-wrap: anywhere;
-    color: #1f6f63;
 }
-
 .footer {
-    font-family: var(--font-heading);
-    font-weight: 700;
     margin: auto 0 0;
     padding-top: 4%;
-    font-size: clamp(0.8125rem, 3vw, 1rem);
+}
+/* Slogan in capitals and letter-spaced, like the site footer */
+.slogan {
+    margin: 0;
+    color: #1f6f63;
+    font: 700 clamp(1.05rem, 4.4vw, 1.4rem)/1.3 var(--font-heading);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+.promise {
+    margin: 1.5% 0 0;
     color: #4a5a6a;
+    font: 500 clamp(0.9375rem, 3.6vw, 1.15rem)/1.45 var(--font-small);
 }
 
-/* BESTI's look: the aurora photo, mint heading and the Besti lettering. The QR code sits on a white card */
+/* BESTI's look: a sharp print version of the aurora photo (1748 × 2480, 300 dpi on A5, same swirl as the app background), glowing mint heading, the QR code in a white box with a mint neon frame */
 .aurora {
     position: relative;
-    background: #04101a url("/bg/sky-mobil-1400.jpg") center top / cover no-repeat;
+    background: #04101a url("/bg/plakat-nordlys.jpg") center top / cover no-repeat;
     color: #eef7f4;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
     overflow: hidden;
 }
-
 .aurora::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(2, 12, 18, 0.35), rgba(2, 12, 18, 0.15) 40%, rgba(2, 12, 18, 0.7));
+    background: linear-gradient(180deg, rgba(2, 12, 18, 0.3), rgba(2, 12, 18, 0.02) 40%, rgba(2, 12, 18, 0.55));
 }
-
 .aurora > * {
     position: relative;
 }
-
-.brandLogo {
-    width: 34%;
-    height: auto;
+.brandIcon {
+    height: 1.5em;
+    width: auto;
 }
-
+.aurora .brandIcon {
+    filter: drop-shadow(0 0 10px rgba(143, 240, 214, 0.45));
+}
+.aurora .brand {
+    color: #8ff0d6;
+    text-shadow: 0 0 14px rgba(143, 240, 214, 0.6), 0 0 32px rgba(114, 230, 200, 0.35);
+}
 .aurora .name {
     color: #eef7f4;
 }
-
 .aurora .heading {
-    color: #bff3e3;
-    font-family: var(--font-heading);
-    text-shadow: 0 2px 18px rgba(2, 12, 18, 0.6);
+    color: #8ff0d6;
+    text-shadow: 0 0 14px rgba(143, 240, 214, 0.55), 0 2px 18px rgba(2, 12, 18, 0.6);
 }
-
 .aurora .qr {
-    width: 56%;
-    padding: 4%;
-    margin-top: auto;
-    background: #fff;
-    border-radius: 18px;
-    box-shadow: 0 0 0 3px rgba(114, 214, 189, 0.8), 0 0 28px rgba(90, 240, 180, 0.45);
+    border-color: #8ff0d6;
+    box-shadow: 0 0 10px rgba(143, 240, 214, 0.75), 0 0 28px rgba(114, 230, 200, 0.4);
 }
-
 .aurora .scan {
     color: #eef7f4;
 }
-
 .aurora .link {
-    color: #72d6bd;
+    border-color: #8ff0d6;
+    background: rgba(80, 225, 190, 0.2);
+    color: #e6fff8;
+    box-shadow: 0 0 8px rgba(143, 240, 214, 0.6), 0 0 18px rgba(114, 230, 200, 0.3);
+    text-shadow: 0 0 8px rgba(143, 240, 214, 0.6);
 }
-
-.aurora .footer {
+.aurora .slogan {
+    color: #8ff0d6;
+    text-shadow: 0 0 10px rgba(143, 240, 214, 0.55);
+}
+.aurora .promise {
     color: #c3dad3;
 }
 
@@ -209,39 +250,38 @@
         max-width: none;
         padding: 0;
     }
-
     .toolbar {
         display: none;
     }
-
     /* Fills the paper; the browser picks A5 or A4 and the proportions stay */
     .sheet {
         max-width: none;
         width: 100%;
         height: 100vh;
         aspect-ratio: auto;
-        padding: 12mm 10mm;
+        padding: 11mm 10mm 9mm;
         border-radius: 0;
         box-shadow: none;
     }
-
+    .brand {
+        font-size: 30pt;
+    }
     .name {
         font-size: 16pt;
     }
-
     .heading {
-        font-size: 26pt;
+        font-size: 28pt;
     }
-
     .scan {
         font-size: 13pt;
     }
-
     .link {
         font-size: 12pt;
     }
-
-    .footer {
-        font-size: 10pt;
+    .slogan {
+        font-size: 15pt;
+    }
+    .promise {
+        font-size: 12pt;
     }
 }

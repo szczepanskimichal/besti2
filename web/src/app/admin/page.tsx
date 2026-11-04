@@ -8,6 +8,7 @@ import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { decideAction } from "./actions";
 import BusinessRows from "./BusinessRows";
 import styles from "./admin.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 type AdminPageProps = {
     searchParams: Promise<{ feil?: string; avvist?: string }>;
@@ -49,7 +50,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
             <h2 className={styles.heading}>Venter på godkjenning</h2>
             {overview.waiting.length === 0 ? (
-                <p className={styles.muted}>Ingen akkurat nå. 🎉</p>
+                <p className={styles.muted}>Ingen akkurat nå. <CrystalIcon name="feiring"/></p>
             ) : (
                 <ul className={styles.list}>
                     {overview.waiting.map((business) => (

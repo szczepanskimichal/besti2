@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 type ShareButtonProps = {
     path: string; // e.g. "/klipp-og-stil-frisor-gjovik"
@@ -35,7 +36,7 @@ export default function ShareButton({ path, title, text, label = "Del", classNam
 
     return (
         <button type="button" onClick={share} className={className} aria-live="polite">
-            <span aria-hidden="true">↗</span> {copied ? "Lenke kopiert ✓" : label}
+            <CrystalIcon name="del"/> {copied ? "Lenke kopiert ✓" : label}
         </button>
     );
 }

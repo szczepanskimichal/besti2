@@ -87,7 +87,9 @@ export default function ForWhomPicker({ persons }: { persons?: string }) {
                                      strokeLinejoin="round" aria-hidden="true">
                                     <defs>
                                         <linearGradient id={`${listId}-gradient`} x1="0" y1="0" x2="1" y2="1">
-                                            <stop offset="0" stopColor="#5af05e"/>
+                                            {/* The same mint as the people icons (PersonsIcon), not the old bright green */}
+                                            <stop offset="0" stopColor="#b8fff0"/>
+                                            <stop offset="0.5" stopColor="#5af0c8"/>
                                             <stop offset="1" stopColor="#28c9e8"/>
                                         </linearGradient>
                                     </defs>
@@ -106,14 +108,21 @@ export default function ForWhomPicker({ persons }: { persons?: string }) {
                 </ul>
             )}
             {choice === "team" && (
-                <label className={styles.teamSize}>
-                    Hvor mange?
-                    <select value={teamSize} onChange={(event) => setTeamSize(event.target.value)}>
+                // Ada 2026-11-03: our own round number buttons instead of the long system list, which the phone or
+                // computer colours in its own (often bright green or blue) colour
+                <div className={styles.teamSize} role="radiogroup" aria-label="Hvor mange?">
+                    <span>Hvor mange?</span>
+                    <div className={styles.sizes}>
                         {teamSizes.map((size) => (
-                            <option key={size} value={size}>{size} personer</option>
+                            <button key={size} type="button" role="radio" aria-checked={teamSize === String(size)}
+                                    aria-label={`${size} personer`}
+                                    className={teamSize === String(size) ? `${styles.size} ${styles.sizeOn}` : styles.size}
+                                    onClick={() => setTeamSize(String(size))}>
+                                {size}
+                            </button>
                         ))}
-                    </select>
-                </label>
+                    </div>
+                </div>
             )}
             <input type="hidden" name="personer" value={value}/>
         </div>

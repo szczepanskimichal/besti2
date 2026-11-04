@@ -60,7 +60,7 @@ export default async function FavoritesPage({ searchParams }: FavoritesPageProps
             {favoritt === "feil" && <p className={panel.error} role="alert">Det gikk ikke. Prøv igjen.</p>}
 
             {favorites.length === 0 ? (
-                <EmptyState icon="♡" title="Ingen favoritter ennå" action={{ href: "/", label: "Finn en bedrift" }}>
+                <EmptyState icon="heart" title="Ingen favoritter ennå" action={{ href: "/", label: "Finn en bedrift" }}>
                     Trykk på «Lagre» på siden til en bedrift du liker. Da finner du den her, og kan bestille
                     samme tjeneste igjen med ett trykk.
                 </EmptyState>

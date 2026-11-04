@@ -33,7 +33,7 @@ const COMING = [
 // Everything a business gets without Pro
 const ALWAYS_FREE = [
     "Kalender", "Nettbestilling", "Kunder", "Ansatte", "Varsler",
-    "E-post til faste kunder", "BESTI sammen", "Ukerapporten",
+    "E-post til faste kunder", "BESTI Duo og Team", "Ukerapporten",
 ];
 
 // BESTI Pro (Ada 2026-11-03, v6): three cards. What is in Pro (free in the beta), the price after the beta, what is always free.

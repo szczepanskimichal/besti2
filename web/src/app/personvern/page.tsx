@@ -56,7 +56,7 @@ export default function PrivacyPage() {
                     <li><strong>Favoritter, venteliste og «Tid for ny time?»:</strong> bedrifter du har lagt til som
                         favoritt, dager du står på venteliste for («Si fra hvis det blir ledig») og påminnelser du selv har
                         bedt om. Dette ser bare du.</li>
-                    <li><strong>BESTI sammen:</strong> når du inviterer venner, lagrer vi invitasjonen (bedrift, tjeneste,
+                    <li><strong>BESTI Duo og Team:</strong> når du inviterer venner, lagrer vi invitasjonen (bedrift, tjeneste,
                         tid, antall personer, telefonnummeret ditt og meldingen din). De som åpner lenken, ser fornavnet
                         ditt, og du ser fornavnene til dem som blir med. I BESTI-chatten i invitasjonen lagrer vi
                         meldingene og reaksjonene dine. Chatten ser bare den som inviterte og de som er med, og en
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
                         art. 6 nr. 1 f). Du får beskjed på e-post når det blir registrert, og kan ikke gi vurdering av den
                         timen. Var du der likevel, kontakt bedriften eller skriv til{" "}
                         <a href="mailto:post@bestiapp.no">post@bestiapp.no</a>, så ser vi på det.</li>
-                    <li>Favoritter, venteliste, «Tid for ny time?», «Snart tid!», BESTI sammen, stempelkort og varsler på
+                    <li>Favoritter, venteliste, «Tid for ny time?», «Snart tid!», BESTI Duo og Team, stempelkort og varsler på
                         telefonen: funksjoner du selv velger å bruke (avtale, art. 6 nr. 1 b). Du kan slå dem av når som
                         helst.</li>
                     <li>Bedriftens kundekort, notater, ansattes egen kalender og bedriftens kalender i egen app: bedriften
@@ -168,7 +168,7 @@ export default function PrivacyPage() {
                         av, logger ut på enheten eller nettleseren melder at adressen ikke virker lenger.</li>
                     <li><strong>Bilder i vurderinger:</strong> slettes når du sletter kontoen, 3 år etter timen, eller
                         når BESTI fjerner bildet fordi det bryter vilkårene.</li>
-                    <li><strong>BESTI sammen:</strong> invitasjonen slettes 3 år etter tidspunktet, BESTI-chatten og
+                    <li><strong>BESTI Duo og Team:</strong> invitasjonen slettes 3 år etter tidspunktet, BESTI-chatten og
                         hilsenene 30 dager etter tidspunktet. Du kan selv slette dine egne meldinger. Bedriftens notat om
                         deg slettes når du ikke har vært hos bedriften på 3 år, når du sletter kontoen, eller når
                         bedriften slettes. Loggen over administrasjon slettes etter 3 år.</li>

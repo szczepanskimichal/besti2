@@ -265,6 +265,28 @@
     gap: 4px;
 }
 
+/* The same mint dots as "Kom i gang" in the panel: a glowing mint dot with a tick when done, an empty mint ring when not */
+.setupMark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    margin-right: 4px;
+    vertical-align: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(114, 242, 207, 0.55);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.setupDone {
+    border-color: #72f2cf;
+    background: radial-gradient(circle at 35% 30%, #e6fff8, #72f2cf 60%, #17a196);
+    color: #03121a;
+    box-shadow: 0 0 6px rgba(114, 242, 207, 0.9);
+}
+
 .search {
     display: flex;
     gap: 8px;
@@ -331,16 +353,10 @@
     margin-top: 12px;
 }
 
+/* The reason list (GlassSelect) next to the button: grows, but not wider than a phone */
 .select {
-    min-height: 44px;
-    padding: 0 12px;
-    font: inherit;
-    font-family: var(--font-heading);
-    color: var(--color-text);
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-input-border);
-    border-radius: 8px;
-    max-width: 100%;
+    flex: 1 1 240px;
+    max-width: 420px;
 }
 
 .photo {

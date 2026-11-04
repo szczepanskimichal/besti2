@@ -27,6 +27,9 @@
 }
 
 .filters {
+    /* Above the calendar below, so an open employee list is not covered by it */
+    position: relative;
+    z-index: 5;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -576,18 +579,9 @@
     text-align: left;
 }
 
-.waitlistField select {
-    font: inherit;
-    font-family: var(--font-heading);
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--color-text);
-    min-height: 48px;
-    padding: 0 14px;
-    border: var(--btn-border);
-    border-radius: 999px;
-    background: var(--btn-bg);
-    box-shadow: var(--btn-glow);
+/* The day list (GlassSelect) floats over the button when it opens */
+.waitlistPicker {
+    text-align: left;
 }
 
 .waitlistButton {
@@ -619,7 +613,7 @@
         width: auto;
     }
 
-    .waitlistField select {
+    .waitlistPicker {
         min-width: 240px;
     }
 }
@@ -669,4 +663,43 @@
     color: var(--color-on-primary);
     box-shadow: var(--neon-glow);
     text-shadow: none;
+}
+
+/* Free cancelling: the blue pill with a clock, centred under the chosen time with room around it */
+.cancelRow {
+    display: flex;
+    justify-content: center;
+    margin: 8px 0 16px;
+}
+
+/* "Hvor mange personer?": 2 3 4 ... as round neon buttons, the chosen one lit mint (same as on the home page) */
+.sizes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.size {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1 1 0;
+    min-width: 40px;
+    max-width: 56px;
+    height: 46px;
+    border: var(--btn-border);
+    border-radius: 999px;
+    background: var(--btn-bg);
+    box-shadow: var(--btn-glow);
+    color: var(--btn-text);
+    font: 700 1.125rem var(--font-heading);
+    text-decoration: none;
+}
+
+.sizeOn {
+    border: var(--btn-on-border);
+    background: var(--btn-on-bg);
+    box-shadow: var(--btn-on-glow);
+    color: var(--btn-on-text);
+    text-shadow: var(--btn-on-text-shadow);
 }

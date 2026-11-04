@@ -315,6 +315,15 @@
     font-size: 0.9375rem;
 }
 
+/* In the "Tilgang" box: what access gives the employee */
+.accessInfo {
+    margin: 0;
+    color: var(--color-muted);
+    font-family: var(--font-small);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+}
+
 /* "Legg til ansatt": a small pill with a crystal plus; open, it becomes a card with a dashed aurora edge */
 .add {
     margin-top: 20px;

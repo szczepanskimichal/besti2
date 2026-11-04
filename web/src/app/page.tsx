@@ -9,6 +9,8 @@ import NearMeButton from "@/components/NearMeButton/NearMeButton";
 import ForWhomPicker from "@/components/ForWhomPicker/ForWhomPicker";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./page.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
+import CityPicker from "@/components/CityPicker/CityPicker";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string; personer?: string }>;
@@ -60,48 +62,24 @@ export default async function Home({searchParams}: HomeProps) {
                         />
                     </label>
                     <ForWhomPicker key={personer ?? ""} persons={personer}/>
-                    <label className={styles.field}>
-                        Hva vil du finne med BESTI?
-                        <select name="category" defaultValue={category ?? ""}>
-                            <option value="">Alle kategorier</option>
-                            {categoryOptionGroups.map((group) => (
-                                <optgroup key={group.label} label={group.label}>
-                                    {group.options.map((option) => (
-                                        <option key={option.value} value={option.value}>{option.label}</option>
-                                    ))}
-                                </optgroup>
-                            ))}
-                        </select>
-                    </label>
+                    <GlassSelect name="category" label="Hva vil du finne med BESTI?" defaultValue={category ?? ""}
+                                 groups={[{ options: [{ value: "", label: "Alle kategorier" }] }, ...categoryOptionGroups]}/>
                     <label className={styles.field}>
                         Finn lokale BESTI-bedrifter
-                        <input
-                            name="city"
-                            list="city-list"
-                            defaultValue={city ?? ""}
-                            placeholder="Gjøvik, Oslo, Bergen"
-                            autoComplete="off"
-                        />
-                        <datalist id="city-list">
-                            {cities.map((c) => (
-                                <option key={c} value={c}/>
-                            ))}
-                        </datalist>
+                        <CityPicker name="city" cities={cities} defaultValue={city ?? ""} placeholder="Gjøvik, Oslo, Bergen"/>
                     </label>
                     {/* On the computer "Når har du tid?" and "Beste tidspunkt" side by side, so the card is shorter */}
                     <label className={`${styles.field} ${styles.half}`}>
                         Når har du tid?
                         <input name="date" type="date" defaultValue={date ?? ""} min={todayInOslo()}/>
                     </label>
-                    <label className={`${styles.field} ${styles.half}`}>
-                        Beste tidspunkt
-                        <select name="tid" defaultValue={tid ?? ""}>
-                            <option value="">Hele dagen</option>
-                            <option value="formiddag">Før kl. 12</option>
-                            <option value="ettermiddag">Kl. 12–17</option>
-                            <option value="kveld">Etter kl. 17</option>
-                        </select>
-                    </label>
+                    <GlassSelect name="tid" label="Beste tidspunkt" defaultValue={tid ?? ""} className={styles.half}
+                                 groups={[{ options: [
+                                     { value: "", label: "Hele dagen" },
+                                     { value: "formiddag", label: "Før kl. 12" },
+                                     { value: "ettermiddag", label: "Kl. 12–17" },
+                                     { value: "kveld", label: "Etter kl. 17" },
+                                 ] }]}/>
                     <button type="submit" className={styles.searchButton}>
                         Finn BESTI-time
                     </button>

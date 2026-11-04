@@ -271,7 +271,7 @@ public class BookingEmails(
             var when = OsloTime.Format(booking.StartUtc);
             var body =
                 $"Hei {booking.CustomerName}!\n\n" +
-                $"{whoCancelled} har avbestilt sin time i BESTI sammen og kommer ikke.\n\n" +
+                $"{whoCancelled} har avbestilt sin felles time og kommer ikke.\n\n" +
                 "Timen din står fortsatt, så du kan komme som planlagt.\n" +
                 $"Vil du heller avbestille, gjør du det i Min BESTI: {webBaseUrl}/min-besti\n\n" +
                 $"Tjeneste: {service.Name}\n" +

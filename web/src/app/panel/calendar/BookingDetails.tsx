@@ -51,7 +51,7 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
                 </p>
                 <NoShowCount count={booking.noShowCount}/>
                 {booking.salonNote && (
-                    <p className={styles.salonNote}><span aria-hidden="true">📝</span> {booking.salonNote}</p>
+                    <p className={styles.salonNote}><CrystalIcon name="notatblokk"/> {booking.salonNote}</p>
                 )}
                 {booking.customerKey && (
                     <p>
@@ -62,7 +62,7 @@ export default function BookingDetails({ booking, members = [], closeHref, moveH
                 )}
                 {booking.customerNote && (
                     <div className={styles.note}>
-                        <p><span aria-hidden="true">💬</span> {booking.customerNote}</p>
+                        <p><CrystalIcon name="snakkeboble"/> {booking.customerNote}</p>
                         {booking.customerEmail && (
                             <a href={`mailto:${booking.customerEmail}?subject=${encodeURIComponent("Svar på bestillingen din")}`}>
                                 Svar på e-post

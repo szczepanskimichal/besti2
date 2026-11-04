@@ -4,6 +4,7 @@ import { formatTime } from "@/lib/format";
 import type { PanelBooking, PanelGroup } from "@/lib/types";
 import styles from "../page.module.css";
 import calendar from "../calendar.module.css";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // BESTI sammen seen by the business: the whole group as one event, so the salon knows how many come.
 // "Gruppe 5 plasser: 3 med, 2 venter på svar, svarfrist kl. 18:00"
@@ -27,7 +28,7 @@ export default function GroupSummary({ group, members, current }: {
             <p className={styles.muted}>
                 Organisert av {group.organizerName}
                 {!group.organizerComes && " (kommer ikke selv)"}
-                {group.organizerPays ? " · betaler for hele gruppa 🎁" : " · hver betaler selv"}
+                {group.organizerPays ? <> · betaler for hele gruppa <CrystalIcon name="gave"/></> : " · hver betaler selv"}
             </p>
             <ol className={calendar.groupList}>
                 {group.names.map((name, i) => {
@@ -58,7 +59,7 @@ export function GroupStrip({ bookings, hrefFor }: { bookings: PanelBooking[]; hr
         return null;
     }
     return (
-        <ul className={calendar.groupStrip} aria-label="BESTI sammen-grupper">
+        <ul className={calendar.groupStrip} aria-label="BESTI Team-grupper">
             {[...first.values()].map((booking) => (
                 <li key={booking.group!.id}>
                     <Link href={hrefFor(booking)} scroll={false} className={calendar.groupChip}>

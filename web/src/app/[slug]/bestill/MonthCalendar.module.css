@@ -123,8 +123,8 @@ a.day:hover {
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--neon-border);
-    box-shadow: 0 0 8px rgba(90, 240, 120, 0.7);
+    background: linear-gradient(180deg, #b8fff0, #5af0c8);
+    box-shadow: 0 0 8px rgba(114, 242, 207, 0.7);
 }
 
 .full .number {

@@ -1,35 +1,11 @@
 "use client";
-import { useState, type CSSProperties } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { type CSSProperties } from "react";
 import styles from "./NearMeButton.module.css";
+import { useNearMe } from "./useNearMe";
 
-// Asks the browser for the position. It is never stored: it only goes into the search URL,
-// rounded to about 100 m
+// The "Nær meg" button under the search (the same as the "Nær meg" line in the city list)
 export default function NearMeButton() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const [status, setStatus] = useState<"idle" | "finding" | "denied">("idle");
-
-    function findMe() {
-        if (!navigator.geolocation) {
-            setStatus("denied");
-            return;
-        }
-        setStatus("finding");
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const params = new URLSearchParams(searchParams.toString());
-                params.set("lat", position.coords.latitude.toFixed(3));
-                params.set("lng", position.coords.longitude.toFixed(3));
-                params.delete("city"); // near me replaces the city
-                params.delete("page"); // a new list starts on page 1
-                setStatus("idle");
-                router.push(`/?${params}`);
-            },
-            () => setStatus("denied"),
-            { timeout: 10000 },
-        );
-    }
+    const { status, findMe } = useNearMe();
 
     return (
         <div className={styles.wrapper}>

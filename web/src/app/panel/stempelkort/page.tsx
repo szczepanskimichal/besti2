@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getPanelLoyalty } from "@/lib/api";
 import { getToken } from "@/lib/auth";
-import { formatDate } from "@/lib/format";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import ProBadge from "@/components/ProBadge/ProBadge";
 import StampCard from "@/components/StampCard/StampCard";
@@ -70,8 +69,9 @@ export default async function LoyaltyPage({ searchParams }: LoyaltyPageProps) {
                     gir et stempel av seg selv. Kunden ser kortet på siden din og i Min BESTI.
                 </p>
                 <p className={styles.small}>
-                    Timer du legger inn selv (telefon, drop-in) teller ikke, og heller ikke «Møtte ikke».
-                    {card.startUtc && ` Kortet gjelder besøk fra ${formatDate(card.startUtc)}.`}
+                    {/* From when it counts, said in words instead of a date (michal 2026-11-04) */}
+                    Kortet teller besøk fra dagen du slår det på. Timer du legger inn selv (telefon, drop-in) teller ikke,
+                    og heller ikke «Møtte ikke».
                 </p>
                 <div className={styles.pro}>
                     <ProBadge/>

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Metadata } from "next";
 import NextLink from "next/link";
 import { notFound } from "next/navigation";
@@ -101,7 +101,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
 
                 {/* "Nei takk" in a group: the others can still join, but this visitor just gets a thank you */}
                 {open && !invite.isInviter && !invite.isMember && svar === "nei" && (
-                    <Closed title="Takk for svaret 💚"
+                    <Closed title={<>Takk for svaret <CrystalIcon name="hjerte"/></>}
                             text={`Vi har gitt beskjed til ${invite.inviterFirstName}. Ombestemt deg? Åpne lenken på nytt.`}
                             invite={invite}/>
                 )}
@@ -185,8 +185,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                                 : `${invite.joined} ${invite.joined === 1 ? "person" : "personer"} ${open ? "er med så langt" : "kommer"}: ${listNames(invite.names)}.`}{" "}
                             {!pair && cancelled.length > 0 && `${listNames(cancelled)} har avbestilt. `}
                             {invite.payMode === "JegSpanderer" &&
-                                (invite.isInviter ? (pair ? "Du spanderer 🎁. " : "Du betaler for alle 🎁. ")
-                                    : `${invite.inviterFirstName} spanderer 🎁. `)}
+                                <>{invite.isInviter ? (pair ? "Du spanderer" : "Du betaler for alle") : `${invite.inviterFirstName} spanderer`}{" "}<CrystalIcon name="gave"/>. </>}
                             {pair && cancelled.length > 0 ? ""
                                 : invite.isMember ? "Timen din ligger i Min BESTI." : "Bedriften har fått beskjed om hvor mange som kommer."}
                         </p>
@@ -217,7 +216,7 @@ export default async function InvitePage({ params, searchParams }: Props) {
                 )}
 
                 {invite.status === "Avslatt" && (
-                    <Closed title={svar === "nei" ? "Takk for svaret 💚" : "Ikke denne gangen"}
+                    <Closed title={svar === "nei" ? <>Takk for svaret <CrystalIcon name="hjerte"/></> : "Ikke denne gangen"}
                             text={svar === "nei"
                                 ? `Vi har gitt beskjed til ${invite.inviterFirstName}. Ingenting ble bestilt.`
                                 : invite.isInviter
@@ -367,7 +366,7 @@ function TakenWarning({ invite }: { invite: Invite }) {
     );
 }
 
-function Closed({ title, text, invite }: { title: string; text: string; invite: Invite }) {
+function Closed({ title, text, invite }: { title: ReactNode; text: string; invite: Invite }) {
     return (
         <>
             <h1 className={styles.title}>{title}</h1>

@@ -7,6 +7,7 @@ import type { Employee } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import formStyles from "./tjenester/page.module.css";
 import calendar from "./calendar.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type TimeOffFormProps = {
     employees: Employee[];
@@ -40,14 +41,11 @@ export default function TimeOffForm({ employees, date, employeeId, view, closeHr
                     {view && <input type="hidden" name="visning" value={view}/>}
                     <label className={formStyles.field}>
                         Hvem
-                        {/* key: a select only takes a new defaultValue when it is created again */}
-                        <select key={value("employeeId")} name="employeeId"
-                                defaultValue={value("employeeId", employeeId ?? employees[0]?.id)}>
-                            {employees.map((e) => (
-                                <option key={e.id} value={e.id}>{e.name} {e.lastName}</option>
-                            ))}
-                            <option value="">Hele bedriften (stengt)</option>
-                        </select>
+                        {/* key: the list only takes a new defaultValue when it is created again */}
+                        <GlassSelect key={value("employeeId")} name="employeeId"
+                                     defaultValue={value("employeeId", employeeId ?? employees[0]?.id)}
+                                     options={[...employees.map((e) => ({ value: e.id, label: `${e.name} ${e.lastName}` })),
+                                         { value: "", label: "Hele bedriften (stengt)" }]}/>
                     </label>
                     <label className={calendar.checkbox}>
                         <input type="checkbox" name="allDay" checked={allDay} onChange={(e) => setAllDay(e.target.checked)}/>

@@ -82,22 +82,30 @@
     color: #8ff0d6;
     font: 700 0.9375rem var(--font-heading);
     letter-spacing: 0.04em;
+    text-align: center;
     text-transform: uppercase;
 }
+/* The frame hugs the circles with a little air on the sides, in the middle (michal 2026-11-04) */
 .exampleCard {
-    padding: 12px 14px;
+    align-self: center;
+    width: fit-content;
+    max-width: 100%;
+    padding: 12px 28px;
     border: 1.5px solid transparent;
     border-radius: 18px;
     background: linear-gradient(#061219, #061219) padding-box,
         linear-gradient(135deg, #8ff0d6, #9fd8ff, #c9bfff) border-box;
     box-shadow: 0 0 6px rgba(143, 240, 214, 0.4), 0 0 18px rgba(159, 216, 255, 0.25);
 }
+/* Circles and the reward in the middle of the card (Ada 2026-11-04) */
 .exampleCard ol {
     margin: 0 0 10px;
+    justify-content: center;
 }
 .exampleReward {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     margin: 0;
     color: #8ff0d6;

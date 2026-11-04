@@ -282,7 +282,7 @@ function DayPlan({ date, today, nowUtc, visits, waitlist, suggestions, compact =
         }
         return (
             <div className={styles.free}>
-                <p className={styles.freeTitle}>{date < today ? "Ingen timer denne dagen." : "Helt ledig dag ✨"}</p>
+                <p className={styles.freeTitle}>{date < today ? "Ingen timer denne dagen." : <>Helt ledig dag <CrystalIcon name="iskra"/></>}</p>
                 {date >= today && <p className={styles.muted}>Lyst til å unne deg noe? <Link href="/">Finn en bedrift</Link></p>}
             </div>
         );

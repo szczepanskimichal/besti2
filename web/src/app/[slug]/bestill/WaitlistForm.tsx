@@ -4,6 +4,7 @@ import { formatDay } from "@/lib/format";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import { joinWaitlistAction, type WaitlistFormState } from "./actions";
 import styles from "./page.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 // The same spark colours as the header bell
 const SPARK_COLOURS = ["#ffffff", "#bff8e8", "#72d6bd", "#8fc8ff", "#c9bfff"];
@@ -62,9 +63,8 @@ export default function WaitlistForm({ serviceId, employeeId, days, selectedDay 
                     <div className={styles.waitlistRow}>
                         <label className={styles.waitlistField}>
                             Hvilken dag?
-                            <select name="date" defaultValue={date}>
-                                {days.map((day) => <option key={day} value={day}>{formatDay(day)}</option>)}
-                            </select>
+                            <GlassSelect name="date" defaultValue={date} overlay className={styles.waitlistPicker}
+                                         options={days.map((day) => ({ value: day, label: formatDay(day) }))}/>
                         </label>
                         <SubmitButton className={`${styles.primaryButton} ${styles.waitlistButton}`} pendingText="Lagrer…">
                             Si fra hvis det blir ledig

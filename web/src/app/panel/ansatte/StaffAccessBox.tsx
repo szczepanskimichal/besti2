@@ -27,6 +27,11 @@ export default function StaffAccessBox({ employeeId, name, access }: {
 
     return (
         <div className={styles.form}>
+            {/* What access means, here where it is given (it stood under "Legg til ansatt" and was read as about adding, michal 2026-11-04) */}
+            <p className={styles.accessInfo}>
+                Med tilgang logger {name} inn med sin egen BESTI-konto og finner jobbkalenderen sin under «Jobb»,
+                med egne timer, kundenavn og notater.
+            </p>
             {access?.email && (
                 <p>
                     Lenke til jobbkalenderen er sendt til <strong>{access.email}</strong>. Venter på at {name} åpner den.

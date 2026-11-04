@@ -1,4 +1,5 @@
 import { lookupBusinessRegistry } from "@/lib/api";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 
 // Words every salon may have in its name, so they do not count as "the same name"
 const COMMON = new Set(["as", "enk", "da", "ans", "sa", "og", "i", "the", "salong", "salon", "frisør", "frisor",
@@ -22,7 +23,7 @@ export default async function RegistryName({ orgNumber, name }: { orgNumber: str
         // Not found, or deleted / bankrupt: worth a warning. The register not answering is not
         return result.message.includes("svarer ikke")
             ? <>Navn i Brønnøysund kunne ikke hentes nå. Sjekk lenken.</>
-            : <strong>⚠️ {result.message}</strong>;
+            : <strong><CrystalIcon name="advarsel"/> {result.message}</strong>;
     }
     if (!result.business.name) {
         return <>Navn i Brønnøysund kunne ikke hentes nå. Sjekk lenken.</>;
@@ -33,7 +34,7 @@ export default async function RegistryName({ orgNumber, name }: { orgNumber: str
             Navn i Brønnøysund: <strong>{registryName}</strong>
             {sameName(name, registryName)
                 ? " ✓"
-                : <strong> · ⚠️ Ikke samme navn som oppgitt. Sjekk at det er samme bedrift før du godkjenner.</strong>}
+                : <strong> · <CrystalIcon name="advarsel"/> Ikke samme navn som oppgitt. Sjekk at det er samme bedrift før du godkjenner.</strong>}
         </>
     );
 }

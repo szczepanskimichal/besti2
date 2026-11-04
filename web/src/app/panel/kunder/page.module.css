@@ -222,21 +222,9 @@ a.saveButton {
     white-space: nowrap;
 }
 
+/* The column choice (GlassSelect) under the sample text */
 .select {
-    font: inherit;
-    font-family: var(--font-heading);
-    min-height: 44px;
     margin-top: 4px;
-    padding: 0 10px;
-    color: var(--color-text);
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-input-border);
-    border-radius: 8px;
-}
-
-.select:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
 }
 
 .previewTitle {

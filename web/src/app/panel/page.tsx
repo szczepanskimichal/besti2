@@ -26,6 +26,7 @@ import PauseDetails from "./calendar/PauseDetails";
 import TimeOffDetails from "./calendar/TimeOffDetails";
 import DaySummary from "./calendar/DaySummary";
 import DateJump from "./calendar/DateJump";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 // "Plan": the next two weeks as one list
 const PLAN_DAYS = 14;
@@ -188,12 +189,9 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                         <input type="hidden" name="dag" value={day}/>
                         <label>
                             Ansatt{" "}
-                            <select name="ansatt" defaultValue={employeeFilter ?? ""}>
-                                <option value="">Alle ansatte</option>
-                                {business.employees.map((e) => (
-                                    <option key={e.id} value={e.id}>{e.name} {e.lastName}</option>
-                                ))}
-                            </select>
+                            <GlassSelect name="ansatt" defaultValue={employeeFilter ?? ""} autoSubmit overlay className={calendar.employeePicker}
+                                         options={[{ value: "", label: "Alle ansatte" },
+                                             ...business.employees.map((e) => ({ value: e.id, label: `${e.name} ${e.lastName}` }))]}/>
                         </label>
                         <button type="submit" className={styles.secondaryButton}>Vis</button>
                     </form>

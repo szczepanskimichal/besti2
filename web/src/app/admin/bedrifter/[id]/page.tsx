@@ -11,6 +11,7 @@ import RegistryName from "@/components/RegistryName/RegistryName";
 import { decideAction, noteAction, suspendAction } from "../../actions";
 import NoteForm from "./NoteForm";
 import styles from "../../admin.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 export const metadata: Metadata = { title: "Bedrift" };
 
@@ -132,7 +133,7 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
                     <ul className={styles.setup}>
                         {details.setup.map((step) => (
                             <li key={step.title}>
-                                <span aria-hidden="true">{step.done ? "✅" : "⬜"}</span> {step.title}
+                                <span aria-hidden="true" className={step.done ? `${styles.setupMark} ${styles.setupDone}` : styles.setupMark}>{step.done ? "✓" : ""}</span> {step.title}
                                 <span className={styles.srOnly}>{step.done ? " (ferdig)" : " (mangler)"}</span>
                             </li>
                         ))}
@@ -164,10 +165,8 @@ export default async function AdminBusinessPage({ params, searchParams }: AdminB
                             <form action={suspendAction} className={styles.reasonForm}>
                                 <input type="hidden" name="id" value={business.id}/>
                                 <label className={styles.srOnly} htmlFor="steng-grunn">Grunn</label>
-                                <select id="steng-grunn" name="reason" required defaultValue="" className={styles.select}>
-                                    <option value="" disabled>Velg grunn …</option>
-                                    {reasons.suspend.map((reason) => <option key={reason} value={reason}>{reason}</option>)}
-                                </select>
+                                <GlassSelect id="steng-grunn" name="reason" required placeholder="Velg grunn …" overlay className={styles.select}
+                                             options={reasons.suspend.map((reason) => ({ value: reason, label: reason }))}/>
                                 <SubmitButton className={styles.dangerButton} pendingText="Stenger …">Steng siden</SubmitButton>
                                 <Link href={`/admin/bedrifter/${business.id}`} className={styles.secondaryButton}>Avbryt</Link>
                             </form>

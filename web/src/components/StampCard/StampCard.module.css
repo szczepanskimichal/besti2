@@ -7,6 +7,12 @@
     gap: 6px;
 }
 
+/* The big card: a grid with even rows (the number of columns comes from StampCard) */
+.rows {
+    display: grid;
+    grid-template-columns: repeat(var(--columns), max-content);
+}
+
 .stamp {
     display: inline-flex;
     align-items: center;
@@ -76,4 +82,25 @@
 .crystal .reward img {
     width: 30px;
     height: 30px;
+}
+
+/* Small crystal card (the salon page): up to 12 stamps still fit in one row on a phone */
+.small.crystal {
+    gap: 4px;
+}
+
+.small.crystal .stamp {
+    width: 26px;
+    height: 26px;
+    border-width: 1.5px;
+}
+
+.small.crystal .stamp img {
+    width: 18px;
+    height: 18px;
+}
+
+.small.crystal .reward img {
+    width: 20px;
+    height: 20px;
 }

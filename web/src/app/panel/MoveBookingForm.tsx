@@ -7,6 +7,7 @@ import type { Employee, PanelBooking } from "@/lib/types";
 import SubmitButton from "@/components/SubmitButton/SubmitButton";
 import formStyles from "./tjenester/page.module.css";
 import calendar from "./calendar.module.css";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type MoveBookingFormProps = {
     booking: PanelBooking;
@@ -40,13 +41,10 @@ export default function MoveBookingForm({ booking, employees, date, time, view, 
                     {view && <input type="hidden" name="visning" value={view}/>}
                     <label className={formStyles.field}>
                         Ansatt
-                        {/* key: a select only takes a new defaultValue when it is created again */}
-                        <select key={value("employeeId")} name="employeeId" required
-                                defaultValue={value("employeeId", booking.employeeId)}>
-                            {employees.map((e) => (
-                                <option key={e.id} value={e.id}>{e.name} {e.lastName}</option>
-                            ))}
-                        </select>
+                        {/* key: the list only takes a new defaultValue when it is created again */}
+                        <GlassSelect key={value("employeeId")} name="employeeId"
+                                     defaultValue={value("employeeId", booking.employeeId)}
+                                     options={employees.map((e) => ({ value: e.id, label: `${e.name} ${e.lastName}` }))}/>
                     </label>
                     <div className={calendar.formRow}>
                         <label className={formStyles.field}>

@@ -58,7 +58,11 @@ export default function FirstSteps({ business }: { business: BusinessDetails }) 
     return (
         <section className={styles.box} aria-labelledby="kom-i-gang">
             {/* Welcome for a new business; after the first steps it is just "Kom i gang" */}
-            <span className={styles.wave} aria-hidden="true">👋</span>
+            {/* Ada 2026-11-03: the crystal waving hand in the neon ring, like the empty lists */}
+            <span className={styles.wave} aria-hidden="true">
+                {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon, next/image not needed */}
+                <img src="/ikoner/vinke.svg" alt="" className={styles.waveHand}/>
+            </span>
             <div className={styles.head}>
                 <h2 id="kom-i-gang" className={styles.title}>
                     {doneCount <= 1 ? `Velkommen til BESTI, ${business.name}!` : "Kom i gang"}

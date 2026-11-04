@@ -28,8 +28,12 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
     return (
         // print-page: globals.css hides the header, footer and background when printing
         <main className={`${styles.main} print-page`}>
+            {/* Plakat (Ada 2026-11-01): the dark glass look of the panel. The tools in a glass card, the poster under it */}
             <div className={styles.toolbar}>
-                <Link href="/panel/del" className={styles.back}>← Tilbake</Link>
+                <div className={styles.toolbarTop}>
+                    <h1 className={styles.title}>Plakat</h1>
+                    <Link href="/panel/del" className={styles.back}>← Tilbake</Link>
+                </div>
                 <div className={styles.styles} role="group" aria-label="Utseende">
                     <Link href="/panel/del/plakat" aria-current={light ? undefined : "page"}>Nordlys</Link>
                     <Link href="/panel/del/plakat?stil=lys" aria-current={light ? "page" : undefined}>Lys (sparer blekk)</Link>
@@ -39,24 +43,34 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
             </div>
 
             <article className={light ? styles.sheet : `${styles.sheet} ${styles.aurora}`}>
-                {light ? (
-                    <p className={styles.brand}>BESTI</p>
-                ) : (
-                    // eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed
-                    <img src="/logo/besti-napis.png" alt="BESTI" className={styles.brandLogo}/>
-                )}
+                {/* The name in Syne at the top, in both looks (michal 2026-11-04) */}
+                <p className={styles.brand}>
+                    {/* The B with the pin in mint on the left, only on the aurora poster (on white paper it looks blurry) */}
+                    {!light && (
+                        // eslint-disable-next-line @next/next/no-img-element -- small print logo, next/image not needed
+                        <img src="/logo/plakat-b-pin.png" alt="" className={styles.brandIcon}/>
+                    )}
+                    BESTI
+                </p>
                 {business.logoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element -- our own resized WebP from the API
                     <img src={business.logoUrl} alt="" className={styles.logo}/>
                 )}
                 <p className={styles.name}>{business.name}</p>
-                <h1 className={styles.heading}>Bestill time hos oss</h1>
+                <h2 className={styles.heading}>Bestill time hos oss</h2>
+                {/* The crystal arrow from Del og få kunder points at the code */}
+                {/* eslint-disable-next-line @next/next/no-img-element -- small SVG icon */}
+                <img src="/ikoner/pil-ned.svg" alt="" aria-hidden="true" className={styles.arrow}/>
+                {/* The QR code stays black on white on both posters: phones read that best */}
                 {/* eslint-disable-next-line @next/next/no-img-element -- a small data: image from our own API */}
                 <img src={qr} alt={`QR-kode til ${shortLink}`} className={styles.qr}/>
-                {/* The QR code stays black on white on both posters: phones read that best */}
                 <p className={styles.scan}>Skann koden med kameraet på mobilen</p>
                 <p className={styles.link}>{shortLink}</p>
-                <p className={styles.footer}>Se ledige tider og bestill når det passer deg, døgnet rundt.</p>
+                {/* The BESTI slogan at the bottom, with the short promise under it (michal 2026-11-04) */}
+                <div className={styles.footer}>
+                    <p className={styles.slogan}>Bestill med din BESTI</p>
+                    <p className={styles.promise}>Raskt, enkelt og hyggelig, døgnet rundt.</p>
+                </div>
             </article>
         </main>
     );

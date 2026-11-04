@@ -9,6 +9,8 @@ import {
     MaxFileBytes, MaxRows, decodeFile, fieldLabels, guessFields, looksLikeHeader, mapRows, parseCsv,
     type ImportField,
 } from "./csv";
+import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import GlassSelect from "@/components/GlassSelect/GlassSelect";
 
 type Parsed = { fileName: string; rows: string[][]; fields: ImportField[]; hasHeader: boolean };
 
@@ -139,12 +141,9 @@ export default function ImportCustomers() {
                                         {parsed.hasHeader && parsed.rows[0][column] ? parsed.rows[0][column] : `Kolonne ${column + 1}`}
                                     </label>
                                     <span className={styles.columnSample}>{samples.join(", ") || "(tom)"}</span>
-                                    <select id={`kolonne-${column}`} value={field} className={styles.select}
-                                            onChange={(e) => setField(column, e.target.value as ImportField)}>
-                                        {fieldOptions.map((option) => (
-                                            <option key={option} value={option}>{fieldLabels[option]}</option>
-                                        ))}
-                                    </select>
+                                    <GlassSelect id={`kolonne-${column}`} value={field} className={styles.select}
+                                                 onChange={(next) => setField(column, next as ImportField)}
+                                                 options={fieldOptions.map((option) => ({ value: option, label: fieldLabels[option] }))}/>
                                 </li>
                             );
                         })}
@@ -159,7 +158,7 @@ export default function ImportCustomers() {
                                     <li key={row.line}>
                                         <strong>{row.name || "(uten navn)"}</strong> · {row.phone || "(uten telefon)"}
                                         {row.email && <> · {row.email}</>}
-                                        {row.note && <span className={styles.columnSample}>📝 {row.note}</span>}
+                                        {row.note && <span className={styles.columnSample}><CrystalIcon name="notatblokk"/> {row.note}</span>}
                                     </li>
                                 ))}
                             </ul>

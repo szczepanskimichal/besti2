@@ -637,7 +637,7 @@ public partial class InviteService(
 
             var body =
                 "Hei!\n\n" +
-                $"Gruppa til {inviterName} er klar (BESTI sammen 👯).\n\n" +
+                $"Gruppa til {inviterName} er klar (BESTI Team 👯).\n\n" +
                 $"Tjeneste: {service}\n" +
                 $"Tid: {when}\n" +
                 $"Antall: {people}\n" +

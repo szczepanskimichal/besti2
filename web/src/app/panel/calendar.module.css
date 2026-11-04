@@ -204,18 +204,8 @@
     flex: none;
 }
 
-.employeeFilter select {
+.employeePicker {
     flex: 1 1 auto;
-    min-width: 0;
-    max-width: 100%;
-    text-overflow: ellipsis;
-    font: inherit;
-    font-family: var(--font-heading);
-    min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid var(--color-input-border);
-    border-radius: 8px;
-    background: var(--color-input-bg);
 }
 
 .toggle {

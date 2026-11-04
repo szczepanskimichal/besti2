@@ -36,7 +36,7 @@ function daysOf(place: StaffPlace, from: string): { day: string; entries: Entry[
                     <a href={`tel:${b.customerPhone}`}>{b.customerPhone}</a>
                     {b.status === "Venter" && <span className={styles.waiting}> Venter på svar</span>}
                     {b.customerNote && <span className={styles.note}>Kunden: {b.customerNote}</span>}
-                    {b.salonNote && <span className={styles.note}>📝 {b.salonNote}</span>}
+                    {b.salonNote && <span className={styles.note}><CrystalIcon name="notatblokk"/> {b.salonNote}</span>}
                 </>
             ),
         })),
@@ -77,7 +77,7 @@ export default async function StaffPage({ searchParams }: StaffPageProps) {
     return (
         <main className={panelStyles.main}>
             <h1 className={panelStyles.title}>Arbeidsplan</h1>
-            {velkommen && <p className={styles.welcome} role="status">Velkommen! Nå ser du timene dine her. 🎉</p>}
+            {velkommen && <p className={styles.welcome} role="status">Velkommen! Nå ser du timene dine her. <CrystalIcon name="feiring"/></p>}
             {places.length === 0 ? (
                 <p className={panelStyles.muted}>
                     Du er ikke koblet til noen bedrift. Be bedriften sende deg en invitasjon på e-post.
