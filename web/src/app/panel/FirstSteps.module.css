@@ -11,6 +11,7 @@
 
 /* The crystal waving hand in a dark circle with a pulsing neon mint ring (same ring as the empty lists) */
 .wave {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -21,8 +22,20 @@
     border: 2px solid #72f2cf;
     background: radial-gradient(circle, rgba(20, 60, 70, 0.9), rgba(3, 18, 26, 0.95) 70%);
     box-shadow: 0 0 8px rgba(114, 242, 207, 0.9), 0 0 22px rgba(61, 255, 176, 0.5), inset 0 0 12px rgba(114, 242, 207, 0.3);
+}
+
+/* The brighter glow sits in its own layer and only fades in and out: the phone does not repaint the ring on every frame */
+.wave::after {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
+    opacity: 0;
+    pointer-events: none;
     animation: ring 3.2s ease-in-out infinite;
 }
+
 
 .waveHand {
     width: 40px;
@@ -34,7 +47,7 @@
 
 @keyframes ring {
     50% {
-        box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
+        opacity: 1;
     }
 }
 

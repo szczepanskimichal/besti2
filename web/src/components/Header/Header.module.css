@@ -151,8 +151,10 @@
 }
 
 @media (max-width: 480px) {
+    /* Phones: darker bar instead of the blur, which had to be redrawn on every frame while scrolling */
     .header {
-        backdrop-filter: blur(12px) saturate(140%);
+        background: rgba(4, 16, 24, 0.94);
+        backdrop-filter: none;
     }
 
     .greeting {
