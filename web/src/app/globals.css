@@ -60,10 +60,11 @@
   --pro-glow: 0 0 14px rgba(240, 190, 220, 0.45), 0 0 28px rgba(201, 176, 255, 0.22);
 }
 
-/* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */
+/* Phones: no blur behind the frosted cards (2026-11-04). The cards are 80% dark, so the blur hardly shows,
+   but the phone had to redraw it for every card on every frame while scrolling, which made scrolling stutter */
 @media (max-width: 640px) {
   :root {
-    --glass-blur: blur(12px) saturate(150%);
+    --glass-blur: none;
   }
 }
 

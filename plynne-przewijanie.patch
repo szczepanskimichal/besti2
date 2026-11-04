@@ -1,0 +1,159 @@
+diff --git a/web/src/app/[slug]/page.module.css b/web/src/app/[slug]/page.module.css
+index b9a7329..0790f53 100644
+--- a/web/src/app/[slug]/page.module.css
++++ b/web/src/app/[slug]/page.module.css
+@@ -656,3 +656,10 @@
+         animation: none;
+     }
+ }
++
++/* Phones: no blur behind it, so scrolling stays smooth (see --glass-blur in globals.css) */
++@media (max-width: 640px) {
++    .hero {
++        backdrop-filter: none;
++    }
++}
+diff --git a/web/src/app/globals.css b/web/src/app/globals.css
+index 5695bd4..88eca65 100644
+--- a/web/src/app/globals.css
++++ b/web/src/app/globals.css
+@@ -60,10 +60,11 @@
+   --pro-glow: 0 0 14px rgba(240, 190, 220, 0.45), 0 0 28px rgba(201, 176, 255, 0.22);
+ }
+ 
+-/* Phones: a lighter blur on the frosted cards, so scrolling stays smooth on older phones */
++/* Phones: no blur behind the frosted cards (2026-11-04). The cards are 80% dark, so the blur hardly shows,
++   but the phone had to redraw it for every card on every frame while scrolling, which made scrolling stutter */
+ @media (max-width: 640px) {
+   :root {
+-    --glass-blur: blur(12px) saturate(150%);
++    --glass-blur: none;
+   }
+ }
+ 
+diff --git a/web/src/app/panel/FirstSteps.module.css b/web/src/app/panel/FirstSteps.module.css
+index 4184a7c..e35ba40 100644
+--- a/web/src/app/panel/FirstSteps.module.css
++++ b/web/src/app/panel/FirstSteps.module.css
+@@ -11,6 +11,7 @@
+ 
+ /* The crystal waving hand in a dark circle with a pulsing neon mint ring (same ring as the empty lists) */
+ .wave {
++    position: relative;
+     display: inline-flex;
+     align-items: center;
+     justify-content: center;
+@@ -21,9 +22,21 @@
+     border: 2px solid #72f2cf;
+     background: radial-gradient(circle, rgba(20, 60, 70, 0.9), rgba(3, 18, 26, 0.95) 70%);
+     box-shadow: 0 0 8px rgba(114, 242, 207, 0.9), 0 0 22px rgba(61, 255, 176, 0.5), inset 0 0 12px rgba(114, 242, 207, 0.3);
++}
++
++/* The brighter glow sits in its own layer and only fades in and out: the phone does not repaint the ring on every frame */
++.wave::after {
++    content: "";
++    position: absolute;
++    inset: -2px;
++    border-radius: 50%;
++    box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
++    opacity: 0;
++    pointer-events: none;
+     animation: ring 3.2s ease-in-out infinite;
+ }
+ 
++
+ .waveHand {
+     width: 40px;
+     height: 40px;
+@@ -34,7 +47,7 @@
+ 
+ @keyframes ring {
+     50% {
+-        box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
++        opacity: 1;
+     }
+ }
+ 
+diff --git a/web/src/app/varsler/page.module.css b/web/src/app/varsler/page.module.css
+index cc69a0a..b8836c5 100644
+--- a/web/src/app/varsler/page.module.css
++++ b/web/src/app/varsler/page.module.css
+@@ -268,3 +268,10 @@
+     margin: 0;
+     font-size: 1rem;
+ }
++
++/* Phones: no blur behind it, so scrolling stays smooth (see --glass-blur in globals.css) */
++@media (max-width: 640px) {
++    .item {
++        backdrop-filter: none;
++    }
++}
+diff --git a/web/src/components/BusinessCard/BusinessCard.module.css b/web/src/components/BusinessCard/BusinessCard.module.css
+index 68c8ab2..6dc9135 100644
+--- a/web/src/components/BusinessCard/BusinessCard.module.css
++++ b/web/src/components/BusinessCard/BusinessCard.module.css
+@@ -144,4 +144,10 @@
+     margin: 4px 0 0;
+     font-size: 1rem;
+     color: var(--color-muted);
+-}
+\ No newline at end of file
++}
++/* Phones: no blur behind it, so scrolling stays smooth (see --glass-blur in globals.css) */
++@media (max-width: 640px) {
++    .card {
++        backdrop-filter: none;
++    }
++}
+diff --git a/web/src/components/EmptyState/EmptyState.module.css b/web/src/components/EmptyState/EmptyState.module.css
+index 23a4d91..8e0bb87 100644
+--- a/web/src/components/EmptyState/EmptyState.module.css
++++ b/web/src/components/EmptyState/EmptyState.module.css
+@@ -37,9 +37,21 @@
+     border: 2px solid #72f2cf;
+     background: radial-gradient(circle, rgba(20, 60, 70, 0.9), rgba(3, 18, 26, 0.95) 70%);
+     box-shadow: 0 0 8px rgba(114, 242, 207, 0.9), 0 0 22px rgba(61, 255, 176, 0.5), inset 0 0 12px rgba(114, 242, 207, 0.3);
++}
++
++/* The brighter glow sits in its own layer and only fades in and out: the phone does not repaint the ring on every frame */
++.ring::after {
++    content: "";
++    position: absolute;
++    inset: -2px;
++    border-radius: 50%;
++    box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
++    opacity: 0;
++    pointer-events: none;
+     animation: ring 3.2s ease-in-out infinite;
+ }
+ 
++
+ .sparkle {
+     position: absolute;
+     filter: drop-shadow(0 1px 1.5px rgba(0, 20, 30, 0.7)) drop-shadow(0 0 5px rgba(140, 240, 215, 0.95)) drop-shadow(0 0 12px rgba(70, 170, 220, 0.6));
+@@ -87,7 +99,7 @@
+ 
+ @keyframes ring {
+     50% {
+-        box-shadow: 0 0 12px rgba(184, 255, 233, 1), 0 0 34px rgba(61, 255, 176, 0.85), inset 0 0 16px rgba(184, 255, 233, 0.5);
++        opacity: 1;
+     }
+ }
+ 
+diff --git a/web/src/components/Header/Header.module.css b/web/src/components/Header/Header.module.css
+index 864a284..3a9559a 100644
+--- a/web/src/components/Header/Header.module.css
++++ b/web/src/components/Header/Header.module.css
+@@ -151,8 +151,10 @@
+ }
+ 
+ @media (max-width: 480px) {
++    /* Phones: darker bar instead of the blur, which had to be redrawn on every frame while scrolling */
+     .header {
+-        backdrop-filter: blur(12px) saturate(140%);
++        background: rgba(4, 16, 24, 0.94);
++        backdrop-filter: none;
+     }
+ 
+     .greeting {

@@ -656,3 +656,10 @@
         animation: none;
     }
 }
+
+/* Phones: no blur behind it, so scrolling stays smooth (see --glass-blur in globals.css) */
+@media (max-width: 640px) {
+    .hero {
+        backdrop-filter: none;
+    }
+}
