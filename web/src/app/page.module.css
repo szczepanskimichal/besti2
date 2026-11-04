@@ -100,7 +100,7 @@
 }
 
 .heroLead {
-    font-size: clamp(1.25rem, 2.6vw, 1.6rem);
+    font-size: clamp(1.05rem, 2.2vw, 1.35rem);
     max-width: 40ch;
     margin: 0 auto;
     color: #f4fbf8;

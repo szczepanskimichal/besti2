@@ -34,6 +34,8 @@ const COMING = [
 const ALWAYS_FREE = [
     "Kalender", "Nettbestilling", "Kunder", "Ansatte", "Varsler",
     "E-post til faste kunder", "BESTI Duo og Team", "Ukerapporten",
+    "Egen bedriftsside", "Galleri", "Ekte vurderinger", "QR-plakat",
+    "Statistikk for 7 og 30 dager", "Eksport av data",
 ];
 
 // BESTI Pro (Ada 2026-11-03, v6): three cards. What is in Pro (free in the beta), the price after the beta, what is always free.
@@ -80,6 +82,10 @@ export default async function ProPage({ searchParams }: ProPageProps) {
                             </li>
                         ))}
                     </ul>
+                    {/* Ada 2026-11-04: SMS is not part of the Pro price, say so before anyone asks (no price yet) */}
+                    <p className={`${styles.small} ${styles.smsNote}`}>
+                        SMS betales per melding, i tillegg til Pro. Du bestemmer selv et tak per måned. Prisen får du vite før start.
+                    </p>
                 </section>
 
                 {/* What it costs after the beta, the 30-day promise and the button, in one place */}
@@ -108,7 +114,7 @@ export default async function ProPage({ searchParams }: ProPageProps) {
                     <ul className={styles.freeList}>
                         {ALWAYS_FREE.map((item) => <li key={item}>{item}</li>)}
                     </ul>
-                    <p className={styles.text}>Pro gir aldri bedre plassering i søket. Rekkefølgen for kundene er alltid ærlig.</p>
+                    <p className={styles.text}>Pro gir deg flere verktøy, ikke bedre plass i søket. Alle bedrifter vises på like vilkår.</p>
                 </section>
             </div>
         </main>

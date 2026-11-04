@@ -62,10 +62,10 @@ export default async function Home({searchParams}: HomeProps) {
                         />
                     </label>
                     <ForWhomPicker key={personer ?? ""} persons={personer}/>
-                    <GlassSelect name="category" label="Hva vil du finne med BESTI?" defaultValue={category ?? ""}
+                    <GlassSelect name="category" label="Kategori" defaultValue={category ?? ""}
                                  groups={[{ options: [{ value: "", label: "Alle kategorier" }] }, ...categoryOptionGroups]}/>
                     <label className={styles.field}>
-                        Finn lokale BESTI-bedrifter
+                        Hvor?
                         <CityPicker name="city" cities={cities} defaultValue={city ?? ""} placeholder="Gjøvik, Oslo, Bergen"/>
                     </label>
                     {/* On the computer "Når har du tid?" and "Beste tidspunkt" side by side, so the card is shorter */}
