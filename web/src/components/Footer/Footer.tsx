@@ -16,7 +16,7 @@ export default function Footer() {
             </nav>
             <div className={styles.brand}>
                 {/* eslint-disable-next-line @next/next/no-img-element -- small logo, next/image not needed */}
-                <img src="/logo/besti-stopka-b.png" alt="" width={37} height={44} className={styles.logo}/>
+                <img src="/logo/besti-f1.svg" alt="" width={67} height={67} className={styles.logo}/>
                 <div>
                     <p className={styles.slogan}>Bestill med din BESTI</p>
                     <p className={styles.copy}>© {year} BESTI</p>

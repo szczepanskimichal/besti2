@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Syne } from "next/font/google";
+import { Inter, Montserrat, Syne } from "next/font/google";
 import "./globals.css";
 import Header from "../components/Header/Header";
 import Footer from "../components/Footer/Footer";
@@ -24,6 +24,14 @@ const inter = Inter({
     display: "swap",
 });
 
+// Only for the BESTI word next to the logo and in the intro (Ada 2026-11-04)
+const montserrat = Montserrat({
+    subsets: ["latin"],
+    weight: ["700"],
+    variable: "--font-logo",
+    display: "swap",
+});
+
 export const metadata: Metadata = {
     // Full addresses for links shared on Facebook, Messenger etc.
     metadataBase: new URL(SITE_URL),
@@ -45,7 +53,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         // suppressHydrationWarning: INTRO_SCRIPT sets data-intro on <html> before React starts
-        <html lang="nb" className={`${syne.variable} ${inter.variable}`} suppressHydrationWarning>
+        <html lang="nb" className={`${syne.variable} ${inter.variable} ${montserrat.variable}`} suppressHydrationWarning>
         <head>
             <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }}/>
         </head>

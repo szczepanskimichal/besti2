@@ -19,18 +19,33 @@
     justify-content: space-between;
 }
 
+/* Logo B with the star + the word BESTI (Ada 2026-11-04). --tile is the size of the rounded square */
 .logo {
+    --tile: 48px;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: calc(var(--tile) * 0.2);
     text-decoration: none;
+    /* A little lower, so the star above the square is not cut off at the top of the screen */
+    transform: translateY(3px);
 }
-/* Ada's "Besti" lettering: B with a pin (public/logo/besti-napis.png) */
-.logoImage {
+/* The svg has room around the square for the star and the glow (square = 92 of 128 units),
+   so it is drawn bigger and pulled back with a negative margin */
+.logoMark {
     display: block;
-    height: 50px;
-    width: auto;
-    margin: -4px 0;
+    flex: none;
+    width: calc(var(--tile) * 128 / 92);
+    height: calc(var(--tile) * 128 / 92);
+    margin: calc(var(--tile) * -18 / 92);
+}
+.logoWord {
+    color: #8ff0d6;
+    font-family: var(--font-logo), var(--font-heading);
+    font-size: calc(var(--tile) * 0.64);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 10px rgba(114, 242, 207, 0.35);
 }
 
 .nav {
@@ -144,8 +159,14 @@
         display: none;
     }
 
-    .logoImage {
-        height: 46px;
+    .logo {
+        --tile: 36px;
+        gap: calc(var(--tile) * 0.1);
+    }
+
+    .logoWord {
+        font-size: calc(var(--tile) * 0.56);
+        letter-spacing: 0.04em;
     }
 
     .nav {
@@ -162,8 +183,8 @@
 }
 /* The smallest phones (320 px): Logg inn and Registrer bedrift still fit next to the logo */
 @media (max-width: 360px) {
-    .logoImage {
-        height: 38px;
+    .logo {
+        --tile: 32px;
     }
 
     .nav {

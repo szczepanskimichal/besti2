@@ -58,7 +58,7 @@
     justify-self: end;
 }
 
-/* The B from the new app icon (2026-11-01, no tile around it), the slogan and the small print */
+/* Logo B with the star (Ada 2026-11-04), the slogan and the small print */
 .brand {
     display: flex;
     align-items: center;
@@ -67,10 +67,12 @@
     border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* The square is 48 px; the svg has room around it for the star and the glow (square = 92 of 128 units) */
 .logo {
     flex: none;
-    width: auto;
-    height: 44px;
+    width: calc(48px * 128 / 92);
+    height: calc(48px * 128 / 92);
+    margin: calc(48px * -18 / 92);
 }
 
 .slogan {

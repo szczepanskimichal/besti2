@@ -1,4 +1,4 @@
-/* Intro when the app opens (Ada 2026-11-01): night sky, green aurora turning slowly, letters -> sparks -> logo */
+/* Intro when the app opens (Ada 2026-11-04, v4): night sky, green aurora turning slowly, logo B with the star, then BESTI */
 .intro {
     position: fixed;
     inset: 0;
@@ -86,67 +86,6 @@
     height: 100%;
     pointer-events: none;
 }
-.stage {
-    position: relative;
-    width: min(82vw, 520px);
-    aspect-ratio: 1 / 1;
-}
-.word {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    width: 100%;
-    aspect-ratio: 1040 / 430;
-    transform: translateY(-50%);
-    isolation: isolate;
-}
-.letter {
-    position: absolute;
-    mix-blend-mode: plus-lighter;
-    opacity: 0;
-    filter: blur(10px) brightness(1.8);
-    transform: translateY(8px);
-    animation: letter .55s ease-out forwards;
-}
-@keyframes letter {
-    to {
-        opacity: 1;
-        filter: blur(0) brightness(1);
-        transform: none;
-    }
-}
-.wordOut {
-    animation: wordOut .7s ease-in forwards;
-}
-@keyframes wordOut {
-    from {
-        opacity: 1;
-    }
-    to {
-        opacity: 0;
-        filter: blur(8px) brightness(2);
-    }
-}
-.icon {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    height: 74%;
-    transform: translate(-50%, -50%) scale(.9);
-    opacity: 0;
-    filter: blur(10px) brightness(1.8);
-}
-.iconIn {
-    animation: iconIn .8s cubic-bezier(.2, .8, .2, 1) forwards;
-}
-@keyframes iconIn {
-    to {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
-        filter: none;
-    }
-}
-
 /* A tap anywhere skips the intro */
 .skip {
     position: absolute;
