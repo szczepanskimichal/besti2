@@ -17,10 +17,28 @@ public static class BusinessSlug
         "varsler", "vilkar", "kalender", "invitasjon", "favicon.ico", "_next", "health", "om", "hjelp", "kontakt", "admin", "ansatt"
     ];
 
-    // "Klipp & Stil Frisør", "Gjøvik" -> "klipp-og-stil-frisor-gjovik"
+    // "Klipp & Stil Frisør", "Gjøvik" -> "klipp-og-stil-frisor-gjovik".
+    // A name that already ends with the city keeps it once: "Hår Gjøvik", "Gjøvik" -> "har-gjovik"
     public static string From(string name, string city)
     {
-        var text = $"{name} {city}".ToLowerInvariant()
+        var namePart = Clean(name);
+        var cityPart = Clean(city);
+        var text = cityPart.Length == 0 || namePart == cityPart || namePart.EndsWith($"-{cityPart}")
+            ? namePart
+            : $"{namePart}-{cityPart}";
+        var slug = string.Join('-', text.Split('-', StringSplitOptions.RemoveEmptyEntries));
+        if (slug.Length > MaxLength)
+        {
+            slug = slug[..MaxLength].TrimEnd('-');
+        }
+
+        return slug.Length == 0 ? "bedrift" : slug;
+    }
+
+    // Lower case a-z, 0-9 and single dashes: æ -> ae, ø -> o, å -> a, & -> og, é -> e
+    private static string Clean(string text)
+    {
+        text = text.ToLowerInvariant()
             .Replace("&", " og ")
             .Replace("æ", "ae")
             .Replace("ø", "o")
@@ -37,13 +55,7 @@ public static class BusinessSlug
             builder.Append(c is >= 'a' and <= 'z' or >= '0' and <= '9' ? c : '-');
         }
 
-        var slug = string.Join('-', builder.ToString().Split('-', StringSplitOptions.RemoveEmptyEntries));
-        if (slug.Length > MaxLength)
-        {
-            slug = slug[..MaxLength].TrimEnd('-');
-        }
-
-        return slug.Length == 0 ? "bedrift" : slug;
+        return string.Join('-', builder.ToString().Split('-', StringSplitOptions.RemoveEmptyEntries));
     }
 
     public static bool IsReserved(string slug) => Reserved.Contains(slug);

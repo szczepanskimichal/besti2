@@ -17,7 +17,7 @@ function hasOnlyDefaultEmployee(business: BusinessDetails) {
 
 // "Kom i gang": what a new business should fill in before customers come, worked out from its own data.
 // Gone when everything is done, or when the owner presses "Skjul"
-export default function FirstSteps({ business }: { business: BusinessDetails }) {
+export default function FirstSteps({ business, hoursChecked }: { business: BusinessDetails; hoursChecked: boolean }) {
     const steps = [
         {
             done: business.services.length > 0,
@@ -26,7 +26,7 @@ export default function FirstSteps({ business }: { business: BusinessDetails }) 
             text: "Velg fra forslagene for bransjen din, eller lag dine egne. Uten tjenester kan ingen bestille.",
         },
         {
-            done: !hasDefaultHours(business),
+            done: hoursChecked || !hasDefaultHours(business),
             href: "/panel/apningstider",
             title: "Sjekk åpningstidene",
             text: "Nå står det mandag–fredag 09–17. Endre dem hvis det ikke stemmer.",

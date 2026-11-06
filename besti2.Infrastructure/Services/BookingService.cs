@@ -803,6 +803,9 @@ public class BookingService(
         return accept ? NewTimeOutcome.Accepted : NewTimeOutcome.Declined;
     }
 
+    // The bell after a mistaken "Møtte ikke" contains this, so the correction is only sent once
+    private const string NoShowCorrectedText = "registrert som møtt";
+
     // "Møtte ikke" blocks the review, so a customer with an account is told and can object (e-mail + bell).
     // "Møtte" after "Møtte ikke" was a mistake: only that bell goes away again. Walk-ins cannot review: nothing to tell
     private async Task NotifyNoShowAsync(Booking booking, bool wasNoShow, CancellationToken cancellationToken)
@@ -833,6 +836,17 @@ public class BookingService(
                                                                && n.Text.Contains("ikke møtte"))
                 .ToListAsync(cancellationToken));
             await dbContext.SaveChangesAsync(cancellationToken);
+
+            // The customer already has the "ikke møtt" e-mail: tell them it was a mistake (once, the bell remembers it)
+            var corrected = await dbContext.Notifications.AnyAsync(n => n.UserId == booking.CustomerUserId
+                && n.BookingId == booking.Id && n.Text.Contains(NoShowCorrectedText), cancellationToken);
+            if (booking.NoShowEmailSentUtc is not null && !corrected)
+            {
+                await emails.SendNoShowWithdrawnAsync(booking, CancellationToken.None);
+                await notifier.NotifyAsync(booking, toBusiness: false,
+                    $"{{0}} har rettet det: du er {NoShowCorrectedText} {OsloTime.Format(booking.StartUtc)}.",
+                    "/min-besti", CancellationToken.None);
+            }
         }
     }
 

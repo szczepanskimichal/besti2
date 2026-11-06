@@ -55,7 +55,7 @@ public class AdminToolsTests
         return review;
     }
 
-    // check if a hidden review leaves the page and the stars, both sides are told, and it can be shown again
+    // check if a hidden review leaves the page and the stars, both sides are told, and both are told when it is back
     [Fact]
     public async Task HideReview_NotShownOrCountedAndBothAreTold()
     {
@@ -81,6 +81,8 @@ public class AdminToolsTests
 
         Assert.Null(await admin.ShowReviewAsync(bad.Id, Ada));
         Assert.Equal(3, (await reviews.GetForBusinessAsync(KlippOgStil)).Average);
+        Assert.Contains(db.Notifications, n => n.UserId == "kunde-1" && n.Text.Contains("vises igjen"));
+        Assert.Contains(db.Notifications, n => n.BusinessId == KlippOgStil && n.Text.Contains("vises igjen"));
     }
 
     // check if hiding for "Bildet passer ikke" deletes the photo file, and other reasons keep it

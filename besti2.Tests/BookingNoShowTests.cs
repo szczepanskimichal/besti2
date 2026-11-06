@@ -110,8 +110,11 @@ public class BookingNoShowTests
 
         await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
 
-        Assert.Single(email.Sent);
-        Assert.Equal(0, await db.Notifications.CountAsync(n => n.UserId == "kari-id"));
+        // The mistake is corrected: a second e-mail and a bell that says so, the "ikke møtte" bell is gone
+        Assert.Equal(2, email.Sent.Count);
+        Assert.StartsWith("Rettelse", email.Sent[1].Subject);
+        var bell = Assert.Single(await db.Notifications.Where(n => n.UserId == "kari-id").ToListAsync());
+        Assert.Contains("registrert som møtt", bell.Text);
     }
 
     // check if a moved visit the customer never answered can be marked after the start, but not before
@@ -156,7 +159,7 @@ public class BookingNoShowTests
 
         Assert.Equal(0, Assert.Single(bookings).NoShowCount);
     }
-    // check if switching "Møtte ikke" -> "Møtte" -> "Møtte ikke" sends only one e-mail and keeps the other bells
+    // check if switching "Møtte ikke" -> "Møtte" -> "Møtte ikke" sends one e-mail and one correction, other bells stay
     [Fact]
     public async Task NoShow_SwitchedBackAndForth_OneEmail_OtherBellsStay()
     {
@@ -177,10 +180,13 @@ public class BookingNoShowTests
         await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
         await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.MotteIkke);
 
-        Assert.Single(email.Sent);
-        Assert.Equal(2, await db.Notifications.CountAsync(n => n.UserId == "kari-id"));
+        // One "ikke møtt" e-mail and one correction, however many times it is switched
+        Assert.Equal(2, email.Sent.Count);
+        Assert.Equal(3, await db.Notifications.CountAsync(n => n.UserId == "kari-id"));
         await service.UpdateStatusAsync(id, KlippOgStil, BookingStatus.Bekreftet);
-        var left = Assert.Single(await db.Notifications.Where(n => n.UserId == "kari-id").ToListAsync());
-        Assert.Equal("Klipp & Stil har bekreftet timen", left.Text);
+        Assert.Equal(2, email.Sent.Count);
+        var left = await db.Notifications.Where(n => n.UserId == "kari-id").Select(n => n.Text).ToListAsync();
+        Assert.Equal(2, left.Count);
+        Assert.Contains("Klipp & Stil har bekreftet timen", left);
     }
 }

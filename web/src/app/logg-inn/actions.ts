@@ -29,10 +29,11 @@ export async function loginAction(_previous: FormState, formData: FormData): Pro
     }
 
     await setToken(result.accessToken, result.expiresIn);
-    // Customers go back to where they were (e.g. the chosen time), businesses to their panel
+    // Customers go back to where they were (e.g. the chosen time), businesses to their panel,
+    // employees to their work plan (unless they were on their way somewhere)
     const me = await getMe(result.accessToken);
     const safeNext = safeRedirectPath(String(formData.get("neste") ?? ""));
-    redirect(me?.isBusiness ? "/panel" : safeNext);
+    redirect(me?.isBusiness ? "/panel" : me?.isStaff && safeNext === "/" ? "/ansatt" : safeNext);
 }
 
 export async function logoutAction() {

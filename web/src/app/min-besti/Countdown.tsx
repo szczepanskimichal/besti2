@@ -1,5 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { daysBetween, osloDay } from "@/lib/format";
 import styles from "./Countdown.module.css";
 
 // "Om 2 dager" on each coming visit. Seeing the time shrink makes people remember the visit or cancel in time
@@ -12,7 +13,7 @@ export default function Countdown({ startUtc }: { startUtc: string }) {
     const left = new Date(startUtc).getTime() - now;
     return (
         <span className={`${styles.pill} ${left < 2 * hour ? styles.soon : ""}`}>
-            {left <= 0 ? "Nå" : `Om ${formatLeft(left)}`}
+            {left <= 0 ? "Nå" : `Om ${formatStartsIn(left, startUtc, now)}`}
         </span>
     );
 }
@@ -37,6 +38,15 @@ export function FreeCancelLeft({ untilUtc }: { untilUtc: string | null }) {
 const minute = 60 * 1000;
 const hour = 60 * minute;
 const day = 24 * hour;
+
+// Far away, people count days on the calendar: from Friday evening a Tuesday visit is "4 dager", not 3 days and 17 hours
+function formatStartsIn(ms: number, startUtc: string, now: number): string {
+    if (ms < 2 * day) {
+        return formatLeft(ms);
+    }
+    const days = daysBetween(osloDay(new Date(now).toISOString()), osloDay(startUtc));
+    return `${days} dager`;
+}
 
 // "3 dager", "1 dag og 4 t", "5 t 20 min", "12 min"
 function formatLeft(ms: number): string {

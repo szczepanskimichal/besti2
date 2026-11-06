@@ -9,7 +9,7 @@ import NewBookingForm from "./NewBookingForm";
 import PanelNav from "./PanelNav";
 import TimeOffForm from "./TimeOffForm";
 import FirstSteps from "./FirstSteps";
-import { FIRST_STEPS_COOKIE, WELCOME_COOKIE } from "./firstStepsCookie";
+import { FIRST_STEPS_COOKIE, HOURS_CHECKED_COOKIE, WELCOME_COOKIE } from "./firstStepsCookie";
 import BusinessWelcome from "./BusinessWelcome";
 import styles from "./page.module.css";
 import calendar from "./calendar.module.css";
@@ -143,7 +143,7 @@ export default async function CalendarPage({ searchParams }: CalendarPageProps) 
                     tjenester, ansatte og åpningstider. Kundene ser bedriften når den er godkjent.
                 </p>
             )}
-            {!firstStepsHidden && <FirstSteps business={business}/>}
+            {!firstStepsHidden && <FirstSteps business={business} hoursChecked={jar.has(HOURS_CHECKED_COOKIE)}/>}
             {query.feil && (
                 <p className={styles.error} role="alert">
                     {query.feil === "for-sent"
