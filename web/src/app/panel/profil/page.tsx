@@ -11,6 +11,9 @@ import ProfileForm from "./ProfileForm";
 import PanelNav from "../PanelNav";
 import panel from "../page.module.css";
 import styles from "./profil.module.css";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Profil" };
 
 type ProfilePageProps = {
     searchParams: Promise<{ lagret?: string, logo?: string, kalender?: string }>;

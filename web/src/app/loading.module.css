@@ -2,6 +2,10 @@
     max-width: var(--page-width);
     margin: 0 auto;
     padding: 48px 16px;
+    /* At least one screen high: the footer stays below the screen while the page loads, and does not jump
+       away when the page comes (Google counts that jump as layout shift, CLS) */
+    min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     gap: 16px;

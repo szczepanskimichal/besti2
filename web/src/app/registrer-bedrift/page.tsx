@@ -5,6 +5,7 @@ import styles from "./page.module.css";
 
 export const metadata: Metadata = {
     title: "Registrer bedriften din",
+    alternates: { canonical: "/registrer-bedrift" },
     description: "Få kundene dine til å bestille time på nett.",
 };
 

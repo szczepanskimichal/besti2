@@ -31,6 +31,8 @@
 }
 .cards {
     display: grid;
+    /* minmax(0, 1fr): a long e-mail can never make the cards wider than the phone */
+    grid-template-columns: minmax(0, 1fr);
     gap: 12px;
     margin: 0;
     padding: 0;
@@ -172,11 +174,11 @@
     margin: 0;
 }
 .contact a {
-    display: inline-flex;
-    align-items: center;
+    /* inline-block (not flex): only then a long e-mail ends in "…" */
+    display: inline-block;
     min-height: 36px;
     max-width: 100%;
-    padding: 0 12px;
+    padding: 7px 12px;
     overflow: hidden;
     border-radius: 999px;
     font: 600 0.9375rem var(--font-heading);

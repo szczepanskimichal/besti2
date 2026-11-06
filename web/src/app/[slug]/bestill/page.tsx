@@ -13,6 +13,7 @@ import WaitlistForm from "./WaitlistForm";
 import styles from "./page.module.css";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import FreeCancelPill from "@/components/FreeCancelPill/FreeCancelPill";
+import { isInsideFreeCancel } from "@/lib/freeCancel";
 
 // The biggest group the API takes (InviteRules.MaxPersons)
 const MAX_PERSONS = 8;
@@ -305,7 +306,10 @@ export default async function BookingPage({params, searchParams}: Props) {
                         {together && (organizerJoins ? ` · ${persons} personer, du inkludert` : ` · ${persons} personer, uten deg`)}
                         {` · ${formatLength(units * service.durationMinutes)}`}
                     </p>
-                    <div className={styles.cancelRow}><FreeCancelPill hours={business.freeCancelHours}/></div>
+                    <div className={styles.cancelRow}>
+                        <FreeCancelPill hours={business.freeCancelHours}
+                                        tooLate={isInsideFreeCancel(chosen.startUtc, business.freeCancelHours)}/>
+                    </div>
                     {!me && (
                         <p className={styles.muted}>
                             Du må være logget inn for å bestille.{" "}

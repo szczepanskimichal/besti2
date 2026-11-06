@@ -260,6 +260,8 @@
 .contact a {
     color: var(--color-primary);
     padding: 6px 0;
+    /* A long e-mail or web address breaks instead of pushing the page wider on small phones */
+    overflow-wrap: anywhere;
 }
 
 .sectionTitle {

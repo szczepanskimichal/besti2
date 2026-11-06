@@ -6,6 +6,9 @@ import PanelNav from "../PanelNav";
 import OpeningHoursForm from "./OpeningHoursForm";
 import panel from "../page.module.css";
 import styles from "./apningstider.module.css";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Åpningstider" };
 
 type OpeningHoursPageProps = {
     searchParams: Promise<{ lagret?: string }>;

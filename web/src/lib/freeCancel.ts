@@ -17,3 +17,8 @@ export function canCancelOnline(booking: CustomerBooking): boolean {
     const deadline = new Date(booking.startUtc).getTime() - booking.freeCancelHours * 60 * 60 * 1000;
     return Date.now() < deadline;
 }
+
+// Booking a time closer than the free-cancel deadline: once confirmed it can only be cancelled by phone
+export function isInsideFreeCancel(startUtc: string, freeCancelHours: number): boolean {
+    return freeCancelHours > 0 && Date.parse(startUtc) - Date.now() < freeCancelHours * 60 * 60 * 1000;
+}
