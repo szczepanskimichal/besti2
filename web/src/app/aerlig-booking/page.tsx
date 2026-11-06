@@ -86,8 +86,8 @@ export default function HonestBookingPage() {
             <section className={styles.section}>
                 <h2><CrystalIcon name="stjerne"/>For bedrifter</h2>
                 <ul>
-                    <li>Kunder som bestiller via din egen lenke eller QR-kode, er dine kunder. BESTI tar aldri
-                        provisjon i prosent av det kundene betaler deg.</li>
+                    <li>Kunder som bestiller via din egen lenke eller QR-kode, er dine kunder, og BESTI tar ingen
+                        provisjon på dem. I beta er alt gratis.</li>
                     <li>Du får forslag til tjenester for bransjen din, så siden er klar på et par minutter.</li>
                     <li>Alle bedrifter sjekkes i Brønnøysundregistrene, så kundene vet at de bestiller hos en ekte
                         bedrift.</li>

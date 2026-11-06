@@ -24,7 +24,7 @@ const IN_PRO = [
 
 // Coming to Pro later, shown locked with a lilac "Kommer" (they were "Kommer snart i Pro" on Statistikk before)
 const COMING = [
-    { title: "SMS til faste kunder", text: "Låst i beta, fordi SMS koster penger." },
+    { title: "SMS til faste kunder", text: "Betales per SMS, i tillegg til Pro." },
     { title: "Hvor kommer kundene fra?", text: "Se om kundene kom fra Instagram, Google eller QR-plakaten." },
     { title: "Tilbud for rolige timer", text: "Fyll de rolige dagene med tilbud og fremhev populære tjenester." },
     { title: "Flere avdelinger", text: "Alle avdelinger og ansatte samlet i ett panel." },
