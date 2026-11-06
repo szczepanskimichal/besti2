@@ -14,7 +14,7 @@ export default function TermsPage() {
     return (
         <main className={styles.main}>
             <h1>Vilkår for bruk</h1>
-            <p className={styles.updated}>Sist oppdatert: 31. oktober 2026</p>
+            <p className={styles.updated}>Sist oppdatert: 6. november 2026</p>
             <section className={styles.section}>
                 <h2><CrystalIcon name="stjerne"/>Om tjenesten</h2>
                 <p>
@@ -196,13 +196,32 @@ export default function TermsPage() {
             <section className={styles.section}>
                 <h2><CrystalIcon name="stjerne"/>Ansvar</h2>
                 <p>
-                    Vi gjør vårt beste for at tjenesten fungerer, men kan ikke garantere at den alltid er
-                    tilgjengelig eller uten feil. BESTI er ikke ansvarlig for tjenester som utføres av bedriftene.
+                    BESTI er en tjeneste for å finne bedrifter og bestille time. BESTI er ikke part i avtalen mellom
+                    deg og bedriften, og er ikke ansvarlig for selve tjenesten: kvalitet, pris, betaling, skader,
+                    forsinkelser, avlysninger eller noe annet som skjer hos bedriften. Krav om dette retter du mot
+                    bedriften.
                 </p>
                 <p>
-                    Overfor bedrifter er BESTI ikke ansvarlig for indirekte tap, for eksempel tapt omsetning når tjenesten
-                    er nede, så lenge BESTI ikke har opptrådt grovt uaktsomt eller med vilje. Ingenting i vilkårene
-                    begrenser rettigheter du har som forbruker etter loven.
+                    Innhold som bedrifter og kunder legger inn (for eksempel beskrivelser, priser, bilder, vurderinger,
+                    meldinger og notater), er den som skrev det, ansvarlig for. BESTI kontrollerer ikke innholdet på
+                    forhånd, men fjerner ulovlig innhold når vi får vite om det.
+                </p>
+                <p>
+                    Tjenesten leveres som den er, og er gratis i beta-perioden. Vi gjør vårt beste, men kan ikke
+                    garantere at BESTI alltid er tilgjengelig, er uten feil, eller at e-post og varsler alltid kommer
+                    fram. Er en time viktig for deg, sjekk den i Min BESTI eller med bedriften. BESTI er ikke ansvarlig
+                    for feil hos andre leverandører (for eksempel servere, e-post eller Google) eller for
+                    forhold utenfor vår kontroll.
+                </p>
+                <p>
+                    Overfor bedrifter er BESTI ikke ansvarlig for indirekte tap, for eksempel tapt omsetning, tapte
+                    kunder eller tapte data. BESTIs samlede ansvar overfor en bedrift er begrenset til det bedriften
+                    har betalt BESTI de siste 12 månedene. Bedriften dekker krav fra kunder eller andre som skyldes
+                    bedriftens tjenester, innhold eller brudd på disse vilkårene.
+                </p>
+                <p>
+                    Begrensningene gjelder ikke hvis BESTI har opptrådt grovt uaktsomt eller med vilje. Ingenting i
+                    vilkårene begrenser rettigheter du har som forbruker etter loven.
                 </p>
             </section>
 
