@@ -1,5 +1,6 @@
 /* Calm look (2026-11-01): the aurora photo by Tomáš Malík / Unsplash, standing still,
-   a portrait crop on phones and a wide crop on computers, both with the same colours. */
+   a portrait crop on phones and a wide crop on computers, both with the same colours.
+   2026-11-06: sharper WebP files, about half the size of the old JPGs. */
 .sky {
     position: fixed;
     inset: 0;
@@ -20,12 +21,12 @@
 .photo {
     position: absolute;
     inset: 0;
-    background: image-set(url("/bg/sky-rolig-mobil-800.jpg") 1x, url("/bg/sky-rolig-mobil-1400.jpg") 2x) center top / cover no-repeat;
+    background: image-set(url("/bg/sky-rolig-mobil-800.webp") 1x, url("/bg/sky-rolig-mobil-1400.webp") 2x) center top / cover no-repeat;
 }
 
 @media (min-width: 800px) {
     .photo {
-        background-image: image-set(url("/bg/sky-rolig-desktop-1600.jpg") 1x, url("/bg/sky-rolig-desktop-3200.jpg") 2x);
+        background-image: image-set(url("/bg/sky-rolig-desktop-1600.webp") 1x, url("/bg/sky-rolig-desktop-3200.webp") 2x);
         background-position: center;
     }
 }
@@ -35,4 +36,23 @@
     position: absolute;
     inset: 0;
     background: linear-gradient(180deg, rgba(2, 12, 18, 0.3), rgba(2, 12, 18, 0.05) 45%, rgba(2, 12, 18, 0.3));
+}
+
+/* Phone, front page only (HomeSky is on the page): the photo drifts very slowly (Ada 2026-11-06).
+   Only transform, so the phone moves the ready picture without redrawing it */
+@media (max-width: 799px) and (prefers-reduced-motion: no-preference) {
+    :global(body:has([data-home-sky])) .photo {
+        inset: -4%;
+        animation: drift 26s ease-in-out infinite alternate;
+        will-change: transform;
+    }
+}
+
+@keyframes drift {
+    from {
+        transform: translate3d(-1.5%, 0, 0) scale(1.02);
+    }
+    to {
+        transform: translate3d(1.5%, -1%, 0) scale(1.06);
+    }
 }

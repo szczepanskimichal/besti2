@@ -18,10 +18,26 @@
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 /* Frosted glass search card */
+/* Easier to read search card (Ada 2026-11-06): lighter fields with a clearer edge, questions in mint Syne,
+   answers bigger in white Inter. The variables are read by GlassSelect and ForWhomPicker too */
 .filters {
+    --color-input-bg: rgba(255, 255, 255, 0.075);
+    --color-input-border: rgba(170, 245, 222, 0.5);
+    --field-label-color: #8ff0d6;
+    --field-label-font: var(--font-heading);
+    --field-label-weight: 700;
+    --field-label-size: 1.05rem;
+    --field-value-font: var(--font-small);
+    --field-value-weight: 600;
+    --field-value-size: 1.15rem;
+    --field-height: 54px;
+    --field-padding: 0 14px;
+    --field-placeholder: rgba(225, 245, 240, 0.62);
+    --field-focus-border: #8ff0d6;
+    --field-focus-ring: 0 0 0 3px rgba(143, 240, 214, 0.18);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 18px;
     padding: 18px;
     background: var(--color-surface);
     backdrop-filter: var(--glass-blur);
@@ -31,24 +47,27 @@
     color: var(--color-text);
 }
 
-/* The question small and soft mint, what you type or pick bigger and white, so the answers stand out */
+/* The question in mint, what you type or pick bigger and white, so the answers stand out */
 .field {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    color: #a9d8cc;
-    font-weight: 600;
-    font-size: 0.9375rem;
+    gap: 8px;
+    color: var(--field-label-color);
+    font-family: var(--field-label-font);
+    font-weight: var(--field-label-weight);
+    font-size: var(--field-label-size);
+    letter-spacing: 0.01em;
 }
 
 .field input,
 .field select {
     font: inherit;
-    font-family: var(--font-heading);
-    font-size: 1.0625rem; /* 17 px: also 16 px or more stops iPhones from zooming in on tap */
-    font-weight: 500;
-    min-height: 48px;
-    padding: 0 12px;
+    font-family: var(--field-value-font);
+    font-size: var(--field-value-size); /* 16 px or more also stops iPhones from zooming in on tap */
+    font-weight: var(--field-value-weight);
+    letter-spacing: 0;
+    min-height: var(--field-height);
+    padding: var(--field-padding);
     border: 1px solid var(--color-input-border);
     border-radius: var(--radius);
     background: var(--color-input-bg);
@@ -59,14 +78,24 @@
     box-sizing: border-box;
 }
 
+.field input::placeholder {
+    color: var(--field-placeholder);
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: var(--field-focus-border);
+    box-shadow: var(--field-focus-ring);
+}
+
 .searchButton {
     font: inherit;
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     letter-spacing: 0.01em;
     margin-top: 4px;
-    min-height: 52px;
+    min-height: 56px;
     padding: 0 24px;
     border: 2px solid transparent;
     border-radius: 999px;
@@ -112,7 +141,7 @@
     font-family: var(--font-heading);
     font-weight: 700;
     font-size: 1.1rem;
-    margin-top: 32px;
+    margin-top: 56px;
     min-height: 52px;
     padding: 0 28px;
     border: 2px solid transparent;
@@ -133,10 +162,16 @@
     margin: 8px 0 10px;
 }
 
+/* Syne like the title (Ada 2026-11-06), a little more air under the title, lines broken evenly */
 .heroLead {
+    font-family: var(--font-heading);
+    font-weight: 700;
     font-size: clamp(1.05rem, 2.2vw, 1.35rem);
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    text-wrap: balance;
     max-width: 40ch;
-    margin: 0 auto;
+    margin: 22px auto 0;
     color: #f4fbf8;
     text-shadow: 0 1px 14px rgba(2, 12, 16, 0.6);
 }
@@ -185,7 +220,7 @@
     .filters {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 14px 14px;
+        gap: 18px 14px;
         padding: 28px 32px 22px;
         border-radius: 26px;
     }
@@ -199,16 +234,10 @@
         grid-column: auto;
     }
 
-    .field {
-        gap: 8px;
-        font-size: 1.05rem;
-    }
-
-    .field input,
-    .field select {
-        min-height: 56px;
-        padding: 0 16px;
-        font-size: 1.2rem;
+    .filters {
+        --field-label-size: 1.15rem;
+        --field-value-size: 1.25rem;
+        --field-height: 58px;
     }
 
     .searchButton {

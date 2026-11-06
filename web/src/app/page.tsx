@@ -12,6 +12,7 @@ import styles from "./page.module.css";
 import GlassSelect from "@/components/GlassSelect/GlassSelect";
 import CityPicker from "@/components/CityPicker/CityPicker";
 import {JumpToSearchButton, ScrollToResults} from "@/components/MobileSearchJump/MobileSearchJump";
+import HomeSky from "@/components/HomeSky/HomeSky";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string; personer?: string }>;
@@ -47,6 +48,7 @@ export default async function Home({searchParams}: HomeProps) {
     const cities = await getCities();
     return (
         <main className={styles.main}>
+            <HomeSky/>
             <section className={styles.hero}>
                 {/* On a phone the title fills the first screen alone, with a button down to the search */}
                 <div className={styles.heroIntro}>
@@ -54,7 +56,7 @@ export default async function Home({searchParams}: HomeProps) {
                     <p className={styles.heroLead}>Finn ledig time og bestill på under ett minutt</p>
                     <JumpToSearchButton className={styles.jumpButton}/>
                 </div>
-                <Form action="/" id="sok" className={styles.filters}>
+                <Form action="/" id="sok" className={styles.filters} scroll={false}>
                     <label className={styles.field}>
                         Hva vil du oppleve med BESTI?
                         <input

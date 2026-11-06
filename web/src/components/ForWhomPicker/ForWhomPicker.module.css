@@ -6,19 +6,22 @@
 }
 
 /* Same as the other questions in the search card: small and soft mint */
+/* Variables with today's look as fallback: the home page search card sets its own (page.module.css .filters) */
 .label {
-    color: #a9d8cc;
-    font-size: 0.9375rem;
+    color: var(--field-label-color, #a9d8cc);
+    font-family: var(--field-label-font, inherit);
+    font-weight: var(--field-label-weight, inherit);
+    font-size: var(--field-label-size, 0.9375rem);
 }
 
 /* Looks like the other fields in the search card */
 .trigger {
     font: inherit;
-    font-family: var(--font-heading);
-    font-size: 1.0625rem;
-    font-weight: 500;
-    min-height: 48px;
-    padding: 0 12px;
+    font-family: var(--field-value-font, var(--font-heading));
+    font-size: var(--field-value-size, 1.0625rem);
+    font-weight: var(--field-value-weight, 500);
+    min-height: var(--field-height, 48px);
+    padding: var(--field-padding, 0 12px);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -29,6 +32,11 @@
     color: #fff;
     text-align: left;
     cursor: pointer;
+}
+
+.trigger:focus-visible {
+    border-color: var(--field-focus-border, var(--color-input-border));
+    box-shadow: var(--field-focus-ring, none);
 }
 
 .chevron,
@@ -160,12 +168,12 @@
 /* Ada 2026-11-01: on the computer the same bigger size as the other fields in the search card */
 @media (min-width: 900px) {
     .label {
-        font-size: 1.05rem;
+        font-size: var(--field-label-size, 1.05rem);
     }
 
     .trigger {
-        min-height: 56px;
-        padding: 0 16px;
-        font-size: 1.2rem;
+        min-height: var(--field-height, 56px);
+        padding: var(--field-padding, 0 16px);
+        font-size: var(--field-value-size, 1.2rem);
     }
 }
