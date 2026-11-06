@@ -56,7 +56,7 @@ export default async function Home({searchParams}: HomeProps) {
                     <p className={styles.heroLead}>Finn ledig time og bestill på under ett minutt</p>
                     <JumpToSearchButton className={styles.jumpButton}/>
                 </div>
-                <Form action="/" id="sok" className={styles.filters}>
+                <Form action="/" id="sok" className={styles.filters} scroll={false}>
                     <label className={styles.field}>
                         Hva vil du oppleve med BESTI?
                         <input
