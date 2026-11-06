@@ -298,7 +298,9 @@ public class BusinessService(AppDbContext dbContext, IGeocodingService geocoding
                 cancellationToken);
         if (upcoming > 0)
         {
-            return $"{employee.Name} har {upcoming} kommende {(upcoming == 1 ? "time" : "timer")}. Flytt dem først.";
+            return upcoming == 1
+                ? $"{employee.Name} har 1 kommende time. Flytt eller avlys den først."
+                : $"{employee.Name} har {upcoming} kommende timer. Flytt eller avlys dem først.";
         }
 
         employee.IsDeleted = true;

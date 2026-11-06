@@ -256,9 +256,16 @@ public class AdminService(AppDbContext dbContext, IEmailService? emailService = 
 
         review.HiddenUtc = null;
         review.HiddenReason = null;
-        AddLog(adminEmail,
-            $"Viste vurdering ({review.Stars} ★) av {await BusinessNameAsync(review.BusinessId, cancellationToken)} igjen",
-            review.BusinessId);
+        var businessName = await BusinessNameAsync(review.BusinessId, cancellationToken);
+        // Both got a bell when it was hidden: they also learn that it is back
+        if (review.CustomerUserId != BookingAnonymizer.AnonymizedUserId)
+        {
+            Notify(review.CustomerUserId, null,
+                $"Vurderingen din av {businessName} vises igjen. Beklager ulempen!", "/min-besti");
+        }
+
+        Notify(null, review.BusinessId, "En skjult vurdering vises igjen og teller i stjernene.", "/panel/vurderinger");
+        AddLog(adminEmail, $"Viste vurdering ({review.Stars} ★) av {businessName} igjen", review.BusinessId);
         await dbContext.SaveChangesAsync(cancellationToken);
         return null;
     }

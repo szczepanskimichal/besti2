@@ -1,10 +1,12 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { updateOpeningHours } from "@/lib/api";
 import { getToken } from "@/lib/auth";
 import type { FormState } from "@/lib/formState";
 import { weekdays } from "@/lib/weekdays";
+import { HOURS_CHECKED_COOKIE } from "../firstStepsCookie";
 
 // Errors come back to the form with all 7 days as they were typed (no text in the URL)
 export async function updateOpeningHoursAction(_previous: FormState, formData: FormData): Promise<FormState> {
@@ -50,5 +52,13 @@ export async function updateOpeningHoursAction(_previous: FormState, formData: F
         return { error: result.message, values };
     }
 
+    // Saved = checked, so "Sjekk åpningstidene" in Kom i gang is ticked even when the times stayed 09–17
+    (await cookies()).set(HOURS_CHECKED_COOKIE, "1", {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        path: "/panel",
+        maxAge: 60 * 60 * 24 * 365,
+    });
     redirect("/panel/apningstider?lagret=1");
 }

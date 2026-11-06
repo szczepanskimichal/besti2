@@ -18,6 +18,9 @@ public class BusinessSlugTests
     [InlineData("  Hår.Studio (Søndre)  ", "Ålesund", "har-studio-sondre-alesund")]
     [InlineData("Café Bæ", "Tromsø", "cafe-bae-tromso")]
     [InlineData("!!!", "", "bedrift")]
+    [InlineData("Testsalong Gjøvik", "Gjøvik", "testsalong-gjovik")]
+    [InlineData("Gjøvik", "Gjøvik", "gjovik")]
+    [InlineData("Gjøvikfrisøren", "Gjøvik", "gjovikfrisoren-gjovik")]
     public void From_MakesShortAddress(string name, string city, string expected)
     {
         Assert.Equal(expected, BusinessSlug.From(name, city));

@@ -197,6 +197,31 @@ public class BookingEmails(
         }
     }
 
+    // "Møtte" after "Møtte ikke": the business made a mistake, the earlier e-mail no longer holds
+    public async Task SendNoShowWithdrawnAsync(Booking booking, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var service = await dbContext.Services.AsNoTracking()
+                .FirstAsync(s => s.Id == booking.ServiceId, cancellationToken);
+            var business = await dbContext.Businesses.AsNoTracking()
+                .FirstAsync(b => b.Id == service.BusinessId, cancellationToken);
+            var body =
+                $"Hei {booking.CustomerName}!\n\n" +
+                $"{business.Name} har rettet en feil: du er registrert som møtt til timen din.\n\n" +
+                $"Tjeneste: {service.Name}\n" +
+                $"Tid: {OsloTime.Format(booking.StartUtc)}\n\n" +
+                "Se bort fra e-posten om at du ikke møtte. Du kan gi en vurdering av besøket i Min BESTI.\n\n" +
+                "Hilsen BESTI";
+            await emailService.SendAsync(booking.CustomerEmail, $"Rettelse: du er registrert som møtt hos {business.Name}",
+                body, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not send no-show correction for booking {BookingId}", booking.Id);
+        }
+    }
+
     // Tell the business whether the customer accepted the new time; a failed email must not undo the answer
     public async Task SendNewTimeAnswerAsync(Booking booking, bool accept, CancellationToken cancellationToken)
     {

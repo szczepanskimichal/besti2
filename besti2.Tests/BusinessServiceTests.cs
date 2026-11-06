@@ -526,7 +526,7 @@ public class BusinessServiceTests
         var error = await service.DeleteEmployeeAsync(klippId, sofieId);
 
         // Assert
-        Assert.Equal("Sofie har 1 kommende time. Flytt dem først.", error);
+        Assert.Equal("Sofie har 1 kommende time. Flytt eller avlys den først.", error);
         Assert.False((await db.Employees.SingleAsync(e => e.Id == sofieId)).IsDeleted);
     }
 

@@ -43,8 +43,22 @@ export default async function ConfirmEmailPage({ searchParams }: Props) {
         <Welcome big title={confirmed.firstName ? `Velkommen, ${confirmed.firstName}!` : "Velkommen!"}
                  text="Nå er du en BESTI">
             <NextLink href={`/logg-inn?neste=${encodeURIComponent(next ?? "/")}`} className={welcome.go}>
-                {next ? "Fortsett bestillingen" : "Finn din første time"}
+                {continueLabel(next)}
             </NextLink>
         </Welcome>
     );
+}
+
+// The button says where it goes: an employee invitation, a friend's BESTI sammen invitation, or the chosen time
+function continueLabel(next: string | undefined): string {
+    if (!next) {
+        return "Finn din første time";
+    }
+    if (next.startsWith("/ansatt")) {
+        return "Fortsett til invitasjonen";
+    }
+    if (next.startsWith("/invitasjon")) {
+        return "Se invitasjonen";
+    }
+    return "Fortsett bestillingen";
 }
