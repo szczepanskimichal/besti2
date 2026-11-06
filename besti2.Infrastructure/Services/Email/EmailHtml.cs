@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace besti2.Infrastructure.Services.Email;
 
 // The HTML version of every e-mail, built from the plain text that the services already write, so the texts stay
-// in one place. Same look as the site: night blue, mint button, Besti logo. The plain text is still sent next to it
+// in one place. Same look as the site: night blue, mint button, BESTI logo. The plain text is still sent next to it
 // for mail programs without HTML. Tables and inline styles only: that is what Outlook and Gmail understand
 public static partial class EmailHtml
 {
@@ -39,7 +39,9 @@ public static partial class EmailHtml
             html.Append("</p>");
         }
 
-        var logo = $"{webBaseUrl.TrimEnd('/')}/logo/besti-napis.png";
+        // The new logo (B with the star + the word BESTI, like the header). PNG, because Gmail does not show SVG.
+        // The old besti-napis.png stays on the site, so mails that were sent before still show a logo
+        var logo = $"{webBaseUrl.TrimEnd('/')}/logo/besti-logo-epost.png";
         return $"""
             <!doctype html>
             <html lang="nb">
@@ -48,7 +50,7 @@ public static partial class EmailHtml
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#04101a" style="background:#04101a">
             <tr><td align="center" style="padding:24px 12px">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
-            <tr><td style="padding:0 8px 16px"><a href="{Encode(webBaseUrl)}"><img src="{Encode(logo)}" alt="BESTI" width="119" height="50" style="display:block;border:0"></a></td></tr>
+            <tr><td style="padding:0 8px 16px"><a href="{Encode(webBaseUrl)}"><img src="{Encode(logo)}" alt="BESTI" width="171" height="72" style="display:block;border:0"></a></td></tr>
             <tr><td bgcolor="#0b1f29" style="background:#0b1f29;border:1px solid #1d4a48;border-radius:16px;padding:28px 24px;font-family:Inter,Segoe UI,Helvetica,Arial,sans-serif">
             {html}
             </td></tr>
