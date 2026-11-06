@@ -1,0 +1,22 @@
+diff --git a/web/src/app/panel/calendar/CalendarLegend.tsx b/web/src/app/panel/calendar/CalendarLegend.tsx
+index 352aa71..e3aa096 100644
+--- a/web/src/app/panel/calendar/CalendarLegend.tsx
++++ b/web/src/app/panel/calendar/CalendarLegend.tsx
+@@ -6,12 +6,15 @@ import calendar from "../calendar.module.css";
+ // place: "top" above the calendar (hidden on phones), "bottom" under the phone list (phones only), so on a
+ // phone the day's visits come first
+ export default function CalendarLegend({ place }: { place: "top" | "bottom" }) {
++    // On a phone the coloured frames are enough, so the small stamps only show in the laptop legend (Ada 2026-11-06)
++    const stamps = place === "top";
++
+     return (
+         <div className={`${calendar.legend} ${place === "top" ? calendar.legendTop : calendar.legendBottom}`}
+              aria-label="Forklaring">
+             <ul>
+-                <li><span className={`${calendar.legendSwatch} ${calendar.swatchOk}`}/><MiniStamp status="Bekreftet"/>Bekreftet</li>
+-                <li><span className={`${calendar.legendSwatch} ${calendar.swatchWait}`}/><MiniStamp status="Venter"/>Venter på svar</li>
++                <li><span className={`${calendar.legendSwatch} ${calendar.swatchOk}`}/>{stamps && <MiniStamp status="Bekreftet"/>}Bekreftet</li>
++                <li><span className={`${calendar.legendSwatch} ${calendar.swatchWait}`}/>{stamps && <MiniStamp status="Venter"/>}Venter på svar</li>
+                 <li><span className={`${calendar.legendSwatch} ${calendar.swatchCancel}`}/>Avlyst / Møtte ikke / Slettet kunde</li>
+                 <li><span className={`${calendar.legendSwatch} ${calendar.swatchOff}`}/>Pause / blokkert – ikke book</li>
+             </ul>
