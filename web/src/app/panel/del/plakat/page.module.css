@@ -205,9 +205,12 @@
 .aurora > * {
     position: relative;
 }
+/* The svg has room around the square for the star and the glow (square = 92 of 128 units),
+   so it is drawn bigger and pulled back with a negative margin, like the logo in the header */
 .brandIcon {
-    height: 1.5em;
-    width: auto;
+    width: calc(1.5em * 128 / 92);
+    height: calc(1.5em * 128 / 92);
+    margin: calc(1.5em * -18 / 92);
 }
 .aurora .brandIcon {
     filter: drop-shadow(0 0 10px rgba(143, 240, 214, 0.45));

@@ -45,10 +45,10 @@ export default async function PosterPage({ searchParams }: { searchParams: Promi
             <article className={light ? styles.sheet : `${styles.sheet} ${styles.aurora}`}>
                 {/* The name in Syne at the top, in both looks (michal 2026-11-04) */}
                 <p className={styles.brand}>
-                    {/* The B with the pin in mint on the left, only on the aurora poster (on white paper it looks blurry) */}
+                    {/* The new logo B with the star on the left, only on the aurora poster (on white paper it looks blurry) */}
                     {!light && (
                         // eslint-disable-next-line @next/next/no-img-element -- small print logo, next/image not needed
-                        <img src="/logo/plakat-b-pin.png" alt="" className={styles.brandIcon}/>
+                        <img src="/logo/besti-f1.svg" alt="" className={styles.brandIcon}/>
                     )}
                     BESTI
                 </p>

@@ -31,6 +31,6 @@ public class EmailHtmlTests
     {
         var html = EmailHtml.Render("Hei", "Hei!", "https://bestiapp.no/");
 
-        Assert.Contains("src=\"https://bestiapp.no/logo/besti-napis.png\"", html);
+        Assert.Contains("src=\"https://bestiapp.no/logo/besti-logo-epost.png\"", html);
     }
 }
