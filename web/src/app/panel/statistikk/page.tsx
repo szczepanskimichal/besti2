@@ -16,10 +16,10 @@ import styles from "./page.module.css";
 
 export const metadata: Metadata = { title: "Statistikk" };
 
-// 90 days and 12 months become part of BESTI Pro when payments start (free in the beta)
+// 30 days, 90 days and 12 months become part of BESTI Pro when payments start (free in the beta)
 const periods = [
     { days: 7, label: "7 dager", pro: false },
-    { days: 30, label: "30 dager", pro: false },
+    { days: 30, label: "30 dager", pro: true },
     { days: 90, label: "90 dager", pro: true },
     { days: 365, label: "12 måneder", pro: true },
 ];
@@ -72,7 +72,7 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
         redirect("/logg-inn");
     }
     const query = await searchParams;
-    const days = periods.some((p) => String(p.days) === query.dager) ? Number(query.dager) : 30;
+    const days = periods.some((p) => String(p.days) === query.dager) ? Number(query.dager) : 7;
     const stats = await getPanelStats(token, days);
     if (!stats) {
         redirect("/logg-inn");
@@ -108,7 +108,7 @@ export default async function StatsPage({ searchParams }: StatsPageProps) {
             </nav>
             {days > 30 && (
                 <p className={styles.proNote}>
-                    <ProBadge/> Statistikk for mer enn 30 dager blir en del av BESTI Pro når betaling starter.
+                    <ProBadge/> Statistikk for mer enn 7 dager blir en del av BESTI Pro når betaling starter.
                 </p>
             )}
 
