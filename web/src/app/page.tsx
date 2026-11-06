@@ -13,6 +13,9 @@ import GlassSelect from "@/components/GlassSelect/GlassSelect";
 import CityPicker from "@/components/CityPicker/CityPicker";
 import {JumpToSearchButton, ScrollToResults} from "@/components/MobileSearchJump/MobileSearchJump";
 import HomeSky from "@/components/HomeSky/HomeSky";
+import type {Metadata} from "next";
+import JsonLd from "@/components/JsonLd/JsonLd";
+import {siteJsonLd} from "@/lib/structuredData";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string; personer?: string }>;
@@ -24,6 +27,11 @@ const timeWindows: Record<string, { from?: string; to?: string }> = {
     ettermiddag: {from: "12:00", to: "17:00"},
     kveld: {from: "17:00"},
 };
+// Every search (?q=, ?city=, ?page= ...) is the same page for Google: only bestiapp.no/ goes in the results
+export const metadata: Metadata = {
+    alternates: {canonical: "/"},
+};
+
 // "Nær meg" radius choices in km (0 = all distances)
 const radiusOptions = [0, 2, 5, 10, 25, 50, 75, 100];
 export default async function Home({searchParams}: HomeProps) {
@@ -48,6 +56,7 @@ export default async function Home({searchParams}: HomeProps) {
     const cities = await getCities();
     return (
         <main className={styles.main}>
+            <JsonLd data={siteJsonLd}/>
             <HomeSky/>
             <section className={styles.hero}>
                 {/* On a phone the title fills the first screen alone, with a button down to the search */}

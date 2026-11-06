@@ -5,6 +5,8 @@ import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
     title: "Vilkår for bruk",
+    description: "Vilkårene for å bruke BESTI: bestilling, avbestilling, «Møtte ikke», vurderinger og ansvar.",
+    alternates: { canonical: "/vilkar" },
 };
 
 // Must match what the app really does (booking rules, cancellation, "Møtte ikke", reviews, Google login).

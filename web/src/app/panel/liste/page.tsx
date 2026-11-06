@@ -13,6 +13,9 @@ import styles from "../page.module.css";
 import liste from "./liste.module.css";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import EmptyState from "@/components/EmptyState/EmptyState";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Bestillinger" };
 
 type PanelPageProps = {
     searchParams: Promise<{ feil?: string }>;

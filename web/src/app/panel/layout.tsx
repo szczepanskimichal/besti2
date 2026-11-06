@@ -5,7 +5,7 @@ import { getToken } from "@/lib/auth";
 import { privatePage } from "@/lib/site";
 import styles from "./page.module.css";
 
-export const metadata: Metadata = { title: "Bedriftspanel", robots: privatePage };
+export const metadata: Metadata = { title: { default: "Bedriftspanel", template: "%s | BESTI" }, robots: privatePage };
 
 // Every panel page is for business accounts only: a customer goes to Min Besti, a visitor to login
 export default async function PanelLayout({ children }: { children: React.ReactNode }) {

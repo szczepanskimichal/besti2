@@ -5,6 +5,8 @@ import styles from "../legal.module.css";
 
 export const metadata: Metadata = {
     title: "Personvernerklæring",
+    description: "Slik behandler BESTI personopplysninger: hva vi lagrer, hvorfor, hvor lenge, og hvilke rettigheter du har.",
+    alternates: { canonical: "/personvern" },
 };
 
 // Must always describe what the app really does. When personal data, purposes, suppliers or storage periods

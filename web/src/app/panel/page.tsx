@@ -27,6 +27,9 @@ import TimeOffDetails from "./calendar/TimeOffDetails";
 import DaySummary from "./calendar/DaySummary";
 import DateJump from "./calendar/DateJump";
 import GlassSelect from "@/components/GlassSelect/GlassSelect";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Kalender" };
 
 // "Plan": the next two weeks as one list
 const PLAN_DAYS = 14;

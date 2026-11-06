@@ -18,6 +18,8 @@ import StampCard from "@/components/StampCard/StampCard";
 
 import styles from "./page.module.css";
 import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
+import JsonLd from "@/components/JsonLd/JsonLd";
+import { businessJsonLd } from "@/lib/structuredData";
 import FreeCancelPill from "@/components/FreeCancelPill/FreeCancelPill";
 
 type Props = {
@@ -36,8 +38,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         return { title: "Fant ikke bedriften" };
     }
     const title = `${business.name} – Bestill time i ${business.city}`;
-    const description = business.description?.slice(0, 155)
-        ?? `Se tjenester, priser og ledige tider hos ${business.name} i ${business.city}, og bestill time på nett.`;
+    // Google shows about 155 characters: a short own text gets the general sentence after it
+    const general = `Se tjenester, priser og ledige tider hos ${business.name} i ${business.city}, og bestill time på nett.`;
+    const own = business.description?.trim();
+    const description = !own ? general
+        : own.length >= 70 ? own.slice(0, 155)
+        : `${own.replace(/[.!]?$/, ".")} ${general}`.slice(0, 155);
     return {
         title,
         description,
@@ -45,7 +51,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         openGraph: {
             title,
             description,
-            images: business.logoUrl ? [business.logoUrl] : undefined,
+            // The cover photo, else the logo, else BESTI's own picture (app/opengraph-image.jpg)
+            images: [business.gallery[0]?.url ?? business.logoUrl ?? "/opengraph-image.jpg"],
         },
     };
 }
@@ -106,6 +113,7 @@ export default async function BusinessPage({ params, searchParams }: Props) {
 
     return (
         <main className={styles.main}>
+            <JsonLd data={businessJsonLd(business, reviews)}/>
             <NextLink href="/" className={styles.back}>← Tilbake til alle bedrifter</NextLink>
 
             <header className={[styles.hero, isNew && styles.heroNew, cover && styles.heroPhoto].filter(Boolean).join(" ")}

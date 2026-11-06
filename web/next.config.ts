@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     // The Docker image only gets the files the server needs (see web/Dockerfile)
     output: "standalone",
     allowedDevOrigins: ["192.168.1.203"],
+    // Title, description and canonical go straight into <head> for search engines and link previews.
+    // Next's own list leaves out Googlebot (it streams them into <body> for Google), so Googlebot is added here
+    htmlLimitedBots: /Googlebot|[\w-]+-Google|Google-[\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight/i,
     experimental: {
         // Room for one shrunk photo; stays under Vercel's 4.5 MB request limit
         serverActions: {bodySizeLimit: "4mb"},

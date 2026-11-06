@@ -11,7 +11,9 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: "*",
             allow: "/",
-            disallow: ["/panel", "/min-besti", "/ansatt", "/admin", "/varsler", "/logg-inn", "/registrer$", "/registrer?", "/glemt-passord", "/bekreft-epost", "/*/bestill", ],
+            // Login, sign-up and password pages are not blocked: Google must be able to read their "noindex",
+            // or a blocked page can still show up in Google as a bare address
+            disallow: ["/panel", "/min-besti", "/ansatt", "/admin", "/varsler", "/*/bestill"],
         },
         sitemap: `${SITE_URL}/sitemap.xml`,
     };
