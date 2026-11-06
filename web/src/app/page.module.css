@@ -92,6 +92,40 @@
     text-align: center;
 }
 
+/* Phone: the title, the lead and the button fill the first screen alone (screen minus the 60 px header
+   and the 32 px space above), a little above the middle; the search card comes after one tap */
+@media (max-width: 899px) {
+    .heroIntro {
+        min-height: calc(100svh - 92px);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding-bottom: 12vh;
+        box-sizing: border-box;
+    }
+}
+
+/* "Søk etter BESTI-time ↓": the same mint button as "Finn BESTI-time", only on a phone */
+.jumpButton {
+    font: inherit;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-top: 32px;
+    min-height: 52px;
+    padding: 0 28px;
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: var(--btn-main-bg);
+    color: var(--color-on-primary);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: var(--neon-glow);
+    cursor: pointer;
+}
+
 .heroTitle {
     color: #72d6bd;
     font-size: clamp(1.9rem, 6vw, 3rem);
@@ -136,6 +170,11 @@
     min-height: 44px;
 }
 @media (min-width: 900px) {
+    /* On a computer the search card is right next to the title, so no button */
+    .jumpButton {
+        display: none;
+    }
+
     .hero {
         grid-template-columns: 1fr 560px;
         align-items: center;
