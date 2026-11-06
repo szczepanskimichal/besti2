@@ -11,6 +11,7 @@ import CrystalIcon from "@/components/CrystalIcon/CrystalIcon";
 import styles from "./page.module.css";
 import GlassSelect from "@/components/GlassSelect/GlassSelect";
 import CityPicker from "@/components/CityPicker/CityPicker";
+import {JumpToSearchButton, ScrollToResults} from "@/components/MobileSearchJump/MobileSearchJump";
 
 type HomeProps = {
     searchParams: Promise<{ category?: string; city?: string; q?: string; date?: string; tid?: string; lat?: string; lng?: string; km?: string, page?: string; sorter?: string; stjerner?: string; personer?: string }>;
@@ -47,11 +48,13 @@ export default async function Home({searchParams}: HomeProps) {
     return (
         <main className={styles.main}>
             <section className={styles.hero}>
-                <div>
+                {/* On a phone the title fills the first screen alone, with a button down to the search */}
+                <div className={styles.heroIntro}>
                     <h1 className={styles.heroTitle}>Magiske opplevelser med din BESTI</h1>
                     <p className={styles.heroLead}>Finn ledig time og bestill på under ett minutt</p>
+                    <JumpToSearchButton className={styles.jumpButton}/>
                 </div>
-                <Form action="/" className={styles.filters}>
+                <Form action="/" id="sok" className={styles.filters}>
                     <label className={styles.field}>
                         Hva vil du oppleve med BESTI?
                         <input
@@ -95,7 +98,8 @@ export default async function Home({searchParams}: HomeProps) {
                     <NearMeButton/>
                 </Form>
             </section>
-            <h2 className={styles.listTitle}>Lokale BESTI-bedrifter</h2>
+            <h2 id="resultater" className={styles.listTitle}>Lokale BESTI-bedrifter</h2>
+            <ScrollToResults search={JSON.stringify({...search, page})}/>
             {lat && lng && (
                 <p className={styles.subtitle}>
                     <CrystalIcon name="pinne"/> {sorter ? "Nær deg" : "Sortert etter avstand fra deg"} ·{" "}
