@@ -131,9 +131,10 @@
     font: 700 2.5rem/1 var(--font-heading);
     letter-spacing: -0.035em;
 }
-.perMonth {
-    color: #cfeee6;
-    font: 600 1.0625rem var(--font-small);
+/* "Gratis i beta" in words instead of a number, a little smaller so it fits on one line on a phone */
+.numberText {
+    font-size: 1.875rem;
+    letter-spacing: -0.02em;
 }
 .per {
     margin: 0;
@@ -282,6 +283,9 @@
     }
     .number {
         font-size: 3.25rem;
+    }
+    .numberText {
+        font-size: 2.5rem;
     }
     .wide {
         grid-column: 1 / -1;

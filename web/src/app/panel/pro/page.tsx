@@ -19,7 +19,7 @@ const IN_PRO = [
     { icon: "kalender", title: "Venteliste og «Ledig i dag»", text: "Blir en time ledig, får kundene på ventelisten beskjed med en gang." },
     { icon: "bjelle", title: "«Tid for ny time?»", text: "Kundene får en påminnelse når det er tid for neste besøk." },
     { icon: "stjerne", title: "Stempelkort", text: "Faste kunder samler stempler og kommer tilbake." },
-    { icon: "krystall", title: "Statistikk for 90 dager og 12 måneder", text: "Se hvordan bedriften vokser over tid." },
+    { icon: "krystall", title: "Statistikk for 30 dager, 90 dager og 12 måneder", text: "Se hvordan bedriften vokser over tid." },
 ];
 
 // Coming to Pro later, shown locked with a lilac "Kommer" (they were "Kommer snart i Pro" on Statistikk before)
@@ -31,14 +31,14 @@ const COMING = [
 ];
 
 // Everything a business gets without Pro
-const ALWAYS_FREE = [
+const INCLUDED = [
     "Kalender", "Nettbestilling", "Kunder", "Ansatte", "Varsler",
     "E-post til faste kunder", "BESTI Duo og Team", "Ukerapporten",
     "Egen bedriftsside", "Galleri", "Ekte vurderinger", "QR-plakat",
-    "Statistikk for 7 og 30 dager", "Eksport av data",
+    "Statistikk for 7 dager", "Eksport av data",
 ];
 
-// BESTI Pro (Ada 2026-11-03, v6): three cards. What is in Pro (free in the beta), the price after the beta, what is always free.
+// BESTI Pro (Ada 2026-11-03, v6): three cards. What is in Pro (free in the beta), no price yet, what is included without Pro.
 // Mint = free now, lilac = Pro and what comes later. Pro never gives a better place in the search
 type ProPageProps = {
     searchParams: Promise<{ pro?: string; feil?: string }>;
@@ -88,15 +88,14 @@ export default async function ProPage({ searchParams }: ProPageProps) {
                     </p>
                 </section>
 
-                {/* What it costs after the beta, the 30-day promise and the button, in one place */}
+                {/* No price yet (michal 2026-11-06): free in the beta, the price comes later, the 30-day promise and the button */}
                 <section id="med" className={`${styles.card} ${styles.price}`} aria-labelledby="pro-pris">
-                    <h2 id="pro-pris" className={`${styles.priceTitle} ${styles.lilacTitle}`}>Etter beta</h2>
+                    <h2 id="pro-pris" className={`${styles.priceTitle} ${styles.lilacTitle}`}>Pris</h2>
                     <p className={styles.big}>
                         <span className={styles.priceBadge}><ProBadge short size={60}/></span>
-                        <span className={styles.number}>299</span>
-                        <span className={styles.perMonth}>kr / mnd</span>
+                        <span className={`${styles.number} ${styles.numberText}`}>Gratis i beta</span>
                     </p>
-                    <p className={styles.per}>per salong, eks. mva</p>
+                    <p className={styles.per}>Prisen etter beta får du vite senere</p>
                     <p className={styles.text}>Du får e-post minst 30 dager før. Ingenting koster noe uten at du har sagt ja.</p>
                     {stats.proInterest || query.pro ? (
                         <p className={styles.thanks} role="status">Takk! Vi sier fra når Pro starter.</p>
@@ -108,11 +107,11 @@ export default async function ProPage({ searchParams }: ProPageProps) {
                     {query.feil && <p className={styles.small} role="alert">Noe gikk galt. Prøv igjen.</p>}
                 </section>
 
-                {/* Ada 2026-11-03: a big list, so the business sees how much it gets for free */}
+                {/* Ada 2026-11-03: a big list, so the business sees how much is included without Pro */}
                 <section className={`${styles.card} ${styles.center} ${styles.wide}`} aria-labelledby="pro-gratis">
-                    <h2 id="pro-gratis" className={styles.freeTitle}>Alltid gratis i BESTI</h2>
+                    <h2 id="pro-gratis" className={styles.freeTitle}>Inkludert i BESTI</h2>
                     <ul className={styles.freeList}>
-                        {ALWAYS_FREE.map((item) => <li key={item}>{item}</li>)}
+                        {INCLUDED.map((item) => <li key={item}>{item}</li>)}
                     </ul>
                     <p className={styles.text}>Pro gir deg flere verktøy, ikke bedre plass i søket. Alle bedrifter vises på like vilkår.</p>
                 </section>

@@ -141,7 +141,7 @@ export default function TermsPage() {
                 </p>
                 <p>
                     Noen funksjoner i panelet er merket «Pro» (for eksempel venteliste, «Tid for ny time?», stempelkort og
-                    statistikk for mer enn 30 dager). De er gratis i beta-perioden, men blir senere en del av en betalt
+                    statistikk for mer enn 7 dager). De er gratis i beta-perioden, men blir senere en del av en betalt
                     pakke, BESTI Pro. Funksjonene uten Pro-merke er med i grunnpakken.
                 </p>
             </section>
