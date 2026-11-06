@@ -5,6 +5,14 @@
     background: linear-gradient(180deg, rgba(4, 16, 24, 0) 0, rgba(4, 16, 24, 0.3) 50%, rgba(4, 16, 24, 0.55) 100%);
 }
 
+/* Phone: the BESTI mark on top, the links under it */
+@media (max-width: 767px) {
+    .footer {
+        display: flex;
+        flex-direction: column;
+    }
+}
+
 /* Left column, Vilkår in the middle over both rows, right column aligned right */
 .links,
 .brand {
@@ -17,16 +25,17 @@
     display: grid;
     grid-template-columns: auto 1fr auto;
     gap: 0 12px;
-    padding: 22px 0 6px;
+    padding: 8px 0 18px;
 }
 
 .links a {
     display: flex;
     align-items: center;
-    min-height: 34px;
-    color: var(--color-text);
+    /* Phone: small calm text, but a 38 px tall touch area so it is still easy to tap */
+    min-height: 38px;
+    color: var(--color-muted);
     font-family: var(--font-heading);
-    font-size: 1rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     text-decoration: none;
 }
@@ -61,10 +70,11 @@
 /* Logo B with the star (Ada 2026-11-04), the slogan and the small print */
 .brand {
     display: flex;
+    order: -1;
     align-items: center;
     gap: 14px;
-    padding: 16px 0 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 0 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* The square is 48 px; the svg has room around it for the star and the glow (square = 92 of 128 units) */
@@ -114,8 +124,9 @@
 
     .brand {
         grid-column: 1;
+        gap: 14px;
         padding: 0;
-        border-top: 0;
+        border-bottom: 0;
     }
 
     .links {
@@ -125,5 +136,14 @@
         justify-content: flex-end;
         gap: 4px 32px;
         padding: 0;
+    }
+
+    /* Laptop: the links stay as before */
+    .links a {
+        min-height: 34px;
+        color: var(--color-text);
+        font-family: var(--font-heading);
+        font-size: 1rem;
+        font-weight: 600;
     }
 }
